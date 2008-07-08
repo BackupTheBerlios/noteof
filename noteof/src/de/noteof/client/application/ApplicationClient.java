@@ -31,9 +31,11 @@ public class ApplicationClient extends BaseClient {
      * @param timeout
      *            Object of type {@link Timeout}. May be null. If null the
      *            framework uses default values for timeouts.
+     * @param args
+     *            The arguments of the client main method
      * @throws ActionFailedException
      */
-    public ApplicationClient(Socket socketToServer, Timeout timeout, ApplicationConfiguration configuration) throws ActionFailedException {
+    public ApplicationClient(Socket socketToServer, Timeout timeout, String... args) throws ActionFailedException {
         super(socketToServer, timeout);
         if (null == timeout) {
             timeout = new ApplicationTimeout();
@@ -51,9 +53,11 @@ public class ApplicationClient extends BaseClient {
      * @param timeout
      *            Object of type {@link Timeout}. May be null. If null the
      *            framework uses default values for timeouts.
+     * @param args
+     *            The arguments of the client main method
      * @throws ActionFailedException
      */
-    public ApplicationClient(String ip, int port, Timeout timeout) throws ActionFailedException {
+    public ApplicationClient(String ip, int port, Timeout timeout, String... args) throws ActionFailedException {
         super(ip, port, timeout);
         if (null == timeout) {
             timeout = new ApplicationTimeout();

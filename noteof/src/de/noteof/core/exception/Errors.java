@@ -51,6 +51,11 @@ public class Errors {
         errorList.put(20L, "Request an Partner ohne Erfolg. Nicht erwartete Response.");
         errorList.put(21L, "Unerwartete Response von Partner eingetroffen.");
         errorList.put(22L, "Registrierung am Server ist fehlgeschlagen.");
+
+        // Configuration
+        errorList.put(30L, "Konfigurationseintrag konnte nicht gespeichert werden.");
+        errorList.put(31L, "Konfigurationseintrag konnte nicht hinzugefügt werden.");
+        errorList.put(32L, "Element konnte nicht ermittelt werden.");
     }
 
     /*
