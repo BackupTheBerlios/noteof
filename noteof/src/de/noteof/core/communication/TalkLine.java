@@ -6,15 +6,15 @@ import de.noteof.core.enumeration.CommTag;
 import de.noteof.core.exception.ActionFailedException;
 
 /**
- * Class for Communication of noteof-processes. Here are implemented some
- * methods to send and receive messages. <br>
+ * Class for Communication of !EOF processes. Here are implemented some methods
+ * to send and receive messages. <br>
  * Furthermore there is a little comfort by the methods requestToPartner and
  * responseToPartner, which ensure the synchronisation of messages and ensure,
  * that the correct messageheaders will be used.<br>
  * 
  * @see CommTag The class {@link CommTag} contains messageheaders.
  */
-public class MessageLayer {
+public class TalkLine {
 
     private SocketLayer socketLayer;
 
@@ -32,7 +32,7 @@ public class MessageLayer {
      * @throws ActionFailedException
      *             Thrown when socket connection could not be established.
      */
-    public MessageLayer(Socket socketToPartner, int timeOutMillis) throws ActionFailedException {
+    public TalkLine(Socket socketToPartner, int timeOutMillis) throws ActionFailedException {
         if (null == socketToPartner)
             throw new ActionFailedException(10L, "Socket zu Kommunikationspartner ist NULL");
         try {
@@ -60,7 +60,7 @@ public class MessageLayer {
      * @throws ActionFailedException
      *             Thrown when socket connection could not be established.
      */
-    public MessageLayer(String ip, int port, int timeOutMillis) throws ActionFailedException {
+    public TalkLine(String ip, int port, int timeOutMillis) throws ActionFailedException {
         try {
             Socket socket = new Socket(ip, port);
             socketLayer = new SocketLayer(socket);

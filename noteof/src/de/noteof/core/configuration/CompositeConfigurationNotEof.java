@@ -1,6 +1,7 @@
 package de.noteof.core.configuration;
 
 import org.apache.commons.configuration.Configuration;
+import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.dom4j.Document;
@@ -16,7 +17,7 @@ public class CompositeConfigurationNotEof extends org.apache.commons.configurati
         setProperty(key, value, null);
     }
 
-    public void setProperty(String key, String value, String xmlFileName) throws ActionFailedException  {
+    public void setProperty(String key, String value, String xmlFileName) throws ActionFailedException {
         Configuration anyConfig = retrieveConfiguration(key);
 
         if (null == anyConfig) {
@@ -41,14 +42,18 @@ public class CompositeConfigurationNotEof extends org.apache.commons.configurati
                 config.reload();
 
             } catch (Exception ex) {
-                throw new ActionFailedException(30L, "Neu Setzen (kein Hinzufï¿½gen)", ex);
+                throw new ActionFailedException(30L, "Neu Setzen (kein Hinzufügen)", ex);
             }
         } else {
-            String fileName = ConfigurationManager.getInstance().getDefaultConfigurationFile();
-            addProperty(key, value, fileName);
+            try {
+                String fileName = ConfigurationManager.getInstance().getDefaultConfigurationFile();
+                addProperty(key, value, fileName);
 
-            System.out.println("Achtung! Der Key " + key + " ist neu in Ihrer Konfiguration und wurde in die Datei " + fileName + " eingetragen.");
-            LocalLog.info("Der Key " + key + " existierte bisher nicht in der Kundenkonfiguration und wurde in die Datei " + fileName + " eingetragen.");
+                System.out.println("Achtung! Der Key " + key + " ist neu in Ihrer Konfiguration und wurde in die Datei " + fileName + " eingetragen.");
+                LocalLog.info("Der Key " + key + " existierte bisher nicht in der Kundenkonfiguration und wurde in die Datei " + fileName + " eingetragen.");
+            } catch (ConfigurationException ex) {
+                throw new ActionFailedException(30L, "Neues Element hinzufügen", ex);
+            }
         }
     }
 

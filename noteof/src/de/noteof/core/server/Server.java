@@ -2,6 +2,13 @@ package de.noteof.core.server;
 
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.net.Socket;
+
+import de.noteof.core.communication.TalkLine;
+import de.noteof.core.configuration.ConfigurationManager;
+import de.noteof.core.enumeration.ServerTag;
+import de.noteof.core.exception.ActionFailedException;
+import de.noteof.core.logging.LocalLog;
 
 /**
  * The central server which has some different tasks: <br>
@@ -16,22 +23,84 @@ import java.net.ServerSocket;
  */
 public class Server implements Runnable {
 
-    private static Server server = new Server();
+    private static Server server;
     private static Thread serverThread;
     private boolean stop = false;
-    private ServerSocket serverSocket;
+    private static ServerSocket serverSocket;
 
-    private Server() {
-        try {
-            serverSocket = new ServerSocket(ConfigManager.getProperty("paul.serverPort").getIntValue(2512));
-        } catch (IOException ex) {
-            LOG.warn("Server für Anmeldung von Anwendungen konnte nicht gestartet werden.", ex);
+    public static Server getInstance() {
+        if (null == server) {
+            server = new Server();
         }
-        serverThread = new Thread(server);
+        return server;
     }
 
-    public static void start() {
+    /**
+     * Initialize server socket with configured or default port (2512).
+     * 
+     * @throws ActionFailedException
+     */
+    public static void start() throws ActionFailedException {
+        int port = 0;
+        try {
+            port = ConfigurationManager.getProperty("notEofServer.port").getIntValue(2512);
+            serverSocket = new ServerSocket(port);
+        } catch (IOException ex) {
+            throw new ActionFailedException(100L, "Socket Initialisierung mit Port: " + port);
+        }
+        serverThread = new Thread(server);
         serverThread.start();
+    }
+
+    /**
+     * Server awaits client connections.
+     * <p>
+     * He asks the client which type it is of. <br>
+     * Then he creates an adequate service or looks if there has been one
+     * initialized some times ago.
+     */
+    public void run() {
+        while (!stop) {
+            try {
+                Socket clientSocket = serverSocket.accept();
+                acceptClient(clientSocket);
+            } catch (IOException ex) {
+                LocalLog.error("Fehler bei Warten auf Connect durch nächsten Client", ex);
+            } catch (ActionFailedException afx) {
+                LocalLog.error("Abbruch bei Verbindungsaufbau mit Client", afx);
+            }
+        }
+    }
+
+    /*
+     * First step: Be kind, shake hands with client.
+     */
+    private void acceptClient(Socket clientSocket) throws ActionFailedException {
+        TalkLine talkLine = new TalkLine(clientSocket, 0);
+        // Client asks for registration
+        talkLine.awaitRequestAnswerImmediate(ServerTag.REQ_REGISTRATION, ServerTag.RESP_REGISTRATION, ServerTag.VAL_OK.name());
+
+        // server asks for perhaps existing service id
+        String deliveredServiceId = talkLine.requestTo(ServerTag.REQ_SERVICE_ID, ServerTag.RESP_SERVICE_ID);
+        String clientTypeName = talkLine.requestTo(ServerTag.REQ_TYPE_NAME, ServerTag.RESP_TYPE_NAME);
+
+        // next step here...
+        dispatchClientToService(clientSocket, deliveredServiceId, clientTypeName);
+    }
+
+    /*
+     * Second step: Look for matching service by existing serviceId and
+     * clientTypeName
+     */
+    private void dispatchClientToService(Socket clientSocket, String deliveredServiceId, String clientTypeName) throws ActionFailedException {
+        // basis service bekommt eigene talkline, weil individuell timeouts (zb
+        // applicationtimeout )
+
+        // suche nach serviceid und clienttype
+        // evtl. eine eigene Liste mit den existierenden clienttypes?
+        // oder je typ eine eine eigene Liste map: <typ>:<id> -> map:
+        // <id>:<Liste>
+        // dann wird die Suche schneller...
     }
 
     /**
@@ -40,12 +109,12 @@ public class Server implements Runnable {
      * @param args
      */
     public static void main(String... args) {
-        Server.start();
-    }
-
-    public void run() {
-        while (!stop) {
-
+        try {
+            Server.start();
+        } catch (Exception ex) {
+            LocalLog.error("Der zentrale !EOF-Server konnte nicht gestartet werden.", ex);
+            throw new RuntimeException("!EOF Server kann nicht gestartet werden.", ex);
         }
     }
+
 }

@@ -3,7 +3,7 @@ package de.noteof.core.client;
 import java.net.Socket;
 
 import de.noteof.core.communication.BaseTimeout;
-import de.noteof.core.communication.MessageLayer;
+import de.noteof.core.communication.TalkLine;
 import de.noteof.core.exception.ActionFailedException;
 import de.noteof.core.interfaces.Timeout;
 
@@ -11,13 +11,17 @@ import de.noteof.core.interfaces.Timeout;
  * From this class every other client must be extended. <br>
  * The most important steps for establishing a connection to a service are
  * defined or implemented here.
+ * <p>
+ * It is highly recommended that the derived class at very first step calls the
+ * constructor of BaseClient. I would say this should be the first line in the
+ * constructor of the derived class.
  * 
  * @author Dirk
  * 
  */
 public abstract class BaseClient {
 
-    private MessageLayer messageLayer;
+    private TalkLine talkLine;
     private String serviceId;
     private boolean connectedWithService = false;
 
@@ -35,14 +39,12 @@ public abstract class BaseClient {
      * At first they should initialize the communication with server and
      * service.
      */
-    public BaseClient(Socket socketToServer, Timeout timeout) throws ActionFailedException {
+    public BaseClient(Socket socketToServer, Timeout timeout, String... args) throws ActionFailedException {
         if (null == timeout) {
             timeout = new BaseTimeout();
         }
-        if (null == messageLayer) {
-            messageLayer = new MessageLayer(socketToServer, timeout.getMillisCommunication());
-        }
-        registerAtServer(messageLayer, timeout);
+        talkLine = new TalkLine(socketToServer, timeout.getMillisCommunication());
+        registerAtServer(talkLine, timeout, args);
     }
 
     /**
@@ -50,14 +52,12 @@ public abstract class BaseClient {
      * At first they should initialize the communication with server and
      * service.
      */
-    public BaseClient(String ip, int port, Timeout timeout) throws ActionFailedException {
+    public BaseClient(String ip, int port, Timeout timeout, String... args) throws ActionFailedException {
         if (null == timeout) {
             timeout = new BaseTimeout();
         }
-        if (null == messageLayer) {
-            messageLayer = new MessageLayer(ip, port, timeout.getMillisCommunication());
-        }
-        registerAtServer(messageLayer, timeout);
+        talkLine = new TalkLine(ip, port, timeout.getMillisCommunication());
+        registerAtServer(talkLine, timeout, args);
     }
 
     /**
@@ -79,6 +79,25 @@ public abstract class BaseClient {
         return serviceId;
     }
 
+    /**
+     * Delivers a valid message interface to the server
+     * 
+     * @return An initialized Object which simplifies the communication with the
+     *         server
+     */
+    public TalkLine getTalkLine() {
+        return talkLine;
+    }
+
+    /**
+     * Meldet sich vom Server ab und schlieﬂt die physikalische Verbindung.
+     * 
+     * @throws ActionFailedException
+     */
+    protected void close() throws ActionFailedException {
+        talkLine.close();
+    }
+
     // /**
     // * Every client has to exercise a handshake with the service which the
     // * server has created after the clients registration. <br>
@@ -92,10 +111,9 @@ public abstract class BaseClient {
      * a successfull registration at server side exists a service espacialy for
      * this client.
      */
-    private final void registerAtServer(MessageLayer messageLayer, Timeout timeout) throws ActionFailedException {
-        ServerRegistration registration = new ServerRegistration(type(), messageLayer, timeout.getMillisConnection());
+    private final void registerAtServer(TalkLine talkLine, Timeout timeout, String... args) throws ActionFailedException {
+        ServerRegistration registration = new ServerRegistration(type(), talkLine, timeout.getMillisConnection(), args);
         connectedWithService = registration.isLinkedToService();
         serviceId = registration.getServiceId();
     }
-
 }

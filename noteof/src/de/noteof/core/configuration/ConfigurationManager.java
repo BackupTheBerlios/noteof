@@ -1,16 +1,18 @@
 package de.noteof.core.configuration;
 
 import java.io.File;
+import java.net.URI;
+import java.net.URL;
 import java.util.List;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
+import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.XMLConfiguration;
 
-import de.iccs.core.conf.CompositeConfigurationIccs;
-import de.iccs.core.conf.ConfigSection;
+import de.noteof.core.exception.ActionFailedException;
 import de.noteof.core.logging.LocalLog;
 
 public class ConfigurationManager {
@@ -21,15 +23,13 @@ public class ConfigurationManager {
     private String configFile = "noteof_master_conf.xml";
     private String configFilePath;
 
-
-
     /**
      * ConfigurationManager is a Singleton...
      */
 
     protected static ConfigurationManager configManager;
-    
-    private ConfigurationManager () throws ConfigurationException  {
+
+    private ConfigurationManager() throws ConfigurationException {
         File cfgRoot = new File(getConfigRoot());
         configFilePath = new File(cfgRoot, configFile).getAbsolutePath();
         basicConfiguration.setFileName(configFile);
@@ -37,7 +37,10 @@ public class ConfigurationManager {
         LocalLog.info("ConfigManager ConfigFile: " + configFilePath);
 
         try {
-            basicConfiguration.setURL(new File(configFilePath).toURL());
+            File x = new File(configFilePath);
+            URI uri = x.toURI();
+            URL url = uri.toURL();
+            basicConfiguration.setURL(url);
         } catch (Exception ex) {
             throw new ConfigurationException(ex);
         }
@@ -55,9 +58,10 @@ public class ConfigurationManager {
         }
         return configManager;
     }
-    
+
     /*
-     * Stellt sicher, dass es eine Instanz des ConfigManagers gibt und liefert diese zurueck.
+     * Stellt sicher, dass es eine Instanz des ConfigManagers gibt und liefert
+     * diese zurueck.
      */
     private ConfigurationManager retrieveSingleConfigManager() {
         if (null == configManager) {
@@ -69,9 +73,11 @@ public class ConfigurationManager {
 
         return configManager;
     }
-    
+
     /**
-     * In Ausnahmesituationen kann es erforderlich sein, die Konfigurationsdatei(en) neu zu laden. Z.B. wenn ein neuer Wert in CompositeConfiguration generiert wurde.
+     * In Ausnahmesituationen kann es erforderlich sein, die
+     * Konfigurationsdatei(en) neu zu laden. Z.B. wenn ein neuer Wert in
+     * CompositeConfiguration generiert wurde.
      */
     private void loadConfiguration(boolean reload) throws ConfigurationException {
         if (reload) {
@@ -84,20 +90,24 @@ public class ConfigurationManager {
         // Liste aller XML-Konfigurationen
         String pathName = basicConfiguration.getBasePath().replaceAll("file:", "");
         @SuppressWarnings("unchecked")
-        List<String> xmlFileList = (List<String>)basicConfiguration.getList(ConfigSection.XML_FILE_NAMES.getName());
+        List<String> xmlFileList = (List<String>) basicConfiguration.getList(ConfigSection.XML_FILE_NAMES.getName());
         for (String fileName : xmlFileList) {
-            // XMLConfiguration additionalXMLConf = new XMLConfiguration(new File(pathName, fileName));
+            // XMLConfiguration additionalXMLConf = new XMLConfiguration(new
+            // File(pathName, fileName));
             XMLConfiguration additionalXMLConf = new XMLConfiguration(pathName + fileName);
             notEofConfiguration.addConfiguration(additionalXMLConf);
         }
     }
 
-
-    
     /**
-     * Liefert die Konfiguration des gesamten ICCS zurueck. Der Zugriff auf bestimmte Schluessel/Werte erfolgt, wie in der Dokumentation zu CompositeConfigurations beschrieben (http://jakarta.apache.org/commons/configuration/index.html)
-     * @return Configuration mit Zugriff auf die Konfiguration. <br>
-     *         Die Klasse {@link CompositeConfigurationIccs} ueberschreibt die Methode 'setProperty()', die zum Speichern einer geaenderten Konfiguration genutzt werden sollte.
+     * Delifers the whole configuration of !EOF. <br>
+     * How access to certain keys respectively their values works is described
+     * in the documentation of CompositeConfigurations <br>
+     * (http://jakarta.apache.org/commons/configuration/index.html)
+     * 
+     * @return Complete configuration<br>
+     *         Class {@link CompositeConfigurationNotEof} overwrites some
+     *         methods (esp. setProperty()).
      * @see org.apache.commons.configuration.CompositeConfiguration
      */
     public CompositeConfigurationNotEof getConfiguration() {
@@ -105,42 +115,45 @@ public class ConfigurationManager {
     }
 
     /**
-     * Liefert den Konfigurationsmanager. Wird eigentlich ausserhalb des zentralen ICCS- Konfigurations-Managements nicht benoetigt. Stattdessen sollte die Konfiguration mit Hilfe des Objekts 'Configuration' ausgelesen werden (Methode getConfiguration()).
-     * @return Der komplette Konfigurationsmanager
+     * Delivers the manager itself. <br>
+     * Normally the manager is not requested by other objects except for the
+     * central configuration management. <br>
+     * It is recommended to use the configuration object {@link Configuration}
+     * (getConfiguration()).
+     * 
+     * @return Single instance of ConfigurationManager
      */
     public ConfigurationManager getConfigurationManager() {
         return retrieveSingleConfigManager();
     }
 
-
-
     /**
-     * @return Der zentrale Konfigurationspfad (CFGROOT bzw. ICCS_HOME)
+     * @return Central configuration path (CFGROOT, NOTEOF_HOME)
      */
-    public String getIccsHome() {
+    public String getNotEofHome() {
         // CFGROOT als contextabhaengige Tomcat-Umgebungsvariable
         if (noteofHome == null) {
             try {
-                noteofHome = (String) new InitialContext().lookup("java:comp/env/ICCS_HOME");
+                noteofHome = (String) new InitialContext().lookup("java:comp/env/NOTEOF_HOME");
                 if (noteofHome != null)
-                    LocalLog.info("ICCS_HOME found as InitialContext: " + noteofHome);
+                    LocalLog.info("NOTEOF_HOME found as InitialContext: " + noteofHome);
             } catch (NamingException e) {
             }
         }
         // CFGROOT als VM-Umgebungsvariable (-DCFGROOT)
         if (noteofHome == null) {
-            noteofHome = System.getProperty("ICCS_HOME");
+            noteofHome = System.getProperty("NOTEOF_HOME");
             if (noteofHome != null)
                 LocalLog.info("ICCS_HOME found in VM variable: " + noteofHome);
         }
         // ICCS_HOME als Systemvariable
         if (noteofHome == null) {
-            noteofHome = System.getenv("ICCS_HOME");
+            noteofHome = System.getenv("NOTEOF_HOME");
             if (noteofHome != null)
                 LocalLog.info("ICCS_HOME found in system variable: " + noteofHome);
         }
         if (noteofHome == null) {
-            throw new RuntimeException("Could not determine ICCS_HOME");
+            throw new RuntimeException("Could not determine NOTEOF_HOME");
         }
         return noteofHome;
     }
@@ -153,7 +166,37 @@ public class ConfigurationManager {
      * @return Der zentrale Konfigurationspfad (CFGROOT bzw. ICCS_HOME)
      */
     public String getConfigRoot() {
-        return new File(getIccsHome(), "conf").getAbsolutePath();
+        return new File(getNotEofHome(), "conf").getAbsolutePath();
     }
 
+    /**
+     * Liefert eine spezielle Konfiguration ueber einen Schluessel.
+     * <p>
+     * Das ermoeglicht dem Entwickler die vom ConfigManager 'unabhaengige'
+     * Verwendung der Konfigurationsdateien, ohne Kenntnis von Dateinamen und
+     * Pfaden.
+     * 
+     * @param confSection
+     *            Ein enum-Objekt, das den die Konfiguration identifizierenden
+     *            Schluessel beinhaltet.
+     * @return Eine Konfiguration, die Teil der Gesamtkonfiguration sein kann.
+     */
+    public static ConfigProperty getProperty(String nodeName) {
+        return new ConfigProperty(nodeName);
+    }
+
+    /*
+     * Methode wird durch dynamisches Laden der Klasse vom marvin verwendet.
+     * Daher findet der Compiler keine Referenz.
+     */
+    public static String getPropertyString(String nodeName, String defaultValue) throws ActionFailedException {
+        ConfigProperty property = getProperty(nodeName);
+        if (property == null)
+            return null;
+        return property.getStringValue();
+    }
+
+    public static String getPropertyString(String nodeName) throws ActionFailedException {
+        return getPropertyString(nodeName, null);
+    }
 }

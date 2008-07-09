@@ -29,16 +29,19 @@ public class LocalLog {
         return localLog;
     }
 
-    public static void error(String additionalInfo, Exception ex) {
+    public static void error(String additionalInfo, Throwable th) {
     }
 
-    public static void warn(String additionalInfo, Exception ex) {
+    public static void error(String additionalInfo) {
     }
 
-    public static void debug(String additionalInfo, Exception ex) {
+    public static void warn(String additionalInfo, Throwable th) {
     }
 
-    public static void info(String additionalInfo, Exception ex) {
+    public static void debug(String additionalInfo, Throwable th) {
+    }
+
+    public static void info(String additionalInfo, Throwable th) {
     }
 
     public static void info(String additionalInfo) {

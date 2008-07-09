@@ -1,8 +1,9 @@
 package de.noteof.core.client;
 
-import de.noteof.core.communication.MessageLayer;
+import de.noteof.core.communication.TalkLine;
 import de.noteof.core.enumeration.ServerTag;
 import de.noteof.core.exception.ActionFailedException;
+import de.noteof.core.util.ArgsParser;
 import de.noteof.core.util.Util;
 
 public class ServerRegistration {
@@ -22,16 +23,19 @@ public class ServerRegistration {
      *            to a service.
      * @param messageLayer
      *            An existing physical connection to the server.
+     * @param args
+     *            Additional informations get by calling parameters (e.g.
+     *            service id)
      * @param timeOutMillis
      *            Maximum of milliseconds till the registration must be
      *            completed.
      * @throws ActionFailedException
      */
-    public ServerRegistration(String clientTypeName, MessageLayer messageLayer, int timeOutMillis) throws ActionFailedException {
+    public ServerRegistration(String clientTypeName, TalkLine messageLayer, int timeOutMillis, String... args) throws ActionFailedException {
         Registration registration = new Registration();
         Thread registrationThread = new Thread(registration);
         registrationThread.run();
-        serviceId = registration.register(clientTypeName, messageLayer);
+        serviceId = registration.register(clientTypeName, messageLayer, args);
 
         // The registration hasn't every time of the world...
         long endTime = System.currentTimeMillis() + timeOutMillis;
@@ -88,15 +92,28 @@ public class ServerRegistration {
         }
 
         // Register at the server and ask for a service
-        protected String register(String clientTypeName, MessageLayer messageLayer) throws ActionFailedException {
+        protected String register(String clientTypeName, TalkLine talkLine, String... args) throws ActionFailedException {
             // First step: Say hello to the server
-            if (!Util.equalsToString(messageLayer.requestTo(ServerTag.REQ_REGISTRATION, ServerTag.RESP_REGISTRATION), ServerTag.VAL_OK.name())) {
+            if (!Util.equalsToString(talkLine.requestTo(ServerTag.REQ_REGISTRATION, ServerTag.RESP_REGISTRATION), ServerTag.VAL_OK.name())) {
                 throw new ActionFailedException(22L, "Anmeldung vom Server abgelehnt.");
             }
 
-            // Second step: Ask for a service
-            messageLayer.awaitRequestAnswerImmediate(ServerTag.REQ_TYPE_NAME, ServerTag.RESP_TYPE_NAME, clientTypeName);
-            String serviceId = messageLayer.requestTo(ServerTag.REQ_SERVICE, ServerTag.RESP_SERVICE);
+            // see if a service id already is given with the args (calling
+            // parameter)
+            String deliveredServiceId = "";
+            ArgsParser argsParser = new ArgsParser(args);
+            if (argsParser.containsStartsWith("--serviceId_")) {
+                deliveredServiceId = argsParser.getValue("serviceId_");
+            }
+
+            // Second step: Server asks client for an existing service id
+            talkLine.awaitRequestAnswerImmediate(ServerTag.REQ_SERVICE_ID, ServerTag.RESP_SERVICE_ID, deliveredServiceId);
+
+            // Third step: Ask for a service
+            // It is not guaranteed that the service number is the same as
+            // delivered by args
+            talkLine.awaitRequestAnswerImmediate(ServerTag.REQ_TYPE_NAME, ServerTag.RESP_TYPE_NAME, clientTypeName);
+            String serviceId = talkLine.requestTo(ServerTag.REQ_SERVICE, ServerTag.RESP_SERVICE);
             if (Util.isEmpty(serviceId)) {
                 throw new ActionFailedException(22L, "Server hat dem Client keinen Service zugeordnet.");
             }

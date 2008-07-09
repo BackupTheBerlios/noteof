@@ -33,10 +33,11 @@ public class ApplicationClient extends BaseClient {
      *            framework uses default values for timeouts.
      * @param args
      *            The arguments of the client main method
+     * @see ApplicationTimeout
      * @throws ActionFailedException
      */
     public ApplicationClient(Socket socketToServer, Timeout timeout, String... args) throws ActionFailedException {
-        super(socketToServer, timeout);
+        super(socketToServer, timeout, args);
         if (null == timeout) {
             timeout = new ApplicationTimeout();
         }
@@ -58,7 +59,7 @@ public class ApplicationClient extends BaseClient {
      * @throws ActionFailedException
      */
     public ApplicationClient(String ip, int port, Timeout timeout, String... args) throws ActionFailedException {
-        super(ip, port, timeout);
+        super(ip, port, timeout, args);
         if (null == timeout) {
             timeout = new ApplicationTimeout();
         }
@@ -67,6 +68,13 @@ public class ApplicationClient extends BaseClient {
     @Override
     protected String type() {
         return this.getClass().getName();
+    }
+
+    public void blabla() throws ActionFailedException {
+        // beispiel für benutzen close der superklasse, benutzen der talkLine
+        // der superklasse
+        close();
+        getTalkLine().requestTo(ApplicationTag.REQ_CONNECT_ADDITIONAL_NAME, ApplicationTag.RESP_CONNECT_ADDITIONAL_NAME);
     }
 
 }

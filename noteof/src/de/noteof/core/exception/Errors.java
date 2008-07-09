@@ -56,6 +56,12 @@ public class Errors {
         errorList.put(30L, "Konfigurationseintrag konnte nicht gespeichert werden.");
         errorList.put(31L, "Konfigurationseintrag konnte nicht hinzugefügt werden.");
         errorList.put(32L, "Element konnte nicht ermittelt werden.");
+        errorList.put(33L, "Konfigurationswert konnte nicht entschlüsselt werden.");
+        errorList.put(34L, "Konfigurationswert ist leer oder existiert nicht.");
+        errorList.put(35L, "Sichtbarkeit des Konfigurationswertes konnte nicht ermittelt werden.");
+
+        // Central !EOF server
+        errorList.put(100L, "Initialisierung des zentralen Servers ist fehlgeschlagen.");
     }
 
     /*

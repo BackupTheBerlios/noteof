@@ -9,6 +9,9 @@ public enum ServerTag {
     REQ_TYPE_NAME(),
     RESP_TYPE_NAME(),
 
+    REQ_SERVICE_ID(),
+    RESP_SERVICE_ID(),
+
     REQ_SERVICE(),
     RESP_SERVICE(),
 

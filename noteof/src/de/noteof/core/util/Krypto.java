@@ -7,7 +7,7 @@ import javax.crypto.spec.SecretKeySpec;
 
 import com.thoughtworks.xstream.core.util.Base64Encoder;
 
-import de.iccs.logging.LOG;
+import de.noteof.core.logging.LocalLog;
 
 public class Krypto {
 
@@ -44,26 +44,30 @@ public class Krypto {
      */
     public void init() throws SecurityException {
         // Key secretKey = new SecretKeySpec("r4q300ax".getBytes(), "DES");
-        // Key secretKey = new SecretKeySpec("sfdaaadfasfdsdfr".getBytes(), "AES");
+        // Key secretKey = new SecretKeySpec("sfdaaadfasfdsdfr".getBytes(),
+        // "AES");
         init("972wWr4490N23Dj6");
 
     }
 
     /**
-     * Initialisiert den Verschluesselungsmechanismus mit einem individuellen Key-Text
+     * Initialisiert den Verschluesselungsmechanismus mit einem individuellen
+     * Key-Text
      * 
-     * @param keyText Ein Text in der Laenge von 16 Zeichen mit bel. Inhalt.
-     * @throws SecurityException Text ist null, Laenge nicht korrekt, ...
+     * @param keyText
+     *            Ein Text in der Laenge von 16 Zeichen mit bel. Inhalt.
+     * @throws SecurityException
+     *             Text ist null, Laenge nicht korrekt, ...
      */
     public void init(String keyText) throws SecurityException {
         if (null == keyText) {
-            LOG.error("Initialisierung der Kryptisierung mit null-Key nicht zul√§ssig.");
+            LocalLog.error("Initialisierung der Kryptisierung mit null-Key nicht zul‰ssig.");
             throw new SecurityException("Kryptisierung konnte wegen null-Key nicht initialisiert werden.");
         }
 
         if (keyText.length() != 16) {
-            LOG.error("Initialisierung der Kryptisierung mit Key-L√§nge <> 16 nicht zul√§ssig.");
-            throw new SecurityException("Kryptisierung konnte wegen falscher Key-L√§nge nicht initialisiert werden.");
+            LocalLog.error("Initialisierung der Kryptisierung mit Key-L‰nge <> 16 nicht zul‰ssig.");
+            throw new SecurityException("Kryptisierung konnte wegen falscher Key-L‰nge nicht initialisiert werden.");
         }
 
         try {
@@ -76,7 +80,7 @@ public class Krypto {
             encryptCipher.init(Cipher.ENCRYPT_MODE, secretKey);
             decryptCipher.init(Cipher.DECRYPT_MODE, secretKey);
         } catch (Exception e) {
-            LOG.error("Kryptisierung konnte nicht initialisiert werden", e);
+            LocalLog.error("Kryptisierung konnte nicht initialisiert werden", e);
             throw new SecurityException("Kryptisierung konnte nicht initialisiert werden", e);
         }
     }
@@ -85,9 +89,11 @@ public class Krypto {
      * Verschluesselt eine Zeichenkette.
      * <p>
      * 
-     * @param str Description of the Parameter
+     * @param str
+     *            Description of the Parameter
      * @return String the encrypted string.
-     * @exception SecurityException Description of the Exception
+     * @exception SecurityException
+     *                Description of the Exception
      */
     public synchronized String encrypt(String str) {
         return encoder.encode(encrypt2ByteArray(str));
@@ -96,21 +102,23 @@ public class Krypto {
     public synchronized byte[] encrypt2ByteArray(String str) throws SecurityException {
         try {
             byte[] b = str.getBytes(this.charset);
-            // byte[] enc = encryptCipher.doFinal(b);
             return encryptCipher.doFinal(b);
         } catch (Exception e) {
-            LOG.error("Text konnte nicht kryptisiert werden", e);
+            LocalLog.error("Text konnte nicht kryptisiert werden", e);
             throw new SecurityException("Text konnte nicht kryptisiert werden.", e);
         }
     }
 
     /**
-     * Entschluesselt eine Zeichenkette, welche mit der Methode encrypt verschluesselt wurde.
+     * Entschluesselt eine Zeichenkette, welche mit der Methode encrypt
+     * verschluesselt wurde.
      * <p>
      * 
-     * @param str Description of the Parameter
+     * @param str
+     *            Description of the Parameter
      * @return String the encrypted string.
-     * @exception SecurityException Description of the Exception
+     * @exception SecurityException
+     *                Description of the Exception
      */
     public synchronized String decrypt(String str) throws SecurityException {
         try {
@@ -118,8 +126,8 @@ public class Krypto {
             byte[] b = decryptCipher.doFinal(dec);
             return new String(b, this.charset);
         } catch (Exception e) {
-            LOG.error("Text konnte nicht entkryptisiert werden", e);
-            throw new SecurityException("Text konnte nicht entkryptisiert werden.", e);
+            LocalLog.error("Text konnte nicht dekryptisiert werden", e);
+            throw new SecurityException("Text konnte nicht dekryptisiert werden.", e);
         }
     }
 
@@ -174,18 +182,22 @@ public class Krypto {
      * Kryptisiert einen String und liefert dazu einen Hex-String zurueck.
      * <p>
      * 
-     * @param str Der zu verschluesselnde String
-     * @return Ein String, der den kryptisierten String als Folge von Hexwerten darstellt.
+     * @param str
+     *            Der zu verschluesselnde String
+     * @return Ein String, der den kryptisierten String als Folge von Hexwerten
+     *         darstellt.
      */
     public synchronized String encrypt2Hex(String str) {
         return encryptBytes2Hex(encrypt2ByteArray(str));
     }
 
     /**
-     * Kryptisiert einen String und liefert dazu einen vereinfachten Hex-String zurueck.
+     * Kryptisiert einen String und liefert dazu einen vereinfachten Hex-String
+     * zurueck.
      * <p>
      * 
-     * @param str Der zu verschluesselnde String
+     * @param str
+     *            Der zu verschluesselnde String
      * @return Ein verkuerzte Folge von Upper-Hexwerten.
      */
     public synchronized String encrypt2SimpleHex(String str) {
@@ -193,7 +205,7 @@ public class Krypto {
     }
 
     private void appendHexPair(byte b, StringBuffer hexString) {
-        char kHexChars[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
+        char kHexChars[] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
         char highNibble = kHexChars[(b & 0xF0) >> 4];
         char lowNibble = kHexChars[b & 0x0F];
         hexString.append(highNibble);
@@ -205,7 +217,7 @@ public class Krypto {
     }
 
     private void appendHexlowNibble(byte b, StringBuffer hexString) {
-        char kHexChars[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
+        char kHexChars[] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
         char lowNibble = kHexChars[b & 0x0F];
         hexString.append(lowNibble);
     }
