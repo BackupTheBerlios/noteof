@@ -7,7 +7,6 @@ import java.util.List;
 import javax.naming.ConfigurationException;
 
 import de.iccs.util.Krypto;
-import de.iccs.util.SingletonReleaser;
 import de.iccs.util.Util;
 import de.noteof.core.exception.ActionFailedException;
 
@@ -24,10 +23,6 @@ import de.noteof.core.exception.ActionFailedException;
 public class ConfigProperty {
 
     private static CompositeConfigurationNotEof propConf = null;
-
-    static {
-        SingletonReleaser.registerSingletonClass(ConfigProperty.class);
-    }
 
     private String answerType = null;
     private String attributeTag; // = "value";
