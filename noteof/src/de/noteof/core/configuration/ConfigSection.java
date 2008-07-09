@@ -1,10 +1,10 @@
-package de.iccs.core.conf;
+package de.noteof.core.configuration;
 
 /**
  * Klasse zur Vereinheitlichung und eindeutigen Zuordnung von 'Konstanten'.
  * <p>
  * Zur Unterscheidung zwischen Vorlage und Konfiguration dienen die Typen 'Template' und 'Configuration'. <br>
- * Die übrigen Typen werden fuer den Zugriff auf die Sektionen verwendet.
+ * Die ï¿½brigen Typen werden fuer den Zugriff auf die Sektionen verwendet.
  */
 public enum ConfigSection {
 

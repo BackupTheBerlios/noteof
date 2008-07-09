@@ -41,4 +41,6 @@ public class LocalLog {
     public static void info(String additionalInfo, Exception ex) {
     }
 
+    public static void info(String additionalInfo) {
+    }
 }

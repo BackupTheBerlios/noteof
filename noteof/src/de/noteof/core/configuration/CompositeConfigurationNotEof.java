@@ -10,13 +10,13 @@ import de.noteof.core.exception.ActionFailedException;
 import de.noteof.core.logging.LocalLog;
 import de.noteof.core.util.Util;
 
-public class CompositeConfigurationIccs extends org.apache.commons.configuration.CompositeConfiguration {
+public class CompositeConfigurationNotEof extends org.apache.commons.configuration.CompositeConfiguration {
 
     public void setProperty(String key, String value) throws ActionFailedException {
         setProperty(key, value, null);
     }
 
-    public void setProperty(String key, String value, String xmlFileName) throws ActionFailedException {
+    public void setProperty(String key, String value, String xmlFileName) throws ActionFailedException  {
         Configuration anyConfig = retrieveConfiguration(key);
 
         if (null == anyConfig) {
@@ -41,7 +41,7 @@ public class CompositeConfigurationIccs extends org.apache.commons.configuration
                 config.reload();
 
             } catch (Exception ex) {
-                throw new ActionFailedException(30L, "Neu Setzen (kein Hinzufügen)", ex);
+                throw new ActionFailedException(30L, "Neu Setzen (kein Hinzufï¿½gen)", ex);
             }
         } else {
             String fileName = ConfigurationManager.getInstance().getDefaultConfigurationFile();
@@ -126,7 +126,7 @@ public class CompositeConfigurationIccs extends org.apache.commons.configuration
                         // Es gibt definitiv keine weitere Konfiguration mehr
                         // Abbrechen der Suche
                         // System.out.println(
-                        // "Die Konfiguration der iccs_master_conf.xml wurde wahrscheinlich nicht vollständig durchgeführt.\n"
+                        // "Die Konfiguration der iccs_master_conf.xml wurde wahrscheinlich nicht vollstï¿½ndig durchgefï¿½hrt.\n"
                         // +
                         // "Evtl. existieren nicht alle notwendigen Konfigurationsdateien:\n"
                         // +
@@ -137,7 +137,7 @@ public class CompositeConfigurationIccs extends org.apache.commons.configuration
                         // System.out.println("Gesuchter Parameter: " +
                         // nodeName);
                         // LOG.warn(
-                        // "Die Konfiguration der iccs_master_conf.xml wurde wahrscheinlich nicht vollständig durchgeführt.\n"
+                        // "Die Konfiguration der iccs_master_conf.xml wurde wahrscheinlich nicht vollstï¿½ndig durchgefï¿½hrt.\n"
                         // +
                         // "Evtl. existieren nicht alle notwendigen Konfigurationsdateien:\n"
                         // +

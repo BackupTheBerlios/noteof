@@ -1,12 +1,15 @@
-package de.iccs.core.conf;
+package de.noteof.core.configuration;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
 
-import org.apache.commons.configuration.ConfigurationException;
+import javax.naming.ConfigurationException;
 
-import de.iccs.api.exceptions.ActionFailedException;
-import de.iccs.logging.LOG;
-import de.iccs.util.*;
+import de.iccs.util.Krypto;
+import de.iccs.util.SingletonReleaser;
+import de.iccs.util.Util;
+import de.noteof.core.exception.ActionFailedException;
 
 /**
  * Hilfsklasse zum Auslesen und Schreiben von Werten. <br>
@@ -20,7 +23,7 @@ import de.iccs.util.*;
  */
 public class ConfigProperty {
 
-    private static CompositeConfigurationIccs propConf = null;
+    private static CompositeConfigurationNotEof propConf = null;
 
     static {
         SingletonReleaser.registerSingletonClass(ConfigProperty.class);
@@ -80,7 +83,7 @@ public class ConfigProperty {
      * Initialisierung der Konfigurationswerte
      */
     private void initPropConf() {
-        propConf = ConfigManager.getInstance().getConfiguration();
+        propConf = ConfigurationManager.getInstance().getConfiguration(); 
     }
 
     /**
@@ -524,7 +527,7 @@ public class ConfigProperty {
             }
         } catch (Throwable th) {
             LOG.error("Fehler bei Zugriff auf Index einer Option: " + optionKey, th);
-            throw new ConfigurationException("Option für Schlüssel konnte nicht gefunden werden.");
+            throw new ConfigurationException("Option fï¿½r Schlï¿½ssel konnte nicht gefunden werden.");
         }
         return -1;
     }

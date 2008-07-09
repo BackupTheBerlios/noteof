@@ -10,6 +10,8 @@ import de.noteof.core.logging.LocalLog;
 public class ConfigurationManager {
 
     private String iccsHome = null;
+    private CompositeConfigurationNotEof iccsConfiguration = new CompositeConfigurationNotEof();
+
 
     /**
      * ConfigurationManager is a Singleton...

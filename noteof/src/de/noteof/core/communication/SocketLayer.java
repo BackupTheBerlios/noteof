@@ -108,7 +108,7 @@ public class SocketLayer {
             if (socketToPartner.isConnected())
                 socketToPartner.close();
         } catch (Exception ex) {
-            LocalLog.error(ex, "Problem bei Schliessen der Verbindung zum Paul-Server.");
+            LocalLog.error("Problem bei Schliessen der Verbindung zum Paul-Server.",ex);
         }
     }
 
