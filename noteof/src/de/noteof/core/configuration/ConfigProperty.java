@@ -4,11 +4,12 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
-import javax.naming.ConfigurationException;
+import org.apache.commons.configuration.ConfigurationException;
 
-import de.iccs.util.Krypto;
-import de.iccs.util.Util;
 import de.noteof.core.exception.ActionFailedException;
+import de.noteof.core.logging.LocalLog;
+import de.noteof.core.util.Krypto;
+import de.noteof.core.util.Util;
 
 /**
  * Hilfsklasse zum Auslesen und Schreiben von Werten. <br>
@@ -78,7 +79,11 @@ public class ConfigProperty {
      * Initialisierung der Konfigurationswerte
      */
     private void initPropConf() {
-        propConf = ConfigurationManager.getInstance().getConfiguration(); 
+        try {
+        propConf = ConfigurationManager.getInstance().getConfiguration();
+        } catch (ConfigurationException cex) {
+            LocalLog.error("Gesamtkonfiguration konnte nicht geladen werden.", cex);
+        }
     }
 
     /**
@@ -91,8 +96,8 @@ public class ConfigProperty {
             try {
                 Object obj = propConf.getProperty(nodeNameTemplate + "options.option.index");
                 if (obj != null) optionCount = ((Collection)obj).size();
-            } catch (Throwable th) {
-                LOG.error("Error in initPropConf(): " + nodeNameTemplate, th);
+            } catch (Exception ex) {
+                LocalLog.error("Error in initPropConf(): " + nodeNameTemplate, ex);
             }
         }
         return optionCount;
@@ -282,7 +287,7 @@ public class ConfigProperty {
                     this.valueList = dummyList;
                 }
             } catch (Throwable th) {
-                LOG.error("Error in initPropConf(): " + nodeNameTemplate, th);
+                LocalLog.error("Error in initPropConf(): " + nodeNameTemplate, th);
             }
         }
     }
@@ -521,7 +526,7 @@ public class ConfigProperty {
                 }
             }
         } catch (Throwable th) {
-            LOG.error("Fehler bei Zugriff auf Index einer Option: " + optionKey, th);
+            LocalLog.error("Fehler bei Zugriff auf Index einer Option: " + optionKey, th);
             throw new ConfigurationException("Option f�r Schl�ssel konnte nicht gefunden werden.");
         }
         return -1;
@@ -539,7 +544,7 @@ public class ConfigProperty {
             String key = nodeNameTemplate + "options.option(" + String.valueOf(optionIndex).trim() + ")." + optionKey;
             return (String)propConf.getProperty(key);
         } catch (Exception th) {
-            LOG.error("Fehler bei Zugriff auf eine Option: " + optionKey + " Index = " + optionIndex, th);
+            LocalLog.error("Fehler bei Zugriff auf eine Option: " + optionKey + " Index = " + optionIndex, th);
             throw new ConfigurationException();
         }
     }

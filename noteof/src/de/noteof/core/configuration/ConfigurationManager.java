@@ -1,20 +1,26 @@
 package de.noteof.core.configuration;
 
 import java.io.File;
+import java.util.List;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.apache.commons.configuration.ConfigurationException;
+import org.apache.commons.configuration.XMLConfiguration;
 
 import de.iccs.core.conf.CompositeConfigurationIccs;
-import de.iccs.logging.LOG;
+import de.iccs.core.conf.ConfigSection;
 import de.noteof.core.logging.LocalLog;
 
 public class ConfigurationManager {
 
-    private String iccsHome = null;
+    private String noteofHome = null;
     private CompositeConfigurationNotEof notEofConfiguration = new CompositeConfigurationNotEof();
+    private XMLConfiguration basicConfiguration = new XMLConfiguration();
+    private String configFile = "noteof_master_conf.xml";
+    private String configFilePath;
+
 
 
     /**
@@ -24,30 +30,26 @@ public class ConfigurationManager {
     protected static ConfigurationManager configManager;
     
     private ConfigurationManager () throws ConfigurationException  {
-        LocalLog.debug("ConfigManager Initialisierung");
-
         File cfgRoot = new File(getConfigRoot());
         configFilePath = new File(cfgRoot, configFile).getAbsolutePath();
-        iccsBasicConfiguration.setFileName(configFile);
+        basicConfiguration.setFileName(configFile);
 
         LocalLog.info("ConfigManager ConfigFile: " + configFilePath);
 
         try {
-            iccsBasicConfiguration.setURL(new File(configFilePath).toURL());
+            basicConfiguration.setURL(new File(configFilePath).toURL());
         } catch (Exception ex) {
             throw new ConfigurationException(ex);
         }
 
-        LocalLog.info("ConfigManager BasePath: " + iccsBasicConfiguration.getBasePath());
-        LocalLog.info("ConfigManager FileName: " + iccsBasicConfiguration.getFileName());
-        LocalLog.info("ConfigManager URL: " + iccsBasicConfiguration.getURL());
+        LocalLog.info("ConfigManager BasePath: " + basicConfiguration.getBasePath());
+        LocalLog.info("ConfigManager FileName: " + basicConfiguration.getFileName());
+        LocalLog.info("ConfigManager URL: " + basicConfiguration.getURL());
 
         loadConfiguration(false);
-
-        LocalLog.debug("ConfigManager Initialisierung abgeschlossen");
     }
 
-    public static ConfigurationManager getInstance() {
+    public static ConfigurationManager getInstance() throws ConfigurationException {
         if (configManager == null) {
             configManager = new ConfigurationManager();
         }
@@ -67,6 +69,29 @@ public class ConfigurationManager {
 
         return configManager;
     }
+    
+    /**
+     * In Ausnahmesituationen kann es erforderlich sein, die Konfigurationsdatei(en) neu zu laden. Z.B. wenn ein neuer Wert in CompositeConfiguration generiert wurde.
+     */
+    private void loadConfiguration(boolean reload) throws ConfigurationException {
+        if (reload) {
+            notEofConfiguration = new CompositeConfigurationNotEof();
+            basicConfiguration.reload();
+        } else {
+            basicConfiguration.load();
+        }
+
+        // Liste aller XML-Konfigurationen
+        String pathName = basicConfiguration.getBasePath().replaceAll("file:", "");
+        @SuppressWarnings("unchecked")
+        List<String> xmlFileList = (List<String>)basicConfiguration.getList(ConfigSection.XML_FILE_NAMES.getName());
+        for (String fileName : xmlFileList) {
+            // XMLConfiguration additionalXMLConf = new XMLConfiguration(new File(pathName, fileName));
+            XMLConfiguration additionalXMLConf = new XMLConfiguration(pathName + fileName);
+            notEofConfiguration.addConfiguration(additionalXMLConf);
+        }
+    }
+
 
     
     /**
@@ -75,7 +100,7 @@ public class ConfigurationManager {
      *         Die Klasse {@link CompositeConfigurationIccs} ueberschreibt die Methode 'setProperty()', die zum Speichern einer geaenderten Konfiguration genutzt werden sollte.
      * @see org.apache.commons.configuration.CompositeConfiguration
      */
-    public CompositeConfigurationIccs getConfiguration() {
+    public CompositeConfigurationNotEof getConfiguration() {
         return notEofConfiguration;
     }
 
@@ -94,34 +119,34 @@ public class ConfigurationManager {
      */
     public String getIccsHome() {
         // CFGROOT als contextabhaengige Tomcat-Umgebungsvariable
-        if (iccsHome == null) {
+        if (noteofHome == null) {
             try {
-                iccsHome = (String) new InitialContext().lookup("java:comp/env/ICCS_HOME");
-                if (iccsHome != null)
-                    LocalLog.info("ICCS_HOME found as InitialContext: " + iccsHome);
+                noteofHome = (String) new InitialContext().lookup("java:comp/env/ICCS_HOME");
+                if (noteofHome != null)
+                    LocalLog.info("ICCS_HOME found as InitialContext: " + noteofHome);
             } catch (NamingException e) {
             }
         }
         // CFGROOT als VM-Umgebungsvariable (-DCFGROOT)
-        if (iccsHome == null) {
-            iccsHome = System.getProperty("ICCS_HOME");
-            if (iccsHome != null)
-                LocalLog.info("ICCS_HOME found in VM variable: " + iccsHome);
+        if (noteofHome == null) {
+            noteofHome = System.getProperty("ICCS_HOME");
+            if (noteofHome != null)
+                LocalLog.info("ICCS_HOME found in VM variable: " + noteofHome);
         }
         // ICCS_HOME als Systemvariable
-        if (iccsHome == null) {
-            iccsHome = System.getenv("ICCS_HOME");
-            if (iccsHome != null)
-                LocalLog.info("ICCS_HOME found in system variable: " + iccsHome);
+        if (noteofHome == null) {
+            noteofHome = System.getenv("ICCS_HOME");
+            if (noteofHome != null)
+                LocalLog.info("ICCS_HOME found in system variable: " + noteofHome);
         }
-        if (iccsHome == null) {
+        if (noteofHome == null) {
             throw new RuntimeException("Could not determine ICCS_HOME");
         }
-        return iccsHome;
+        return noteofHome;
     }
 
     public String getDefaultConfigurationFile() {
-        return this.getConfigRoot() + "/" + iccsConfiguration.getString("defaultConfigurationFile");
+        return this.getConfigRoot() + "/" + notEofConfiguration.getString("defaultConfigurationFile");
     }
 
     /**
