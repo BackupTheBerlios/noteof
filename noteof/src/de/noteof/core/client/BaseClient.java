@@ -6,6 +6,7 @@ import de.noteof.core.communication.BaseTimeout;
 import de.noteof.core.communication.TalkLine;
 import de.noteof.core.exception.ActionFailedException;
 import de.noteof.core.interfaces.Timeout;
+import de.noteof.core.service.BaseService;
 
 /**
  * From this class every other client must be extended. <br>
@@ -27,12 +28,12 @@ public abstract class BaseClient {
 
     /**
      * The server decides which service is the compatible one to this client by
-     * using the type name.
+     * using the classname. <br>
+     * Every Client which is derived from BaseClient must implement this method.
      * 
-     * @return Type name must be unique. <br>
-     *         One Simple practice is to deliver the own class name I would say.
+     * @return The service class which is matching with the client.
      */
-    protected abstract String type();
+    protected abstract Class<BaseService> service();
 
     /**
      * Standard construction of the clients. <br>
@@ -112,7 +113,7 @@ public abstract class BaseClient {
      * this client.
      */
     private final void registerAtServer(TalkLine talkLine, Timeout timeout, String... args) throws ActionFailedException {
-        ServerRegistration registration = new ServerRegistration(type(), talkLine, timeout.getMillisConnection(), args);
+        ServerRegistration registration = new ServerRegistration(service(), talkLine, timeout.getMillisConnection(), args);
         connectedWithService = registration.isLinkedToService();
         serviceId = registration.getServiceId();
     }

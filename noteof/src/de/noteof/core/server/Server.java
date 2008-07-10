@@ -3,12 +3,15 @@ package de.noteof.core.server;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.HashMap;
+import java.util.Map;
 
 import de.noteof.core.communication.TalkLine;
 import de.noteof.core.configuration.ConfigurationManager;
 import de.noteof.core.enumeration.ServerTag;
 import de.noteof.core.exception.ActionFailedException;
 import de.noteof.core.logging.LocalLog;
+import de.noteof.core.service.BaseService;
 
 /**
  * The central server which has some different tasks: <br>
@@ -27,6 +30,7 @@ public class Server implements Runnable {
     private static Thread serverThread;
     private boolean stop = false;
     private static ServerSocket serverSocket;
+    private static Map allServiceMaps;
 
     public static Server getInstance() {
         if (null == server) {
@@ -48,6 +52,12 @@ public class Server implements Runnable {
         } catch (IOException ex) {
             throw new ActionFailedException(100L, "Socket Initialisierung mit Port: " + port);
         }
+
+        // Initialization of map for storing serviceLists
+        // the typeNames of clients are the key to assign and find the matching
+        // service to the client.
+        allServiceMaps = new HashMap<String, Map<String, BaseService>>();
+
         serverThread = new Thread(server);
         serverThread.start();
     }
@@ -85,16 +95,35 @@ public class Server implements Runnable {
         String clientTypeName = talkLine.requestTo(ServerTag.REQ_TYPE_NAME, ServerTag.RESP_TYPE_NAME);
 
         // next step here...
-        dispatchClientToService(clientSocket, deliveredServiceId, clientTypeName);
+        assignServiceToClient(clientSocket, deliveredServiceId, clientTypeName);
     }
 
     /*
      * Second step: Look for matching service by existing serviceId and
      * clientTypeName
      */
-    private void dispatchClientToService(Socket clientSocket, String deliveredServiceId, String clientTypeName) throws ActionFailedException {
+    @SuppressWarnings("unchecked")
+    private void assignServiceToClient(Socket clientSocket, String deliveredServiceId, String clientTypeName) throws ActionFailedException {
         // basis service bekommt eigene talkline, weil individuell timeouts (zb
         // applicationtimeout )
+
+        // Search for Map which contains the Map of the clients with the same
+        // clientTypeName
+        // Then search in the clients Map for the service which has the same
+        // deliveredServiceId
+        BaseService service = null;
+        if (allServiceMaps.containsKey(clientTypeName)) {
+            Map<String, BaseService> serviceMap = (Map<String, BaseService>) allServiceMaps.get(clientTypeName);
+            if (serviceMap.containsKey(deliveredServiceId)) {
+                service = serviceMap.get(deliveredServiceId);
+            }
+        }
+
+        // not found?
+        // create service
+        if (null == service) {
+
+        }
 
         // suche nach serviceid und clienttype
         // evtl. eine eigene Liste mit den existierenden clienttypes?

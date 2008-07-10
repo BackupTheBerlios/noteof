@@ -3,6 +3,7 @@ package de.noteof.core.client;
 import de.noteof.core.communication.TalkLine;
 import de.noteof.core.enumeration.ServerTag;
 import de.noteof.core.exception.ActionFailedException;
+import de.noteof.core.service.BaseService;
 import de.noteof.core.util.ArgsParser;
 import de.noteof.core.util.Util;
 
@@ -31,11 +32,11 @@ public class ServerRegistration {
      *            completed.
      * @throws ActionFailedException
      */
-    public ServerRegistration(String clientTypeName, TalkLine messageLayer, int timeOutMillis, String... args) throws ActionFailedException {
+    public ServerRegistration(Class service, TalkLine messageLayer, int timeOutMillis, String... args) throws ActionFailedException {
         Registration registration = new Registration();
         Thread registrationThread = new Thread(registration);
         registrationThread.run();
-        serviceId = registration.register(clientTypeName, messageLayer, args);
+        serviceId = registration.register(service, messageLayer, args);
 
         // The registration hasn't every time of the world...
         long endTime = System.currentTimeMillis() + timeOutMillis;
@@ -92,7 +93,7 @@ public class ServerRegistration {
         }
 
         // Register at the server and ask for a service
-        protected String register(String clientTypeName, TalkLine talkLine, String... args) throws ActionFailedException {
+        protected String register(Class<BaseService> service, TalkLine talkLine, String... args) throws ActionFailedException {
             // First step: Say hello to the server
             if (!Util.equalsToString(talkLine.requestTo(ServerTag.REQ_REGISTRATION, ServerTag.RESP_REGISTRATION), ServerTag.VAL_OK.name())) {
                 throw new ActionFailedException(22L, "Anmeldung vom Server abgelehnt.");
@@ -112,7 +113,10 @@ public class ServerRegistration {
             // Third step: Ask for a service
             // It is not guaranteed that the service number is the same as
             // delivered by args
-            talkLine.awaitRequestAnswerImmediate(ServerTag.REQ_TYPE_NAME, ServerTag.RESP_TYPE_NAME, clientTypeName);
+            String serviceClassName = service.getCanonicalName();
+            if (Util.isEmpty(serviceClassName))
+                serviceClassName = service.getName();
+            talkLine.awaitRequestAnswerImmediate(ServerTag.REQ_TYPE_NAME, ServerTag.RESP_TYPE_NAME, serviceClassName);
             String serviceId = talkLine.requestTo(ServerTag.REQ_SERVICE, ServerTag.RESP_SERVICE);
             if (Util.isEmpty(serviceId)) {
                 throw new ActionFailedException(22L, "Server hat dem Client keinen Service zugeordnet.");

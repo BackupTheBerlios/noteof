@@ -62,6 +62,10 @@ public class Errors {
 
         // Central !EOF server
         errorList.put(100L, "Initialisierung des zentralen Servers ist fehlgeschlagen.");
+
+        // Services
+        errorList.put(150L, "Service konnte nicht dynamisch geladen werden.");
+
     }
 
     /*

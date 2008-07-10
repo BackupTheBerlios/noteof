@@ -163,7 +163,8 @@ public class ConfigurationManager {
     }
 
     /**
-     * @return Der zentrale Konfigurationspfad (CFGROOT bzw. ICCS_HOME)
+     * @return The central configuration path of the server application (CFGROOT
+     *         bzw. NOTEOF_HOME) like $NOTEOF_HOME/conf
      */
     public String getConfigRoot() {
         return new File(getNotEofHome(), "conf").getAbsolutePath();

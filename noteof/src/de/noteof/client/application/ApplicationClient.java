@@ -5,6 +5,7 @@ import java.net.Socket;
 import de.noteof.core.client.BaseClient;
 import de.noteof.core.exception.ActionFailedException;
 import de.noteof.core.interfaces.Timeout;
+import de.noteof.core.service.BaseService;
 
 /**
  * Use this class if you want to integrate your own application into the central
@@ -66,8 +67,8 @@ public class ApplicationClient extends BaseClient {
     }
 
     @Override
-    protected String type() {
-        return this.getClass().getName();
+    protected Class<BaseService> service() {
+        return BaseService.class;
     }
 
     public void blabla() throws ActionFailedException {
