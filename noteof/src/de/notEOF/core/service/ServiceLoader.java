@@ -4,6 +4,7 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.ArrayList;
 
 import de.notEOF.core.configuration.ConfigurationManager;
@@ -19,6 +20,22 @@ import de.notEOF.core.logging.LocalLog;
  * 
  */
 public class ServiceLoader {
+
+    @SuppressWarnings("unchecked")
+    public synchronized static Class<BaseService> getServiceClass(String className) throws ActionFailedException {
+        ClassLoader classLoader = new URLClassLoader(getLibs(), ServiceLoader.class.getClassLoader());
+        try {
+            Class<BaseService> classBaseService = (Class<BaseService>) Class.forName(className, true, classLoader);
+            BaseService y = classBaseService.cast(getLibs());
+            y = new BaseService();
+            return classBaseService;
+
+        } catch (ClassNotFoundException e) {
+            // TODO Auto-generated catch block
+            throw new ActionFailedException(1, "eins");
+        }
+        return null;
+    }
 
     protected static URL[] getLibs() throws ActionFailedException {
         ArrayList<URL> urls = new ArrayList<URL>();

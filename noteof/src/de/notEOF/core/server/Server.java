@@ -30,7 +30,7 @@ public class Server implements Runnable {
     private static Thread serverThread;
     private boolean stop = false;
     private static ServerSocket serverSocket;
-    private static Map allServiceMaps;
+    private static Map<String, Map<String, BaseService>> allServiceMaps;
 
     public static Server getInstance() {
         if (null == server) {
@@ -102,7 +102,6 @@ public class Server implements Runnable {
      * Second step: Look for matching service by existing serviceId and
      * clientTypeName
      */
-    @SuppressWarnings("unchecked")
     private void assignServiceToClient(Socket clientSocket, String deliveredServiceId, String clientTypeName) throws ActionFailedException {
         // basis service bekommt eigene talkline, weil individuell timeouts (zb
         // applicationtimeout )
