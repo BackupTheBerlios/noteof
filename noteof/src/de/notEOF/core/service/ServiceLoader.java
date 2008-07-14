@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import de.notEOF.core.configuration.ConfigurationManager;
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.logging.LocalLog;
+import de.notEOF.core.util.Util;
 
 /**
  * Dynamically loads Objects of type BaseService.<br>
@@ -22,19 +23,25 @@ import de.notEOF.core.logging.LocalLog;
 public class ServiceLoader {
 
     @SuppressWarnings("unchecked")
-    public synchronized static Class<BaseService> getServiceClass(String className) throws ActionFailedException {
+    public synchronized static BaseService getServiceObject(String className) throws ActionFailedException {
+        if (Util.isEmpty(className))
+            throw new ActionFailedException(150L, "Fehlende Angabe des Klassennamen.");
+
         ClassLoader classLoader = new URLClassLoader(getLibs(), ServiceLoader.class.getClassLoader());
         try {
             Class<BaseService> classBaseService = (Class<BaseService>) Class.forName(className, true, classLoader);
-            BaseService y = classBaseService.cast(getLibs());
-            y = new BaseService();
-            return classBaseService;
+            BaseService newService;
+            newService = classBaseService.newInstance();
+            return newService;
 
         } catch (ClassNotFoundException e) {
-            // TODO Auto-generated catch block
-            throw new ActionFailedException(1, "eins");
+            throw new ActionFailedException(150L,
+                    "Unbekannte Service-Klasse oder Klasse nicht gefunden. Bibliotheken, CLASS_PATH, NOTEOF_HOME-Umgebungsvariable prüfen: " + className);
+        } catch (InstantiationException e) {
+            throw new ActionFailedException(150L, "Es konnte keine Instanz für die Service-Klasse gebildet werden: " + className);
+        } catch (IllegalAccessException e) {
+            throw new ActionFailedException(150L, "Zugriff auf Konstruktor der Klasse nicht möglich: " + className);
         }
-        return null;
     }
 
     protected static URL[] getLibs() throws ActionFailedException {

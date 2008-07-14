@@ -2,10 +2,10 @@ package de.notEOF.application.client;
 
 import java.net.Socket;
 
+import de.notEOF.application.service.ApplicationService;
 import de.notEOF.core.client.BaseClient;
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.interfaces.Timeout;
-import de.notEOF.core.service.BaseService;
 
 /**
  * Use this class if you want to integrate your own application into the central
@@ -67,8 +67,8 @@ public class ApplicationClient extends BaseClient {
     }
 
     @Override
-    protected Class<BaseService> service() {
-        return BaseService.class;
+    protected Class<?> service() {
+        return ApplicationService.class;
     }
 
     public void blabla() throws ActionFailedException {
@@ -76,10 +76,5 @@ public class ApplicationClient extends BaseClient {
         // der superklasse
         close();
         getTalkLine().requestTo(ApplicationTag.REQ_CONNECT_ADDITIONAL_NAME, ApplicationTag.RESP_CONNECT_ADDITIONAL_NAME);
-    }
-
-    @Override
-    public void connectToService(Object... anyObject) {
-        // TODO Auto-generated method stub
     }
 }

@@ -9,5 +9,4 @@ public enum ApplicationTag {
     RESP_CONNECT_ADDITIONAL_NAME(),
     REQ_START_CLEARANCE(),
     RESP_START_CLEARANCE();
-
 }

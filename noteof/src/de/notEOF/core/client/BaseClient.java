@@ -14,8 +14,10 @@ import de.notEOF.core.service.BaseService;
  * defined or implemented here.
  * <p>
  * It is highly recommended that the derived class at very first step calls the
- * constructor of BaseClient. I would say this should be the first line in the
- * constructor of the derived class.
+ * constructor of BaseClient. The basic constructors establish a connection with
+ * the matching service. Not more. All communication acts between client and
+ * service are oriented to the very specialized tasks of the derived clients and
+ * must be individual implemented by developers.
  * 
  * @author Dirk
  * 
@@ -24,7 +26,7 @@ public abstract class BaseClient {
 
     private TalkLine talkLine;
     private String serviceId;
-    private boolean connectedWithService = false;
+    private boolean linkedToService = false;
 
     /**
      * The server decides which service is the compatible one to this client by
@@ -33,12 +35,18 @@ public abstract class BaseClient {
      * 
      * @return The service class which is matching with the client.
      */
-    protected abstract Class<BaseService> service();
+    protected abstract Class<?> service();
 
     /**
      * Standard construction of the clients. <br>
      * At first they should initialize the communication with server and
-     * service.
+     * service. Within the super constructors of BaseClient the connection with
+     * server and service will be established.
+     * 
+     * @throws ActionFailedException
+     *             If the connection with server and service couldn't be
+     *             established successfull an ActionFailedException will be
+     *             thrown.
      */
     public BaseClient(Socket socketToServer, Timeout timeout, String... args) throws ActionFailedException {
         if (null == timeout) {
@@ -51,7 +59,13 @@ public abstract class BaseClient {
     /**
      * Standard construction of the clients. <br>
      * At first they should initialize the communication with server and
-     * service.
+     * service. Within the super constructors of BaseClient the connection with
+     * server and service will be established.
+     * 
+     * @throws ActionFailedException
+     *             If the connection with server and service couldn't be
+     *             established successfull an ActionFailedException will be
+     *             thrown.
      */
     public BaseClient(String ip, int port, Timeout timeout, String... args) throws ActionFailedException {
         if (null == timeout) {
@@ -66,8 +80,8 @@ public abstract class BaseClient {
      * 
      * @return true or false...
      */
-    public boolean isConnectedWithService() {
-        return connectedWithService;
+    public boolean isLinkedToService() {
+        return linkedToService;
     }
 
     /**
@@ -99,22 +113,21 @@ public abstract class BaseClient {
         talkLine.close();
     }
 
-    // /**
-    // * Every client has to exercise a handshake with the service which the
-    // * server has created after the clients registration. <br>
-    // * The connections between client and service and the establishing of them
-    // * can be very different.
-    // */
-    // public abstract void connectToService(Object... anyObject);
-
     /*
      * When calling this method the client registers itself at the server. After
      * a successfull registration at server side exists a service espacialy for
      * this client.
      */
+    @SuppressWarnings("unchecked")
     private final void registerAtServer(TalkLine talkLine, Timeout timeout, String... args) throws ActionFailedException {
-        ServerRegistration registration = new ServerRegistration(service(), talkLine, timeout.getMillisConnection(), args);
-        connectedWithService = registration.isLinkedToService();
+        Class<BaseService> serviceCast;
+        try {
+            serviceCast = (Class<BaseService>) service();
+        } catch (Exception ex) {
+            throw new ActionFailedException(22L, "Casten einer Klasse auf Klasse BaseService ist fehlgeschlagen: " + service().getName());
+        }
+        ServerRegistration registration = new ServerRegistration((Class<BaseService>) serviceCast, talkLine, timeout.getMillisConnection(), args);
+        linkedToService = registration.isLinkedToService();
         serviceId = registration.getServiceId();
     }
 }
