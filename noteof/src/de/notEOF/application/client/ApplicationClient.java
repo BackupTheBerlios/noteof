@@ -1,4 +1,4 @@
-package de.notEOF.client.application;
+package de.notEOF.application.client;
 
 import java.net.Socket;
 
@@ -78,4 +78,8 @@ public class ApplicationClient extends BaseClient {
         getTalkLine().requestTo(ApplicationTag.REQ_CONNECT_ADDITIONAL_NAME, ApplicationTag.RESP_CONNECT_ADDITIONAL_NAME);
     }
 
+    @Override
+    public void connectToService(Object... anyObject) {
+        // TODO Auto-generated method stub
+    }
 }

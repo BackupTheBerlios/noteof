@@ -1,4 +1,4 @@
-package de.notEOF.client.application;
+package de.notEOF.application.client;
 
 import de.notEOF.core.communication.BaseTimeout;
 

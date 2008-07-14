@@ -1,4 +1,4 @@
-package de.notEOF.client.application;
+package de.notEOF.application.client;
 
 public enum ApplicationTag {
     REQ_CONNECT_INSTANCE_NAME(),
