@@ -65,6 +65,7 @@ public class Errors {
 
         // Services
         errorList.put(150L, "Service konnte nicht dynamisch geladen werden.");
+        errorList.put(151L, "Service kennt empfangene Nachricht nicht.");
 
     }
 

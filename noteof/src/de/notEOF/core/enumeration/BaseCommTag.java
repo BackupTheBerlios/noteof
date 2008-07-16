@@ -1,6 +1,6 @@
 package de.notEOF.core.enumeration;
 
-public enum ServerTag {
+public enum BaseCommTag {
 
     // Header for registration at the server
     REQ_REGISTRATION(),
@@ -15,7 +15,14 @@ public enum ServerTag {
     REQ_SERVICE(),
     RESP_SERVICE(),
 
-    // Values
-    VAL_OK()
+    // Header for global communication acts
+    REQ_LIVE_SIGN(),
+    RESP_LIVE_SIGN(),
+    REQ_STOP(),
+    RESP_STOP(),
 
+    // Values
+    VAL_OK(),
+    VAL_FALSE(),
+    VAL_STOP();
 }

@@ -21,7 +21,7 @@ public class ApplicationService extends BaseService {
 
     @SuppressWarnings("unchecked")
     @Override
-    protected void handleMsg(Enum receivedEnum) {
+    protected void processMsg(Enum receivedEnum) {
         // TODO Auto-generated method stub
         String bla = receivedEnum.name();
     }

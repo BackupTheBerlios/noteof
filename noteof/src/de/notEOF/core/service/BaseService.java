@@ -4,8 +4,11 @@ import java.net.Socket;
 
 import de.notEOF.core.communication.BaseTimeout;
 import de.notEOF.core.communication.TalkLine;
+import de.notEOF.core.constants.NotEOFConstants;
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.interfaces.Timeout;
+import de.notEOF.core.logging.LocalLog;
+import de.notEOF.core.util.Util;
 
 /**
  * Basic class for every !EOF Service.
@@ -24,6 +27,7 @@ public abstract class BaseService implements Runnable {
     private String serviceId;
     private boolean connectedWithClient = false;
     private TalkLine talkLine;
+    private boolean stop = false;
 
     /**
      * If you don't know what to do with the constructor of your derived class -
@@ -50,29 +54,52 @@ public abstract class BaseService implements Runnable {
         return serviceId;
     }
 
+    public void stopService() {
+        stop = true;
+    }
+
     @SuppressWarnings("unchecked")
     public void run() {
-        try {
-            String msg = talkLine.readMsg();
-
-            // Lifetime abarbeiten
-
-            // Stop vom Client verarbeiten
-
-            // Weiterreichen der message als enum an abgeleitete Klasse
-            Class<Enum> enumClass = (Class<Enum>) getCommunicationTags();
+        long lastLifeSign = System.currentTimeMillis() + NotEOFConstants.LIFE_TIME_INTERVAL;
+        // TODO: Nochmal überlegen, ob hier der Wert nicht größer sein muss, als
+        // beinm client
+        while (!stop) {
             try {
-                validateMsgToEnum(enumClass, msg);
-            } catch (ActionFailedException afx) {
-                // TODO Fehler abfangen, wenn Nachricht nicht auf Enum gemappt
-                // werden kann
-                // --> Undefined Msg for this service ....
-            }
-            handleMsg(Enum.valueOf(enumClass, msg));
+                String msg = talkLine.readMsgTimedOut(NotEOFConstants.LIFE_TIME_INTERVAL);
 
-        } catch (ActionFailedException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+                // Check if the lifetime hasn't send longer than allowed
+                if (Util.isEmpty(msg) && lastLifeSign < System.currentTimeMillis()) {
+                    // TODO
+                    // Wenn msg leer, dann Service stoppen, weil lifesigen nicht
+                    // eingetroffen ist.
+                    // Wenn msg nicht leer, lifesign inkrementieren, da jede msg
+                    // wie ein Lebenszeichen ist.
+                }
+
+                // Some messages are valid for every service and must be accept
+                // by
+                // service.
+                // Typical events like stop, lifetime, etc. are processed here.
+
+                // Client sends lifetime event
+
+                // Client sends stop signal
+
+                // The rest of messages is client/service specific and must be
+                // processed in the method handleMsg() which must be implemented
+                // individual in every service.
+                Class<Enum> enumClass = (Class<Enum>) getCommunicationTags();
+                try {
+                    validateMsgToEnum(enumClass, msg);
+                } catch (ActionFailedException afx) {
+                    LocalLog.error("Mapping der Nachricht auf Enum.", afx);
+                }
+                processMsg(Enum.valueOf(enumClass, msg));
+
+                lastLifeSign = System.currentTimeMillis() + NotEOFConstants.LIFE_TIME_INTERVAL;
+            } catch (ActionFailedException afx) {
+                LocalLog.error("Zentrale Entgegennahme von Client-Nachrichten im Service", afx);
+            }
         }
     }
 
@@ -80,15 +107,29 @@ public abstract class BaseService implements Runnable {
     private void validateMsgToEnum(Class<Enum> enumClass, String msg) throws ActionFailedException {
         try {
             Enum.valueOf(enumClass, msg);
-        } catch (IllegalArgumentException ix) {
-            // TODO
-        } catch (NullPointerException nx) {
-            // TODO
+        } catch (Exception ex) {
+            throw new ActionFailedException(151L, "Empfangene Nachricht: " + msg);
         }
     }
 
+    /**
+     * Every specialized client/service has it's own Enum which defines the
+     * constant tags. This method is the reasaon why there mustn't be more than
+     * one Enum(class) for every client/server solution. <br>
+     * The developer implements this method in the simple manner that he returns
+     * his specialized Enum class.<br>
+     * Sample: return MySpecialTag.class();
+     * 
+     * @return
+     */
     protected abstract Class<?> getCommunicationTags();
 
+    /**
+     * This abstract method is called by the BaseService class. Here messages
+     * must be processed which are specific for the client and the service.
+     * 
+     * @param incomingMsgEnum
+     */
     @SuppressWarnings("unchecked")
-    protected abstract void handleMsg(Enum incomingMsgEnum);
+    protected abstract void processMsg(Enum incomingMsgEnum);
 }

@@ -8,7 +8,7 @@ import java.util.Map;
 
 import de.notEOF.core.communication.TalkLine;
 import de.notEOF.core.configuration.ConfigurationManager;
-import de.notEOF.core.enumeration.ServerTag;
+import de.notEOF.core.enumeration.BaseCommTag;
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.logging.LocalLog;
 import de.notEOF.core.service.BaseService;
@@ -88,11 +88,11 @@ public class Server implements Runnable {
     private void acceptClient(Socket clientSocket) throws ActionFailedException {
         TalkLine talkLine = new TalkLine(clientSocket, 0);
         // Client asks for registration
-        talkLine.awaitRequestAnswerImmediate(ServerTag.REQ_REGISTRATION, ServerTag.RESP_REGISTRATION, ServerTag.VAL_OK.name());
+        talkLine.awaitRequestAnswerImmediate(BaseCommTag.REQ_REGISTRATION, BaseCommTag.RESP_REGISTRATION, BaseCommTag.VAL_OK.name());
 
         // server asks for perhaps existing service id
-        String deliveredServiceId = talkLine.requestTo(ServerTag.REQ_SERVICE_ID, ServerTag.RESP_SERVICE_ID);
-        String clientTypeName = talkLine.requestTo(ServerTag.REQ_TYPE_NAME, ServerTag.RESP_TYPE_NAME);
+        String deliveredServiceId = talkLine.requestTo(BaseCommTag.REQ_SERVICE_ID, BaseCommTag.RESP_SERVICE_ID);
+        String clientTypeName = talkLine.requestTo(BaseCommTag.REQ_TYPE_NAME, BaseCommTag.RESP_TYPE_NAME);
 
         // next step here...
         assignServiceToClient(clientSocket, deliveredServiceId, clientTypeName);

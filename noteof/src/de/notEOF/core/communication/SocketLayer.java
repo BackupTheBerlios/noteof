@@ -7,7 +7,6 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.SocketException;
 
-import de.notEOF.core.enumeration.CommTag;
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.logging.LocalLog;
 import de.notEOF.core.util.Util;
@@ -47,21 +46,13 @@ public class SocketLayer {
 
     protected synchronized void awaitPartnerRequest(String expectedRequest) throws ActionFailedException {
         String msg = readMsg();
-        // evtl. liegt noch ein altes bla vor...
-        if (!Util.isEmpty(msg) && msg.equalsIgnoreCase(CommTag.COMM_IGNORE_MSG.name()))
-            readMsg();
         if (!msg.equalsIgnoreCase(expectedRequest)) {
-            if (msg.equalsIgnoreCase(CommTag.INFO_ERROR.name())) {
-                throw new ActionFailedException(21, "Erwartet: " + expectedRequest + "; Empfangen: " + CommTag.INFO_ERROR.name());
-            } else {
-                throw new ActionFailedException(21, "Erwartet: " + expectedRequest + "; Empfangen: " + msg);
-            }
+            throw new ActionFailedException(21, "Erwartet: " + expectedRequest + "; Empfangen: " + msg);
         }
     }
 
     protected synchronized String readMsg() throws ActionFailedException {
         String msg = "";
-
         try {
             if (null == bufferedReader)
                 bufferedReader = new BufferedReader(new InputStreamReader(socketToPartner.getInputStream()));
