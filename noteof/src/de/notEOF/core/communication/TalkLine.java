@@ -2,8 +2,6 @@ package de.notEOF.core.communication;
 
 import java.net.Socket;
 
-import de.notEOF.core.constants.NotEOFConstants;
-import de.notEOF.core.enumeration.BaseCommTag;
 import de.notEOF.core.exception.ActionFailedException;
 
 /**
@@ -18,7 +16,6 @@ import de.notEOF.core.exception.ActionFailedException;
 public class TalkLine {
 
     private SocketLayer socketLayer;
-    private LifeTimer lifeTimer;
 
     /**
      * Construction of a new notEOF communication (normally with a client) using
@@ -41,12 +38,6 @@ public class TalkLine {
             socketLayer = new SocketLayer(socketToPartner);
             if (0 < timeOutMillis)
                 socketLayer.setTimeOut(timeOutMillis);
-
-            // Create class which sends lifetime signs and put it into the
-            // thread which is designed for.
-            lifeTimer = new LifeTimer();
-            Thread threadLifeTimer = new Thread(lifeTimer);
-            threadLifeTimer.start();
 
         } catch (Exception ex) {
             throw new ActionFailedException(10L, ex);
@@ -232,58 +223,18 @@ public class TalkLine {
     }
 
     /**
-     * Marks if the service told something like 'stop' to the LifeTimer when he
-     * sent the lifesign.
+     * Activates the system for watching lifesigns between the communication
+     * partners.
      * 
-     * @return false if the service don't wants to stop the client.
+     * @param asClient
+     *            Please set this to TRUE if the class which uses TalkLine is a
+     *            client and to FALSE if it is a service. <br>
+     *            If this parameter is null, the system will be started with
+     *            special logic for service. <br>
+     *            Please consider that the system must be used in a correct
+     *            manner for client or service requirements.
      */
-    public boolean stoppedByService() {
-        return lifeTimer.stoppedByService();
-    }
-
-    /*
-     * The TalkLine send a lifesign to the service every 30 seconds.
-     */
-    private class LifeTimer implements Runnable {
-
-        private long nextLifeSign = System.currentTimeMillis() + NotEOFConstants.LIFE_TIME_INTERVAL;
-        private boolean stopped = false;
-        private boolean stoppedByService = false;
-
-        // Marks if the service told something like 'stop' to the client when
-        // this sent the lifesign.
-        public boolean stoppedByService() {
-            return stoppedByService;
-        }
-
-        public void run() {
-            while (!stopped) {
-                try {
-                    Thread.sleep(5000);
-                    sendLiveSign();
-                } catch (InterruptedException iex) {
-                    stopped = true;
-                } catch (Exception ix) {
-                }
-            }
-        }
-
-        /*
-         * Send a special request to server. This messages is a hint for the
-         * service that it's client is alive. The response from the service also
-         * shows that the service is alive to. Additional this communication act
-         * is used to find out if the service wants the client to stop.
-         */
-        protected synchronized void sendLiveSign() throws ActionFailedException {
-            if (isConnected() && nextLifeSign < System.currentTimeMillis()) {
-                if (BaseCommTag.VAL_STOP.name().equalsIgnoreCase(requestTo(BaseCommTag.REQ_LIVE_SIGN, BaseCommTag.RESP_LIVE_SIGN))) {
-                    stoppedByService = true;
-                    stopped = true;
-                } else {
-                    // service ignored the lifesign
-                    nextLifeSign = System.currentTimeMillis() + NotEOFConstants.LIFE_TIME_INTERVAL;
-                }
-            }
-        }
+    public void activateLifeSignSystem(Boolean asClient) {
+        socketLayer.activateLifeSignSystem(asClient);
     }
 }

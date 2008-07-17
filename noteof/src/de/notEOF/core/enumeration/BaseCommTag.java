@@ -16,8 +16,8 @@ public enum BaseCommTag {
     RESP_SERVICE(),
 
     // Header for global communication acts
-    REQ_LIVE_SIGN(),
-    RESP_LIVE_SIGN(),
+    REQ_LIFE_SIGN(),
+    RESP_LIFE_SIGN(),
     REQ_STOP(),
     RESP_STOP(),
 

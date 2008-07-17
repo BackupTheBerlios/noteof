@@ -2,6 +2,7 @@ package de.notEOF.core.service;
 
 import java.net.Socket;
 
+import de.notEOF.core.client.BaseClient;
 import de.notEOF.core.communication.BaseTimeout;
 import de.notEOF.core.communication.TalkLine;
 import de.notEOF.core.constants.NotEOFConstants;
@@ -28,6 +29,7 @@ public abstract class BaseService implements Runnable {
     private boolean connectedWithClient = false;
     private TalkLine talkLine;
     private boolean stop = false;
+    private long nextLifeSign;
 
     /**
      * If you don't know what to do with the constructor of your derived class -
@@ -58,30 +60,40 @@ public abstract class BaseService implements Runnable {
         stop = true;
     }
 
+    /**
+     * Activates the LifeSignSystem to ensure that the client is alive. <br>
+     * When the system is activated the service awaits that it's client sends
+     * messages within a hardly defined time in the class
+     * {@link NotEOFConstants}.<br>
+     * If the LifeSignSystem is activated for the service, it is very
+     * recommendable to activate it for every client which uses this type of
+     * service too!
+     * 
+     * @see BaseClient
+     * @see NotEOFConstants
+     */
+    public void activateLifeSignSystem() {
+        talkLine.activateLifeSignSystem(false);
+    }
+
     @SuppressWarnings("unchecked")
     public void run() {
-        long lastLifeSign = System.currentTimeMillis() + NotEOFConstants.LIFE_TIME_INTERVAL;
-        // TODO: Nochmal überlegen, ob hier der Wert nicht größer sein muss, als
-        // beinm client
         while (!stop) {
             try {
-                String msg = talkLine.readMsgTimedOut(NotEOFConstants.LIFE_TIME_INTERVAL);
+                String msg = talkLine.readMsgTimedOut(NotEOFConstants.LIFE_TIME_INTERVAL_SERVICE);
 
                 // Check if the lifetime hasn't send longer than allowed
-                if (Util.isEmpty(msg) && lastLifeSign < System.currentTimeMillis()) {
-                    // TODO
-                    // Wenn msg leer, dann Service stoppen, weil lifesigen nicht
-                    // eingetroffen ist.
-                    // Wenn msg nicht leer, lifesign inkrementieren, da jede msg
-                    // wie ein Lebenszeichen ist.
+                // or if any other messages came within the max. allowed time.
+                if (Util.isEmpty(msg) && nextLifeSign < System.currentTimeMillis()) {
+                    // no message within the lifetime interval
+                    // stop service
+                    stop = true;
+                    break;
                 }
 
                 // Some messages are valid for every service and must be accept
-                // by
-                // service.
-                // Typical events like stop, lifetime, etc. are processed here.
-
-                // Client sends lifetime event
+                // by them.
+                // Typical events like stop etc. are processed here.
 
                 // Client sends stop signal
 
@@ -96,10 +108,16 @@ public abstract class BaseService implements Runnable {
                 }
                 processMsg(Enum.valueOf(enumClass, msg));
 
-                lastLifeSign = System.currentTimeMillis() + NotEOFConstants.LIFE_TIME_INTERVAL;
             } catch (ActionFailedException afx) {
                 LocalLog.error("Zentrale Entgegennahme von Client-Nachrichten im Service", afx);
             }
+        }
+
+        // close socket to client
+        try {
+            talkLine.close();
+        } catch (Exception ex) {
+            LocalLog.warn("Verbindung zum Client konnte nicht geschlossen werden. Evtl. bestand zu diesem Zeitpunkt keien Verbindung (mehr).", ex);
         }
     }
 

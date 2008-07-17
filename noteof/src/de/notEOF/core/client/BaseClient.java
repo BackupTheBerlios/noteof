@@ -113,6 +113,18 @@ public abstract class BaseClient {
         talkLine.close();
     }
 
+    /**
+     * Activates the LifeSignSystem.<br>
+     * When the system is activated the client periodicaly sends lifesigns to
+     * the service when he has nothing to do. <br>
+     * So the service is informed that the client is alive. It is only
+     * meaningful to do this if for the type of service which the client is
+     * bounded to, is the system activated too.
+     */
+    public void activateLifeSignSystem() {
+        talkLine.activateLifeSignSystem(true);
+    }
+
     /*
      * When calling this method the client registers itself at the server. After
      * a successfull registration at server side exists a service espacialy for
