@@ -2,8 +2,8 @@ package de.notEOF.application.service;
 
 import java.net.Socket;
 
-import de.notEOF.application.client.ApplicationTag;
 import de.notEOF.application.client.ApplicationTimeout;
+import de.notEOF.application.enumeration.ApplicationTag;
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.service.BaseService;
 

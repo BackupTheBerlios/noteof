@@ -5,7 +5,7 @@ import java.net.Socket;
 import de.notEOF.core.client.BaseClient;
 import de.notEOF.core.communication.BaseTimeout;
 import de.notEOF.core.communication.TalkLine;
-import de.notEOF.core.constants.NotEOFConstants;
+import de.notEOF.core.constant.NotEOFConstants;
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.interfaces.Timeout;
 import de.notEOF.core.logging.LocalLog;

@@ -1,4 +1,4 @@
-package de.notEOF.core.constants;
+package de.notEOF.core.constant;
 
 /**
  * Global constant definitions which are used from miscellaneous core classes of

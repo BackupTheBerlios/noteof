@@ -2,6 +2,7 @@ package de.notEOF.application.client;
 
 import java.net.Socket;
 
+import de.notEOF.application.enumeration.ApplicationTag;
 import de.notEOF.application.service.ApplicationService;
 import de.notEOF.core.client.BaseClient;
 import de.notEOF.core.exception.ActionFailedException;

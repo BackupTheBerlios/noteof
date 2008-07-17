@@ -7,7 +7,7 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.SocketException;
 
-import de.notEOF.core.constants.NotEOFConstants;
+import de.notEOF.core.constant.NotEOFConstants;
 import de.notEOF.core.enumeration.BaseCommTag;
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.logging.LocalLog;
