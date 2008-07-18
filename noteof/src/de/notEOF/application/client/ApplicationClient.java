@@ -6,7 +6,7 @@ import de.notEOF.application.enumeration.ApplicationTag;
 import de.notEOF.application.service.ApplicationService;
 import de.notEOF.core.client.BaseClient;
 import de.notEOF.core.exception.ActionFailedException;
-import de.notEOF.core.interfaces.Timeout;
+import de.notEOF.core.interfaces.TimeOut;
 
 /**
  * Use this class if you want to integrate your own application into the central
@@ -31,18 +31,15 @@ public class ApplicationClient extends BaseClient {
      * @param socketToServer
      *            An initialized socket object with valid ip and address
      * @param timeout
-     *            Object of type {@link Timeout}. May be null. If null the
+     *            Object of type {@link TimeOut}. May be null. If null the
      *            framework uses default values for timeouts.
      * @param args
      *            The arguments of the client main method
-     * @see ApplicationTimeout
+     * @see ApplicationTimeOut
      * @throws ActionFailedException
      */
-    public ApplicationClient(Socket socketToServer, Timeout timeout, String... args) throws ActionFailedException {
+    public ApplicationClient(Socket socketToServer, TimeOut timeout, String... args) throws ActionFailedException {
         super(socketToServer, timeout, args);
-        if (null == timeout) {
-            timeout = new ApplicationTimeout();
-        }
     }
 
     /**
@@ -54,22 +51,24 @@ public class ApplicationClient extends BaseClient {
      * @param socketToServer
      *            An initialized socket object with valid ip and address
      * @param timeout
-     *            Object of type {@link Timeout}. May be null. If null the
+     *            Object of type {@link TimeOut}. May be null. If null the
      *            framework uses default values for timeouts.
      * @param args
      *            The arguments of the client main method
      * @throws ActionFailedException
      */
-    public ApplicationClient(String ip, int port, Timeout timeout, String... args) throws ActionFailedException {
+    public ApplicationClient(String ip, int port, TimeOut timeout, String... args) throws ActionFailedException {
         super(ip, port, timeout, args);
-        if (null == timeout) {
-            timeout = new ApplicationTimeout();
-        }
     }
 
     @Override
     protected Class<?> service() {
         return ApplicationService.class;
+    }
+    
+    protected TimeOut getTimeOutObject(TimeOut timeOut) {
+    	if (null != timeOut) return timeOut;
+    	return new ApplicationTimeOut();
     }
 
     public void blabla() throws ActionFailedException {
