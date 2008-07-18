@@ -3,12 +3,12 @@ package de.notEOF.core.service;
 import java.net.Socket;
 
 import de.notEOF.core.client.BaseClient;
-import de.notEOF.core.communication.BaseTimeout;
+import de.notEOF.core.communication.BaseTimeOut;
 import de.notEOF.core.communication.TalkLine;
 import de.notEOF.core.constant.NotEOFConstants;
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.interfaces.Service;
-import de.notEOF.core.interfaces.Timeout;
+import de.notEOF.core.interfaces.TimeOut;
 import de.notEOF.core.logging.LocalLog;
 import de.notEOF.core.util.Util;
 
@@ -47,9 +47,9 @@ public abstract class BaseService implements Runnable, Service {
     
     public void init(Socket socketToClient, String serviceId) throws ActionFailedException {
         setServiceId(serviceId);
-        Timeout timeOut = getTimeOutObject();
+        TimeOut timeOut = getTimeOutObject();
         if (null == timeOut)
-            timeOut = new BaseTimeout();
+            timeOut = new BaseTimeOut();
         talkLine = new TalkLine(socketToClient, timeOut.getMillisCommunication());
     }
 
@@ -156,10 +156,10 @@ public abstract class BaseService implements Runnable, Service {
      * If an own class is defined this method must be overwritten.<br>
      * Sample: return new MySpecialTimeout();
      * 
-     * @return Your own Object derived from {@link BaseTimeout}.
+     * @return Your own Object derived from {@link BaseTimeOut}.
      */
-    protected BaseTimeout getTimeOutObject() {
-        return new BaseTimeout();
+    protected BaseTimeOut getTimeOutObject() {
+        return new BaseTimeOut();
     }
 
     /**
