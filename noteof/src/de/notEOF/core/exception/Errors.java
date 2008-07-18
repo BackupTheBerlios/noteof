@@ -43,7 +43,7 @@ public class Errors {
         errorList.put(1L, "Nicht erwarteter Fehler.");
 
         // Communication connection and transport problems
-        errorList.put(10L, "Basiskommunikation mit Server konnte nicht initialisiert werden.");
+        errorList.put(10L, "Basiskommunikation konnte nicht initialisiert werden.");
         errorList.put(11L, "Timeout der Kommunikation konnte nicht verändert werden.");
         errorList.put(12L, "Timeout der Kommunikation konnte nicht gelesen werden.");
 
