@@ -4,26 +4,30 @@ import java.net.Socket;
 
 import de.notEOF.application.client.ApplicationTimeout;
 import de.notEOF.application.enumeration.ApplicationTag;
+import de.notEOF.core.communication.BaseTimeout;
 import de.notEOF.core.exception.ActionFailedException;
+import de.notEOF.core.interfaces.Service;
 import de.notEOF.core.service.BaseService;
 
-public class ApplicationService extends BaseService {
+public class ApplicationService extends BaseService implements Service{
 
-    public ApplicationService(Socket socketToClient) throws ActionFailedException {
-        super(socketToClient, new ApplicationTimeout());
+    public void init (Socket socketToClient, String serviceId) throws ActionFailedException {
+        super.init(socketToClient, serviceId);
     }
 
     @Override
-    protected Class<?> getCommunicationTags() {
-        // TODO Auto-generated method stub
+    public Class<?> getCommunicationTagClass() {
         return ApplicationTag.class;
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    protected void processMsg(Enum receivedEnum) {
-        // TODO Auto-generated method stub
+    public void processMsg(Enum receivedEnum) throws ActionFailedException {
         String bla = receivedEnum.name();
+        throw new ActionFailedException(1,"");
     }
 
+    protected BaseTimeout getTimeOutObject() {
+        return new ApplicationTimeout();
+    }
 }
