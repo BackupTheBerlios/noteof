@@ -2,10 +2,10 @@ package de.notEOF.core.client;
 
 import java.net.Socket;
 
-import de.notEOF.core.communication.BaseTimeout;
+import de.notEOF.core.communication.BaseTimeOut;
 import de.notEOF.core.communication.TalkLine;
 import de.notEOF.core.exception.ActionFailedException;
-import de.notEOF.core.interfaces.Timeout;
+import de.notEOF.core.interfaces.TimeOut;
 import de.notEOF.core.service.BaseService;
 
 /**
@@ -48,9 +48,9 @@ public abstract class BaseClient {
      *             established successfull an ActionFailedException will be
      *             thrown.
      */
-    public BaseClient(Socket socketToServer, Timeout timeout, String... args) throws ActionFailedException {
+    public BaseClient(Socket socketToServer, TimeOut timeout, String... args) throws ActionFailedException {
         if (null == timeout) {
-            timeout = new BaseTimeout();
+            timeout = getTimeOutObject(timeout);
         }
         talkLine = new TalkLine(socketToServer, timeout.getMillisCommunication());
         registerAtServer(talkLine, timeout, args);
@@ -67,11 +67,13 @@ public abstract class BaseClient {
      *             established successfull an ActionFailedException will be
      *             thrown.
      */
-    public BaseClient(String ip, int port, Timeout timeout, String... args) throws ActionFailedException {
+    public BaseClient(String ip, int port, TimeOut timeout, String... args) throws ActionFailedException {
         if (null == timeout) {
-            timeout = new BaseTimeout();
+            timeout = getTimeOutObject(timeout);
         }
+        System.out.println("BaseClient Konstruktor vor talkLine");
         talkLine = new TalkLine(ip, port, timeout.getMillisCommunication());
+        System.out.println("BaseClient Konstruktor vor registerAtServer");
         registerAtServer(talkLine, timeout, args);
     }
 
@@ -112,6 +114,19 @@ public abstract class BaseClient {
     protected void close() throws ActionFailedException {
         talkLine.close();
     }
+    
+    /**
+     * Every specialized client/service may use it's own class for timeouts derived from BaseTimeOut. <br>
+     * If an own class is defined this method must be overwritten.<br>
+     * Sample: return new MySpecialTimeout();
+     * 
+     * @return Your own Object derived from {@link BaseTimeOut}.
+     */
+    protected TimeOut getTimeOutObject(TimeOut timeOut) {
+    	if (null != timeOut) return timeOut;
+        return new BaseTimeOut();
+    }
+
 
     /**
      * Activates the LifeSignSystem.<br>
@@ -131,13 +146,14 @@ public abstract class BaseClient {
      * this client.
      */
     @SuppressWarnings("unchecked")
-    private final void registerAtServer(TalkLine talkLine, Timeout timeout, String... args) throws ActionFailedException {
+    private final void registerAtServer(TalkLine talkLine, TimeOut timeout, String... args) throws ActionFailedException {
         Class<BaseService> serviceCast;
         try {
             serviceCast = (Class<BaseService>) service();
         } catch (Exception ex) {
             throw new ActionFailedException(22L, "Casten einer Klasse auf Klasse BaseService ist fehlgeschlagen: " + service().getName());
         }
+        System.out.println("BaseClient registerAtServer serviceCast = " + serviceCast.getCanonicalName());
         ServerRegistration registration = new ServerRegistration((Class<BaseService>) serviceCast, talkLine, timeout.getMillisConnection(), args);
         linkedToService = registration.isLinkedToService();
         serviceId = registration.getServiceId();
