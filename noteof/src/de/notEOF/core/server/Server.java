@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -50,21 +51,21 @@ public class Server implements Runnable {
      * @throws ActionFailedException
      */
     public static void start(int port) throws ActionFailedException {
-//        int port = 0;
-        
         // look for NOTEOF_HOME as VM environment variable (-DCFGROOT)
         // and - if not found - as SYSTEM environment variable $NOTEOF_HOME 
-        //TODO prÃ¼fen, ob das mit der Umgebungsvariablen funktioniert
+        //TODO prüfen, ob das mit der Umgebungsvariablen funktioniert
         notEof_Home = System.getProperty("NOTEOF_HOME");
         if (Util.isEmpty(notEof_Home))   notEof_Home = System.getenv("NOTEOF_HOME");
-        Server.class.getCanonicalName();
-        try {
-//            port = ConfigurationManager.getProperty("notEOFServer.port").getIntValue(2512);
+        
+        System.out.println("NOTEOF_HOME=" + notEof_Home);
+        
+        try { 
             serverSocket = new ServerSocket(port);
         } catch (IOException ex) {
             throw new ActionFailedException(100L, "Socket Initialisierung mit Port: " + port);
         }
 
+        Server server = getInstance();
         serverThread = new Thread(server);
         serverThread.start();
     }
@@ -105,9 +106,14 @@ public class Server implements Runnable {
         assignServiceToClient(clientSocket, deliveredServiceId, clientTypeName);
     }
     
-    private String generateServiceId() {
-        InetAddress address = serverSocket.getInetAddress();
-        return address.getHostAddress() + ":" + String.valueOf(serverSocket.getLocalPort()) + "_" + String.valueOf(lastServiceId++);
+    private static String generateServiceId() {
+        String hostAddress = "";
+		try {
+			hostAddress = InetAddress.getLocalHost().getHostAddress();
+		} catch (UnknownHostException e) {
+			hostAddress = Thread.currentThread().getId() + String.valueOf(System.currentTimeMillis());
+		}
+        return hostAddress + ":" + String.valueOf(serverSocket.getLocalPort()) + "_" + String.valueOf(lastServiceId++);
     }
 
     /*
@@ -176,6 +182,7 @@ public class Server implements Runnable {
      * @param args Use --port=<port> as calling argument for using an individual server port
      */
     public static void main(String... args) {
+    	System.out.println("Hello World");
         // needs port
         String portString = "";
         ArgsParser argsParser = new ArgsParser(args);
@@ -188,6 +195,7 @@ public class Server implements Runnable {
             Server.start(port);
         } catch (Exception ex) {
             LocalLog.error("Der zentrale !EOF-Server konnte nicht gestartet werden.", ex);
+            System.out.println("Schade");
             throw new RuntimeException("!EOF Server kann nicht gestartet werden.", ex);
         }
     }
