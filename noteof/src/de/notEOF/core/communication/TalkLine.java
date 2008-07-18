@@ -1,5 +1,6 @@
 package de.notEOF.core.communication;
 
+import java.net.ConnectException;
 import java.net.Socket;
 
 import de.notEOF.core.exception.ActionFailedException;
@@ -66,8 +67,10 @@ public class TalkLine {
             socketLayer = new SocketLayer(socket);
             if (0 < timeOutMillis)
                 socketLayer.setTimeOut(timeOutMillis);
+        } catch (ConnectException cex) {
+        	throw new ActionFailedException(10L, "Server nicht erreichbar.", cex);
         } catch (Exception ex) {
-            throw new ActionFailedException(10L, ex);
+            throw new ActionFailedException(10L, "IP: " + ip + "; Port: " + String.valueOf(port), ex);
         }
     }
 
