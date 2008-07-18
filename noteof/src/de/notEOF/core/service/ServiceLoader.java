@@ -7,8 +7,8 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 
-import de.notEOF.core.configuration.ConfigurationManager;
 import de.notEOF.core.exception.ActionFailedException;
+import de.notEOF.core.interfaces.Service;
 import de.notEOF.core.logging.LocalLog;
 import de.notEOF.core.util.Util;
 
@@ -23,42 +23,44 @@ import de.notEOF.core.util.Util;
 public class ServiceLoader {
 
     @SuppressWarnings("unchecked")
-    public synchronized static BaseService getServiceObject(String className) throws ActionFailedException {
+    public synchronized static Service getServiceObject(String notEof_Home, String className) throws ActionFailedException {
         if (Util.isEmpty(className))
             throw new ActionFailedException(150L, "Fehlende Angabe des Klassennamen.");
 
-        ClassLoader classLoader = new URLClassLoader(getLibs(), ServiceLoader.class.getClassLoader());
+        ClassLoader classLoader = new URLClassLoader(getLibs(notEof_Home), ServiceLoader.class.getClassLoader());
         try {
-            Class<BaseService> classBaseService = (Class<BaseService>) Class.forName(className, true, classLoader);
-            BaseService newService;
+            Class<Service> classBaseService = (Class<Service>) Class.forName(className, true, classLoader);
+            Service newService;
             newService = classBaseService.newInstance();
             return newService;
 
         } catch (ClassNotFoundException e) {
             throw new ActionFailedException(150L,
-                    "Unbekannte Service-Klasse oder Klasse nicht gefunden. Bibliotheken, CLASS_PATH, NOTEOF_HOME-Umgebungsvariable prüfen: " + className);
+                    "Unbekannte Service-Klasse oder Klasse nicht gefunden. Bibliotheken, CLASS_PATH, NOTEOF_HOME-Umgebungsvariable prï¿½fen: " + className);
         } catch (InstantiationException e) {
-            throw new ActionFailedException(150L, "Es konnte keine Instanz für die Service-Klasse gebildet werden: " + className);
+            throw new ActionFailedException(150L, "Es konnte keine Instanz fï¿½r die Service-Klasse gebildet werden: " + className);
         } catch (IllegalAccessException e) {
-            throw new ActionFailedException(150L, "Zugriff auf Konstruktor der Klasse nicht möglich: " + className);
+            throw new ActionFailedException(150L, "Zugriff auf Konstruktor der Klasse nicht mï¿½glich: " + className);
+        } catch (Exception e) {
+            throw new ActionFailedException(150L, "Problem bei Laden der Klasse: " + className);
         }
     }
 
-    protected static URL[] getLibs() throws ActionFailedException {
+    protected static URL[] getLibs(String notEof_Home) throws ActionFailedException {
         ArrayList<URL> urls = new ArrayList<URL>();
 
-        String home = "";
-        try {
-            home = ConfigurationManager.getInstance().getNotEOFHome();
-        } catch (Exception ex) {
-            throw new ActionFailedException(150L, "Home Verzeichnis konnte nicht ermittelt werden", ex);
-        }
+//        String home = "";
+//        try {
+//            home = ConfigurationManager.getInstance().getNotEOFHome();
+//        } catch (Exception ex) {
+//            throw new ActionFailedException(150L, "Home Verzeichnis konnte nicht ermittelt werden", ex);
+//        }
 
-        File notEOFDir = new File(home);
+        File notEOFDir = new File(notEof_Home);
         if (!notEOFDir.exists())
             throw new ActionFailedException(150L, String.format("Home Verzeichnis '%1s' existiert nicht", notEOFDir.getAbsolutePath()));
 
-        File binDir = new File(home, "bin");
+        File binDir = new File(notEof_Home, "bin");
         if (binDir.isDirectory()) {
             try {
                 URI uri = binDir.toURI();
@@ -69,9 +71,9 @@ public class ServiceLoader {
             }
         }
 
-        File libDir = new File(home, "lib");
+        File libDir = new File(notEof_Home, "lib");
         if (!libDir.isDirectory())
-            throw new ActionFailedException(150L, String.format("Verzeichnis $NOTEOFHOME/'%1s' does not exist", libDir.getAbsolutePath()));
+            throw new ActionFailedException(150L, String.format("Verzeichnis $NOTEOF_HOME/'%1s' does not exist", libDir.getAbsolutePath()));
 
         File[] libs = libDir.listFiles();
         for (File lib : libs) {
