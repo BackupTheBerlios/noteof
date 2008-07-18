@@ -7,6 +7,7 @@ import de.notEOF.core.communication.BaseTimeout;
 import de.notEOF.core.communication.TalkLine;
 import de.notEOF.core.constant.NotEOFConstants;
 import de.notEOF.core.exception.ActionFailedException;
+import de.notEOF.core.interfaces.Service;
 import de.notEOF.core.interfaces.Timeout;
 import de.notEOF.core.logging.LocalLog;
 import de.notEOF.core.util.Util;
@@ -23,7 +24,7 @@ import de.notEOF.core.util.Util;
  * @author Dirk
  * 
  */
-public abstract class BaseService implements Runnable {
+public abstract class BaseService implements Runnable, Service {
 
     private String serviceId;
     private boolean connectedWithClient = false;
@@ -31,14 +32,22 @@ public abstract class BaseService implements Runnable {
     private boolean stop = false;
     private long nextLifeSign;
 
-    /**
-     * If you don't know what to do with the constructor of your derived class -
-     * call this constructor... :<br>
-     * super(socetToClient);
-     * 
-     * @param socketToClient
-     */
-    public BaseService(Socket socketToClient, Timeout timeOut) throws ActionFailedException {
+//    /**
+//     * If you don't know what to do with the constructor of your derived class -
+//     * call this constructor... :<br>
+//     * super(socetToClient);
+//     * 
+//     * @param socketToClient
+//     */
+//    public BaseService(Socket socketToClient, Timeout timeOut) throws ActionFailedException {
+//        if (null == timeOut)
+//            timeOut = new BaseTimeout();
+//        talkLine = new TalkLine(socketToClient, timeOut.getMillisCommunication());
+//    }
+    
+    public void init(Socket socketToClient, String serviceId) throws ActionFailedException {
+        setServiceId(serviceId);
+        Timeout timeOut = getTimeOutObject();
         if (null == timeOut)
             timeOut = new BaseTimeout();
         talkLine = new TalkLine(socketToClient, timeOut.getMillisCommunication());
@@ -100,7 +109,7 @@ public abstract class BaseService implements Runnable {
                 // The rest of messages is client/service specific and must be
                 // processed in the method handleMsg() which must be implemented
                 // individual in every service.
-                Class<Enum> enumClass = (Class<Enum>) getCommunicationTags();
+                Class<Enum> enumClass = (Class<Enum>) getCommunicationTagClass();
                 try {
                     validateMsgToEnum(enumClass, msg);
                 } catch (ActionFailedException afx) {
@@ -140,7 +149,18 @@ public abstract class BaseService implements Runnable {
      * 
      * @return
      */
-    protected abstract Class<?> getCommunicationTags();
+    public abstract Class<?> getCommunicationTagClass();
+    
+    /**
+     * Every specialized client/service may use it's own class for timeouts derived from BaseTimeOut. <br>
+     * If an own class is defined this method must be overwritten.<br>
+     * Sample: return new MySpecialTimeout();
+     * 
+     * @return Your own Object derived from {@link BaseTimeout}.
+     */
+    protected BaseTimeout getTimeOutObject() {
+        return new BaseTimeout();
+    }
 
     /**
      * This abstract method is called by the BaseService class. Here messages
@@ -148,6 +168,5 @@ public abstract class BaseService implements Runnable {
      * 
      * @param incomingMsgEnum
      */
-    @SuppressWarnings("unchecked")
-    protected abstract void processMsg(Enum incomingMsgEnum);
+    public abstract void processMsg(Enum<?> incomingMsgEnum) throws ActionFailedException ;
 }
