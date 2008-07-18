@@ -1,6 +1,6 @@
 package de.notEOF.core.communication;
 
-import de.notEOF.core.interfaces.Timeout;
+import de.notEOF.core.interfaces.TimeOut;
 
 /**
  * Class to deliver timeOuts for establishing a connection and for the read
@@ -8,7 +8,7 @@ import de.notEOF.core.interfaces.Timeout;
  * 
  * @author Dirk
  */
-public class BaseTimeout implements Timeout {
+public class BaseTimeOut implements TimeOut {
 
     private int millisConnection = 3000;
     private int millisCommunication = 0;
@@ -17,7 +17,7 @@ public class BaseTimeout implements Timeout {
      * Construction without intial values is allowed. <br>
      * In this case default values are available.
      */
-    public BaseTimeout() {
+    public BaseTimeOut() {
 
     }
 
@@ -30,7 +30,7 @@ public class BaseTimeout implements Timeout {
      * @param millisCommunication
      *            Timeout for read and write actions.
      */
-    public BaseTimeout(int millisConnection, int millisCommunication) {
+    public BaseTimeOut(int millisConnection, int millisCommunication) {
         this.setMillisCommunication(millisCommunication);
         this.setMillisConnection(millisConnection);
     }

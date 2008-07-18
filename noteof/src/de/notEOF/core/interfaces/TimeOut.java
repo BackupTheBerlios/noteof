@@ -7,7 +7,7 @@ package de.notEOF.core.interfaces;
  * 
  * @author Dirk
  */
-public interface Timeout {
+public interface TimeOut {
 
     public int millisConnection = 3000;
     public int millisCommunication = 0;
