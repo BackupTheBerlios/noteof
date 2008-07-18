@@ -1,6 +1,6 @@
 package de.notEOF.application.client;
 
-import de.notEOF.core.communication.BaseTimeout;
+import de.notEOF.core.communication.BaseTimeOut;
 
 /**
  * Additional to communication timeout and connection timeout the application
@@ -8,7 +8,7 @@ import de.notEOF.core.communication.BaseTimeout;
  * 
  * @author Dirk
  */
-public class ApplicationTimeout extends BaseTimeout {
+public class ApplicationTimeOut extends BaseTimeOut {
 
     private int lifeTimeIntervalMillis = 30000;
 
