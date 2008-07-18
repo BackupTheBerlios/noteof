@@ -1,17 +1,20 @@
 package de.notEOF.core.server;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
 
 import de.notEOF.core.communication.TalkLine;
-import de.notEOF.core.configuration.ConfigurationManager;
 import de.notEOF.core.enumeration.BaseCommTag;
 import de.notEOF.core.exception.ActionFailedException;
+import de.notEOF.core.interfaces.Service;
 import de.notEOF.core.logging.LocalLog;
-import de.notEOF.core.service.BaseService;
+import de.notEOF.core.service.ServiceLoader;
+import de.notEOF.core.util.ArgsParser;
+import de.notEOF.core.util.Util;
 
 /**
  * The central server which has some different tasks: <br>
@@ -30,7 +33,9 @@ public class Server implements Runnable {
     private static Thread serverThread;
     private boolean stop = false;
     private static ServerSocket serverSocket;
-    private static Map<String, Map<String, BaseService>> allServiceMaps;
+    private static String notEof_Home;
+    private static Map<String, Map<String, Service>> allServiceMaps;
+    private static int lastServiceId = 0;
 
     public static Server getInstance() {
         if (null == server) {
@@ -44,19 +49,21 @@ public class Server implements Runnable {
      * 
      * @throws ActionFailedException
      */
-    public static void start() throws ActionFailedException {
-        int port = 0;
+    public static void start(int port) throws ActionFailedException {
+//        int port = 0;
+        
+        // look for NOTEOF_HOME as VM environment variable (-DCFGROOT)
+        // and - if not found - as SYSTEM environment variable $NOTEOF_HOME 
+        //TODO prÃ¼fen, ob das mit der Umgebungsvariablen funktioniert
+        notEof_Home = System.getProperty("NOTEOF_HOME");
+        if (Util.isEmpty(notEof_Home))   notEof_Home = System.getenv("NOTEOF_HOME");
+        Server.class.getCanonicalName();
         try {
-            port = ConfigurationManager.getProperty("notEOFServer.port").getIntValue(2512);
+//            port = ConfigurationManager.getProperty("notEOFServer.port").getIntValue(2512);
             serverSocket = new ServerSocket(port);
         } catch (IOException ex) {
             throw new ActionFailedException(100L, "Socket Initialisierung mit Port: " + port);
         }
-
-        // Initialization of map for storing serviceLists
-        // the typeNames of clients are the key to assign and find the matching
-        // service to the client.
-        allServiceMaps = new HashMap<String, Map<String, BaseService>>();
 
         serverThread = new Thread(server);
         serverThread.start();
@@ -75,7 +82,7 @@ public class Server implements Runnable {
                 Socket clientSocket = serverSocket.accept();
                 acceptClient(clientSocket);
             } catch (IOException ex) {
-                LocalLog.error("Fehler bei Warten auf Connect durch nächsten Client", ex);
+                LocalLog.error("Fehler bei Warten auf Connect durch nï¿½chsten Client", ex);
             } catch (ActionFailedException afx) {
                 LocalLog.error("Abbruch bei Verbindungsaufbau mit Client", afx);
             }
@@ -97,12 +104,24 @@ public class Server implements Runnable {
         // next step here...
         assignServiceToClient(clientSocket, deliveredServiceId, clientTypeName);
     }
+    
+    private String generateServiceId() {
+        InetAddress address = serverSocket.getInetAddress();
+        return address.getHostAddress() + ":" + String.valueOf(serverSocket.getLocalPort()) + "_" + String.valueOf(lastServiceId++);
+    }
 
     /*
      * Second step: Look for matching service by existing serviceId and
      * clientTypeName
      */
-    private void assignServiceToClient(Socket clientSocket, String deliveredServiceId, String clientTypeName) throws ActionFailedException {
+    private void assignServiceToClient(Socket clientSocket, String deliveredServiceId, String serviceTypeName) throws ActionFailedException {
+        
+        // Initialization of map for storing serviceLists
+        // the typeNames of clients are the key to assign and find the matching
+        // service to the client.
+        if (null == allServiceMaps)
+        allServiceMaps = new HashMap<String, Map<String, Service>>();
+
         // basis service bekommt eigene talkline, weil individuell timeouts (zb
         // applicationtimeout )
 
@@ -110,9 +129,10 @@ public class Server implements Runnable {
         // clientTypeName
         // Then search in the clients Map for the service which has the same
         // deliveredServiceId
-        BaseService service = null;
-        if (allServiceMaps.containsKey(clientTypeName)) {
-            Map<String, BaseService> serviceMap = (Map<String, BaseService>) allServiceMaps.get(clientTypeName);
+        Service service = null;
+        Map<String, Service> serviceMap = null;
+        if (allServiceMaps.containsKey(serviceTypeName)) {
+            serviceMap = (Map<String, Service>) allServiceMaps.get(serviceTypeName);
             if (serviceMap.containsKey(deliveredServiceId)) {
                 service = serviceMap.get(deliveredServiceId);
             }
@@ -121,24 +141,51 @@ public class Server implements Runnable {
         // not found?
         // create service
         if (null == service) {
+            service = ServiceLoader.getServiceObject(notEof_Home, serviceTypeName);
+            
+            if (null != service) {
+                // generate new serviceId
+                deliveredServiceId = generateServiceId();
+                service.init(clientSocket, deliveredServiceId);
 
+                // if service type did not exist in general service list till now create new map for type
+                if (null == serviceMap) {
+                    serviceMap = new HashMap<String, Service>();
+                    // add new type specific map to general list
+                    allServiceMaps.put(serviceTypeName, serviceMap);
+                }
+                // add new service to type specific map
+                serviceMap.put(deliveredServiceId, service);
+            }
+        }
+        
+        // start service for client
+        if (null != service) {
+            service.run();
+        }else {
+            // service couldn't be created or found in list by type name
+            throw new ActionFailedException (150L,"Service Typ unbekannt.");
         }
 
-        // suche nach serviceid und clienttype
-        // evtl. eine eigene Liste mit den existierenden clienttypes?
-        // oder je typ eine eine eigene Liste map: <typ>:<id> -> map:
-        // <id>:<Liste>
-        // dann wird die Suche schneller...
     }
 
     /**
      * The Server is an application.
+     * Default value for server port is 2512
      * 
-     * @param args
+     * @param args Use --port=<port> as calling argument for using an individual server port
      */
     public static void main(String... args) {
+        // needs port
+        String portString = "";
+        ArgsParser argsParser = new ArgsParser(args);
+        if (argsParser.containsStartsWith("--port")) {
+            portString = argsParser.getValue("port");
+        }
+        int port = Util.parseInt(portString, 2512);
+        
         try {
-            Server.start();
+            Server.start(port);
         } catch (Exception ex) {
             LocalLog.error("Der zentrale !EOF-Server konnte nicht gestartet werden.", ex);
             throw new RuntimeException("!EOF Server kann nicht gestartet werden.", ex);
