@@ -9,9 +9,9 @@ import de.notEOF.core.interfaces.Service;
 import de.notEOF.core.interfaces.TimeOut;
 import de.notEOF.core.service.BaseService;
 
-public class ApplicationService extends BaseService implements Service{
+public class ApplicationService extends BaseService implements Service {
 
-    public void init (Socket socketToClient, String serviceId) throws ActionFailedException {
+    public void init(Socket socketToClient, String serviceId) throws ActionFailedException {
         super.init(socketToClient, serviceId);
     }
 
@@ -25,11 +25,12 @@ public class ApplicationService extends BaseService implements Service{
     public void processMsg(Enum receivedEnum) throws ActionFailedException {
         String bla = receivedEnum.name();
         System.out.println(bla);
-        throw new ActionFailedException(1,"");
+        throw new ActionFailedException(1, "");
     }
 
     protected TimeOut getTimeOutObject(TimeOut timeOut) {
-    	if (null != timeOut) return timeOut;
+        if (null != timeOut)
+            return timeOut;
         return new ApplicationTimeOut();
     }
 }

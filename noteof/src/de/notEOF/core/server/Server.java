@@ -13,7 +13,7 @@ import de.notEOF.core.enumeration.BaseCommTag;
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.interfaces.Service;
 import de.notEOF.core.logging.LocalLog;
-import de.notEOF.core.service.ServiceLoader;
+import de.notEOF.core.service.ServiceFinder;
 import de.notEOF.core.util.ArgsParser;
 import de.notEOF.core.util.Util;
 
@@ -52,14 +52,19 @@ public class Server implements Runnable {
      */
     public static void start(int port) throws ActionFailedException {
         // look for NOTEOF_HOME as VM environment variable (-DCFGROOT)
-        // and - if not found - as SYSTEM environment variable $NOTEOF_HOME 
-        //TODO prüfen, ob das mit der Umgebungsvariablen funktioniert
+        // and - if not found - as SYSTEM environment variable $NOTEOF_HOME
+        // TODO prüfen, ob das mit der Umgebungsvariablen funktioniert
         notEof_Home = System.getProperty("NOTEOF_HOME");
-        if (Util.isEmpty(notEof_Home))   notEof_Home = System.getenv("NOTEOF_HOME");
-        
+        if (Util.isEmpty(notEof_Home))
+            notEof_Home = System.getenv("NOTEOF_HOME");
+
+        if (Util.isEmpty(notEof_Home)) {
+            System.out.println("Umgebungsvariable 'NOTEOF_HOME' ist nicht gesetzt. !EOF-Server benötigt diese Variable.\n" + //
+                    "Wert der Variable ist der Ordner unter dem die noteof.jar liegt.\n");
+        }
         System.out.println("NOTEOF_HOME=" + notEof_Home);
-        
-        try { 
+
+        try {
             serverSocket = new ServerSocket(port);
         } catch (IOException ex) {
             throw new ActionFailedException(100L, "Socket Initialisierung mit Port: " + port);
@@ -100,19 +105,37 @@ public class Server implements Runnable {
 
         // server asks for perhaps existing service id
         String deliveredServiceId = talkLine.requestTo(BaseCommTag.REQ_SERVICE_ID, BaseCommTag.RESP_SERVICE_ID);
-        String clientTypeName = talkLine.requestTo(BaseCommTag.REQ_TYPE_NAME, BaseCommTag.RESP_TYPE_NAME);
+        String serviceTypeName = talkLine.requestTo(BaseCommTag.REQ_TYPE_NAME, BaseCommTag.RESP_TYPE_NAME);
 
-        // next step here...
-        assignServiceToClient(clientSocket, deliveredServiceId, clientTypeName);
+        System.out.println("Server acceptClient deliveredServiceId = " + deliveredServiceId);
+        System.out.println("Server acceptClient serviceTypeName = " + serviceTypeName);
+
+        // Lookup for a service which is assigned to the client. If not found
+        // create a new one
+        Service service = assignServiceToClient(clientSocket, deliveredServiceId, serviceTypeName);
+        // Confirm the serviceId received by client or tell him another one
+        talkLine.awaitRequestAnswerImmediate(BaseCommTag.REQ_SERVICE, BaseCommTag.RESP_SERVICE, service.getServiceId());
+
+        // TODO Threads der services überwachen und ggfs. stoppen (Observer...)
+        // start service for client
+        System.out.println("Server assignServiceToClient service = " + service.getClass().getCanonicalName());
+        if (null != service) {
+            Thread serviceThread = new Thread((Runnable) service);
+            serviceThread.start();
+        } else {
+            // service couldn't be created or found in list by type name
+            throw new ActionFailedException(150L, "Service Typ unbekannt.");
+        }
+
     }
-    
+
     private static String generateServiceId() {
         String hostAddress = "";
-		try {
-			hostAddress = InetAddress.getLocalHost().getHostAddress();
-		} catch (UnknownHostException e) {
-			hostAddress = Thread.currentThread().getId() + String.valueOf(System.currentTimeMillis());
-		}
+        try {
+            hostAddress = InetAddress.getLocalHost().getHostAddress();
+        } catch (UnknownHostException e) {
+            hostAddress = Thread.currentThread().getId() + String.valueOf(System.currentTimeMillis());
+        }
         return hostAddress + ":" + String.valueOf(serverSocket.getLocalPort()) + "_" + String.valueOf(lastServiceId++);
     }
 
@@ -120,16 +143,13 @@ public class Server implements Runnable {
      * Second step: Look for matching service by existing serviceId and
      * clientTypeName
      */
-    private void assignServiceToClient(Socket clientSocket, String deliveredServiceId, String serviceTypeName) throws ActionFailedException {
-        
+    private Service assignServiceToClient(Socket clientSocket, String deliveredServiceId, String serviceTypeName) throws ActionFailedException {
+
         // Initialization of map for storing serviceLists
         // the typeNames of clients are the key to assign and find the matching
         // service to the client.
         if (null == allServiceMaps)
-        allServiceMaps = new HashMap<String, Map<String, Service>>();
-
-        // basis service bekommt eigene talkline, weil individuell timeouts (zb
-        // applicationtimeout )
+            allServiceMaps = new HashMap<String, Map<String, Service>>();
 
         // Search for Map which contains the Map of the clients with the same
         // clientTypeName
@@ -147,14 +167,15 @@ public class Server implements Runnable {
         // not found?
         // create service
         if (null == service) {
-            service = ServiceLoader.getServiceObject(notEof_Home, serviceTypeName);
-            
+            service = ServiceFinder.getService(notEof_Home, serviceTypeName);
+
             if (null != service) {
                 // generate new serviceId
                 deliveredServiceId = generateServiceId();
                 service.init(clientSocket, deliveredServiceId);
 
-                // if service type did not exist in general service list till now create new map for type
+                // if service type did not exist in general service list till
+                // now create new map for type
                 if (null == serviceMap) {
                     serviceMap = new HashMap<String, Service>();
                     // add new type specific map to general list
@@ -164,25 +185,18 @@ public class Server implements Runnable {
                 serviceMap.put(deliveredServiceId, service);
             }
         }
-        
-        // start service for client
-        if (null != service) {
-            service.run();
-        }else {
-            // service couldn't be created or found in list by type name
-            throw new ActionFailedException (150L,"Service Typ unbekannt.");
-        }
-
+        return service;
     }
 
     /**
-     * The Server is an application.
-     * Default value for server port is 2512
+     * The Server is an application. Default value for server port is 2512
      * 
-     * @param args Use --port=<port> as calling argument for using an individual server port
+     * @param args
+     *            Use --port=<port> as calling argument for using an individual
+     *            server port
      */
     public static void main(String... args) {
-    	System.out.println("Hello World");
+        System.out.println("Hello World");
         // needs port
         String portString = "";
         ArgsParser argsParser = new ArgsParser(args);
@@ -190,7 +204,7 @@ public class Server implements Runnable {
             portString = argsParser.getValue("port");
         }
         int port = Util.parseInt(portString, 2512);
-        
+
         try {
             Server.start(port);
         } catch (Exception ex) {

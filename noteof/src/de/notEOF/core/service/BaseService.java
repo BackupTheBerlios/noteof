@@ -24,7 +24,7 @@ import de.notEOF.core.util.Util;
  * @author Dirk
  * 
  */
-public abstract class BaseService implements Runnable, Service {
+public abstract class BaseService implements Service, Runnable {
 
     private String serviceId;
     private boolean connectedWithClient = false;
@@ -32,19 +32,22 @@ public abstract class BaseService implements Runnable, Service {
     private boolean stop = false;
     private long nextLifeSign;
 
-//    /**
-//     * If you don't know what to do with the constructor of your derived class -
-//     * call this constructor... :<br>
-//     * super(socetToClient);
-//     * 
-//     * @param socketToClient
-//     */
-//    public BaseService(Socket socketToClient, Timeout timeOut) throws ActionFailedException {
-//        if (null == timeOut)
-//            timeOut = new BaseTimeout();
-//        talkLine = new TalkLine(socketToClient, timeOut.getMillisCommunication());
-//    }
-    
+    // /**
+    // * If you don't know what to do with the constructor of your derived class
+    // -
+    // * call this constructor... :<br>
+    // * super(socetToClient);
+    // *
+    // * @param socketToClient
+    // */
+    // public BaseService(Socket socketToClient, Timeout timeOut) throws
+    // ActionFailedException {
+    // if (null == timeOut)
+    // timeOut = new BaseTimeout();
+    // talkLine = new TalkLine(socketToClient,
+    // timeOut.getMillisCommunication());
+    // }
+
     public void init(Socket socketToClient, String serviceId) throws ActionFailedException {
         setServiceId(serviceId);
         TimeOut timeOut = getTimeOutObject();
@@ -109,13 +112,12 @@ public abstract class BaseService implements Runnable, Service {
                 // The rest of messages is client/service specific and must be
                 // processed in the method handleMsg() which must be implemented
                 // individual in every service.
-                Class<Enum> enumClass = (Class<Enum>) getCommunicationTagClass();
+                Class<Enum> tagEnumClass = (Class<Enum>) getCommunicationTagClass();
                 try {
-                    validateMsgToEnum(enumClass, msg);
+                    processMsg(validateEnum(tagEnumClass, msg));
                 } catch (ActionFailedException afx) {
                     LocalLog.error("Mapping der Nachricht auf Enum.", afx);
                 }
-                processMsg(Enum.valueOf(enumClass, msg));
 
             } catch (ActionFailedException afx) {
                 LocalLog.error("Zentrale Entgegennahme von Client-Nachrichten im Service", afx);
@@ -131,9 +133,13 @@ public abstract class BaseService implements Runnable, Service {
     }
 
     @SuppressWarnings("unchecked")
-    private void validateMsgToEnum(Class<Enum> enumClass, String msg) throws ActionFailedException {
+    private Enum validateEnum(Class<Enum> tagEnumClass, String msg) throws ActionFailedException {
+        System.out.println("BaseService validateEnum: " + tagEnumClass.getCanonicalName());
+        System.out.println("BaseService msg:          " + msg);
+
         try {
-            Enum.valueOf(enumClass, msg);
+            System.out.println("BaseService validateEnum. Enum tagEnumClass = " + Enum.valueOf(tagEnumClass, msg));
+            return Enum.valueOf(tagEnumClass, msg);
         } catch (Exception ex) {
             throw new ActionFailedException(151L, "Empfangene Nachricht: " + msg);
         }
@@ -150,9 +156,10 @@ public abstract class BaseService implements Runnable, Service {
      * @return
      */
     public abstract Class<?> getCommunicationTagClass();
-    
+
     /**
-     * Every specialized client/service may use it's own class for timeouts derived from BaseTimeOut. <br>
+     * Every specialized client/service may use it's own class for timeouts
+     * derived from BaseTimeOut. <br>
      * If an own class is defined this method must be overwritten.<br>
      * Sample: return new MySpecialTimeout();
      * 
@@ -168,5 +175,5 @@ public abstract class BaseService implements Runnable, Service {
      * 
      * @param incomingMsgEnum
      */
-    public abstract void processMsg(Enum<?> incomingMsgEnum) throws ActionFailedException ;
+    public abstract void processMsg(Enum<?> incomingMsgEnum) throws ActionFailedException;
 }
