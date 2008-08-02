@@ -35,14 +35,12 @@ public class ServerRegistration {
     public ServerRegistration(Class<BaseService> service, TalkLine talkLine, int timeOutMillis, String... args) throws ActionFailedException {
         Registration registration = new Registration();
         Thread registrationThread = new Thread(registration);
-        System.out.println("ServerRegistration construct vor thread.run()");
         registrationThread.start();
-        System.out.println("ServerRegistration construct nach thread.run()");
-        try { 
-        	serviceId = registration.register(service, talkLine, args);
+        try {
+            serviceId = registration.register(service, talkLine, args);
         } catch (Exception ex) {
-        	registration.stop();
-        	throw new ActionFailedException(22L, ex);
+            registration.stop();
+            throw new ActionFailedException(22L, ex);
         }
 
         // The registration hasn't every time of the world...
@@ -92,7 +90,6 @@ public class ServerRegistration {
          */
         public void run() {
             while (!(linkedToService || stopped)) {
-            	System.out.print(".");
                 try {
                     Thread.sleep(200);
                 } catch (InterruptedException ix) {
@@ -103,7 +100,6 @@ public class ServerRegistration {
         // Register at the server and ask for a service
         protected String register(Class<BaseService> service, TalkLine talkLine, String... args) throws ActionFailedException {
             // First step: Say hello to the server
-        	System.out.println("ServerRegistration register...");
             if (!Util.equalsToString(talkLine.requestTo(BaseCommTag.REQ_REGISTRATION, BaseCommTag.RESP_REGISTRATION), BaseCommTag.VAL_OK.name())) {
                 throw new ActionFailedException(22L, "Anmeldung vom Server abgelehnt.");
             }

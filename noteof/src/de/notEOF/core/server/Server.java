@@ -32,6 +32,7 @@ public class Server implements Runnable {
 
     private static Server server;
     private static Thread serverThread;
+    private static Thread serviceObserverThread;
     private boolean stop = false;
     private static ServerSocket serverSocket;
     private static String notEof_Home;
@@ -45,6 +46,10 @@ public class Server implements Runnable {
         return server;
     }
 
+    protected Map<String, Map<String, Service>> getAllServiceMaps() {
+        return allServiceMaps;
+    }
+
     /**
      * Initialize server socket with configured or default port (2512).
      * 
@@ -53,13 +58,12 @@ public class Server implements Runnable {
     public static void start(int port) throws ActionFailedException {
         // look for NOTEOF_HOME as VM environment variable (-DCFGROOT)
         // and - if not found - as SYSTEM environment variable $NOTEOF_HOME
-        // TODO prüfen, ob das mit der Umgebungsvariablen funktioniert
         notEof_Home = System.getProperty("NOTEOF_HOME");
         if (Util.isEmpty(notEof_Home))
             notEof_Home = System.getenv("NOTEOF_HOME");
 
         if (Util.isEmpty(notEof_Home)) {
-            System.out.println("Umgebungsvariable 'NOTEOF_HOME' ist nicht gesetzt. !EOF-Server benötigt diese Variable.\n" + //
+            System.out.println("Umgebungsvariable 'NOTEOF_HOME' ist nicht gesetzt. !EOF-Server benï¿½tigt diese Variable.\n" + //
                     "Wert der Variable ist der Ordner unter dem die noteof.jar liegt.\n");
         }
         System.out.println("NOTEOF_HOME=" + notEof_Home);
@@ -73,6 +77,10 @@ public class Server implements Runnable {
         Server server = getInstance();
         serverThread = new Thread(server);
         serverThread.start();
+
+        ServiceObserver observer = new ServiceObserver(server);
+        serviceObserverThread = new Thread(observer);
+        serviceObserverThread.start();
     }
 
     /**
@@ -116,11 +124,13 @@ public class Server implements Runnable {
         // Confirm the serviceId received by client or tell him another one
         talkLine.awaitRequestAnswerImmediate(BaseCommTag.REQ_SERVICE, BaseCommTag.RESP_SERVICE, service.getServiceId());
 
-        // TODO Threads der services überwachen und ggfs. stoppen (Observer...)
+        // TODO Threads der services Ãœberwachen und ggfs. stoppen (Observer...)
         // start service for client
+        // for later use the thread will put into the client
         System.out.println("Server assignServiceToClient service = " + service.getClass().getCanonicalName());
         if (null != service) {
             Thread serviceThread = new Thread((Runnable) service);
+            service.setThread(serviceThread);
             serviceThread.start();
         } else {
             // service couldn't be created or found in list by type name
@@ -139,6 +149,24 @@ public class Server implements Runnable {
         return hostAddress + ":" + String.valueOf(serverSocket.getLocalPort()) + "_" + String.valueOf(lastServiceId++);
     }
 
+    public Map<String, Service> getServiceMapByTypeName(String serviceTypeName) throws ActionFailedException {
+        if (null == allServiceMaps)
+            return null;
+        if (allServiceMaps.containsKey(serviceTypeName)) {
+            return (Map<String, Service>) allServiceMaps.get(serviceTypeName);
+        }
+        return null;
+    }
+
+    public Service getService(String deliveredServiceId, String serviceTypeName) throws ActionFailedException {
+        Map<String, Service> serviceMap = null;
+        serviceMap = getServiceMapByTypeName(serviceTypeName);
+        if (null != serviceMap && serviceMap.containsKey(deliveredServiceId)) {
+            return serviceMap.get(deliveredServiceId);
+        }
+        return null;
+    }
+
     /*
      * Second step: Look for matching service by existing serviceId and
      * clientTypeName
@@ -155,14 +183,7 @@ public class Server implements Runnable {
         // clientTypeName
         // Then search in the clients Map for the service which has the same
         // deliveredServiceId
-        Service service = null;
-        Map<String, Service> serviceMap = null;
-        if (allServiceMaps.containsKey(serviceTypeName)) {
-            serviceMap = (Map<String, Service>) allServiceMaps.get(serviceTypeName);
-            if (serviceMap.containsKey(deliveredServiceId)) {
-                service = serviceMap.get(deliveredServiceId);
-            }
-        }
+        Service service = getService(deliveredServiceId, serviceTypeName);
 
         // not found?
         // create service
@@ -176,11 +197,13 @@ public class Server implements Runnable {
 
                 // if service type did not exist in general service list till
                 // now create new map for type
+                Map<String, Service> serviceMap = getServiceMapByTypeName(serviceTypeName);
                 if (null == serviceMap) {
                     serviceMap = new HashMap<String, Service>();
                     // add new type specific map to general list
                     allServiceMaps.put(serviceTypeName, serviceMap);
                 }
+
                 // add new service to type specific map
                 serviceMap.put(deliveredServiceId, service);
             }

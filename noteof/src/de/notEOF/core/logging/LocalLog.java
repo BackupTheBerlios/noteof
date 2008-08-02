@@ -30,22 +30,25 @@ public class LocalLog {
     }
 
     public static void error(String additionalInfo, Throwable th) {
-    	System.out.println(additionalInfo + ": \n" + th);
+        System.out.println(additionalInfo + ": \n" + th);
     }
 
     public static void error(String additionalInfo) {
-    	System.out.println(additionalInfo);
+        System.out.println(additionalInfo);
     }
 
     public static void warn(String additionalInfo, Throwable th) {
+        System.out.println(additionalInfo + ": \n" + th);
     }
 
     public static void debug(String additionalInfo, Throwable th) {
     }
 
     public static void info(String additionalInfo, Throwable th) {
+        System.out.println(additionalInfo + ": \n" + th);
     }
 
     public static void info(String additionalInfo) {
+        System.out.println(additionalInfo);
     }
 }

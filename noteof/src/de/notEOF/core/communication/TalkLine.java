@@ -68,7 +68,7 @@ public class TalkLine {
             if (0 < timeOutMillis)
                 socketLayer.setTimeOut(timeOutMillis);
         } catch (ConnectException cex) {
-        	throw new ActionFailedException(10L, "Server nicht erreichbar.", cex);
+            throw new ActionFailedException(10L, "Server nicht erreichbar.", cex);
         } catch (Exception ex) {
             throw new ActionFailedException(10L, "IP: " + ip + "; Port: " + String.valueOf(port), ex);
         }
@@ -180,6 +180,10 @@ public class TalkLine {
         return readMsgTimedOut(0);
     }
 
+    public boolean lifeSignSucceeded() {
+        return socketLayer.lifeSignSucceeded();
+    }
+
     /**
      * Read a message with a special timeout. <br>
      * Ignores the adjusted timeout for awaiting the message. <br>
@@ -192,15 +196,16 @@ public class TalkLine {
      * @throws ActionFailedException
      */
     public String readMsgTimedOut(int timeOutMillis) throws ActionFailedException {
-        try {
-            int oldTimeOut = socketLayer.getTimeOut();
-            socketLayer.setTimeOut(timeOutMillis);
-            String msgValue = socketLayer.readMsg();
-            socketLayer.setTimeOut(oldTimeOut);
-            return msgValue;
-        } catch (Exception ex) {
-            throw new ActionFailedException(7522, "Setzen des Timeouts für Leseoperation auf " + timeOutMillis, ex);
-        }
+        // try {
+        int oldTimeOut = socketLayer.getTimeOut();
+        socketLayer.setTimeOut(timeOutMillis);
+        String msgValue = socketLayer.readMsg();
+        socketLayer.setTimeOut(oldTimeOut);
+        return msgValue;
+        // } catch (Exception ex) {
+        // throw new ActionFailedException(7522,
+        // "Setzen des Timeouts für Leseoperation auf " + timeOutMillis, ex);
+        // }
     }
 
     /**

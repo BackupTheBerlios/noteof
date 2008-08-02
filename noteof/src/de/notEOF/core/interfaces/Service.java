@@ -10,6 +10,12 @@ public interface Service {
 
     public String getServiceId();
 
+    public Thread getThread();
+
+    public void setThread(Thread serviceThread);
+
+    public boolean isRunning();
+
     public abstract void processMsg(Enum<?> incomingMsgEnum) throws ActionFailedException;
 
     public void init(Socket socketToClient, String serviceId) throws ActionFailedException;

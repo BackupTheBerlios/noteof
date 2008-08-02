@@ -23,17 +23,20 @@ public class ActionFailedException extends Exception {
     //
     public ActionFailedException(long errNo, String addInfo, Exception ex) {
         super(ex);
+        this.errNo = errNo;
         this.message = Errors.getMsg(errNo);
         this.addInfo = addInfo;
     }
 
     public ActionFailedException(long errNo, String addInfo) {
+        this.errNo = errNo;
         this.message = Errors.getMsg(errNo);
         this.addInfo = addInfo;
     }
 
     public ActionFailedException(long errNo, Exception ex) {
         super(ex);
+        this.errNo = errNo;
         this.message = Errors.getMsg(errNo);
     }
 

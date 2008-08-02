@@ -13,6 +13,8 @@ public class ApplicationService extends BaseService implements Service {
 
     public void init(Socket socketToClient, String serviceId) throws ActionFailedException {
         super.init(socketToClient, serviceId);
+        System.out.println("ApplicationService init activate...");
+        super.activateLifeSignSystem();
     }
 
     @Override
@@ -23,9 +25,12 @@ public class ApplicationService extends BaseService implements Service {
     @SuppressWarnings("unchecked")
     @Override
     public void processMsg(Enum receivedEnum) throws ActionFailedException {
-        String bla = receivedEnum.name();
-        System.out.println(bla);
-        throw new ActionFailedException(1, "");
+        System.out.println("ApplicationService empfangenes Enum: " + receivedEnum.name());
+
+        if (receivedEnum.equals(ApplicationTag.REQ_CONNECT_ADDITIONAL_NAME)) {
+            System.out.println("Treffer");
+            responseTo(ApplicationTag.RESP_CONNECT_ADDITIONAL_NAME, "UIUIIUUI");
+        }
     }
 
     protected TimeOut getTimeOutObject(TimeOut timeOut) {
