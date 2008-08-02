@@ -2,6 +2,8 @@ package de.notEOF.test;
 
 import de.notEOF.application.client.ApplicationClient;
 import de.notEOF.core.exception.ActionFailedException;
+import de.notIOC.configuration.ConfigProperty;
+import de.notIOC.configuration.ConfigurationManager;
 
 public class Test {
 
@@ -15,6 +17,9 @@ public class Test {
         } catch (ActionFailedException e) {
             throw new RuntimeException(e);
         }
+
+        ConfigProperty prop = ConfigurationManager.getProperty("os");
+        System.out.println("Prop: " + prop.getStringValue("aha"));
 
         try {
             applClient.blabla();

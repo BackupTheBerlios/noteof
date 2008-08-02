@@ -78,7 +78,7 @@ public class Server implements Runnable {
         serverThread = new Thread(server);
         serverThread.start();
 
-        ServiceObserver observer = new ServiceObserver(server);
+        ServiceGarbage observer = new ServiceGarbage(server);
         serviceObserverThread = new Thread(observer);
         serviceObserverThread.start();
     }
