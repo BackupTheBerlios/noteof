@@ -16,10 +16,10 @@ import de.notIOC.logging.LocalLog;
 
 public class ConfigurationManager {
 
-    private String notEOFHome = null;
+    private static String notEOFHome = null;
     private CompositeConfigurationNotIOC notIOCConfiguration = new CompositeConfigurationNotIOC();
     private XMLConfiguration basicConfiguration = new XMLConfiguration();
-    private String configFile = "conf_master.xml";
+    private String configFile = "noteof_master.xml";
     private String configFilePath;
 
     /**
@@ -129,7 +129,7 @@ public class ConfigurationManager {
     /**
      * @return Central configuration path (CFGROOT, NOTEOF_HOME)
      */
-    public String getApplicationHome() {
+    public static String getApplicationHome() {
         // Configuration Root depends to Tomcat variable
         if (notEOFHome == null) {
             try {

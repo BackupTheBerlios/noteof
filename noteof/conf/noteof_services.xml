@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- This file contains a list of service types which are available by this local server.
+     The list is used by the DispatchService
+-->
+<noteof_root>
+	<serviceTypes type="ApplicationService" maxClients="30">Application</serviceTypes>
+	<serviceTypes type="ConfigurationService" maxClients="40">Configuration</serviceTypes>
+</noteof_root>	

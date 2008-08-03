@@ -5,7 +5,10 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import de.notEOF.core.communication.TalkLine;
@@ -13,6 +16,7 @@ import de.notEOF.core.enumeration.BaseCommTag;
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.interfaces.Service;
 import de.notEOF.core.logging.LocalLog;
+import de.notEOF.core.service.BaseService;
 import de.notEOF.core.service.ServiceFinder;
 import de.notEOF.core.util.ArgsParser;
 import de.notEOF.core.util.Util;
@@ -56,6 +60,8 @@ public class Server implements Runnable {
      * @throws ActionFailedException
      */
     public static void start(int port) throws ActionFailedException {
+        // notEof_Home = ConfigurationManager.getApplicationHome();
+
         // look for NOTEOF_HOME as VM environment variable (-DCFGROOT)
         // and - if not found - as SYSTEM environment variable $NOTEOF_HOME
         notEof_Home = System.getProperty("NOTEOF_HOME");
@@ -63,7 +69,7 @@ public class Server implements Runnable {
             notEof_Home = System.getenv("NOTEOF_HOME");
 
         if (Util.isEmpty(notEof_Home)) {
-            System.out.println("Umgebungsvariable 'NOTEOF_HOME' ist nicht gesetzt. !EOF-Server benï¿½tigt diese Variable.\n" + //
+            System.out.println("Umgebungsvariable 'NOTEOF_HOME' ist nicht gesetzt. !EOF-Server benötigt diese Variable.\n" + //
                     "Wert der Variable ist der Ordner unter dem die noteof.jar liegt.\n");
         }
         System.out.println("NOTEOF_HOME=" + notEof_Home);
@@ -124,7 +130,6 @@ public class Server implements Runnable {
         // Confirm the serviceId received by client or tell him another one
         talkLine.awaitRequestAnswerImmediate(BaseCommTag.REQ_SERVICE, BaseCommTag.RESP_SERVICE, service.getServiceId());
 
-        // TODO Threads der services Ãœberwachen und ggfs. stoppen (Observer...)
         // start service for client
         // for later use the thread will put into the client
         System.out.println("Server assignServiceToClient service = " + service.getClass().getCanonicalName());
@@ -139,7 +144,19 @@ public class Server implements Runnable {
 
     }
 
-    private static String generateServiceId() {
+    public int getPort() {
+        return serverSocket.getLocalPort();
+    }
+
+    public String getHostAddress() {
+        try {
+            return InetAddress.getLocalHost().getHostAddress();
+        } catch (UnknownHostException e) {
+        }
+        return null;
+    }
+
+    private synchronized static String generateServiceId() {
         String hostAddress = "";
         try {
             hostAddress = InetAddress.getLocalHost().getHostAddress();
@@ -154,6 +171,18 @@ public class Server implements Runnable {
             return null;
         if (allServiceMaps.containsKey(serviceTypeName)) {
             return (Map<String, Service>) allServiceMaps.get(serviceTypeName);
+        }
+        return null;
+    }
+
+    public List<Service> getServiceListByTypeName(String serviceTypeName) throws ActionFailedException {
+        Map<String, Service> serviceMap = null;
+        serviceMap = getServiceMapByTypeName(serviceTypeName);
+        if (null != serviceMap) {
+            Collection<Service> servicesOfType = serviceMap.values();
+            List<Service> serviceList = new ArrayList<Service>();
+            serviceList.addAll(servicesOfType);
+            return serviceList;
         }
         return null;
     }
@@ -193,7 +222,9 @@ public class Server implements Runnable {
             if (null != service) {
                 // generate new serviceId
                 deliveredServiceId = generateServiceId();
-                service.init(clientSocket, deliveredServiceId);
+                ((BaseService) service).setServer(this);
+                ((BaseService) service).initializeConnection(clientSocket, deliveredServiceId);
+                ((BaseService) service).init();
 
                 // if service type did not exist in general service list till
                 // now create new map for type

@@ -1,6 +1,7 @@
 package de.notEOF.core.service;
 
 import java.net.Socket;
+import java.util.List;
 
 import de.notEOF.core.BaseClientOrService;
 import de.notEOF.core.client.BaseClient;
@@ -10,13 +11,16 @@ import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.interfaces.Service;
 import de.notEOF.core.interfaces.TimeOut;
 import de.notEOF.core.logging.LocalLog;
+import de.notEOF.core.server.Server;
 
 /**
  * Basic class for every !EOF Service.
  * <p>
- * During services will run as threads to serve the clients simultaneously. Therefore derived classes of this class must be {@link Runnable}
- * and have to implement the method run(). <br>
- * The run method is a good place to accept the individual requests of the clients and process them.<br>
+ * During services will run as threads to serve the clients simultaneously.
+ * Therefore derived classes of this class must be {@link Runnable} and have to
+ * implement the method run(). <br>
+ * The run method is a good place to accept the individual requests of the
+ * clients and process them.<br>
  * 
  * @author Dirk
  * 
@@ -27,6 +31,7 @@ public abstract class BaseService extends BaseClientOrService implements Service
     private boolean stopped = false;
     public boolean isRunning = true;
     private Thread serviceThread;
+    private Server server;
 
     // /**
     // * If you don't know what to do with the constructor of your derived class
@@ -48,7 +53,18 @@ public abstract class BaseService extends BaseClientOrService implements Service
         return isRunning;
     }
 
-    public void init(Socket socketToClient, String serviceId) throws ActionFailedException {
+    /**
+     * This method can be overwritten by service implementations. <br>
+     * It is called directly after the connection with the client is
+     * established. <br>
+     * E.g. this could be the place to activate the lifesign system.
+     * 
+     * @throws ActionFailedException
+     */
+    public void init() throws ActionFailedException {
+    }
+
+    public void initializeConnection(Socket socketToClient, String serviceId) throws ActionFailedException {
         setServiceId(serviceId);
         TimeOut timeOut = getTimeOutObject();
         talkLine = new TalkLine(socketToClient, timeOut.getMillisCommunication());
@@ -66,6 +82,22 @@ public abstract class BaseService extends BaseClientOrService implements Service
         return serviceThread;
     }
 
+    public final void setServer(Server server) {
+        this.server = server;
+    }
+
+    public final List<Service> getServiceListByTypeName(String serviceTypeName) throws ActionFailedException {
+        return server.getServiceListByTypeName(serviceTypeName);
+    }
+
+    public final int getServerPort() {
+        return server.getPort();
+    }
+
+    public final String getServerHostAddress() {
+        return server.getHostAddress();
+    }
+
     /**
      * Set the thread as which the client runs.
      * 
@@ -78,9 +110,11 @@ public abstract class BaseService extends BaseClientOrService implements Service
 
     /**
      * Activates the LifeSignSystem to ensure that the client is alive. <br>
-     * When the system is activated the service awaits that it's client sends messages within a hardly defined time in the class
+     * When the system is activated the service awaits that it's client sends
+     * messages within a hardly defined time in the class
      * {@link NotEOFConstants}.<br>
-     * If the LifeSignSystem is activated for the service, it is very recommendable to activate it for every client which uses this type of
+     * If the LifeSignSystem is activated for the service, it is very
+     * recommendable to activate it for every client which uses this type of
      * service too!
      * 
      * @see BaseClient
@@ -164,13 +198,16 @@ public abstract class BaseService extends BaseClientOrService implements Service
             }
         }
         return null;
-        // throw new ActionFailedException(151L, "Validierung der Empfangenen Nachricht: " + msg);
+        // throw new ActionFailedException(151L,
+        // "Validierung der Empfangenen Nachricht: " + msg);
     }
 
     /**
-     * Every specialized client/service has it's own Enum which defines the constant tags. This method is the reasaon why there mustn't be
-     * more than one Enum(class) for every client/server solution. <br>
-     * The developer implements this method in the simple manner that he returns his specialized Enum class.<br>
+     * Every specialized client/service has it's own Enum which defines the
+     * constant tags. This method is the reasaon why there mustn't be more than
+     * one Enum(class) for every client/server solution. <br>
+     * The developer implements this method in the simple manner that he returns
+     * his specialized Enum class.<br>
      * Sample: return MySpecialTag.class();
      * 
      * @return
@@ -178,8 +215,8 @@ public abstract class BaseService extends BaseClientOrService implements Service
     public abstract Class<?> getCommunicationTagClass();
 
     /**
-     * This abstract method is called by the BaseService class. Here messages must be processed which are specific for the client and the
-     * service.
+     * This abstract method is called by the BaseService class. Here messages
+     * must be processed which are specific for the client and the service.
      * 
      * @param incomingMsgEnum
      */

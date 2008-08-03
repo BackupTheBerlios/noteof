@@ -1,9 +1,10 @@
 package de.notEOF.test;
 
+import java.util.List;
+
 import de.notEOF.application.client.ApplicationClient;
+import de.notEOF.configuration.client.LocalConfigurationClient;
 import de.notEOF.core.exception.ActionFailedException;
-import de.notIOC.configuration.ConfigProperty;
-import de.notIOC.configuration.ConfigurationManager;
 
 public class Test {
 
@@ -12,14 +13,39 @@ public class Test {
 
         ApplicationClient applClient = null;
         try {
-            applClient = new ApplicationClient("127.0.0.1", 2512, null, args);
+            applClient = new ApplicationClient("127.0.0.1", 3000, null, args);
             System.out.println(applClient.getServiceId());
         } catch (ActionFailedException e) {
             throw new RuntimeException(e);
         }
 
-        ConfigProperty prop = ConfigurationManager.getProperty("os");
-        System.out.println("Prop: " + prop.getStringValue("aha"));
+        List<String> serviceTypesA = LocalConfigurationClient.getList("serviceTypes.[@type]");
+        List<String> serviceTypesB = LocalConfigurationClient.getList("serviceTypes.[@maxClients]");
+        List<String> serviceTypesC = LocalConfigurationClient.getList("serviceTypes.[@no]");
+        List<String> serviceTypesD = LocalConfigurationClient.getList("serviceTypes");
+
+        if (null != serviceTypesA) {
+            for (String x : serviceTypesA) {
+                System.out.println("Liste A: " + x);
+            }
+        }
+        if (null != serviceTypesB) {
+            for (String x : serviceTypesB) {
+                System.out.println("Liste B: " + x);
+            }
+        }
+
+        if (null != serviceTypesC) {
+            for (String x : serviceTypesC) {
+                System.out.println("Liste C: " + x);
+            }
+        }
+
+        if (null != serviceTypesD) {
+            for (String x : serviceTypesD) {
+                System.out.println("Liste D: " + x);
+            }
+        }
 
         try {
             applClient.blabla();

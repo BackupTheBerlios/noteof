@@ -22,6 +22,7 @@ public class TalkLine {
      * Construction of a new notEOF communication (normally with a client) using
      * a socket connection which must be instanciated by the calling class.
      * 
+     * @since 0.1 beta
      * @param socketToPartner
      *            Existing socket connection
      * @param timeOutMillis
@@ -49,6 +50,7 @@ public class TalkLine {
      * Construction of client-server-communication by ip address and server
      * port.
      * 
+     * @since 0.1 beta
      * @param ip
      *            ip address of server
      * @param port
@@ -88,6 +90,7 @@ public class TalkLine {
     /**
      * Response to the communication partner after receiving a request.
      * 
+     * @since 0.1 beta
      * @param respHeader
      *            Must match the header which is demand by the partner.
      * @param value
@@ -104,6 +107,7 @@ public class TalkLine {
     /**
      * Fires a request to the communication partner.
      * 
+     * @since 0.1 beta
      * @param requestHeader
      *            Special header, which qualifies the request.
      * @param expectedRespHeader
@@ -120,9 +124,10 @@ public class TalkLine {
     }
 
     /**
-     * Method for await a special info message of the communication partner. <br>
+     * Method for awaiting a special info message of the communication partner. <br>
      * This method is only implemented for clearance.
      * 
+     * @since 0.1 beta
      * @param expectedInfoHeader
      *            Expected info message header
      * @throws ActionFailedException
@@ -136,7 +141,9 @@ public class TalkLine {
     }
 
     /**
-     * Method for await a special request of the communication partner. <br>
+     * Method for awaiting a special request of the communication partner. <br>
+     * 
+     * @since 0.1 beta
      * 
      * @param expectedRequestHeader
      *            Expected message header
@@ -155,6 +162,7 @@ public class TalkLine {
      * Simplifies the code by concentrating the methods awaitRequest() and
      * responseTo().
      * 
+     * @since 0.1 beta
      * @param expectedRequestHeader
      *            Header which is expected by the partner message
      * @param respHeader
@@ -170,10 +178,11 @@ public class TalkLine {
     }
 
     /**
-     * Read a message ignoring the adjusted timeout. <br>
+     * Read a message ignoring the adjusted timeout before. <br>
      * That means that this method blocks any other action...<br>
      * Is useful in some situations.
      * 
+     * @since 0.1 beta
      * @return One line message text
      */
     public String readMsgNoTimeOut() throws ActionFailedException {
@@ -190,6 +199,7 @@ public class TalkLine {
      * Attention: In case of throwing ActionFailedException it is possible that
      * the old timeout is overwritten.
      * 
+     * @since 0.1 beta
      * @param timeOutMillis
      *            The timeout which is used for reading a message.
      * @return The message of the communication partner.
@@ -211,6 +221,7 @@ public class TalkLine {
     /**
      * Method to receive a message from the communication partner.
      * 
+     * @since 0.1 beta
      * @return Delivers one line (String terminated with cr) out of the write
      *         buffer of the communication partner.
      * @throws ActionFailedException
@@ -220,7 +231,10 @@ public class TalkLine {
     }
 
     /**
-     * Sends one line text to the communication partner.
+     * Sends text to the communication partner. In this version the text mustn't
+     * be longer than one line. The new line character isn't allowed.
+     * 
+     * @since 0.1 beta
      * 
      * @param msg
      *            The message text. Mustn't contain cr (except at the end).
