@@ -169,6 +169,7 @@ public class Server implements Runnable {
     public Map<String, Service> getServiceMapByTypeName(String serviceTypeName) throws ActionFailedException {
         if (null == allServiceMaps)
             return null;
+        System.out.println("Suche nach serviceTypename: " + serviceTypeName);
         if (allServiceMaps.containsKey(serviceTypeName)) {
             return (Map<String, Service>) allServiceMaps.get(serviceTypeName);
         }
@@ -179,8 +180,10 @@ public class Server implements Runnable {
         Map<String, Service> serviceMap = null;
         serviceMap = getServiceMapByTypeName(serviceTypeName);
         if (null != serviceMap) {
+            System.out.println("Server hat serviceMap gefunden...");
             Collection<Service> servicesOfType = serviceMap.values();
             List<Service> serviceList = new ArrayList<Service>();
+            System.out.println("Größe: " + serviceList.size());
             serviceList.addAll(servicesOfType);
             return serviceList;
         }

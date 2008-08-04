@@ -11,6 +11,24 @@ public abstract class BaseClientOrService {
     protected TalkLine talkLine;
 
     /**
+     * Delivers the port of the connected service.
+     * 
+     * @return port
+     */
+    protected final int getPartnerPort() {
+        return getTalkLine().getPort();
+    }
+
+    /**
+     * Delivers the ip of the connected service.
+     * 
+     * @return ip (host address)
+     */
+    protected final String getPartnerHostAddress() {
+        return getTalkLine().getHostAddress();
+    }
+
+    /**
      * Delivers a valid message interface to the server
      * 
      * @return An initialized Object which simplifies the communication with the
@@ -31,11 +49,11 @@ public abstract class BaseClientOrService {
     }
 
     /**
-     * Meldet sich vom Server ab und schlieﬂt die physikalische Verbindung.
+     * Disconnect from server, close physical connection.
      * 
      * @throws ActionFailedException
      */
-    protected void close() throws ActionFailedException {
+    public void close() throws ActionFailedException {
         talkLine.close();
     }
 
@@ -181,4 +199,15 @@ public abstract class BaseClientOrService {
         talkLine.writeMsg(msg);
     }
 
+    /**
+     * Sends text to the communication partner. In this version the text mustn't
+     * be longer than one line. The new line character isn't allowed.
+     * 
+     * @param requestHeader
+     *            The header like defined in an enum.
+     * @throws ActionFailedException
+     */
+    public void writeMsg(Enum<?> requestHeader) throws ActionFailedException {
+        talkLine.writeMsg(requestHeader.name());
+    }
 }

@@ -11,11 +11,14 @@ import de.notEOF.core.service.BaseService;
 
 /**
  * From this class every other client must be extended. <br>
- * The most important steps for establishing a connection to a service are defined or implemented here.
+ * The most important steps for establishing a connection to a service are
+ * defined or implemented here.
  * <p>
- * It is highly recommended that the derived class at very first step calls the constructor of BaseClient. The basic constructors establish
- * a connection with the matching service. Not more. All communication acts between client and service are oriented to the very specialized
- * tasks of the derived clients and must be individual implemented by developers.
+ * It is highly recommended that the derived class at very first step calls the
+ * constructor of BaseClient. The basic constructors establish a connection with
+ * the matching service. Not more. All communication acts between client and
+ * service are oriented to the very specialized tasks of the derived clients and
+ * must be individual implemented by developers.
  * 
  * @author Dirk
  * 
@@ -25,20 +28,24 @@ public abstract class BaseClient extends BaseClientOrService {
     private boolean linkedToService = false;
 
     /**
-     * The server decides which service is the compatible one to this client by using the classname. <br>
+     * The server decides which service is the compatible one to this client by
+     * using the classname. <br>
      * Every Client which is derived from BaseClient must implement this method.
      * 
      * @return The service class which is matching with the client.
      */
-    protected abstract Class<?> service();
+    protected abstract Class<?> serviceForClient();
 
     /**
      * Standard construction of the clients. <br>
-     * At first they should initialize the communication with server and service. Within the super constructors of BaseClient the connection
-     * with server and service will be established.
+     * At first they should initialize the communication with server and
+     * service. Within the super constructors of BaseClient the connection with
+     * server and service will be established.
      * 
      * @throws ActionFailedException
-     *             If the connection with server and service couldn't be established successfull an ActionFailedException will be thrown.
+     *             If the connection with server and service couldn't be
+     *             established successfull an ActionFailedException will be
+     *             thrown.
      */
     public BaseClient(Socket socketToServer, TimeOut timeout, String... args) throws ActionFailedException {
         if (null == timeout) {
@@ -50,11 +57,14 @@ public abstract class BaseClient extends BaseClientOrService {
 
     /**
      * Standard construction of the clients. <br>
-     * At first they should initialize the communication with server and service. Within the super constructors of BaseClient the connection
-     * with server and service will be established.
+     * At first they should initialize the communication with server and
+     * service. Within the super constructors of BaseClient the connection with
+     * server and service will be established.
      * 
      * @throws ActionFailedException
-     *             If the connection with server and service couldn't be established successfull an ActionFailedException will be thrown.
+     *             If the connection with server and service couldn't be
+     *             established successfull an ActionFailedException will be
+     *             thrown.
      */
     public BaseClient(String ip, int port, TimeOut timeout, String... args) throws ActionFailedException {
         if (null == timeout) {
@@ -77,9 +87,11 @@ public abstract class BaseClient extends BaseClientOrService {
 
     /**
      * Activates the LifeSignSystem to ensure that the client is alive. <br>
-     * When the system is activated the service awaits that it's client sends messages within a hardly defined time in the class
+     * When the system is activated the service awaits that it's client sends
+     * messages within a hardly defined time in the class
      * {@link NotEOFConstants}.<br>
-     * If the LifeSignSystem is activated for the service, it is very recommendable to activate it for every client which uses this type of
+     * If the LifeSignSystem is activated for the service, it is very
+     * recommendable to activate it for every client which uses this type of
      * service too!
      * 
      * @see BaseClient
@@ -90,16 +102,17 @@ public abstract class BaseClient extends BaseClientOrService {
     }
 
     /*
-     * When calling this method the client registers itself at the server. After a successfull registration at server side exists a service
-     * espacialy for this client.
+     * When calling this method the client registers itself at the server. After
+     * a successfull registration at server side exists a service espacialy for
+     * this client.
      */
     @SuppressWarnings("unchecked")
     private final void registerAtServer(TalkLine talkLine, TimeOut timeout, String... args) throws ActionFailedException {
         Class<BaseService> serviceCast;
         try {
-            serviceCast = (Class<BaseService>) service();
+            serviceCast = (Class<BaseService>) serviceForClient();
         } catch (Exception ex) {
-            throw new ActionFailedException(22L, "Casten einer Klasse auf Klasse BaseService ist fehlgeschlagen: " + service().getName());
+            throw new ActionFailedException(22L, "Casten einer Klasse auf Klasse BaseService ist fehlgeschlagen: " + serviceForClient().getName());
         }
         System.out.println("BaseClient registerAtServer serviceCast = " + serviceCast.getCanonicalName());
         ServerRegistration registration = new ServerRegistration((Class<BaseService>) serviceCast, talkLine, timeout.getMillisConnection(), args);

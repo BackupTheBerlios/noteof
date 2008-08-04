@@ -23,21 +23,28 @@ public class ActionFailedException extends Exception {
     //
     public ActionFailedException(long errNo, String addInfo, Exception ex) {
         super(ex);
-        this.errNo = errNo;
-        this.message = Errors.getMsg(errNo);
-        this.addInfo = addInfo;
+        initMembers(errNo, addInfo);
     }
 
     public ActionFailedException(long errNo, String addInfo) {
         this.errNo = errNo;
-        this.message = Errors.getMsg(errNo);
-        this.addInfo = addInfo;
+        initMembers(errNo, addInfo);
     }
 
     public ActionFailedException(long errNo, Exception ex) {
         super(ex);
+        initMembers(errNo, null);
+    }
+
+    private void initMembers(long errNo, String addInfo) {
         this.errNo = errNo;
-        this.message = Errors.getMsg(errNo);
+        String msg = Errors.getMsg(errNo);
+        if (null == msg || msg.trim().length() == 0) {
+            msg = "Message not defined in Errors.class. Index of msg in code: " + errNo;
+        }
+        this.message = msg;
+        if (null != addInfo)
+            this.addInfo = addInfo;
     }
 
     /**

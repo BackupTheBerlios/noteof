@@ -20,6 +20,8 @@ public class ServiceFinder {
         if (Util.isEmpty(className))
             throw new ActionFailedException(150L, "Fehlende Angabe des Klassennamen.");
 
+        System.out.println("notEof_Home: " + notEof_Home + "ClassName: " + className);
+
         Class<Service> classService = (Class<Service>) NotEOFClassFinder.getClass(notEof_Home, className);
         Service newService;
         try {

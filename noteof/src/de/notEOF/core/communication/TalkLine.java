@@ -76,6 +76,14 @@ public class TalkLine {
         }
     }
 
+    public int getPort() {
+        return socketLayer.getSocketToPartner().getLocalPort();
+    }
+
+    public String getHostAddress() {
+        return socketLayer.getSocketToPartner().getInetAddress().getHostAddress();
+    }
+
     public boolean isConnected() {
         return socketLayer.isConnected();
     }
