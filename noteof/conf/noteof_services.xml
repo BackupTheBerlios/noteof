@@ -10,11 +10,11 @@
     maxClients:    Max. number of clients which are allowed to connect to the service at this server.
      
     Samples
-	<serviceTypes simpleName="ApplicationService" canonicalName="de.notEOF.application.ApplicationService" maxClients="30">Application</serviceTypes>
-	<serviceTypes simpleName="ConfigurationService" canonicalName="de.notEOF.configuration.ConfigurationService" maxClients="40">Configuration</serviceTypes>
+	<serviceTypes simpleName="ApplicationService" canonicalName="de.notEOF.application.service.ApplicationService" maxClients="30">Application</serviceTypes>
+	<serviceTypes simpleName="ConfigurationService" canonicalName="de.notEOF.configuration.service.ConfigurationService" maxClients="40">Configuration</serviceTypes>
 -->
 
 <noteof_root>
-	<serviceTypes simpleName="ApplicationService" canonicalName="de.notEOF.application.ApplicationService" maxClients="30">Application</serviceTypes>
-	<serviceTypes simpleName="ConfigurationService" canonicalName="de.notEOF.configuration.ConfigurationService" maxClients="40">Configuration</serviceTypes>
+	<serviceTypes simpleName="ApplicationService" canonicalName="de.notEOF.application.service.ApplicationService" maxClients="3">Application</serviceTypes>
+	<serviceTypes simpleName="ConfigurationService" canonicalName="de.notEOF.configuration.service.ConfigurationService" maxClients="40">Configuration</serviceTypes>
 </noteof_root>	

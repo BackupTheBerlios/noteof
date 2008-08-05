@@ -123,8 +123,7 @@ public class Server implements Runnable {
         String deliveredServiceId = talkLine.requestTo(BaseCommTag.REQ_SERVICE_ID, BaseCommTag.RESP_SERVICE_ID);
         String serviceTypeName = talkLine.requestTo(BaseCommTag.REQ_TYPE_NAME, BaseCommTag.RESP_TYPE_NAME);
 
-        System.out.println("Server acceptClient deliveredServiceId = " + deliveredServiceId);
-        System.out.println("Server acceptClient serviceTypeName = " + serviceTypeName);
+        LocalLog.info("Server acceptClient serviceTypeName = " + serviceTypeName + "; deliveredServiceId = " + deliveredServiceId);
 
         // Lookup for a service which is assigned to the client. If not found
         // create a new one
@@ -134,7 +133,8 @@ public class Server implements Runnable {
 
         // start service for client
         // for later use the thread will put into the client
-        System.out.println("Server assignServiceToClient service = " + service.getClass().getCanonicalName());
+        // LocalLog.info("Server assignServiceToClient service = " +
+        // service.getClass().getCanonicalName());
         if (null != service) {
             Thread serviceThread = new Thread((Runnable) service);
             service.setThread(serviceThread);
@@ -145,7 +145,7 @@ public class Server implements Runnable {
         }
 
     }
-    
+
     public static String getApplicationHome() {
         return notEof_Home;
     }
@@ -175,7 +175,6 @@ public class Server implements Runnable {
     public Map<String, Service> getServiceMapByTypeName(String serviceTypeName) throws ActionFailedException {
         if (null == allServiceMaps)
             return null;
-        System.out.println("Suche nach serviceTypename: " + serviceTypeName);
         if (allServiceMaps.containsKey(serviceTypeName)) {
             return (Map<String, Service>) allServiceMaps.get(serviceTypeName);
         }
@@ -202,7 +201,7 @@ public class Server implements Runnable {
         }
         return null;
     }
-    
+
     /*
      * Second step: Look for matching service by existing serviceId and
      * clientTypeName
@@ -218,7 +217,6 @@ public class Server implements Runnable {
         // serviceTypeName
         // Then search in the service Map for the service which has the same
         // deliveredServiceId
-//        Service service = getService(deliveredServiceId, serviceTypeName);
         Service service = getService(deliveredServiceId, Util.simpleClassName(serviceTypeName));
 
         // not found?
@@ -235,12 +233,10 @@ public class Server implements Runnable {
 
                 // if service type did not exist in general service list till
                 // now create new map for type
-//                Map<String, Service> serviceMap = getServiceMapByTypeName(serviceTypeName);
                 Map<String, Service> serviceMap = getServiceMapByTypeName(Util.simpleClassName(serviceTypeName));
                 if (null == serviceMap) {
                     serviceMap = new HashMap<String, Service>();
                     // add new type specific map to general list
-//                    allServiceMaps.put(serviceTypeName, serviceMap);
                     allServiceMaps.put(Util.simpleClassName(serviceTypeName), serviceMap);
                 }
 

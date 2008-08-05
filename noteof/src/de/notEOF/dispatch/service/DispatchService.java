@@ -63,10 +63,8 @@ public class DispatchService extends BaseService implements Service {
             // BaseService can help.
             int activeServicesForType = 0;
             int maxServicesForType = 0;
-            System.out.println("ServiceList mit simpleName: " + Util.simpleClassName(requestedServiceType));
             List<Service> serviceList = getServiceListByTypeName(Util.simpleClassName(requestedServiceType));
             if (null != serviceList) {
-                System.out.println("Anzahl aktiver Clients: " + serviceList.size());
                 activeServicesForType = serviceList.size();
             }
 
@@ -85,8 +83,7 @@ public class DispatchService extends BaseService implements Service {
             List<String> simpleNames = LocalConfigurationClient.getList("serviceTypes.[@simpleName]");
             List<String> maxClients = LocalConfigurationClient.getList("serviceTypes.[@maxClients]");
 
-            // search matching type in configuration
-            System.out.println("Suche über simple name...");
+            // search matching type in configuration via simple class name
             if (null != simpleNames && null != maxClients && simpleNames.size() == maxClients.size()) {
                 dispatchSupported = true;
                 for (int i = 0; i < simpleNames.size(); i++) {
@@ -102,18 +99,15 @@ public class DispatchService extends BaseService implements Service {
             }
 
             if (!confEntryFound) {
-                System.out.println("Suche über canonical name...");
+                // search matching type in configuration via canonical class
+                // name
                 List<String> canonicalNames = LocalConfigurationClient.getList("serviceTypes.[@canonicalName]");
-
-                // search matching type in configuration
                 if (null != canonicalNames && null != maxClients && canonicalNames.size() == maxClients.size()) {
                     dispatchSupported = true;
                     for (int i = 0; i < canonicalNames.size(); i++) {
                         String typeName = canonicalNames.get(i).trim();
-                        System.out.println("CanonicalName = " + typeName);
                         if (typeName.equals(requestedServiceType)) {
                             // type exists in configuration
-                            System.out.println("max allowed: " + maxClients.get(i));
                             maxServicesForType = Util.parseInt(maxClients.get(i), 0);
                             confEntryFound = true;
                             break;
