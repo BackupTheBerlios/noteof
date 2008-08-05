@@ -55,11 +55,16 @@ public class DispatchService extends BaseService implements Service {
             // now ask client for the requested service type
             String requestedServiceType = requestTo(DispatchTag.REQ_SERVICE_TYPE, DispatchTag.RESP_SERVICE_TYPE).trim();
 
+            // the dispatcher isn't interested in the canonicalName...
+            // requestedServiceType =
+            // Util.simpleClassName(requestedServiceType);
+
             // Perhaps a service is already running or was created in the past.
             // BaseService can help.
             int activeServicesForType = 0;
             int maxServicesForType = 0;
-            List<Service> serviceList = getServiceListByTypeName(requestedServiceType);
+            System.out.println("ServiceList mit simpleName: " + Util.simpleClassName(requestedServiceType));
+            List<Service> serviceList = getServiceListByTypeName(Util.simpleClassName(requestedServiceType));
             if (null != serviceList) {
                 System.out.println("Anzahl aktiver Clients: " + serviceList.size());
                 activeServicesForType = serviceList.size();
@@ -70,16 +75,22 @@ public class DispatchService extends BaseService implements Service {
             // configuration file because of if in the list an attribute is
             // missed, the two list elements below are not 'synchron' - the
             // number of their elements would differ and not match.
-            List<String> types = LocalConfigurationClient.getList("serviceTypes.[@type]");
+
+            // double code lines seem a little bit buggy at the first look but
+            // they are not really the same. It is possible that the user
+            // configures simple class names or canonical class names. And the
+            // lists are not sure synchroniously.
+            boolean dispatchSupported = false;
+            boolean confEntryFound = false;
+            List<String> simpleNames = LocalConfigurationClient.getList("serviceTypes.[@simpleName]");
             List<String> maxClients = LocalConfigurationClient.getList("serviceTypes.[@maxClients]");
 
             // search matching type in configuration
-            boolean dispatchSupported = false;
-            boolean confEntryFound = false;
-            if (null != types && null != maxClients && types.size() == maxClients.size()) {
+            System.out.println("Suche über simple name...");
+            if (null != simpleNames && null != maxClients && simpleNames.size() == maxClients.size()) {
                 dispatchSupported = true;
-                for (int i = 0; i < types.size(); i++) {
-                    String typeName = types.get(i).trim();
+                for (int i = 0; i < simpleNames.size(); i++) {
+                    String typeName = simpleNames.get(i).trim();
                     if (typeName.equals(requestedServiceType)) {
                         // type exists in configuration
                         System.out.println("max allowed: " + maxClients.get(i));
@@ -89,6 +100,28 @@ public class DispatchService extends BaseService implements Service {
                     }
                 }
             }
+
+            if (!confEntryFound) {
+                System.out.println("Suche über canonical name...");
+                List<String> canonicalNames = LocalConfigurationClient.getList("serviceTypes.[@canonicalName]");
+
+                // search matching type in configuration
+                if (null != canonicalNames && null != maxClients && canonicalNames.size() == maxClients.size()) {
+                    dispatchSupported = true;
+                    for (int i = 0; i < canonicalNames.size(); i++) {
+                        String typeName = canonicalNames.get(i).trim();
+                        System.out.println("CanonicalName = " + typeName);
+                        if (typeName.equals(requestedServiceType)) {
+                            // type exists in configuration
+                            System.out.println("max allowed: " + maxClients.get(i));
+                            maxServicesForType = Util.parseInt(maxClients.get(i), 0);
+                            confEntryFound = true;
+                            break;
+                        }
+                    }
+                }
+            }
+
             boolean maxClientsExceeded = (maxServicesForType - activeServicesForType) > 0;
 
             // if not found the service local or max. number of clients exceeded

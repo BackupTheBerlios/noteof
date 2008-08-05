@@ -222,5 +222,21 @@ public class Util {
             consoleWaitThread = null;
         }
     }
+    
+    /**
+     * Shortens a canonical class name to a simple class name. <br>
+     * Does not more than cutting all parts of the name until the last occurrence of a dot. <br>
+     * Sample: de.notEOF.application.service.ApplicationService will become to ApplicationService. 
+     * @param className
+     * @return simple name
+     */
+    public static String simpleClassName(String className) {
+        String simpleName = className;
+        while (simpleName.contains(".")) {
+            simpleName = simpleName.substring(simpleName.indexOf(".") +1);
+        }
+        return simpleName;
+    }
+
 
 }

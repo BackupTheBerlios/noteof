@@ -42,6 +42,13 @@ public class TalkLine {
                 socketLayer.setTimeOut(timeOutMillis);
 
         } catch (Exception ex) {
+            // perhaps the connection is established...
+            // try to close
+            try {
+                close();
+            } catch (Exception ex2) {
+                //do nothing
+            }
             throw new ActionFailedException(10L, ex);
         }
     }

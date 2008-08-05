@@ -64,7 +64,7 @@ public class ApplicationClient extends BaseClient {
     }
 
     @Override
-    protected Class<?> serviceForClient() {
+    public Class<?> serviceClassForClient() {
         return ApplicationService.class;
     }
 

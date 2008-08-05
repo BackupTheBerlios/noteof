@@ -50,6 +50,9 @@ public class Server implements Runnable {
         return server;
     }
 
+    /*
+     * Returns the map with all service types and services
+     */
     protected Map<String, Map<String, Service>> getAllServiceMaps() {
         return allServiceMaps;
     }
@@ -72,7 +75,6 @@ public class Server implements Runnable {
             System.out.println("Umgebungsvariable 'NOTEOF_HOME' ist nicht gesetzt. !EOF-Server benötigt diese Variable.\n" + //
                     "Wert der Variable ist der Ordner unter dem die noteof.jar liegt.\n");
         }
-        System.out.println("NOTEOF_HOME=" + notEof_Home);
 
         try {
             serverSocket = new ServerSocket(port);
@@ -143,6 +145,10 @@ public class Server implements Runnable {
         }
 
     }
+    
+    public static String getApplicationHome() {
+        return notEof_Home;
+    }
 
     public int getPort() {
         return serverSocket.getLocalPort();
@@ -180,10 +186,8 @@ public class Server implements Runnable {
         Map<String, Service> serviceMap = null;
         serviceMap = getServiceMapByTypeName(serviceTypeName);
         if (null != serviceMap) {
-            System.out.println("Server hat serviceMap gefunden...");
             Collection<Service> servicesOfType = serviceMap.values();
             List<Service> serviceList = new ArrayList<Service>();
-            System.out.println("Größe: " + serviceList.size());
             serviceList.addAll(servicesOfType);
             return serviceList;
         }
@@ -198,7 +202,7 @@ public class Server implements Runnable {
         }
         return null;
     }
-
+    
     /*
      * Second step: Look for matching service by existing serviceId and
      * clientTypeName
@@ -206,16 +210,16 @@ public class Server implements Runnable {
     private Service assignServiceToClient(Socket clientSocket, String deliveredServiceId, String serviceTypeName) throws ActionFailedException {
 
         // Initialization of map for storing serviceLists
-        // the typeNames of clients are the key to assign and find the matching
-        // service to the client.
+        // the typeNames are sent by the clients during the connecting act
         if (null == allServiceMaps)
             allServiceMaps = new HashMap<String, Map<String, Service>>();
 
-        // Search for Map which contains the Map of the clients with the same
-        // clientTypeName
-        // Then search in the clients Map for the service which has the same
+        // Search for Map which contains the Map of the services with the same
+        // serviceTypeName
+        // Then search in the service Map for the service which has the same
         // deliveredServiceId
-        Service service = getService(deliveredServiceId, serviceTypeName);
+//        Service service = getService(deliveredServiceId, serviceTypeName);
+        Service service = getService(deliveredServiceId, Util.simpleClassName(serviceTypeName));
 
         // not found?
         // create service
@@ -231,11 +235,13 @@ public class Server implements Runnable {
 
                 // if service type did not exist in general service list till
                 // now create new map for type
-                Map<String, Service> serviceMap = getServiceMapByTypeName(serviceTypeName);
+//                Map<String, Service> serviceMap = getServiceMapByTypeName(serviceTypeName);
+                Map<String, Service> serviceMap = getServiceMapByTypeName(Util.simpleClassName(serviceTypeName));
                 if (null == serviceMap) {
                     serviceMap = new HashMap<String, Service>();
                     // add new type specific map to general list
-                    allServiceMaps.put(serviceTypeName, serviceMap);
+//                    allServiceMaps.put(serviceTypeName, serviceMap);
+                    allServiceMaps.put(Util.simpleClassName(serviceTypeName), serviceMap);
                 }
 
                 // add new service to type specific map
@@ -252,9 +258,8 @@ public class Server implements Runnable {
      *            Use --port=<port> as calling argument for using an individual
      *            server port
      */
+    // @TODO Hilfe anzeigen
     public static void main(String... args) {
-        System.out.println("Hello World");
-        // needs port
         String portString = "";
         ArgsParser argsParser = new ArgsParser(args);
         if (argsParser.containsStartsWith("--port")) {
@@ -266,7 +271,6 @@ public class Server implements Runnable {
             Server.start(port);
         } catch (Exception ex) {
             LocalLog.error("Der zentrale !EOF-Server konnte nicht gestartet werden.", ex);
-            System.out.println("Schade");
             throw new RuntimeException("!EOF Server kann nicht gestartet werden.", ex);
         }
     }

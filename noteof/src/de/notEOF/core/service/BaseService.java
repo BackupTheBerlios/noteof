@@ -128,9 +128,7 @@ public abstract class BaseService extends BaseClientOrService implements Service
     public void run() {
         while (!stopped) {
             try {
-                System.out.println("Service vor talkLine.readMsg...");
                 String msg = talkLine.readMsgTimedOut(NotEOFConstants.LIFE_TIME_INTERVAL_SERVICE);
-                System.out.println("Service nach talkLine.readMsg...");
 
                 // Check if the lifetime hasn't send longer than allowed
                 // or if any other messages came within the max. allowed time.
@@ -139,7 +137,6 @@ public abstract class BaseService extends BaseClientOrService implements Service
                     // System.currentTimeMillis()) {
                     // no message within the lifetime interval
                     // stop service
-                    System.out.println("hier");
                     stopped = true;
                     break;
                 }
@@ -154,7 +151,6 @@ public abstract class BaseService extends BaseClientOrService implements Service
                 // processed in the method handleMsg() which must be implemented
                 // individual in every service.
                 Class<Enum> tagEnumClass = (Class<Enum>) getCommunicationTagClass();
-                System.out.println("enum = " + tagEnumClass.getCanonicalName());
                 try {
                     processMsg(validateEnum(tagEnumClass, msg));
                 } catch (ActionFailedException afx) {
@@ -182,7 +178,6 @@ public abstract class BaseService extends BaseClientOrService implements Service
         } catch (Exception ex) {
             LocalLog.warn("Verbindung zum Client konnte nicht geschlossen werden. Evtl. bestand zu diesem Zeitpunkt keien Verbindung (mehr).", ex);
         }
-        System.out.println("Service stopped");
         isRunning = false;
     }
 
@@ -190,10 +185,8 @@ public abstract class BaseService extends BaseClientOrService implements Service
     private Enum validateEnum(Class<Enum> tagEnumClass, String msg) throws ActionFailedException {
         // try {
         Enum[] y = tagEnumClass.getEnumConstants();
-        System.out.println("Anzahl: " + y.length);
         for (int i = 0; i < y.length; i++) {
             if (y[i].name().equals(msg)) {
-                System.out.println("hoppla");
                 return y[i];
             }
         }

@@ -38,6 +38,7 @@ public class NotEOFClassFinder {
     }
 
     protected static URL[] getLibs(String notEof_Home) throws ActionFailedException {
+        System.out.println("notEof_home in getLibs: " + notEof_Home);
         ArrayList<URL> urls = new ArrayList<URL>();
 
         File notEOFDir = new File(notEof_Home);

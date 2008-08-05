@@ -89,7 +89,6 @@ public class ConfigurationManager {
         // Liste aller XML-Konfigurationen
         String pathName = basicConfiguration.getBasePath().replaceAll("file:", "");
         pathName = pathName.replaceAll("%20", " ");
-        System.out.println("************* pathName = " + pathName);
         @SuppressWarnings("unchecked")
         List<String> xmlFileList = (List<String>) basicConfiguration.getList(ConfigSection.XML_FILE_NAMES.getName());
         for (String fileName : xmlFileList) {
@@ -184,21 +183,4 @@ public class ConfigurationManager {
     public static ConfigProperty getProperty(String nodeName) {
         return new ConfigProperty(nodeName);
     }
-
-    // /*
-    // * Methode wird durch dynamisches Laden der Klasse vom marvin verwendet.
-    // Daher findet der Compiler keine Referenz.
-    // */
-    // public static String getPropertyString(String nodeName, String
-    // defaultValue) throws NotIOCException {
-    // ConfigProperty property = getProperty(nodeName);
-    // if (property == null)
-    // return null;
-    // return property.getStringValue();
-    // }
-    //
-    // public static String getPropertyString(String nodeName) throws
-    // NotIOCException {
-    // return getPropertyString(nodeName, null);
-    // }
 }

@@ -1,8 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- This file contains a list of service types which are available by this local server.
-     The list is used by the DispatchService
+<!-- 
+    This file contains a list of service types which are available by this local server.
+    The list is used by the method DispatchClient.getServiceConnection(serviceTypeName).
+    Depending how the parameter serviceTypeName is filled up by you.
+    
+    Meanings 
+    simpleName:    The type name of the service. Important if you used the simple name of the service class.
+    canonicalName: The complete path of the service class. Important if you used the canonical name of the service class.
+    maxClients:    Max. number of clients which are allowed to connect to the service at this server.
+     
+    Samples
+	<serviceTypes simpleName="ApplicationService" canonicalName="de.notEOF.application.ApplicationService" maxClients="30">Application</serviceTypes>
+	<serviceTypes simpleName="ConfigurationService" canonicalName="de.notEOF.configuration.ConfigurationService" maxClients="40">Configuration</serviceTypes>
 -->
+
 <noteof_root>
-	<serviceTypes type="ApplicationService" maxClients="30">Application</serviceTypes>
-	<serviceTypes type="ConfigurationService" maxClients="40">Configuration</serviceTypes>
+	<serviceTypes simpleName="ApplicationService" canonicalName="de.notEOF.application.ApplicationService" maxClients="30">Application</serviceTypes>
+	<serviceTypes simpleName="ConfigurationService" canonicalName="de.notEOF.configuration.ConfigurationService" maxClients="40">Configuration</serviceTypes>
 </noteof_root>	

@@ -12,6 +12,10 @@ import de.notIOC.exception.NotIOCException;
  * 
  */
 public class LocalConfigurationClient {
+    
+    public static String getApplicationHome() {
+        return ConfigurationManager.getApplicationHome();
+    }
 
     /**
      * Delivers a list of the local configuration. <br>

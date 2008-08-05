@@ -66,7 +66,6 @@ public class SocketLayer {
             msg = readUnqualifiedMsg();
             if (BaseCommTag.REQ_LIFE_SIGN.name().equals(msg)) {
                 responseToPartner(BaseCommTag.RESP_LIFE_SIGN.name(), BaseCommTag.VAL_OK.name());
-                System.out.println("Habe Lifesign beantwortet");
             }
             // no more read in this case
             // the next msg in the buffer can be sent independent to the lifesign system
@@ -176,7 +175,6 @@ public class SocketLayer {
         if (null != asClient && asClient) {
             lifeTimer.useAsClient();
         }
-        System.out.println("ActivateLifeSignSystem as client? " + asClient);
         Thread threadLifeTimer = new Thread(lifeTimer);
         threadLifeTimer.start();
     }

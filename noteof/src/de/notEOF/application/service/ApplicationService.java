@@ -10,7 +10,6 @@ import de.notEOF.core.service.BaseService;
 public class ApplicationService extends BaseService implements Service {
 
     public void init() throws ActionFailedException {
-        System.out.println("Tatsache... ApplicationService init activate...");
         super.activateLifeSignSystem();
     }
 
@@ -22,10 +21,7 @@ public class ApplicationService extends BaseService implements Service {
     @SuppressWarnings("unchecked")
     @Override
     public void processMsg(Enum receivedEnum) throws ActionFailedException {
-        System.out.println("ApplicationService empfangenes Enum: " + receivedEnum.name());
-
         if (receivedEnum.equals(ApplicationTag.REQ_CONNECT_ADDITIONAL_NAME)) {
-            System.out.println("Treffer");
             responseTo(ApplicationTag.RESP_CONNECT_ADDITIONAL_NAME, "UIUIIUUI");
         }
     }

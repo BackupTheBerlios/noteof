@@ -45,7 +45,7 @@ public class DispatchClient extends BaseClient {
     }
 
     @Override
-    protected Class<?> serviceForClient() {
+    public Class<?> serviceClassForClient() {
         return DispatchService.class;
     }
 
@@ -58,9 +58,16 @@ public class DispatchClient extends BaseClient {
      * 
      * @param serviceTypeName
      *            The name of the service type which is searched for. The name
-     *            of service type must exactly match the simple name of the
-     *            class which implements the service (no blanks, case
-     *            sensitive).
+     *            of service type must exactly match the name of the class which
+     *            implements the service (no blanks, case sensitive). It is
+     *            allowed to use only the simple (short) class name or the
+     *            canonical name (e.g. ApplicationService or
+     *            de.notEOF.application.service.ApplicationService). <br>
+     *            Whether the service will be found by dispatch service depends
+     *            to the service-configuration you made (did you use simpleName
+     *            or canonicalName?). Of cause you can configure both
+     *            (simpleName and canonicalName) and then it never minds which
+     *            type of name you fill in here.
      * @return This method creates and returns the socket to the server or null
      *         if the service wasn't found in the net.
      */

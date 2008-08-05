@@ -27,6 +27,10 @@ public abstract class BaseClient extends BaseClientOrService {
 
     private boolean linkedToService = false;
 
+    public BaseClient() {
+
+    }
+
     /**
      * The server decides which service is the compatible one to this client by
      * using the classname. <br>
@@ -34,7 +38,7 @@ public abstract class BaseClient extends BaseClientOrService {
      * 
      * @return The service class which is matching with the client.
      */
-    protected abstract Class<?> serviceForClient();
+    public abstract Class<?> serviceClassForClient();
 
     /**
      * Standard construction of the clients. <br>
@@ -70,9 +74,7 @@ public abstract class BaseClient extends BaseClientOrService {
         if (null == timeout) {
             timeout = getTimeOutObject();
         }
-        System.out.println("BaseClient Konstruktor vor talkLine");
         talkLine = new TalkLine(ip, port, timeout.getMillisCommunication());
-        System.out.println("BaseClient Konstruktor vor registerAtServer");
         registerAtServer(talkLine, timeout, args);
     }
 
@@ -110,11 +112,10 @@ public abstract class BaseClient extends BaseClientOrService {
     private final void registerAtServer(TalkLine talkLine, TimeOut timeout, String... args) throws ActionFailedException {
         Class<BaseService> serviceCast;
         try {
-            serviceCast = (Class<BaseService>) serviceForClient();
+            serviceCast = (Class<BaseService>) serviceClassForClient();
         } catch (Exception ex) {
-            throw new ActionFailedException(22L, "Casten einer Klasse auf Klasse BaseService ist fehlgeschlagen: " + serviceForClient().getName());
+            throw new ActionFailedException(22L, "Casten einer Klasse auf Klasse BaseService ist fehlgeschlagen: " + serviceClassForClient().getName());
         }
-        System.out.println("BaseClient registerAtServer serviceCast = " + serviceCast.getCanonicalName());
         ServerRegistration registration = new ServerRegistration((Class<BaseService>) serviceCast, talkLine, timeout.getMillisConnection(), args);
         linkedToService = registration.isLinkedToService();
         setServiceId(registration.getServiceId());

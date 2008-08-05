@@ -76,8 +76,9 @@ public class Errors {
         errorList.put(1000L, "Dispatch Service steht auf angefragtem Server nicht zur Verfügung.");
         errorList.put(1001L, "Dispatch Service konnte gesuchten Service nicht finden.");
         errorList.put(1002L, "Dispatch Service konnte keinen freien Service finden (max. Anzahl Clients erreicht).");
-        errorList.put(1003L, "Dispatch Client kann nicht auf mitgeteilte IP-Adresse und/oder Port zugreifen.");
-        errorList.put(1004L, "Dispatch Client kann Socket auf IP und/oder Port nicht initialisieren.");
+        errorList.put(1003L, "Dispatch Client konnte nicht auf mitgeteilte IP-Adresse und/oder Port zugreifen.");
+        errorList.put(1004L, "Dispatch Client konnte Socket auf IP und/oder Port nicht initialisieren.");
+        errorList.put(1005L, "Dispatch Client konnte Client Klasse nicht auflösen.");
     }
 
     /*
