@@ -31,7 +31,7 @@ public class NotEOFClassFinder {
 
         } catch (ClassNotFoundException e) {
             throw new ActionFailedException(150L,
-                    "Unbekannte Klasse oder Klasse nicht gefunden. Bibliotheken, CLASS_PATH, NOTEOF_HOME-Umgebungsvariable prï¿½fen: " + className);
+                    "Unbekannte Klasse oder Klasse nicht gefunden. Bibliotheken, CLASS_PATH, NOTEOF_HOME-Umgebungsvariable prüfen: " + className);
         } catch (Exception e) {
             throw new ActionFailedException(150L, "Problem bei Laden der Klasse: " + className);
         }

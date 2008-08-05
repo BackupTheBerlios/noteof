@@ -88,6 +88,8 @@ public class ConfigurationManager {
 
         // Liste aller XML-Konfigurationen
         String pathName = basicConfiguration.getBasePath().replaceAll("file:", "");
+        pathName = pathName.replaceAll("%20", " ");
+        System.out.println("************* pathName = " + pathName);
         @SuppressWarnings("unchecked")
         List<String> xmlFileList = (List<String>) basicConfiguration.getList(ConfigSection.XML_FILE_NAMES.getName());
         for (String fileName : xmlFileList) {
