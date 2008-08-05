@@ -3,10 +3,14 @@ package de.notEOF.dispatch.service;
 import java.util.List;
 
 import de.notEOF.configuration.client.LocalConfigurationClient;
+import de.notEOF.core.communication.BaseTimeOut;
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.interfaces.Service;
+import de.notEOF.core.logging.LocalLog;
 import de.notEOF.core.service.BaseService;
 import de.notEOF.core.util.Util;
+import de.notEOF.dispatch.SimpleSocketData;
+import de.notEOF.dispatch.client.DispatchClient;
 import de.notEOF.dispatch.enumeration.DispatchTag;
 
 public class DispatchService extends BaseService implements Service {
@@ -20,7 +24,11 @@ public class DispatchService extends BaseService implements Service {
     }
 
     public void init() {
-        activateLifeSignSystem();
+        // activateLifeSignSystem();
+    }
+
+    public void checkServerConfiguration() throws ActionFailedException {
+        // @TODO methode verbindet sich mit jedem Server einmal...
     }
 
     /**
@@ -40,6 +48,9 @@ public class DispatchService extends BaseService implements Service {
     @Override
     public void processMsg(Enum<?> incomingMsgEnum) throws ActionFailedException {
         if (incomingMsgEnum.equals(DispatchTag.REQ_SERVICE)) {
+            String serviceIp = "";
+            String servicePort = "";
+
             // It is important to distinct between different clients:
             // If another dispatcher is the client no more server will be asked
             // for service type.
@@ -51,6 +62,9 @@ public class DispatchService extends BaseService implements Service {
             if (DispatchTag.INFO_CLIENT_IS_DISPATCHER.name().equals(clientType)) {
                 clientIsDispatcher = true;
             }
+
+            System.out.println("Wurde von Dispatcher aufgerufen? " + clientIsDispatcher);
+            System.out.println("Bin Service auf: " + getServerHostAddress() + ":" + getServerPort());
 
             // now ask client for the requested service type
             String requestedServiceType = requestTo(DispatchTag.REQ_SERVICE_TYPE, DispatchTag.RESP_SERVICE_TYPE).trim();
@@ -90,9 +104,10 @@ public class DispatchService extends BaseService implements Service {
                     String typeName = simpleNames.get(i).trim();
                     if (typeName.equals(requestedServiceType)) {
                         // type exists in configuration
-                        System.out.println("max allowed: " + maxClients.get(i));
                         maxServicesForType = Util.parseInt(maxClients.get(i), 0);
                         confEntryFound = true;
+                        serviceIp = getServerHostAddress();
+                        servicePort = String.valueOf(getServerPort());
                         break;
                     }
                 }
@@ -110,22 +125,72 @@ public class DispatchService extends BaseService implements Service {
                             // type exists in configuration
                             maxServicesForType = Util.parseInt(maxClients.get(i), 0);
                             confEntryFound = true;
+                            serviceIp = getServerHostAddress();
+                            servicePort = String.valueOf(getServerPort());
                             break;
                         }
                     }
                 }
             }
 
-            boolean maxClientsExceeded = (maxServicesForType - activeServicesForType) > 0;
+            boolean maxClientsExceeded = (maxServicesForType - activeServicesForType) < 1;
 
             // if not found the service local or max. number of clients exceeded
-            // and the client is not a dispatcher
-            // too, try to find the service type at another server.
-            if (!(dispatchSupported && confEntryFound) && maxClientsExceeded && !clientIsDispatcher) {
-                // neuen dispatch client holen und konfigurierte server
-                // sequentiell abfragen
+            // or dispatcher isn't supported really here and the client is not a
+            // dispatcher itself, try to find the service type at another
+            // server.
+            if ((!(dispatchSupported && confEntryFound) //
+                    || (maxClientsExceeded && maxServicesForType > 0)) //
+                    && !clientIsDispatcher) {
+                // get new dispatch client and send same request to other server
+                // which are configured
+                List<String> eofServerIp = LocalConfigurationClient.getList("notEOFServer.[@ip]");
+                List<String> eofServerPort = LocalConfigurationClient.getList("notEOFServer.[@port]");
+
+                // search by ip's
+                // if configuration here isn't correct, make an entry into log
+                if (null != eofServerIp && null != eofServerPort && eofServerIp.size() == eofServerPort.size()) {
+                    DispatchClient dispatchClient = null;
+                    for (int i = 0; i < eofServerIp.size(); i++) {
+                        System.out.println("eofServerIp = " + eofServerIp.get(i));
+                        System.out.println("eofServerPort = " + Util.parseInt(eofServerPort.get(i), 0));
+
+                        if (eofServerIp.get(i).equals(getServerHostAddress())) {
+                            System.out.println("EIGENE ADRESSE...");
+                        } else {
+                            SimpleSocketData socketData = null;
+                            try {
+                                BaseTimeOut timeout = new BaseTimeOut(500, 500);
+                                dispatchClient = new DispatchClient(eofServerIp.get(i), Util.parseInt(eofServerPort.get(i), 0), timeout, (String[]) null);
+                                dispatchClient.IS_CLIENT_FOR_SERVICE = true;
+                                socketData = dispatchClient.getSocketData(requestedServiceType);
+                                if (null != socketData) {
+                                    // client has received valid address
+                                    dispatchSupported = true;
+                                    confEntryFound = true;
+                                    serviceIp = socketData.getIp();
+                                    servicePort = socketData.getPortString();
+                                    break;
+                                }
+                            } catch (ActionFailedException afx) {
+                                // catch the failed attempt of dispatch client
+                                // to
+                                // not leave this method by
+                                // ActionFailedException
+                                // because the originating client must be
+                                // informed
+                                // nothing to do...
+                                if (socketData != null)
+                                    LocalLog.warn("Couldn't find service type at server " + socketData.getIp() + ":" + socketData.getPortString(), afx);
+                            }
+                        }
+                    }
+                } else {
+                    LocalLog.warn("Configuration of serverlist maybe is corrupt or missed.");
+                }
             }
 
+            System.out.println("Bin der vom Dispatcher aufgerufene? " + clientIsDispatcher);
             // Client asks if the service is available
             awaitRequest(DispatchTag.REQ_SERVICE_AVAILABLE);
             // Then the service gives the calculated answer
@@ -143,9 +208,9 @@ public class DispatchService extends BaseService implements Service {
                 responseTo(DispatchTag.RESP_SERVICE_AVAILABLE, DispatchTag.RESULT_SERVICE_AVAILABLE.name());
 
                 // client must ask for ip
-                awaitRequestAnswerImmediate(DispatchTag.REQ_IP, DispatchTag.RESP_IP, getServerHostAddress());
+                awaitRequestAnswerImmediate(DispatchTag.REQ_IP, DispatchTag.RESP_IP, serviceIp);
                 // client must ask for port
-                awaitRequestAnswerImmediate(DispatchTag.REQ_PORT, DispatchTag.RESP_PORT, String.valueOf(getServerPort()));
+                awaitRequestAnswerImmediate(DispatchTag.REQ_PORT, DispatchTag.RESP_PORT, servicePort);
             }
 
         } else {

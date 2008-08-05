@@ -3,7 +3,7 @@ package de.notEOF.test;
 import java.net.Socket;
 
 import de.notEOF.application.client.ApplicationClient;
-import de.notEOF.application.service.ApplicationService;
+import de.notEOF.core.communication.BaseTimeOut;
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.dispatch.client.DispatchClient;
 
@@ -14,8 +14,13 @@ public class Test {
 
         Socket socketToApplService = null;
         try {
-            DispatchClient dispatchClient = new DispatchClient("127.0.0.1", 3000, null, args);
-            socketToApplService = dispatchClient.getServiceConnection(ApplicationService.class.getCanonicalName());
+            BaseTimeOut baseTimeOut = new BaseTimeOut(0, 0);
+
+            DispatchClient dispatchClient = new DispatchClient("127.0.0.1", 3000, baseTimeOut, args);
+            // socketToApplService =
+            // dispatchClient.getServiceConnection(ApplicationService
+            // .class.getCanonicalName());
+            socketToApplService = dispatchClient.getServiceConnection("de.bla.bla.SuperKlasse");
         } catch (ActionFailedException e1) {
             // TODO Auto-generated catch block
             e1.printStackTrace();

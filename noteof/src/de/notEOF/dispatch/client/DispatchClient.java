@@ -7,7 +7,7 @@ import java.net.UnknownHostException;
 import de.notEOF.core.client.BaseClient;
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.interfaces.TimeOut;
-import de.notEOF.core.util.Util;
+import de.notEOF.dispatch.SimpleSocketData;
 import de.notEOF.dispatch.enumeration.DispatchTag;
 import de.notEOF.dispatch.service.DispatchService;
 
@@ -32,16 +32,17 @@ public class DispatchClient extends BaseClient {
      * Change this to true if the client is used by a DispatchService <br>
      * Should only be done by work at the framework
      **/
-    protected boolean IS_CLIENT_FOR_SERVICE = false;
+    public boolean IS_CLIENT_FOR_SERVICE = false;
 
     public DispatchClient(Socket socketToServer, TimeOut timeout, String[] args) throws ActionFailedException {
         super(socketToServer, timeout, args);
-        activateLifeSignSystem();
+        // activateLifeSignSystem();
     }
 
     public DispatchClient(String ip, int port, TimeOut timeout, String... args) throws ActionFailedException {
         super(ip, port, timeout, args);
-        activateLifeSignSystem();
+        // @TODO activateLifeSignSystem mit Zeit aus timeout
+        // activateLifeSignSystem();
     }
 
     @Override
@@ -76,6 +77,27 @@ public class DispatchClient extends BaseClient {
         // the result of this function
         Socket socketToService = null;
 
+        SimpleSocketData socketData = getSocketData(serviceTypeName);
+        if (null != socketData) {
+            try {
+                socketToService = new Socket(socketData.getIp(), socketData.getPort());
+            } catch (UnknownHostException e) {
+                throw new ActionFailedException(1003L, "Gesuchter Typ: " + serviceTypeName + "; Erhaltene IP und Port: " + socketData.getIp() + ":"
+                        + socketData.getPort());
+            } catch (IOException e) {
+                throw new ActionFailedException(1004L, "Gesuchter Typ: " + serviceTypeName + "; Erhaltene IP und Port: " + socketData.getIp() + ":"
+                        + socketData.getPort());
+            }
+        }
+        return socketToService;
+    }
+
+    public SimpleSocketData getSocketData(String serviceTypeName) throws ActionFailedException {
+        System.out.println("Gesucht wird auf: " + getPartnerHostAddress() + ":" + getPartnerPort());
+
+        // the result of this function
+        SimpleSocketData socketData = null;
+
         // opening
         writeMsg(DispatchTag.REQ_SERVICE);
 
@@ -106,17 +128,10 @@ public class DispatchClient extends BaseClient {
             // ask for ip and port
             String ip = requestTo(DispatchTag.REQ_IP, DispatchTag.RESP_IP);
             String port = requestTo(DispatchTag.REQ_PORT, DispatchTag.RESP_PORT);
-
-            try {
-                socketToService = new Socket(ip, Util.parseInt(port, 0));
-            } catch (UnknownHostException e) {
-                throw new ActionFailedException(1003L, "Gesuchter Typ: " + serviceTypeName + "; Erhaltene IP und Port: " + ip + ":" + port);
-            } catch (IOException e) {
-                throw new ActionFailedException(1004L, "Gesuchter Typ: " + serviceTypeName + "; Erhaltene IP und Port: " + ip + ":" + port);
-            }
+            socketData = new SimpleSocketData(ip, port);
         }
 
         close();
-        return socketToService;
+        return socketData;
     }
 }

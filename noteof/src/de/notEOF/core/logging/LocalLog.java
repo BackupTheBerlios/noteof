@@ -41,6 +41,10 @@ public class LocalLog {
         System.out.println(additionalInfo + ": \n" + th);
     }
 
+    public static void warn(String additionalInfo) {
+        System.out.println(additionalInfo);
+    }
+
     public static void debug(String additionalInfo, Throwable th) {
     }
 
