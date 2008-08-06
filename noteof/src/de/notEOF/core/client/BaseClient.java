@@ -27,10 +27,6 @@ public abstract class BaseClient extends BaseClientOrService {
 
     private boolean linkedToService = false;
 
-    public BaseClient() {
-
-    }
-
     /**
      * The server decides which service is the compatible one to this client by
      * using the classname. <br>

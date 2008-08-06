@@ -47,7 +47,7 @@ public class TalkLine {
             try {
                 close();
             } catch (Exception ex2) {
-                //do nothing
+                // do nothing
             }
             throw new ActionFailedException(10L, ex);
         }
@@ -100,6 +100,30 @@ public class TalkLine {
      */
     public void close() {
         socketLayer.close();
+    }
+
+    /**
+     * Receive more complex data from partner. <br>
+     * 
+     * @see DataObject
+     * @return A new DataObject which hopefully stores the received data.
+     * @throws ActionFailedException
+     */
+    public DataObject receiveDataObject() throws ActionFailedException {
+        return socketLayer.receiveDataObject();
+    }
+
+    /**
+     * Send more complex data to partner.<br>
+     * 
+     * @param sendObject
+     *            A DataObject which must be initialized with data and dataType
+     *            before.
+     * @see DataObject
+     * @throws ActionFailedException
+     */
+    public void sendDataObject(DataObject dataObject) throws ActionFailedException {
+        socketLayer.sendDataObject(dataObject);
     }
 
     /**

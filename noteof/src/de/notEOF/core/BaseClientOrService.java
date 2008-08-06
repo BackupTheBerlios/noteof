@@ -1,6 +1,7 @@
 package de.notEOF.core;
 
 import de.notEOF.core.communication.BaseTimeOut;
+import de.notEOF.core.communication.DataObject;
 import de.notEOF.core.communication.TalkLine;
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.interfaces.TimeOut;
@@ -210,4 +211,29 @@ public abstract class BaseClientOrService {
     public void writeMsg(Enum<?> requestHeader) throws ActionFailedException {
         talkLine.writeMsg(requestHeader.name());
     }
+
+    /**
+     * Receive more complex data from partner. <br>
+     * 
+     * @see DataObject
+     * @return A new DataObject which hopefully stores the received data.
+     * @throws ActionFailedException
+     */
+    public DataObject receiveDataObject() throws ActionFailedException {
+        return talkLine.receiveDataObject();
+    }
+
+    /**
+     * Send more complex data to partner.<br>
+     * 
+     * @param sendObject
+     *            A DataObject which must be initialized with data and dataType
+     *            before.
+     * @see DataObject
+     * @throws ActionFailedException
+     */
+    public void sendDataObject(DataObject dataObject) throws ActionFailedException {
+        talkLine.sendDataObject(dataObject);
+    }
+
 }
