@@ -34,22 +34,20 @@ public class ServerRegistration {
      */
     public ServerRegistration(Class<BaseService> service, TalkLine talkLine, int timeOutMillis, String... args) throws ActionFailedException {
         Registration registration = new Registration();
-        Thread registrationThread = new Thread(registration);
-        registrationThread.start();
+        // Thread registrationThread = new Thread(registration);
+        // registrationThread.start();
+
+        if (timeOutMillis > 0) {
+            Waiter waiter = new Waiter(talkLine, timeOutMillis);
+            Thread waiterThread = new Thread(waiter);
+            waiterThread.start();
+        }
         try {
             serviceId = registration.register(service, talkLine, args);
         } catch (Exception ex) {
-            registration.stop();
             throw new ActionFailedException(22L, ex);
         }
 
-        // The registration hasn't every time of the world...
-        long endTime = System.currentTimeMillis() + timeOutMillis;
-        while (!linkedToService && endTime > System.currentTimeMillis())
-            ;
-        // if the timeout has exceeded the thread must be terminated not to
-        // become a daemon.
-        registration.stop();
         if (!linkedToService) {
             throw new ActionFailedException(22L, "Timout ist abgelaufen.");
         }
@@ -74,28 +72,36 @@ public class ServerRegistration {
         return linkedToService;
     }
 
+    private class Waiter implements Runnable {
+        private long endTime;
+
+        // private TalkLine talkLine;
+
+        public Waiter(TalkLine talkLine, int timeOut) {
+            this.endTime = System.currentTimeMillis() + timeOut;
+            // this.talkLine = talkLine;
+        }
+
+        public void run() {
+            try {
+                while (!linkedToService && endTime > System.currentTimeMillis()) {
+                    Thread.sleep(200);
+                }
+
+                if (!linkedToService) {
+                    // talkLine.close();
+                } else {
+                }
+            } catch (InterruptedException ex) {
+                // talkLine.close();
+            }
+        }
+    }
+
     /*
      * Inner class for running within a thread.
      */
-    private class Registration implements Runnable {
-
-        private boolean stopped = false;
-
-        protected void stop() {
-            stopped = true;
-        }
-
-        /**
-         * runs while not linked and not stopped
-         */
-        public void run() {
-            while (!(linkedToService || stopped)) {
-                try {
-                    Thread.sleep(200);
-                } catch (InterruptedException ix) {
-                }
-            }
-        }
+    private class Registration {
 
         // Register at the server and ask for a service
         protected String register(Class<BaseService> service, TalkLine talkLine, String... args) throws ActionFailedException {

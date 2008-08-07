@@ -63,15 +63,12 @@ public class DispatchService extends BaseService implements Service {
                 clientIsDispatcher = true;
             }
 
-            System.out.println("Wurde von Dispatcher aufgerufen? " + clientIsDispatcher);
-            System.out.println("Bin Service auf: " + getServerHostAddress() + ":" + getServerPort());
-
             // now ask client for the requested service type
             String requestedServiceType = requestTo(DispatchTag.REQ_SERVICE_TYPE, DispatchTag.RESP_SERVICE_TYPE).trim();
 
-            // the dispatcher isn't interested in the canonicalName...
-            // requestedServiceType =
-            // Util.simpleClassName(requestedServiceType);
+            // how much time the service has to search?
+            int timeOutToSearch = Util.parseInt(requestTo(DispatchTag.REQ_MAX_TIME_SEARCH, DispatchTag.RESP_MAX_TIME_SEARCH), 60000);
+            long endTime = System.currentTimeMillis() + timeOutToSearch;
 
             // Perhaps a service is already running or was created in the past.
             // BaseService can help.
@@ -113,13 +110,15 @@ public class DispatchService extends BaseService implements Service {
                 }
             }
 
-            if (!confEntryFound) {
+            if (!confEntryFound && endTime > System.currentTimeMillis()) {
                 // search matching type in configuration via canonical class
                 // name
                 List<String> canonicalNames = LocalConfigurationClient.getList("serviceTypes.[@canonicalName]");
                 if (null != canonicalNames && null != maxClients && canonicalNames.size() == maxClients.size()) {
                     dispatchSupported = true;
                     for (int i = 0; i < canonicalNames.size(); i++) {
+                        if (endTime <= System.currentTimeMillis())
+                            break;
                         String typeName = canonicalNames.get(i).trim();
                         if (typeName.equals(requestedServiceType)) {
                             // type exists in configuration
@@ -152,18 +151,15 @@ public class DispatchService extends BaseService implements Service {
                 if (null != eofServerIp && null != eofServerPort && eofServerIp.size() == eofServerPort.size()) {
                     DispatchClient dispatchClient = null;
                     for (int i = 0; i < eofServerIp.size(); i++) {
-                        System.out.println("eofServerIp = " + eofServerIp.get(i));
-                        System.out.println("eofServerPort = " + Util.parseInt(eofServerPort.get(i), 0));
 
                         if (eofServerIp.get(i).equals(getServerHostAddress())) {
-                            System.out.println("EIGENE ADRESSE...");
                         } else {
                             SimpleSocketData socketData = null;
                             try {
-                                BaseTimeOut timeout = new BaseTimeOut(500, 500);
+                                BaseTimeOut timeout = new BaseTimeOut(1000, 1500);
                                 dispatchClient = new DispatchClient(eofServerIp.get(i), Util.parseInt(eofServerPort.get(i), 0), timeout, (String[]) null);
                                 dispatchClient.IS_CLIENT_FOR_SERVICE = true;
-                                socketData = dispatchClient.getSocketData(requestedServiceType);
+                                socketData = dispatchClient.getSocketData(requestedServiceType, timeOutToSearch);
                                 if (null != socketData) {
                                     // client has received valid address
                                     dispatchSupported = true;
@@ -174,14 +170,15 @@ public class DispatchService extends BaseService implements Service {
                                 }
                             } catch (ActionFailedException afx) {
                                 // catch the failed attempt of dispatch client
-                                // to
-                                // not leave this method by
-                                // ActionFailedException
-                                // because the originating client must be
-                                // informed
+                                // to not leave this method by
+                                // ActionFailedException because the originating
+                                // client must be informed
                                 // nothing to do...
-                                if (socketData != null)
+                                if (socketData != null) {
                                     LocalLog.warn("Couldn't find service type at server " + socketData.getIp() + ":" + socketData.getPortString(), afx);
+                                } else {
+                                    LocalLog.warn("Connection problem while connecting with server " + eofServerIp.get(i) + ":" + eofServerPort.get(i));
+                                }
                             }
                         }
                     }
@@ -190,7 +187,6 @@ public class DispatchService extends BaseService implements Service {
                 }
             }
 
-            System.out.println("Bin der vom Dispatcher aufgerufene? " + clientIsDispatcher);
             // Client asks if the service is available
             awaitRequest(DispatchTag.REQ_SERVICE_AVAILABLE);
             // Then the service gives the calculated answer
@@ -219,6 +215,7 @@ public class DispatchService extends BaseService implements Service {
         }
 
         // That's it. Client should disconnect at this point also...
+        System.out.println("Service wird gestoppt");
         stopService();
         close();
     }

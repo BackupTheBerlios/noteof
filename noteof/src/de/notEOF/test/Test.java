@@ -6,31 +6,31 @@ import de.notEOF.application.client.ApplicationClient;
 import de.notEOF.core.communication.BaseTimeOut;
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.dispatch.client.DispatchClient;
-import de.notEOF.test.client.TestClient;
 
 public class Test {
 
     public static void main(String[] args) {
         System.out.println("Hello World");
 
-        try {
-            TestClient testClient = new TestClient("127.0.0.1", 3000, null, args);
-            testClient.blubb();
-        } catch (ActionFailedException e2) {
-            // TODO Auto-generated catch block
-            e2.printStackTrace();
-        }
-        System.exit(0);
+        // try {
+        // TestClient testClient = new TestClient("127.0.0.1", 3000, null,
+        // args);
+        // testClient.blubb();
+        // } catch (ActionFailedException e2) {
+        // // TODO Auto-generated catch block
+        // e2.printStackTrace();
+        // }
+        // System.exit(0);
 
         Socket socketToApplService = null;
         try {
-            BaseTimeOut baseTimeOut = new BaseTimeOut(0, 0);
+            BaseTimeOut baseTimeOut = new BaseTimeOut(1000, 60000);
 
             DispatchClient dispatchClient = new DispatchClient("127.0.0.1", 3000, baseTimeOut, args);
             // socketToApplService =
             // dispatchClient.getServiceConnection(ApplicationService
             // .class.getCanonicalName());
-            socketToApplService = dispatchClient.getServiceConnection("de.bla.bla.SuperKlasse");
+            socketToApplService = dispatchClient.getServiceConnection("de.notEOF.application.service.ApplicationServiceXXX", 30000);
         } catch (ActionFailedException e1) {
             // TODO Auto-generated catch block
             e1.printStackTrace();

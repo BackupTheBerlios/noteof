@@ -69,15 +69,23 @@ public class DispatchClient extends BaseClient {
      *            or canonicalName?). Of cause you can configure both
      *            (simpleName and canonicalName) and then it never minds which
      *            type of name you fill in here.
+     * @param timeOutForSearch
+     *            Is the time in milliseconds the dispatch service has to search
+     *            for a server which can deliver the requested service.<br>
+     *            Attention! The service has not the competence to observe this
+     *            time exactly. E.g. during the establishing of connections the
+     *            waiting time depends to some things which are not controlled
+     *            by the service.
+     * 
      * @return This method creates and returns the socket to the server or null
      *         if the service wasn't found in the net.
      */
-    public Socket getServiceConnection(String serviceTypeName) throws ActionFailedException {
+    public Socket getServiceConnection(String serviceTypeName, int timeOutForSearch) throws ActionFailedException {
 
         // the result of this function
         Socket socketToService = null;
 
-        SimpleSocketData socketData = getSocketData(serviceTypeName);
+        SimpleSocketData socketData = getSocketData(serviceTypeName, timeOutForSearch);
         if (null != socketData) {
             try {
                 socketToService = new Socket(socketData.getIp(), socketData.getPort());
@@ -92,7 +100,37 @@ public class DispatchClient extends BaseClient {
         return socketToService;
     }
 
-    public SimpleSocketData getSocketData(String serviceTypeName) throws ActionFailedException {
+    /**
+     * The job of this client is to ask DispatchService(s) if a service type
+     * exists. <br>
+     * The DispatchService looks local and - if necessary - asks other server
+     * for the service type. If the client has luck the service delivers ip and
+     * port to any server which offers the service.
+     * 
+     * @param serviceTypeName
+     *            The name of the service type which is searched for. The name
+     *            of service type must exactly match the name of the class which
+     *            implements the service (no blanks, case sensitive). It is
+     *            allowed to use only the simple (short) class name or the
+     *            canonical name (e.g. ApplicationService or
+     *            de.notEOF.application.service.ApplicationService). <br>
+     *            Whether the service will be found by dispatch service depends
+     *            to the service-configuration you made (did you use simpleName
+     *            or canonicalName?). Of cause you can configure both
+     *            (simpleName and canonicalName) and then it never minds which
+     *            type of name you fill in here.
+     * @param timeOutForSearch
+     *            Is the time in milliseconds the dispatch service has to search
+     *            for a server which can deliver the requested service.<br>
+     *            Attention! The service has not the competence to observe this
+     *            time exactly. E.g. during the establishing of connections the
+     *            waiting time depends to some things which are not controlled
+     *            by the service.
+     * 
+     * @return An object of type {@link SimpleSocketData} which contains the ip
+     *         and port to the server with the requested service.
+     */
+    public SimpleSocketData getSocketData(String serviceTypeName, int timeOutForSearch) throws ActionFailedException {
         System.out.println("Gesucht wird auf: " + getPartnerHostAddress() + ":" + getPartnerPort());
 
         // the result of this function
@@ -109,6 +147,9 @@ public class DispatchClient extends BaseClient {
 
         // service wants to know which service type he has to look for
         awaitRequestAnswerImmediate(DispatchTag.REQ_SERVICE_TYPE, DispatchTag.RESP_SERVICE_TYPE, serviceTypeName);
+
+        // service asks how much time he has to search
+        awaitRequestAnswerImmediate(DispatchTag.REQ_MAX_TIME_SEARCH, DispatchTag.RESP_MAX_TIME_SEARCH, String.valueOf(timeOutForSearch));
 
         // now wait for the answer of the service...
         String response = requestTo(DispatchTag.REQ_SERVICE_AVAILABLE, DispatchTag.RESP_SERVICE_AVAILABLE);

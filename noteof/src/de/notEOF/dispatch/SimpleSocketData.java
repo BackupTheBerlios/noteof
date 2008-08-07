@@ -2,6 +2,11 @@ package de.notEOF.dispatch;
 
 import de.notEOF.core.util.Util;
 
+/**
+ * Simple Object to store connection data to another communication partner.
+ * 
+ * @author Dirk
+ */
 public class SimpleSocketData {
 
     private int port = 0;

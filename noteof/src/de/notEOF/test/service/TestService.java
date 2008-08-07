@@ -29,30 +29,6 @@ public class TestService extends BaseService implements Service {
 
             File testFile = new File(LocalConfigurationClient.getApplicationHome() + "/conf/noteof_services.xml");
             dataObject.setFile(testFile);
-            // char[] fileChars = new char[(int) testFile.length()];
-            // try {
-            // BufferedReader bReader = new BufferedReader(new
-            // FileReader(testFile));
-            //
-            // bReader.read(fileChars);
-            // dataObject.setCharArray(fileChars);
-            // } catch (FileNotFoundException e) {
-            // // TODO Auto-generated catch block
-            // e.printStackTrace();
-            // } catch (IOException e) {
-            // // TODO Auto-generated catch block
-            // e.printStackTrace();
-            // }
-
-            // char[] characters = new char[testString.length()];
-            // for (int i = 0; i < testString.length(); i++) {
-            // characters[i] = testString.charAt(i);
-            // }
-            //
-            // for (int i = 0; i < testString.length(); i++) {
-            // System.out.println("char... " + characters[i]);
-            // }
-            // dataObject.setCharArray(characters);
             sendDataObject(dataObject);
             System.out.println("Objekt gesendet.");
         }

@@ -14,6 +14,9 @@ public enum DispatchTag {
     REQ_SERVICE_AVAILABLE,
     RESP_SERVICE_AVAILABLE,
 
+    REQ_MAX_TIME_SEARCH,
+    RESP_MAX_TIME_SEARCH,
+
     REQ_IP,
     RESP_IP,
     REQ_PORT,
