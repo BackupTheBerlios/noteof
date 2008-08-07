@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- 
-    This file contains a list of service types which are available by this local server.
+    This file contains a list of service types which are available by the local server.
     The list is used by the method DispatchClient.getServiceConnection(serviceTypeName).
     Depending how the parameter serviceTypeName is filled up by you.
     

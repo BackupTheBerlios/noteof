@@ -1,7 +1,8 @@
 package de.notEOF.test.service;
 
-import java.nio.CharBuffer;
+import java.io.File;
 
+import de.notEOF.configuration.client.LocalConfigurationClient;
 import de.notEOF.core.communication.DataObject;
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.interfaces.Service;
@@ -24,12 +25,34 @@ public class TestService extends BaseService implements Service {
             System.out.println("geantwortet...");
             DataObject dataObject = new DataObject();
 
-            char[] characters = new char[18];
-            CharBuffer cbuf = CharBuffer.allocate(36);
-            cbuf.put("Hottelditotteldidö");
-            cbuf.get(characters, 0, 18);
+            // String testString = "abcdef";
 
-            dataObject.setCharArrayValue(characters);
+            File testFile = new File(LocalConfigurationClient.getApplicationHome() + "/conf/noteof_services.xml");
+            dataObject.setFile(testFile);
+            // char[] fileChars = new char[(int) testFile.length()];
+            // try {
+            // BufferedReader bReader = new BufferedReader(new
+            // FileReader(testFile));
+            //
+            // bReader.read(fileChars);
+            // dataObject.setCharArray(fileChars);
+            // } catch (FileNotFoundException e) {
+            // // TODO Auto-generated catch block
+            // e.printStackTrace();
+            // } catch (IOException e) {
+            // // TODO Auto-generated catch block
+            // e.printStackTrace();
+            // }
+
+            // char[] characters = new char[testString.length()];
+            // for (int i = 0; i < testString.length(); i++) {
+            // characters[i] = testString.charAt(i);
+            // }
+            //
+            // for (int i = 0; i < testString.length(); i++) {
+            // System.out.println("char... " + characters[i]);
+            // }
+            // dataObject.setCharArray(characters);
             sendDataObject(dataObject);
             System.out.println("Objekt gesendet.");
         }

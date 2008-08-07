@@ -10,7 +10,6 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
-import java.nio.CharBuffer;
 
 import de.notEOF.core.enumeration.BaseCommTag;
 import de.notEOF.core.exception.ActionFailedException;
@@ -116,74 +115,64 @@ public class SocketLayer {
         // 4 = double
         // 5 = char
         // 6 = char[]
-        // 7 = String
+        // 7 = line (terminated by \n)
 
-        System.out.println("In receiveDAtaObject... 1");
         DataObject dataObject = new DataObject();
         try {
             DataInputStream inputStream = new DataInputStream(socketToPartner.getInputStream());
             // den Datentyp ermitteln
             int dataType = inputStream.readInt();
-            System.out.println("inputStream gelesen.");
-            System.out.println("dataType = " + dataType);
 
             switch (dataType) {
             case 0:
                 // short
-                dataObject.setShortValue(inputStream.readShort());
+                dataObject.setShort(inputStream.readShort());
                 break;
 
             case 1:
                 // int
-                dataObject.setIntValue(inputStream.readInt());
+                dataObject.setInt(inputStream.readInt());
                 break;
 
             case 2:
                 // long
-                dataObject.setLongValue(inputStream.readLong());
+                dataObject.setLong(inputStream.readLong());
                 break;
 
             case 3:
                 // float
-                dataObject.setFloatValue(inputStream.readFloat());
+                dataObject.setFloat(inputStream.readFloat());
                 break;
 
             case 4:
                 // double
-                dataObject.setDoubleValue(inputStream.readDouble());
+                dataObject.setDouble(inputStream.readDouble());
                 break;
 
             case 5:
                 // char
-                dataObject.setCharValue(inputStream.readChar());
+                dataObject.setChar(inputStream.readChar());
                 break;
 
             case 6:
                 // char array
-                // size block 1 and count of blocks for 1
-                int sizeBlock1 = inputStream.readInt();
-                int countBlock1 = inputStream.readInt();
-                // size block 2 and count of blocks for 2
-                int sizeBlock2 = inputStream.readInt();
-                int countBlock2 = inputStream.readInt();
-
-                char[] charArray = new char[(sizeBlock1 * countBlock1) + (sizeBlock2 * countBlock2)];
-
-                int pos = 0;
-                for (int i = 0; i < countBlock1; i++) {
-                    bufferedReader.read(charArray, pos += sizeBlock1, sizeBlock1);
-                }
-                for (int i = 0; i < countBlock2; i++) {
-                    bufferedReader.read(charArray, pos += sizeBlock2, sizeBlock2);
-                }
-                dataObject.setCharArrayValue(charArray);
+                receiveDataObjectCharArray(dataObject, inputStream);
                 break;
 
             case 7:
                 // String
-                dataObject.setStringValue(bufferedReader.readLine());
+                dataObject.setLine(bufferedReader.readLine());
                 break;
 
+            case 8:
+                // file
+                // first step: get file name and canonical file name
+                dataObject.setFileName(bufferedReader.readLine());
+                dataObject.setCanonicalFileName(bufferedReader.readLine());
+
+                // second step: receive FileData
+                receiveDataObjectCharArray(dataObject, inputStream);
+                break;
             }
 
         } catch (SocketTimeoutException ex) {
@@ -203,7 +192,8 @@ public class SocketLayer {
         // 4 = double
         // 5 = char
         // 6 = char[]
-        // 7 = String
+        // 7 = line (terminated by \n)
+        // 8 = file
 
         try {
             DataOutputStream outputStream = new DataOutputStream(socketToPartner.getOutputStream());
@@ -214,78 +204,112 @@ public class SocketLayer {
             switch (dataType) {
             case 0:
                 // short
-                outputStream.writeShort(dataObject.getShortValue());
+                outputStream.writeShort(dataObject.getShort());
                 break;
 
             case 1:
                 // int
-                outputStream.writeInt(dataObject.getIntValue());
+                outputStream.writeInt(dataObject.getInt());
                 break;
 
             case 2:
                 // long
-                outputStream.writeLong(dataObject.getLongValue());
+                outputStream.writeLong(dataObject.getLong());
                 break;
 
             case 3:
                 // float
-                outputStream.writeFloat(dataObject.getFloatValue());
+                outputStream.writeFloat(dataObject.getFloat());
                 break;
 
             case 4:
                 // double
-                outputStream.writeDouble(dataObject.getDoubleValue());
+                outputStream.writeDouble(dataObject.getDouble());
                 break;
 
             case 5:
                 // char
-                outputStream.writeChar(dataObject.getCharValue());
+                outputStream.writeChar(dataObject.getChar());
                 break;
 
             case 6:
                 // char array
-                int arrayLength = dataObject.getCharArrayValue().length;
-                System.out.println("arrayLength = " + arrayLength);
-                int sizeBlock1 = 255;
-                int countBlock1 = arrayLength / sizeBlock1;
-                int sizeBlock2 = arrayLength % sizeBlock1;
-                int countBlock2 = 1;
-
-                PrintWriter printWriterChar = new PrintWriter(new OutputStreamWriter(socketToPartner.getOutputStream()));
-                int pos = 0;
-                for (int i = 0; i < countBlock1; i++) {
-                    System.out.println("Write 1; i = " + i + "; pos = " + pos);
-                    printWriterChar.write(dataObject.getCharArrayValue(), pos, sizeBlock1);
-                    pos += sizeBlock1;
-                }
-                System.out.println("countBlock2 = " + countBlock2);
-                System.out.println("sizeBlock2 = " + sizeBlock2);
-                for (int i = 0; i < countBlock2; i++) {
-                    System.out.println("Write 2; i = " + i + "; pos = " + pos);
-                    printWriterChar.write(dataObject.getCharArrayValue(), pos, sizeBlock2);
-                    pos += sizeBlock2;
-
-                }
-                System.out.println("String..." + String.valueOf(dataObject.getCharArrayValue()));
-                CharBuffer cbuf = CharBuffer.allocate(18);
-                cbuf.put(dataObject.getCharArrayValue());
-                System.out.println("cbuf = " + cbuf.toString());
-                printWriterChar.flush();
+                sendDataObjectCharArray(dataObject, outputStream);
                 break;
 
             case 7:
-                // String
+                // line
                 PrintWriter printWriterString = new PrintWriter(new OutputStreamWriter(socketToPartner.getOutputStream()));
-                printWriterString.write(dataObject.getStringValue());
+                printWriterString.println(dataObject.getLine());
                 printWriterString.flush();
                 break;
 
+            case 8:
+                // file
+                // at first send fileName and canonicalFileName
+                PrintWriter printWriterFileName = new PrintWriter(new OutputStreamWriter(socketToPartner.getOutputStream()));
+                printWriterFileName.println(dataObject.getFileName());
+                printWriterFileName.println(dataObject.getCanonicalFileName());
+                printWriterFileName.flush();
+
+                // then send fileData
+                sendDataObjectCharArray(dataObject, outputStream);
+                break;
             }
         } catch (SocketTimeoutException ex) {
             throw new ActionFailedException(26L, ex);
         } catch (IOException ex) {
             throw new ActionFailedException(25L, ex);
         }
+    }
+
+    private void receiveDataObjectCharArray(DataObject dataObject, DataInputStream inputStream) throws IOException {
+        // size block 1 and count of blocks for 1
+        int sizeBlock1 = inputStream.readInt();
+        int countBlock1 = inputStream.readInt();
+        // size block 2 and count of blocks for 2
+        int sizeBlock2 = inputStream.readInt();
+        int countBlock2 = inputStream.readInt();
+        char[] charArray = new char[(sizeBlock1 * countBlock1) + (sizeBlock2 * countBlock2)];
+
+        int pos = 0;
+        for (int i = 0; i < countBlock1; i++) {
+            bufferedReader.read(charArray, pos, sizeBlock1);
+            pos += sizeBlock1;
+        }
+        for (int i = 0; i < countBlock2; i++) {
+            bufferedReader.read(charArray, pos, sizeBlock2);
+            pos += sizeBlock2;
+        }
+
+        dataObject.setCharArray(charArray);
+    }
+
+    private void sendDataObjectCharArray(DataObject dataObject, DataOutputStream outputStream) throws IOException {
+        // char array
+        int arrayLength = dataObject.getCharArray().length;
+        int sizeBlock1 = 255;
+        int countBlock1 = arrayLength / sizeBlock1;
+        int sizeBlock2 = arrayLength % sizeBlock1;
+        int countBlock2 = 1;
+
+        outputStream.writeInt(sizeBlock1);
+        outputStream.writeInt(countBlock1);
+        outputStream.writeInt(sizeBlock2);
+        outputStream.writeInt(1);
+
+        PrintWriter printWriterChar = new PrintWriter(new OutputStreamWriter(socketToPartner.getOutputStream()));
+        int pos = 0;
+        for (int i = 0; i < countBlock1; i++) {
+            printWriterChar.write(dataObject.getCharArray(), pos, sizeBlock1);
+            pos += sizeBlock1;
+        }
+        for (int i = 0; i < countBlock2; i++) {
+            printWriterChar.write(dataObject.getCharArray(), pos, sizeBlock2);
+            pos += sizeBlock2;
+
+        }
+        printWriterChar.flush();
     }
 
     protected synchronized boolean isConnected() {

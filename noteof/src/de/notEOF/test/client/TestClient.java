@@ -1,8 +1,9 @@
 package de.notEOF.test.client;
 
+import java.io.File;
 import java.net.Socket;
-import java.nio.CharBuffer;
 
+import de.notEOF.configuration.client.LocalConfigurationClient;
 import de.notEOF.core.client.BaseClient;
 import de.notEOF.core.communication.DataObject;
 import de.notEOF.core.exception.ActionFailedException;
@@ -30,11 +31,11 @@ public class TestClient extends BaseClient {
 
     public void blubb() throws ActionFailedException {
         String requestValue = requestTo(TestTag.REQ_AWAIT_DATA_OBJECT, TestTag.RESP_SEND_DATA_OBJECT);
-        System.out.println("Request erfolgreich? " + requestValue);
         DataObject dataObject = receiveDataObject();
+        System.out.println("Request erfolgreich? " + requestValue);
         System.out.println("Datentype: " + dataObject.getDataType());
-        CharBuffer cbuf = CharBuffer.allocate(dataObject.getCharArrayValue().length);
-        cbuf.put(dataObject.getCharArrayValue());
-        System.out.println("Wert:      " + cbuf.toString());
+        File testFile = new File(LocalConfigurationClient.getApplicationHome() + "/conf/noteof_services_test.xml");
+        int fileSize = dataObject.getFile(testFile, true);
+        System.out.println("FileSize: " + fileSize);
     }
 }
