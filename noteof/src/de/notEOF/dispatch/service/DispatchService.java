@@ -98,6 +98,8 @@ public class DispatchService extends BaseService implements Service {
             if (null != simpleNames && null != maxClients && simpleNames.size() == maxClients.size()) {
                 dispatchSupported = true;
                 for (int i = 0; i < simpleNames.size(); i++) {
+                    if (endTime <= System.currentTimeMillis())
+                        break;
                     String typeName = simpleNames.get(i).trim();
                     if (typeName.equals(requestedServiceType)) {
                         // type exists in configuration
@@ -151,6 +153,8 @@ public class DispatchService extends BaseService implements Service {
                 if (null != eofServerIp && null != eofServerPort && eofServerIp.size() == eofServerPort.size()) {
                     DispatchClient dispatchClient = null;
                     for (int i = 0; i < eofServerIp.size(); i++) {
+                        if (endTime <= System.currentTimeMillis())
+                            break;
 
                         if (eofServerIp.get(i).equals(getServerHostAddress())) {
                         } else {
