@@ -13,18 +13,24 @@ import de.notEOF.test.service.TestService;
 
 public class TestClient extends BaseClient {
 
-    public TestClient(String ip, int port, TimeOut timeout, String[] args) throws ActionFailedException {
-        super(ip, port, timeout, args);
-        // TODO Auto-generated constructor stub
+    public TestClient() {
+
     }
 
-    public TestClient(Socket socketToServer, TimeOut timeout, String[] args) throws ActionFailedException {
-        super(socketToServer, timeout, args);
-        // TODO Auto-generated constructor stub
-    }
+    // public TestClient(String ip, int port, TimeOut timeout, String[] args)
+    // throws ActionFailedException {
+    // super(ip, port, timeout, args);
+    // // TODO Auto-generated constructor stub
+    // }
+    //
+    // public TestClient(Socket socketToServer, TimeOut timeout, String[] args)
+    // throws ActionFailedException {
+    // super(socketToServer, timeout, args);
+    // // TODO Auto-generated constructor stub
+    // }
 
     @Override
-    public Class<?> serviceClassForClient() {
+    public Class<?> serviceForClientByClass() {
         // TODO Auto-generated method stub
         return TestService.class;
     }
@@ -37,5 +43,11 @@ public class TestClient extends BaseClient {
         File testFile = new File(LocalConfigurationClient.getApplicationHome() + "/conf/noteof_services_test.xml");
         int fileSize = dataObject.getFile(testFile, true);
         System.out.println("FileSize: " + fileSize);
+    }
+
+    @Override
+    public String serviceForClientByName() {
+        // TODO Auto-generated method stub
+        return null;
     }
 }

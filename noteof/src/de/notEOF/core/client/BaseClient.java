@@ -8,6 +8,7 @@ import de.notEOF.core.constant.NotEOFConstants;
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.interfaces.TimeOut;
 import de.notEOF.core.service.BaseService;
+import de.notEOF.core.util.Util;
 
 /**
  * From this class every other client must be extended. <br>
@@ -26,21 +27,73 @@ import de.notEOF.core.service.BaseService;
 public abstract class BaseClient extends BaseClientOrService {
 
     private boolean linkedToService = false;
+    private String[] args;
 
     /**
      * The server decides which service is the compatible one to this client by
      * using the classname. <br>
-     * Every Client which is derived from BaseClient must implement this method.
+     * One of the two methods (serviceForClientByClass, serviceForClientByName)
+     * must return a valid value. The other one may return null. If both methods
+     * do not return null, the value of this method (serviceForClientByClass)
+     * will be used to send the service class name to the server.
      * 
+     * @see Method serviceForClientByName.
      * @return The service class which is matching with the client.
      */
-    public abstract Class<?> serviceClassForClient();
+    public abstract Class<?> serviceForClientByClass();
+
+    /**
+     * The server decides which service is the compatible one to this client by
+     * using the classname. <br>
+     * One of the two methods (serviceForClientByClass, serviceForClientByName)
+     * must return a valid value. The other one may return null. If both methods
+     * do not return null, the value of the method serviceForClientByClass will
+     * be used to send the service class name to the server.
+     * 
+     * @see Method serviceForClientByClass.
+     * @return The name of the service class which is matching with the client.
+     *         Valid values are the simple class name or the canonical class
+     *         name. But - if the simple name is used the service name maybe is
+     *         not unique and the server creates another service then desired.
+     */
+    public abstract String serviceForClientByName();
+
+    /**
+     * If the connection must be build at a later time this constructor can be
+     * used.
+     */
+    public BaseClient(String... args) {
+        this.args = args;
+    }
+
+    public void connect(String ip, int port, TimeOut timeout) throws ActionFailedException {
+        if (linkedToService)
+            return;
+
+        if (null == timeout) {
+            timeout = getTimeOutObject();
+        }
+        talkLine = new TalkLine(ip, port, timeout.getMillisCommunication());
+        registerAtServer(talkLine, timeout, this.args);
+    }
+
+    public void connect(Socket socketToServer, TimeOut timeout) throws ActionFailedException {
+        if (linkedToService)
+            return;
+
+        if (null == timeout) {
+            timeout = getTimeOutObject();
+        }
+        talkLine = new TalkLine(socketToServer, timeout.getMillisCommunication());
+        registerAtServer(talkLine, timeout, this.args);
+    }
 
     /**
      * Standard construction of the clients. <br>
      * At first they should initialize the communication with server and
      * service. Within the super constructors of BaseClient the connection with
-     * server and service will be established.
+     * server and service will be established. If the 'generic' constructor is
+     * used the connection must be established later by the method connect().
      * 
      * @throws ActionFailedException
      *             If the connection with server and service couldn't be
@@ -48,11 +101,8 @@ public abstract class BaseClient extends BaseClientOrService {
      *             thrown.
      */
     public BaseClient(Socket socketToServer, TimeOut timeout, String... args) throws ActionFailedException {
-        if (null == timeout) {
-            timeout = getTimeOutObject();
-        }
-        talkLine = new TalkLine(socketToServer, timeout.getMillisCommunication());
-        registerAtServer(talkLine, timeout, args);
+        this.args = args;
+        connect(socketToServer, timeout);
     }
 
     /**
@@ -67,11 +117,8 @@ public abstract class BaseClient extends BaseClientOrService {
      *             thrown.
      */
     public BaseClient(String ip, int port, TimeOut timeout, String... args) throws ActionFailedException {
-        if (null == timeout) {
-            timeout = getTimeOutObject();
-        }
-        talkLine = new TalkLine(ip, port, timeout.getMillisCommunication());
-        registerAtServer(talkLine, timeout, args);
+        this.args = args;
+        connect(ip, port, timeout);
     }
 
     /**
@@ -99,6 +146,25 @@ public abstract class BaseClient extends BaseClientOrService {
         super.activateLifeSignSystem(true);
     }
 
+    /**
+     * Returns the class name of the service which is concerned with this
+     * client.
+     * 
+     * @return
+     */
+    public String getServiceClassName() throws ActionFailedException {
+        String serviceClassName = serviceForClientByClass().getCanonicalName();
+        if (Util.isEmpty(serviceClassName))
+            serviceClassName = serviceForClientByClass().getSimpleName();
+        if (Util.isEmpty(serviceClassName))
+            serviceClassName = serviceForClientByName();
+        if (Util.isEmpty(serviceClassName))
+            throw new ActionFailedException(22L, "Ermittlung des Klassennamen einer von BaseService abgeleiteten Klasse ist fehlgeschlagen. Clint ist: "
+                    + this.getClass().getName());
+
+        return serviceClassName;
+    }
+
     /*
      * When calling this method the client registers itself at the server. After
      * a successfull registration at server side exists a service espacialy for
@@ -106,13 +172,7 @@ public abstract class BaseClient extends BaseClientOrService {
      */
     @SuppressWarnings("unchecked")
     private final void registerAtServer(TalkLine talkLine, TimeOut timeout, String... args) throws ActionFailedException {
-        Class<BaseService> serviceCast;
-        try {
-            serviceCast = (Class<BaseService>) serviceClassForClient();
-        } catch (Exception ex) {
-            throw new ActionFailedException(22L, "Casten einer Klasse auf Klasse BaseService ist fehlgeschlagen: " + serviceClassForClient().getName());
-        }
-        ServerRegistration registration = new ServerRegistration((Class<BaseService>) serviceCast, talkLine, timeout.getMillisConnection(), args);
+        ServerRegistration registration = new ServerRegistration(getServiceClassName(), talkLine, timeout.getMillisConnection(), args);
         linkedToService = registration.isLinkedToService();
         setServiceId(registration.getServiceId());
     }

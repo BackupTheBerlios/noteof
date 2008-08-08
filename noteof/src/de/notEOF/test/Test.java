@@ -30,7 +30,9 @@ public class Test {
             // socketToApplService =
             // dispatchClient.getServiceConnection(ApplicationService
             // .class.getCanonicalName());
-            socketToApplService = dispatchClient.getServiceConnection("de.notEOF.application.service.ApplicationServiceXXX", 30000);
+            socketToApplService = dispatchClient.getServiceConnection("de.notEOF.application.service.ApplicationServiceXXX", 0);
+            // socketToApplService = dispatchClient.getServiceConnection(
+            // "de.notEOF.application.service.ApplicationServiceXXX", 30000);
         } catch (ActionFailedException e1) {
             // TODO Auto-generated catch block
             e1.printStackTrace();

@@ -1,9 +1,9 @@
-package de.notEOF.dispatch;
+package de.notEOF.core.communication;
 
 import de.notEOF.core.util.Util;
 
 /**
- * Simple Object to store connection data to another communication partner.
+ * Simple Object to store connection data.
  * 
  * @author Dirk
  */

@@ -1,7 +1,7 @@
 copy ..\..\notioc\lib\notioc.jar ..\lib
 
-set NOTEOF_HOME=C:\Dokumente und Einstellungen\Gerlinde\Eigene Dateien\workspace\noteof
-set LIB_PATH=C:\Dokumente und Einstellungen\Gerlinde\Eigene Dateien\workspace\notioc\lib
+set NOTEOF_HOME=C:\Projekte\workspace\noteof
+set LIB_PATH=C:\Projekte\workspace\notioc\lib
 set CLASSPATH=%CLASSPATH%;%NOTEOF_HOME%\lib\noteof.jar
 
 set CLASSPATH=%CLASSPATH%;%LIB_PATH%\notioc.jar

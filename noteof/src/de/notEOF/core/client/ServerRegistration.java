@@ -3,7 +3,6 @@ package de.notEOF.core.client;
 import de.notEOF.core.communication.TalkLine;
 import de.notEOF.core.enumeration.BaseCommTag;
 import de.notEOF.core.exception.ActionFailedException;
-import de.notEOF.core.service.BaseService;
 import de.notEOF.core.util.ArgsParser;
 import de.notEOF.core.util.Util;
 
@@ -32,7 +31,7 @@ public class ServerRegistration {
      *            completed.
      * @throws ActionFailedException
      */
-    public ServerRegistration(Class<BaseService> service, TalkLine talkLine, int timeOutMillis, String... args) throws ActionFailedException {
+    public ServerRegistration(String serviceClassName, TalkLine talkLine, int timeOutMillis, String... args) throws ActionFailedException {
         Registration registration = new Registration();
         // Thread registrationThread = new Thread(registration);
         // registrationThread.start();
@@ -43,7 +42,7 @@ public class ServerRegistration {
             waiterThread.start();
         }
         try {
-            serviceId = registration.register(service, talkLine, args);
+            serviceId = registration.register(serviceClassName, talkLine, args);
         } catch (Exception ex) {
             throw new ActionFailedException(22L, ex);
         }
@@ -104,7 +103,7 @@ public class ServerRegistration {
     private class Registration {
 
         // Register at the server and ask for a service
-        protected String register(Class<BaseService> service, TalkLine talkLine, String... args) throws ActionFailedException {
+        protected String register(String serviceClassName, TalkLine talkLine, String... args) throws ActionFailedException {
             // First step: Say hello to the server
             if (!Util.equalsToString(talkLine.requestTo(BaseCommTag.REQ_REGISTRATION, BaseCommTag.RESP_REGISTRATION), BaseCommTag.VAL_OK.name())) {
                 throw new ActionFailedException(22L, "Anmeldung vom Server abgelehnt.");
@@ -124,9 +123,6 @@ public class ServerRegistration {
             // Third step: Ask for a service
             // It is not guaranteed that the service number is the same as
             // delivered by args
-            String serviceClassName = service.getCanonicalName();
-            if (Util.isEmpty(serviceClassName))
-                serviceClassName = service.getName();
             talkLine.awaitRequestAnswerImmediate(BaseCommTag.REQ_TYPE_NAME, BaseCommTag.RESP_TYPE_NAME, serviceClassName);
             String serviceId = talkLine.requestTo(BaseCommTag.REQ_SERVICE, BaseCommTag.RESP_SERVICE);
             if (Util.isEmpty(serviceId)) {

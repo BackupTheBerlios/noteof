@@ -1,15 +1,16 @@
 package de.notEOF.dispatch.service;
 
+import java.util.GregorianCalendar;
 import java.util.List;
 
 import de.notEOF.configuration.client.LocalConfigurationClient;
 import de.notEOF.core.communication.BaseTimeOut;
+import de.notEOF.core.communication.SimpleSocketData;
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.interfaces.Service;
 import de.notEOF.core.logging.LocalLog;
 import de.notEOF.core.service.BaseService;
 import de.notEOF.core.util.Util;
-import de.notEOF.dispatch.SimpleSocketData;
 import de.notEOF.dispatch.client.DispatchClient;
 import de.notEOF.dispatch.enumeration.DispatchTag;
 
@@ -68,7 +69,12 @@ public class DispatchService extends BaseService implements Service {
 
             // how much time the service has to search?
             int timeOutToSearch = Util.parseInt(requestTo(DispatchTag.REQ_MAX_TIME_SEARCH, DispatchTag.RESP_MAX_TIME_SEARCH), 60000);
-            long endTime = System.currentTimeMillis() + timeOutToSearch;
+            long endTime = 0;
+            if (0 != timeOutToSearch) {
+                endTime = System.currentTimeMillis() + timeOutToSearch;
+            } else {
+                endTime = new GregorianCalendar(2063, 6, 28, 12, 0, 0).getTimeInMillis();
+            }
 
             // Perhaps a service is already running or was created in the past.
             // BaseService can help.

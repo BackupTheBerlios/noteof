@@ -64,7 +64,7 @@ public class ApplicationClient extends BaseClient {
     }
 
     @Override
-    public Class<?> serviceClassForClient() {
+    public Class<?> serviceForClientByClass() {
         return ApplicationService.class;
     }
 
@@ -78,5 +78,11 @@ public class ApplicationClient extends BaseClient {
         // beispiel für benutzen close der superklasse, benutzen der talkLine
         // der superklasse
         System.out.println(requestTo(ApplicationTag.REQ_CONNECT_ADDITIONAL_NAME, ApplicationTag.RESP_CONNECT_ADDITIONAL_NAME));
+    }
+
+    @Override
+    public String serviceForClientByName() {
+        // TODO Auto-generated method stub
+        return null;
     }
 }

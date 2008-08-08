@@ -5,9 +5,9 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 
 import de.notEOF.core.client.BaseClient;
+import de.notEOF.core.communication.SimpleSocketData;
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.interfaces.TimeOut;
-import de.notEOF.dispatch.SimpleSocketData;
 import de.notEOF.dispatch.enumeration.DispatchTag;
 import de.notEOF.dispatch.service.DispatchService;
 
@@ -46,7 +46,7 @@ public class DispatchClient extends BaseClient {
     }
 
     @Override
-    public Class<?> serviceClassForClient() {
+    public Class<?> serviceForClientByClass() {
         return DispatchService.class;
     }
 
@@ -76,6 +76,9 @@ public class DispatchClient extends BaseClient {
      *            time exactly. E.g. during the establishing of connections the
      *            waiting time depends to some things which are not controlled
      *            by the service.
+     *            <p>
+     *            Value 0 for timeOutForSearch means that there is no timeout
+     *            used.
      * 
      * @return This method creates and returns the socket to the server or null
      *         if the service wasn't found in the net.
@@ -126,6 +129,9 @@ public class DispatchClient extends BaseClient {
      *            time exactly. E.g. during the establishing of connections the
      *            waiting time depends to some things which are not controlled
      *            by the service.
+     *            <p>
+     *            Value 0 for timeOutForSearch means that there is no timeout
+     *            used.
      * 
      * @return An object of type {@link SimpleSocketData} which contains the ip
      *         and port to the server with the requested service.
@@ -174,5 +180,11 @@ public class DispatchClient extends BaseClient {
 
         close();
         return socketData;
+    }
+
+    @Override
+    public String serviceForClientByName() {
+        // TODO Auto-generated method stub
+        return null;
     }
 }
