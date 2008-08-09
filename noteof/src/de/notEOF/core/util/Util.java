@@ -1,6 +1,7 @@
 package de.notEOF.core.util;
 
 import java.util.Collection;
+import java.util.Date;
 
 /**
  * When used several times in one file use this: import static
@@ -194,6 +195,49 @@ public class Util {
         }
     }
 
+    public static short parseShort(String input, short def) {
+        try {
+            return Short.parseShort(input);
+        } catch (Exception e) {
+            return def;
+        }
+    }
+
+    public static double parseDouble(String input, double def) {
+        try {
+            return Double.parseDouble(input);
+        } catch (Exception e) {
+            return def;
+        }
+    }
+
+    public static float parseFloat(String input, float def) {
+        try {
+            return Float.parseFloat(input);
+        } catch (Exception e) {
+            return def;
+        }
+    }
+
+    public static long parseLong(String input, long def) {
+        try {
+            return Long.parseLong(input);
+        } catch (Exception e) {
+            return def;
+        }
+    }
+
+    public static Date parseDate(String inputMillis, Date def) {
+        try {
+            long millis = parseLong(inputMillis, 0);
+            if (0 == millis)
+                return def;
+            return new Date(millis);
+        } catch (Exception e) {
+            return def;
+        }
+    }
+
     /**
      * Startet ein animiertes Warten auf der Konsole. <br>
      * Dort wird ein sich drehendes Symbol gezeigt. <br>
@@ -222,21 +266,23 @@ public class Util {
             consoleWaitThread = null;
         }
     }
-    
+
     /**
      * Shortens a canonical class name to a simple class name. <br>
-     * Does not more than cutting all parts of the name until the last occurrence of a dot. <br>
-     * Sample: de.notEOF.application.service.ApplicationService will become to ApplicationService. 
+     * Does not more than cutting all parts of the name until the last
+     * occurrence of a dot. <br>
+     * Sample: de.notEOF.application.service.ApplicationService will become to
+     * ApplicationService.
+     * 
      * @param className
      * @return simple name
      */
     public static String simpleClassName(String className) {
         String simpleName = className;
         while (simpleName.contains(".")) {
-            simpleName = simpleName.substring(simpleName.indexOf(".") +1);
+            simpleName = simpleName.substring(simpleName.indexOf(".") + 1);
         }
         return simpleName;
     }
-
 
 }

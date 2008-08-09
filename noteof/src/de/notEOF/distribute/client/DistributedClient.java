@@ -16,10 +16,13 @@ import de.notEOF.dispatch.client.DispatchClient;
  * 
  */
 public class DistributedClient {
+    private BaseClient client;
 
     public DistributedClient(BaseClient client, SimpleSocketData socketDataDispatchServer, BaseTimeOut timeOut) throws ActionFailedException {
+        this.client = client;
         BaseTimeOut baseTimeOut = new BaseTimeOut(0, 60000);
-        DispatchClient dispatchClient = new DispatchClient(socketDataDispatchServer.getIp(), socketDataDispatchServer.getPort(), baseTimeOut, (String[]) null);
+        DispatchClient dispatchClient = new DispatchClient(socketDataDispatchServer.getIp(), socketDataDispatchServer.getPort(), baseTimeOut, false,
+                (String[]) null);
         String serviceClassName = client.getServiceClassName();
         Socket socketToService = dispatchClient.getServiceConnection(serviceClassName, 0);
 
@@ -27,6 +30,9 @@ public class DistributedClient {
             client.connect(socketToService, timeOut);
             System.out.println(client.getServiceId());
         }
+    }
 
+    public BaseClient getClient() {
+        return client;
     }
 }

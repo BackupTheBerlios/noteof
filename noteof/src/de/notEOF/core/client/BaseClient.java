@@ -7,7 +7,6 @@ import de.notEOF.core.communication.TalkLine;
 import de.notEOF.core.constant.NotEOFConstants;
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.interfaces.TimeOut;
-import de.notEOF.core.service.BaseService;
 import de.notEOF.core.util.Util;
 
 /**
@@ -28,6 +27,7 @@ public abstract class BaseClient extends BaseClientOrService {
 
     private boolean linkedToService = false;
     private String[] args;
+    private boolean activateLifeSignSystem = false;
 
     /**
      * The server decides which service is the compatible one to this client by
@@ -35,7 +35,9 @@ public abstract class BaseClient extends BaseClientOrService {
      * One of the two methods (serviceForClientByClass, serviceForClientByName)
      * must return a valid value. The other one may return null. If both methods
      * do not return null, the value of this method (serviceForClientByClass)
-     * will be used to send the service class name to the server.
+     * will be used to send the service class name to the server. <br>
+     * Please respect that only classes can be found for which the canonical
+     * class name exists.
      * 
      * @see Method serviceForClientByName.
      * @return The service class which is matching with the client.
@@ -51,10 +53,8 @@ public abstract class BaseClient extends BaseClientOrService {
      * be used to send the service class name to the server.
      * 
      * @see Method serviceForClientByClass.
-     * @return The name of the service class which is matching with the client.
-     *         Valid values are the simple class name or the canonical class
-     *         name. But - if the simple name is used the service name maybe is
-     *         not unique and the server creates another service then desired.
+     * @return The name of the service class which is matching with the client. <br>
+     *         Valid value is the canonical class name.
      */
     public abstract String serviceForClientByName();
 
@@ -62,8 +62,19 @@ public abstract class BaseClient extends BaseClientOrService {
      * If the connection must be build at a later time this constructor can be
      * used.
      */
-    public BaseClient(String... args) {
+    public BaseClient(boolean activateLifeSign, String... args) {
         this.args = args;
+        this.activateLifeSignSystem = activateLifeSign;
+    }
+
+    /**
+     * If the connection must be build at a later time this constructor can be
+     * used. <br>
+     * When this constructor is used, the lifeSignSystem will not be activated
+     * by the client. If the service awaits a client with activated
+     * lifeSignSystem, he will stop after a while.
+     */
+    public BaseClient() {
     }
 
     public void connect(String ip, int port, TimeOut timeout) throws ActionFailedException {
@@ -75,6 +86,8 @@ public abstract class BaseClient extends BaseClientOrService {
         }
         talkLine = new TalkLine(ip, port, timeout.getMillisCommunication());
         registerAtServer(talkLine, timeout, this.args);
+        if (activateLifeSignSystem)
+            activateLifeSignSystem();
     }
 
     public void connect(Socket socketToServer, TimeOut timeout) throws ActionFailedException {
@@ -100,9 +113,11 @@ public abstract class BaseClient extends BaseClientOrService {
      *             established successfull an ActionFailedException will be
      *             thrown.
      */
-    public BaseClient(Socket socketToServer, TimeOut timeout, String... args) throws ActionFailedException {
+    public BaseClient(Socket socketToServer, TimeOut timeout, boolean activateLifeSignSystem, String... args) throws ActionFailedException {
         this.args = args;
         connect(socketToServer, timeout);
+        if (activateLifeSignSystem)
+            activateLifeSignSystem();
     }
 
     /**
@@ -116,9 +131,11 @@ public abstract class BaseClient extends BaseClientOrService {
      *             established successfull an ActionFailedException will be
      *             thrown.
      */
-    public BaseClient(String ip, int port, TimeOut timeout, String... args) throws ActionFailedException {
+    public BaseClient(String ip, int port, TimeOut timeout, boolean activateLifeSignSystem, String... args) throws ActionFailedException {
         this.args = args;
         connect(ip, port, timeout);
+        if (activateLifeSignSystem)
+            activateLifeSignSystem();
     }
 
     /**
@@ -153,9 +170,10 @@ public abstract class BaseClient extends BaseClientOrService {
      * @return
      */
     public String getServiceClassName() throws ActionFailedException {
-        String serviceClassName = serviceForClientByClass().getCanonicalName();
-        if (Util.isEmpty(serviceClassName))
-            serviceClassName = serviceForClientByClass().getSimpleName();
+        String serviceClassName = "";
+        if (null != serviceForClientByClass()) {
+            serviceClassName = serviceForClientByClass().getCanonicalName();
+        }
         if (Util.isEmpty(serviceClassName))
             serviceClassName = serviceForClientByName();
         if (Util.isEmpty(serviceClassName))
@@ -170,7 +188,6 @@ public abstract class BaseClient extends BaseClientOrService {
      * a successfull registration at server side exists a service espacialy for
      * this client.
      */
-    @SuppressWarnings("unchecked")
     private final void registerAtServer(TalkLine talkLine, TimeOut timeout, String... args) throws ActionFailedException {
         ServerRegistration registration = new ServerRegistration(getServiceClassName(), talkLine, timeout.getMillisConnection(), args);
         linkedToService = registration.isLinkedToService();

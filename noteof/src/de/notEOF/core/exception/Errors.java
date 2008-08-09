@@ -82,6 +82,8 @@ public class Errors {
         errorList.put(1003L, "Dispatch Client konnte nicht auf mitgeteilte IP-Adresse und/oder Port zugreifen.");
         errorList.put(1004L, "Dispatch Client konnte Socket auf IP und/oder Port nicht initialisieren.");
         errorList.put(1005L, "Dispatch Client konnte Client Klasse nicht auflösen.");
+        errorList.put(1006L, "Dispatch Service konnte Konfiguration der Services nicht lesen.");
+        errorList.put(1007L, "Dispatch Service konnte Konfiguration der Server nicht lesen.");
 
     }
 

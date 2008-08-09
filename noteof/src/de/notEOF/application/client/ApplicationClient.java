@@ -21,6 +21,10 @@ import de.notEOF.core.interfaces.TimeOut;
  */
 public class ApplicationClient extends BaseClient {
 
+    public ApplicationClient(boolean activateLifeSignSystem, String... args) {
+        super(activateLifeSignSystem, args);
+    }
+
     /**
      * Construction of the ApplicationClient with a well prepared socket object
      * which holds ip and port of the server.
@@ -38,9 +42,8 @@ public class ApplicationClient extends BaseClient {
      * @see ApplicationTimeOut
      * @throws ActionFailedException
      */
-    public ApplicationClient(Socket socketToServer, TimeOut timeout, String... args) throws ActionFailedException {
-        super(socketToServer, timeout, args);
-        super.activateLifeSignSystem();
+    public ApplicationClient(Socket socketToServer, TimeOut timeout, boolean activateLifeSignSystem, String... args) throws ActionFailedException {
+        super(socketToServer, timeout, activateLifeSignSystem, args);
     }
 
     /**
@@ -58,9 +61,8 @@ public class ApplicationClient extends BaseClient {
      *            The arguments of the client main method
      * @throws ActionFailedException
      */
-    public ApplicationClient(String ip, int port, TimeOut timeout, String... args) throws ActionFailedException {
-        super(ip, port, timeout, args);
-        super.activateLifeSignSystem();
+    public ApplicationClient(String ip, int port, TimeOut timeout, boolean activateLifeSignSystem, String... args) throws ActionFailedException {
+        super(ip, port, timeout, activateLifeSignSystem, args);
     }
 
     @Override
@@ -82,7 +84,6 @@ public class ApplicationClient extends BaseClient {
 
     @Override
     public String serviceForClientByName() {
-        // TODO Auto-generated method stub
         return null;
     }
 }

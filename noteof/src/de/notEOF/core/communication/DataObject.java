@@ -6,8 +6,10 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Date;
 
 import de.notEOF.core.exception.ActionFailedException;
+import de.notEOF.core.util.Util;
 
 /**
  * Object to receive or send more complex Data.
@@ -28,6 +30,7 @@ public class DataObject {
     private double doubleValue;
     private char charValue;
     private char[] charArrayValue;
+    private Date dateValue;
     private String lineValue;
     private String fileName;
     private int dataType = -1;
@@ -40,6 +43,29 @@ public class DataObject {
     public void setShort(short shortValue) {
         setDataType(0);
         this.shortValue = shortValue;
+    }
+
+    public void setConfigurationValue(String value) {
+        setDataType(9);
+        setShort(Util.parseShort(value, (short) 0));
+        setFloat(Util.parseFloat(value, 0));
+        setLong(Util.parseLong(value, 0));
+        setDouble(Util.parseDouble(value, 0));
+        char[] charArray = new char[value.length()];
+        for (int i = 0; i < value.length(); i++) {
+            charArray[i] = value.charAt(i);
+        }
+        setCharArray(charArray);
+        setLine(value);
+
+        System.out.println("Ende des Setzens ConfigurationValue");
+    }
+
+    public String getConfigurationValue() {
+        if (null != lineValue) {
+            return lineValue;
+        }
+        return null;
     }
 
     public int getInt() {
@@ -187,15 +213,17 @@ public class DataObject {
 
     /**
      * dataTypes: <br>
-     * 0 = short <br>
-     * 1 = int <br>
-     * 2 = long <br>
-     * 3 = float <br>
-     * 4 = double <br>
-     * 5 = char <br>
-     * 6 = char[] <br>
-     * 7 = line (terminated by \n) <br>
-     * 8 = file
+     * 00 = short <br>
+     * 01 = int <br>
+     * 02 = long <br>
+     * 03 = float <br>
+     * 04 = double <br>
+     * 05 = char <br>
+     * 06 = char[] <br>
+     * 07 = line (terminated by \n) <br>
+     * 08 = file <br>
+     * 09 = configurationValue <br>
+     * 10 = Date
      */
     public int getDataType() {
         return dataType;
@@ -204,5 +232,13 @@ public class DataObject {
     private void setDataType(int dataType) {
         if (-1 == this.dataType)
             this.dataType = dataType;
+    }
+
+    public void setDateValue(Date dateValue) {
+        this.dateValue = dateValue;
+    }
+
+    public Date getDateValue() {
+        return dateValue;
     }
 }

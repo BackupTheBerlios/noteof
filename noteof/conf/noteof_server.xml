@@ -2,7 +2,9 @@
 <!--
     This configuration file contains a list of other known !EOF server.
 -->
+<!--
 <noteof_root>
     <notEOFServer ip="192.168.2.101" port="3000">Server 0</notEOFServer>
     <notEOFServer ip="192.168.1.1" port="3001">Server 1</notEOFServer> 
 </noteof_root>
+-->

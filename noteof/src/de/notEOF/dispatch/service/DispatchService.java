@@ -13,6 +13,7 @@ import de.notEOF.core.service.BaseService;
 import de.notEOF.core.util.Util;
 import de.notEOF.dispatch.client.DispatchClient;
 import de.notEOF.dispatch.enumeration.DispatchTag;
+import de.notIOC.exception.NotIOCException;
 
 public class DispatchService extends BaseService implements Service {
 
@@ -97,8 +98,14 @@ public class DispatchService extends BaseService implements Service {
             // lists are not sure synchroniously.
             boolean dispatchSupported = false;
             boolean confEntryFound = false;
-            List<String> simpleNames = LocalConfigurationClient.getList("serviceTypes.[@simpleName]");
-            List<String> maxClients = LocalConfigurationClient.getList("serviceTypes.[@maxClients]");
+            List<String> simpleNames = null;
+            List<String> maxClients = null;
+            try {
+                simpleNames = LocalConfigurationClient.getList("serviceTypes.[@simpleName]");
+                maxClients = LocalConfigurationClient.getList("serviceTypes.[@maxClients]");
+            } catch (NotIOCException nex) {
+                LocalLog.warn("Configuration of services maybe is corrupt or missed (serviceTypes by simpleName).", nex);
+            }
 
             // search matching type in configuration via simple class name
             if (null != simpleNames && null != maxClients && simpleNames.size() == maxClients.size()) {
@@ -121,7 +128,12 @@ public class DispatchService extends BaseService implements Service {
             if (!confEntryFound && endTime > System.currentTimeMillis()) {
                 // search matching type in configuration via canonical class
                 // name
-                List<String> canonicalNames = LocalConfigurationClient.getList("serviceTypes.[@canonicalName]");
+                List<String> canonicalNames = null;
+                try {
+                    canonicalNames = LocalConfigurationClient.getList("serviceTypes.[@canonicalName]");
+                } catch (NotIOCException nex) {
+                    LocalLog.warn("Configuration of services maybe is corrupt or missed(serviceTypes by canonicalName).", nex);
+                }
                 if (null != canonicalNames && null != maxClients && canonicalNames.size() == maxClients.size()) {
                     dispatchSupported = true;
                     for (int i = 0; i < canonicalNames.size(); i++) {
@@ -141,6 +153,9 @@ public class DispatchService extends BaseService implements Service {
             }
 
             boolean maxClientsExceeded = (maxServicesForType - activeServicesForType) < 1;
+            System.out.println("maxClientsExceeded " + maxClientsExceeded);
+            System.out.println("dispatchSupported " + dispatchSupported);
+            System.out.println("confEntryFound " + confEntryFound);
 
             // if not found the service local or max. number of clients exceeded
             // or dispatcher isn't supported really here and the client is not a
@@ -151,48 +166,57 @@ public class DispatchService extends BaseService implements Service {
                     && !clientIsDispatcher) {
                 // get new dispatch client and send same request to other server
                 // which are configured
-                List<String> eofServerIp = LocalConfigurationClient.getList("notEOFServer.[@ip]");
-                List<String> eofServerPort = LocalConfigurationClient.getList("notEOFServer.[@port]");
+                List<String> eofServerIp = null;
+                List<String> eofServerPort = null;
+                try {
+                    eofServerIp = LocalConfigurationClient.getList("notEOFServer.[@ip]");
+                    eofServerPort = LocalConfigurationClient.getList("notEOFServer.[@port]");
 
-                // search by ip's
-                // if configuration here isn't correct, make an entry into log
-                if (null != eofServerIp && null != eofServerPort && eofServerIp.size() == eofServerPort.size()) {
-                    DispatchClient dispatchClient = null;
-                    for (int i = 0; i < eofServerIp.size(); i++) {
-                        if (endTime <= System.currentTimeMillis())
-                            break;
+                    // search by ip's
+                    // if configuration here isn't correct, make an entry into
+                    // log
+                    if (null != eofServerIp && null != eofServerPort && eofServerIp.size() == eofServerPort.size()) {
+                        DispatchClient dispatchClient = null;
+                        for (int i = 0; i < eofServerIp.size(); i++) {
+                            if (endTime <= System.currentTimeMillis())
+                                break;
 
-                        if (eofServerIp.get(i).equals(getServerHostAddress())) {
-                        } else {
-                            SimpleSocketData socketData = null;
-                            try {
-                                BaseTimeOut timeout = new BaseTimeOut(1000, 1500);
-                                dispatchClient = new DispatchClient(eofServerIp.get(i), Util.parseInt(eofServerPort.get(i), 0), timeout, (String[]) null);
-                                dispatchClient.IS_CLIENT_FOR_SERVICE = true;
-                                socketData = dispatchClient.getSocketData(requestedServiceType, timeOutToSearch);
-                                if (null != socketData) {
-                                    // client has received valid address
-                                    dispatchSupported = true;
-                                    confEntryFound = true;
-                                    serviceIp = socketData.getIp();
-                                    servicePort = socketData.getPortString();
-                                    break;
-                                }
-                            } catch (ActionFailedException afx) {
-                                // catch the failed attempt of dispatch client
-                                // to not leave this method by
-                                // ActionFailedException because the originating
-                                // client must be informed
-                                // nothing to do...
-                                if (socketData != null) {
-                                    LocalLog.warn("Couldn't find service type at server " + socketData.getIp() + ":" + socketData.getPortString(), afx);
-                                } else {
-                                    LocalLog.warn("Connection problem while connecting with server " + eofServerIp.get(i) + ":" + eofServerPort.get(i));
+                            if (eofServerIp.get(i).equals(getServerHostAddress())) {
+                            } else {
+                                SimpleSocketData socketData = null;
+                                try {
+                                    BaseTimeOut timeout = new BaseTimeOut(1000, 1500);
+                                    dispatchClient = new DispatchClient(eofServerIp.get(i), Util.parseInt(eofServerPort.get(i), 0), timeout, false,
+                                            (String[]) null);
+                                    dispatchClient.IS_CLIENT_FOR_SERVICE = true;
+                                    socketData = dispatchClient.getSocketData(requestedServiceType, timeOutToSearch);
+                                    if (null != socketData) {
+                                        // client has received valid address
+                                        dispatchSupported = true;
+                                        confEntryFound = true;
+                                        serviceIp = socketData.getIp();
+                                        servicePort = socketData.getPortString();
+                                        break;
+                                    }
+                                } catch (ActionFailedException afx) {
+                                    // catch the failed attempt of dispatch
+                                    // client
+                                    // to not leave this method by
+                                    // ActionFailedException because the
+                                    // originating
+                                    // client must be informed
+                                    if (socketData != null) {
+                                        LocalLog.warn("Couldn't find service type at server " + socketData.getIp() + ":" + socketData.getPortString(), afx);
+                                    } else {
+                                        LocalLog.warn("Connection problem while connecting with server " + eofServerIp.get(i) + ":" + eofServerPort.get(i));
+                                    }
                                 }
                             }
                         }
+                    } else {
+                        LocalLog.warn("Configuration of serverlist is empty.");
                     }
-                } else {
+                } catch (NotIOCException nex) {
                     LocalLog.warn("Configuration of serverlist maybe is corrupt or missed.");
                 }
             }

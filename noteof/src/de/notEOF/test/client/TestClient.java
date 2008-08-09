@@ -1,20 +1,18 @@
 package de.notEOF.test.client;
 
 import java.io.File;
-import java.net.Socket;
 
 import de.notEOF.configuration.client.LocalConfigurationClient;
 import de.notEOF.core.client.BaseClient;
 import de.notEOF.core.communication.DataObject;
 import de.notEOF.core.exception.ActionFailedException;
-import de.notEOF.core.interfaces.TimeOut;
 import de.notEOF.test.enumeration.TestTag;
 import de.notEOF.test.service.TestService;
 
 public class TestClient extends BaseClient {
 
-    public TestClient() {
-
+    public TestClient(boolean activateLifeSignSystem, String... args) {
+        super(activateLifeSignSystem, args);
     }
 
     // public TestClient(String ip, int port, TimeOut timeout, String[] args)

@@ -155,6 +155,7 @@ public abstract class BaseService extends BaseClientOrService implements Service
                     processMsg(validateEnum(tagEnumClass, msg));
                 } catch (ActionFailedException afx) {
                     LocalLog.error("Mapping der Nachricht auf Enum.", afx);
+                    stopped = true;
                 }
 
             } catch (ActionFailedException afx) {
@@ -190,9 +191,8 @@ public abstract class BaseService extends BaseClientOrService implements Service
                 return y[i];
             }
         }
-        return null;
-        // throw new ActionFailedException(151L,
-        // "Validierung der Empfangenen Nachricht: " + msg);
+        // return null;
+        throw new ActionFailedException(151L, "Validierung der Empfangenen Nachricht: " + msg);
     }
 
     /**
