@@ -4,7 +4,8 @@ import java.util.Hashtable;
 import java.util.Map;
 
 /**
- * Class stores all errors which are used when throwing an ActionFailedException. <br>
+ * Class stores all errors which are used when throwing an
+ * ActionFailedException. <br>
  * This is the first step to be prepared for international use of the framework.
  * 
  * @author Dirk
@@ -40,6 +41,9 @@ public class Errors {
         // The list elements
         errorList.put(0L, "Nicht erwarteter Fehler.");
         errorList.put(1L, "Nicht erwarteter Fehler.");
+
+        // Basic problemes with configuration
+        errorList.put(5L, "Konfigurationsdatei konnte nicht verarbeitet werden.");
 
         // Configuration
         errorList.put(10L, "Konfigurationseintrag konnte nicht gespeichert werden.");

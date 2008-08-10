@@ -14,12 +14,11 @@ public class Test {
 
         try {
             ConfigurationClient cfgClient = new ConfigurationClient("127.0.0.1", 3000, null, true, args);
-            DataObject confObject = cfgClient.getConfigurationValue("serviceTypes");
+            DataObject confObject = cfgClient.getConfigurationValue("serviceTypes", "simpleName");
             System.out.println("Type = " + confObject.getDataType());
             System.out.println("Wert = " + confObject.getConfigurationValue());
 
         } catch (ActionFailedException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
 

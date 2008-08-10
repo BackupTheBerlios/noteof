@@ -5,6 +5,7 @@ import java.util.List;
 import de.notEOF.core.logging.LocalLog;
 import de.notIOC.configuration.ConfigurationManager;
 import de.notIOC.exception.NotIOCException;
+import de.notIOC.util.Util;
 
 /**
  * This client supports the access to a local configuration.
@@ -24,32 +25,15 @@ public class LocalConfigurationClient {
      * Please take notice of the double quotation marks.
      * 
      * @param xmlPath
-     *            The 'key' of the configuration value. <br>
-     *            Sample: <br>
-     *            < friendsList name="Berti Bottrop" age="45" > Berti <
-     *            /friendsList > <br>
-     *            < friendsList name="Elli Eldorado" age="28" > Elli <
-     *            /friendsList > <br>
-     *            < friendsList name="Ferdi Flop" age="15" > Ferdi <
-     *            /friendsList > <br>
-     *            < friendsList name="Justus Jenau" age="77" > Justus <
-     *            /friendsList >
-     *            <p>
-     *            Access to the list of short names (Berti, Elli, Ferdi,
-     *            Justus): <br>
-     *            getList("friendsList");
-     *            <p>
-     *            Access to their names: <br>
-     *            getList("friendsList.[@name]");
-     *            <p>
-     *            Access to the years they live: <br>
-     *            getList("friendsList.[@age]");
+     *            Is the xml node to the element.
+     * @param attributeName
+     *            The name of the attribute for which the list must be created.
      * 
      * @return A list out of the xml configuration file.
      */
-    public static List<String> getList(String xmlPath) throws NotIOCException {
+    public static List<String> getAttributeList(String xmlPath, String attributeName) throws NotIOCException {
         try {
-            return ConfigurationManager.getProperty(xmlPath).getList();
+            return ConfigurationManager.getProperty(xmlPath).getAttributeList(attributeName);
         } catch (Exception ex) {
             throw new NotIOCException(34L, "Element: " + xmlPath);
         }
@@ -63,15 +47,17 @@ public class LocalConfigurationClient {
      * Delivers the String value of a configuration key.
      * 
      * @param xmlPath
-     *            The key for the value.
+     *            The node of the xml element.
+     * @param attributeName
+     *            The name of the attribute for which the value is required.
      * @param defaultValue
      *            If the key was not found or the value is empty (null or
      *            length=0) this value will be returned.
      * @return The value for the key as a String.
      */
-    public static String getString(String xmlPath, String defaultValue) {
+    public static String getAttribute(String xmlPath, String attributeName, String defaultValue) {
         try {
-            return ConfigurationManager.getProperty(xmlPath).getStringValue(defaultValue);
+            return ConfigurationManager.getProperty(xmlPath).getAttribute(attributeName, defaultValue);
         } catch (Exception ex) {
             LocalLog.warn("Konfigurationswert fehlt: " + xmlPath + "; Default Wert wird verwendet: " + defaultValue);
             return defaultValue;
@@ -82,16 +68,18 @@ public class LocalConfigurationClient {
      * Delivers the String value of a configuration key.
      * 
      * @param xmlPath
-     *            The key for the value.
+     *            The node of the xml element.
      * @return The value for the key as a String.
+     * @param attributeName
+     *            The name of the attribute for which the value is required.
      * @throws NotIOCException
      *             If the key was not found or the value is empty (null or
      *             length=0) an exception is thrown. The exception tells for
      *             which key the value was empty.
      */
-    public static String getString(String xmlPath) throws NotIOCException {
+    public static String getAttribute(String xmlPath, String attributeName) throws NotIOCException {
         try {
-            return ConfigurationManager.getProperty(xmlPath).getStringValue();
+            return ConfigurationManager.getProperty(xmlPath).getAttribute(attributeName);
         } catch (Exception ex) {
             throw new NotIOCException(34L, "Element: " + xmlPath);
         }
@@ -101,15 +89,17 @@ public class LocalConfigurationClient {
      * Delivers the int value of a configuration key.
      * 
      * @param xmlPath
-     *            The key for the value.
+     *            The node of the xml element.
+     * @param attributeName
+     *            The name of the attribute for which the value is required.
      * @param defaultValue
      *            If the key was not found or the value is empty (null or
      *            length=0) this value will be returned.
      * @return The value for the key as an int.
      */
-    public static int getIntValue(String xmlPath, int defaultValue) {
+    public static int getAttributeInt(String xmlPath, String attributeName, int defaultValue) {
         try {
-            return ConfigurationManager.getProperty(xmlPath).getIntValue(defaultValue);
+            return Util.parseInt(ConfigurationManager.getProperty(xmlPath).getAttribute(attributeName), defaultValue);
         } catch (Exception ex) {
             LocalLog.warn("Konfigurationswert fehlt: " + xmlPath + "; Default Wert wird verwendet: " + defaultValue);
             return defaultValue;
@@ -120,54 +110,18 @@ public class LocalConfigurationClient {
      * Delivers the int value of a configuration key.
      * 
      * @param xmlPath
-     *            The key for the value.
+     *            The node of the xml element.
+     * @param attributeName
+     *            The name of the attribute for which the value is required.
      * @return The value for the key as an int.
      * @throws NotIOCException
-     *             If the key was not found or the value is empty (null or
+     *             If the node was not found or the value is empty (null or
      *             length=0) an exception is thrown. The exception tells for
      *             which key the value was empty.
      */
-    public static int getIntValue(String xmlPath) throws NotIOCException {
+    public static int getAttributeInt(String xmlPath, String attributeName) throws NotIOCException {
         try {
-            return ConfigurationManager.getProperty(xmlPath).getIntValue();
-        } catch (Exception ex) {
-            throw new NotIOCException(34L, "Element: " + xmlPath);
-        }
-    }
-
-    /**
-     * Delivers the boolean value of a configuration key.
-     * 
-     * @param xmlPath
-     *            The key for the value.
-     * @param defaultValue
-     *            If the key was not found or the value is empty (null or
-     *            length=0) this value will be returned.
-     * @return The value for the key as a boolean.
-     */
-    public static boolean getBooleanValue(String xmlPath, boolean defaultValue) {
-        try {
-            return ConfigurationManager.getProperty(xmlPath).getBooleanValue(defaultValue);
-        } catch (Exception ex) {
-            LocalLog.warn("Konfigurationswert konnte nicht ermittelt werden: " + xmlPath + "; Default Wert wird verwendet: " + defaultValue);
-            return defaultValue;
-        }
-    }
-
-    /**
-     * Delivers the boolean value of a configuration key.
-     * 
-     * @param xmlPath
-     *            The key for the value.
-     * @return The value for the key as an boolean.
-     * @throws NotIOCException
-     *             If the key was not found or the value is empty (null or
-     *             length=0) an exception is thrown. The exception tells for
-     *             which key the value was empty.
-     */
-    public static boolean getBooleanValue(String xmlPath) throws NotIOCException {
-        try {
-            return ConfigurationManager.getProperty(xmlPath).getBooleanValue();
+            return Util.parseInt(ConfigurationManager.getProperty(xmlPath).getAttribute(attributeName), 0);
         } catch (Exception ex) {
             throw new NotIOCException(34L, "Element: " + xmlPath);
         }

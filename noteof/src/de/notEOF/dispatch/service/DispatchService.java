@@ -101,8 +101,8 @@ public class DispatchService extends BaseService implements Service {
             List<String> simpleNames = null;
             List<String> maxClients = null;
             try {
-                simpleNames = LocalConfigurationClient.getList("serviceTypes.[@simpleName]");
-                maxClients = LocalConfigurationClient.getList("serviceTypes.[@maxClients]");
+                simpleNames = LocalConfigurationClient.getAttributeList("serviceTypes", "simpleName");
+                maxClients = LocalConfigurationClient.getAttributeList("serviceTypes", "maxClients");
             } catch (NotIOCException nex) {
                 LocalLog.warn("Configuration of services maybe is corrupt or missed (serviceTypes by simpleName).", nex);
             }
@@ -130,7 +130,7 @@ public class DispatchService extends BaseService implements Service {
                 // name
                 List<String> canonicalNames = null;
                 try {
-                    canonicalNames = LocalConfigurationClient.getList("serviceTypes.[@canonicalName]");
+                    canonicalNames = LocalConfigurationClient.getAttributeList("serviceTypes", "canonicalName");
                 } catch (NotIOCException nex) {
                     LocalLog.warn("Configuration of services maybe is corrupt or missed(serviceTypes by canonicalName).", nex);
                 }
@@ -169,8 +169,8 @@ public class DispatchService extends BaseService implements Service {
                 List<String> eofServerIp = null;
                 List<String> eofServerPort = null;
                 try {
-                    eofServerIp = LocalConfigurationClient.getList("notEOFServer.[@ip]");
-                    eofServerPort = LocalConfigurationClient.getList("notEOFServer.[@port]");
+                    eofServerIp = LocalConfigurationClient.getAttributeList("notEOFServer", "ip");
+                    eofServerPort = LocalConfigurationClient.getAttributeList("notEOFServer", "port");
 
                     // search by ip's
                     // if configuration here isn't correct, make an entry into

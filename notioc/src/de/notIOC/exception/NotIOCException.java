@@ -16,11 +16,6 @@ public class NotIOCException extends Exception {
     private String addInfo;
     private String message;
 
-    // public ActionFailedException(String message, String reason) {
-    // super(message);
-    // this.reason = reason;
-    // }
-    //
     public NotIOCException(long errNo, String addInfo, Exception ex) {
         super(ex);
         this.errNo = errNo;

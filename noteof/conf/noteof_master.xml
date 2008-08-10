@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<configuration>
-<!--  	<xml fileName="noteof_server.xml"/> -->
-  	<xml fileName="noteof_services.xml"/>
-	<section sectionName="noteof_root"/>
-</configuration>
+<root>
+	<configuration>
+	  	<xml fileName="noteof_server.xml"/>
+	  	<xml fileName="noteof_services.xml"/>
+		<section sectionName="noteof_root"/>
+	</configuration>
+</root>

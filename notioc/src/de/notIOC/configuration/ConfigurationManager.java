@@ -1,57 +1,33 @@
 package de.notIOC.configuration;
 
 import java.io.File;
-import java.net.URI;
-import java.net.URL;
-import java.util.List;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
+import javax.security.auth.login.Configuration;
 
-import org.apache.commons.configuration.Configuration;
-import org.apache.commons.configuration.ConfigurationException;
-import org.apache.commons.configuration.XMLConfiguration;
-
+import de.notIOC.exception.NotIOCException;
 import de.notIOC.logging.LocalLog;
 
+/**
+ * ConfigurationManager is a Singleton...
+ */
 public class ConfigurationManager {
 
     private static String notEOFHome = null;
-    private CompositeConfigurationNotIOC notIOCConfiguration = new CompositeConfigurationNotIOC();
-    private XMLConfiguration basicConfiguration = new XMLConfiguration();
     private String configFile = "noteof_master.xml";
-    private String configFilePath;
 
-    /**
-     * ConfigurationManager is a Singleton...
-     */
+    protected static ConfigurationManager configManager = new ConfigurationManager();
 
-    protected static ConfigurationManager configManager;
-
-    private ConfigurationManager() throws ConfigurationException {
-        File cfgRoot = new File(getConfigRoot());
-        configFilePath = new File(cfgRoot, configFile).getAbsolutePath();
-        basicConfiguration.setFileName(configFile);
-
-        LocalLog.info("ConfigManager ConfigFile: " + configFilePath);
-
+    private ConfigurationManager() {
         try {
-            File x = new File(configFilePath);
-            URI uri = x.toURI();
-            URL url = uri.toURL();
-            basicConfiguration.setURL(url);
-        } catch (Exception ex) {
-            throw new ConfigurationException(ex);
+            loadConfiguration();
+        } catch (NotIOCException e) {
+            LocalLog.error("ConfigurationManager kann nicht geladen werden.", e);
         }
-
-        LocalLog.info("ConfigManager BasePath: " + basicConfiguration.getBasePath());
-        LocalLog.info("ConfigManager FileName: " + basicConfiguration.getFileName());
-        LocalLog.info("ConfigManager URL: " + basicConfiguration.getURL());
-
-        loadConfiguration(false);
     }
 
-    public static ConfigurationManager getInstance() throws ConfigurationException {
+    public static ConfigurationManager getInstance() throws NotIOCException {
         if (configManager == null) {
             configManager = new ConfigurationManager();
         }
@@ -59,59 +35,34 @@ public class ConfigurationManager {
     }
 
     /*
-     * Stellt sicher, dass es eine Instanz des ConfigManagers gibt und liefert
-     * diese zurueck.
+     * Creates the singleton...
      */
-    private ConfigurationManager retrieveSingleConfigManager() {
+    private ConfigurationManager retrieveSingleConfigManager() throws NotIOCException {
         if (null == configManager) {
-            try {
-                configManager = new ConfigurationManager();
-            } catch (ConfigurationException cfgEx) {
-            }
+            configManager = new ConfigurationManager();
         }
-
         return configManager;
     }
 
-    /**
-     * In Ausnahmesituationen kann es erforderlich sein, die
-     * Konfigurationsdatei(en) neu zu laden. Z.B. wenn ein neuer Wert in
-     * CompositeConfiguration generiert wurde.
+    /*
+     * Initialization of complete configuration.
      */
-    private void loadConfiguration(boolean reload) throws ConfigurationException {
-        if (reload) {
-            notIOCConfiguration = new CompositeConfigurationNotIOC();
-            basicConfiguration.reload();
-        } else {
-            basicConfiguration.load();
-        }
+    private void loadConfiguration() throws NotIOCException {
+        File cfgRoot = new File(getConfigRoot());
+        String configFilePath = new File(cfgRoot, configFile).getAbsolutePath();
+        LocalLog.info("ConfigManager ConfigFile: " + configFilePath);
 
-        // Liste aller XML-Konfigurationen
-        String pathName = basicConfiguration.getBasePath().replaceAll("file:", "");
-        pathName = pathName.replaceAll("%20", " ");
-        @SuppressWarnings("unchecked")
-        List<String> xmlFileList = (List<String>) basicConfiguration.getList(ConfigSection.XML_FILE_NAMES.getName());
-        for (String fileName : xmlFileList) {
-            // XMLConfiguration additionalXMLConf = new XMLConfiguration(new
-            // File(pathName, fileName));
-            XMLConfiguration additionalXMLConf = new XMLConfiguration(pathName + fileName);
-            notIOCConfiguration.addConfiguration(additionalXMLConf);
-        }
-    }
+        // try {
+        // File x = new File(configFilePath);
+        // URI uri = x.toURI();
+        // URL url = uri.toURL();
+        // basicConfiguration.setURL(url);
+        // } catch (Exception ex) {
+        // throw new ConfigurationException(ex);
+        // }
 
-    /**
-     * Delifers the whole configuration of !IOC. <br>
-     * How access to certain keys respectively their values works is described
-     * in the documentation of CompositeConfigurations <br>
-     * (http://jakarta.apache.org/commons/configuration/index.html)
-     * 
-     * @return Complete configuration<br>
-     *         Class {@link CompositeConfigurationNotIOC} overwrites some
-     *         methods (esp. setProperty()).
-     * @see org.apache.commons.configuration.CompositeConfiguration
-     */
-    public CompositeConfigurationNotIOC getConfiguration() {
-        return notIOCConfiguration;
+        System.out.println("ConfigurationManager loadConfiguration mit " + configFilePath);
+        ConfigurationStore.setMasterXmlFile(configFilePath);
     }
 
     /**
@@ -123,7 +74,7 @@ public class ConfigurationManager {
      * 
      * @return Single instance of ConfigurationManager
      */
-    public ConfigurationManager getConfigurationManager() {
+    public ConfigurationManager getConfigurationManager() throws NotIOCException {
         return retrieveSingleConfigManager();
     }
 
@@ -158,10 +109,6 @@ public class ConfigurationManager {
         return notEOFHome;
     }
 
-    public String getDefaultConfigurationFile() {
-        return this.getConfigRoot() + "/" + notIOCConfiguration.getString("defaultConfigurationFile");
-    }
-
     /**
      * @return The central configuration path of the server application (CFGROOT
      *         or NOTEOF_HOME) like $NOTEOF_HOME/conf
@@ -179,8 +126,9 @@ public class ConfigurationManager {
      *            Complete path of key.
      * @return A configuration object which can be part of the whole project
      *         configuration.
+     * @throws NotIOCException
      */
-    public static ConfigProperty getProperty(String nodeName) {
+    public static ConfigProperty getProperty(String nodeName) throws NotIOCException {
         return new ConfigProperty(nodeName);
     }
 }
