@@ -173,6 +173,15 @@ public class SocketLayer {
                 // second step: receive FileData
                 receiveDataObjectCharArray(dataObject, inputStream);
                 break;
+
+            case 9:
+                // conf value
+                dataObject.setConfigurationValue(bufferedReader.readLine());
+                break;
+
+            case 10:
+                // TODO Datum empfangen
+                break;
             }
 
         } catch (SocketTimeoutException ex) {
@@ -194,6 +203,8 @@ public class SocketLayer {
         // 6 = char[]
         // 7 = line (terminated by \n)
         // 8 = file
+        // 9 = configuration value
+        // 10 = date
 
         try {
             DataOutputStream outputStream = new DataOutputStream(socketToPartner.getOutputStream());
@@ -255,6 +266,18 @@ public class SocketLayer {
                 // then send fileData
                 sendDataObjectCharArray(dataObject, outputStream);
                 break;
+
+            case 9:
+                // configuration value
+                PrintWriter printWriterConf = new PrintWriter(new OutputStreamWriter(socketToPartner.getOutputStream()));
+                printWriterConf.println(dataObject.getLine());
+                printWriterConf.flush();
+                break;
+
+            case 10:
+                // TODO Datum senden und empfangen...
+                break;
+
             }
         } catch (SocketTimeoutException ex) {
             throw new ActionFailedException(26L, ex);

@@ -27,11 +27,8 @@ public class ConfigurationService extends BaseService {
             } catch (NotIOCException e) {
                 // nothing to do...
             }
-
-            System.out.println("warte auf Request von Client");
             awaitRequestAnswerImmediate(ConfigurationTag.REQ_KEY_FOUND, ConfigurationTag.RESP_KEY_FOUND, valueFound.name());
 
-            System.out.println("value " + value);
             if (!Util.isEmpty(value)) {
                 DataObject configObject = new DataObject();
                 configObject.setConfigurationValue(value);

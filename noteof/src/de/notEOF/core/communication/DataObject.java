@@ -57,8 +57,6 @@ public class DataObject {
         }
         setCharArray(charArray);
         setLine(value);
-
-        System.out.println("Ende des Setzens ConfigurationValue");
     }
 
     public String getConfigurationValue() {
@@ -230,8 +228,9 @@ public class DataObject {
     }
 
     private void setDataType(int dataType) {
-        if (-1 == this.dataType)
+        if (-1 == this.dataType) {
             this.dataType = dataType;
+        }
     }
 
     public void setDateValue(Date dateValue) {

@@ -37,7 +37,6 @@ public class ConfigurationClient extends BaseClient {
         writeMsg(ConfigurationTag.REQ_KEY);
         awaitRequestAnswerImmediate(ConfigurationTag.REQ_KEY_PATH, ConfigurationTag.RESP_KEY_PATH, xmlConfKey);
         if (ConfigurationTag.INFO_OK.name().equals(requestTo(ConfigurationTag.REQ_KEY_FOUND, ConfigurationTag.RESP_KEY_FOUND))) {
-            System.out.println("Service antwortet mit ok");
             return receiveDataObject();
         }
         return null;

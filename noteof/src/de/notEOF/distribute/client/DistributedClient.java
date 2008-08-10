@@ -18,11 +18,23 @@ import de.notEOF.dispatch.client.DispatchClient;
 public class DistributedClient {
     private BaseClient client;
 
-    public DistributedClient(BaseClient client, SimpleSocketData socketDataDispatchServer, BaseTimeOut timeOut) throws ActionFailedException {
+    /**
+     * The constructor tries to establish a connection to any server which
+     * offers the needed service.
+     * 
+     * @param client
+     *            An instance of Client which was derived from class BaseClient.
+     * @param socketData
+     *            SocketData holds the data which are needed for establishing a
+     *            connection.
+     * @param timeOut
+     *            Individual or basically Object of type BaseTimeOut.
+     * @throws ActionFailedException
+     */
+    public DistributedClient(BaseClient client, SimpleSocketData socketData, BaseTimeOut timeOut) throws ActionFailedException {
         this.client = client;
         BaseTimeOut baseTimeOut = new BaseTimeOut(0, 60000);
-        DispatchClient dispatchClient = new DispatchClient(socketDataDispatchServer.getIp(), socketDataDispatchServer.getPort(), baseTimeOut, false,
-                (String[]) null);
+        DispatchClient dispatchClient = new DispatchClient(socketData.getIp(), socketData.getPort(), baseTimeOut, false, (String[]) null);
         String serviceClassName = client.getServiceClassName();
         Socket socketToService = dispatchClient.getServiceConnection(serviceClassName, 0);
 
