@@ -34,7 +34,7 @@ public class DistributedClient {
     public DistributedClient(BaseClient client, SimpleSocketData socketData, BaseTimeOut timeOut) throws ActionFailedException {
         this.client = client;
         BaseTimeOut baseTimeOut = new BaseTimeOut(0, 60000);
-        DispatchClient dispatchClient = new DispatchClient(socketData.getIp(), socketData.getPort(), baseTimeOut, false, (String[]) null);
+        DispatchClient dispatchClient = new DispatchClient(socketData.getIp(), socketData.getPort(), baseTimeOut, (String[]) null);
         String serviceClassName = client.getServiceClassName();
         Socket socketToService = dispatchClient.getServiceConnection(serviceClassName, 0);
 

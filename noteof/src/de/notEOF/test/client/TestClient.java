@@ -11,8 +11,7 @@ import de.notEOF.test.service.TestService;
 
 public class TestClient extends BaseClient {
 
-    public TestClient(boolean activateLifeSignSystem, String... args) {
-        super(activateLifeSignSystem, args);
+    public TestClient(String... args) {
     }
 
     // public TestClient(String ip, int port, TimeOut timeout, String[] args)

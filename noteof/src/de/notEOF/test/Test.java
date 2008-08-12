@@ -13,7 +13,7 @@ public class Test {
         System.out.println("Hello World");
 
         try {
-            ConfigurationClient cfgClient = new ConfigurationClient("127.0.0.1", 3000, null, true, args);
+            ConfigurationClient cfgClient = new ConfigurationClient("127.0.0.1", 3000, null, args);
             DataObject confObject = cfgClient.getConfigurationValue("serviceTypes", "simpleName");
             System.out.println("Type = " + confObject.getDataType());
             System.out.println("Wert = " + confObject.getConfigurationValue());
@@ -34,7 +34,7 @@ public class Test {
         // System.exit(0);
 
         try {
-            ApplicationClient client = new ApplicationClient(true, args);
+            ApplicationClient client = new ApplicationClient(args);
             SimpleSocketData socketData = new SimpleSocketData("127.0.0.1", 3000);
             @SuppressWarnings("unused")
             DistributedClient distClient = new DistributedClient(client, socketData, null);

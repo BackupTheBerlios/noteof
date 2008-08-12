@@ -34,12 +34,12 @@ public class DispatchClient extends BaseClient {
      **/
     public boolean IS_CLIENT_FOR_SERVICE = false;
 
-    public DispatchClient(Socket socketToServer, TimeOut timeout, boolean activateLifeSignSystem, String[] args) throws ActionFailedException {
-        super(socketToServer, timeout, activateLifeSignSystem, args);
+    public DispatchClient(Socket socketToServer, TimeOut timeout, String[] args) throws ActionFailedException {
+        super(socketToServer, timeout, args);
     }
 
-    public DispatchClient(String ip, int port, TimeOut timeout, boolean activateLifeSignSystem, String... args) throws ActionFailedException {
-        super(ip, port, timeout, activateLifeSignSystem, args);
+    public DispatchClient(String ip, int port, TimeOut timeout, String... args) throws ActionFailedException {
+        super(ip, port, timeout, args);
         // TODO activateLifeSignSystem mit Zeit aus timeout
     }
 

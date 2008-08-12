@@ -98,7 +98,7 @@ public class ServerRegistration {
     }
 
     /*
-     * Inner class for running within a thread.
+     * Inner class (perhaps later runs in an own thread).
      */
     private class Registration {
 
@@ -125,6 +125,10 @@ public class ServerRegistration {
             // delivered by args
             talkLine.awaitRequestAnswerImmediate(BaseCommTag.REQ_TYPE_NAME, BaseCommTag.RESP_TYPE_NAME, serviceClassName);
             String serviceId = talkLine.requestTo(BaseCommTag.REQ_SERVICE, BaseCommTag.RESP_SERVICE);
+            String activateLifeSignSystem =         talkLine.requestTo(BaseCommTag.REQ_LIFE_SIGN_ACTIVATE, BaseCommTag.RESP_LIFE_SIGN_ACTIVATE);
+            if (BaseCommTag.VAL_TRUE.name().equals(activateLifeSignSystem)) {
+                talkLine.activateLifeSignSystem(true);
+            }
             if (Util.isEmpty(serviceId)) {
                 throw new ActionFailedException(22L, "Server hat dem Client keinen Service zugeordnet.");
             }

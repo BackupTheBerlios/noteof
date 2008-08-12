@@ -14,12 +14,12 @@ public class ConfigurationClient extends BaseClient {
     public ConfigurationClient() {
     }
 
-    public ConfigurationClient(Socket socketToServer, TimeOut timeout, boolean activateLifeSignSystem, String[] args) throws ActionFailedException {
-        super(socketToServer, timeout, activateLifeSignSystem, args);
+    public ConfigurationClient(Socket socketToServer, TimeOut timeout, String[] args) throws ActionFailedException {
+        super(socketToServer, timeout, args);
     }
 
-    public ConfigurationClient(String ip, int port, TimeOut timeout, boolean activateLifeSignSystem, String... args) throws ActionFailedException {
-        super(ip, port, timeout, activateLifeSignSystem, args);
+    public ConfigurationClient(String ip, int port, TimeOut timeout, String... args) throws ActionFailedException {
+        super(ip, port, timeout, args);
         // TODO activateLifeSignSystem mit Zeit aus timeout
     }
 

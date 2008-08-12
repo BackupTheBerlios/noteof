@@ -4,7 +4,6 @@ import java.net.Socket;
 
 import de.notEOF.core.BaseClientOrService;
 import de.notEOF.core.communication.TalkLine;
-import de.notEOF.core.constant.NotEOFConstants;
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.interfaces.TimeOut;
 import de.notEOF.core.util.Util;
@@ -27,7 +26,6 @@ public abstract class BaseClient extends BaseClientOrService {
 
     private boolean linkedToService = false;
     private String[] args;
-    private boolean activateLifeSignSystem = false;
 
     /**
      * The server decides which service is the compatible one to this client by
@@ -62,9 +60,8 @@ public abstract class BaseClient extends BaseClientOrService {
      * If the connection must be build at a later time this constructor can be
      * used.
      */
-    public BaseClient(boolean activateLifeSign, String... args) {
+    public BaseClient(String... args) {
         this.args = args;
-        this.activateLifeSignSystem = activateLifeSign;
     }
 
     /**
@@ -86,8 +83,6 @@ public abstract class BaseClient extends BaseClientOrService {
         }
         talkLine = new TalkLine(ip, port, timeout.getMillisCommunication());
         registerAtServer(talkLine, timeout, this.args);
-        if (activateLifeSignSystem)
-            activateLifeSignSystem();
     }
 
     public void connect(Socket socketToServer, TimeOut timeout) throws ActionFailedException {
@@ -113,11 +108,9 @@ public abstract class BaseClient extends BaseClientOrService {
      *             established successfull an ActionFailedException will be
      *             thrown.
      */
-    public BaseClient(Socket socketToServer, TimeOut timeout, boolean activateLifeSignSystem, String... args) throws ActionFailedException {
+    public BaseClient(Socket socketToServer, TimeOut timeout, String... args) throws ActionFailedException {
         this.args = args;
         connect(socketToServer, timeout);
-        if (activateLifeSignSystem)
-            activateLifeSignSystem();
     }
 
     /**
@@ -131,11 +124,9 @@ public abstract class BaseClient extends BaseClientOrService {
      *             established successfull an ActionFailedException will be
      *             thrown.
      */
-    public BaseClient(String ip, int port, TimeOut timeout, boolean activateLifeSignSystem, String... args) throws ActionFailedException {
+    public BaseClient(String ip, int port, TimeOut timeout, String... args) throws ActionFailedException {
         this.args = args;
         connect(ip, port, timeout);
-        if (activateLifeSignSystem)
-            activateLifeSignSystem();
     }
 
     /**
@@ -147,22 +138,22 @@ public abstract class BaseClient extends BaseClientOrService {
         return (linkedToService && talkLine.isConnected());
     }
 
-    /**
-     * Activates the LifeSignSystem to ensure that the client is alive. <br>
-     * When the system is activated the service awaits that it's client sends
-     * messages within a hardly defined time in the class
-     * {@link NotEOFConstants}.<br>
-     * If the LifeSignSystem is activated for the service, it is very
-     * recommendable to activate it for every client which uses this type of
-     * service too!
-     * 
-     * @see BaseClient
-     * @see NotEOFConstants
-     */
-    public void activateLifeSignSystem() {
-        super.activateLifeSignSystem(true);
-    }
-
+//    /**
+//     * Activates the LifeSignSystem to ensure that the client is alive. <br>
+//     * When the system is activated the service awaits that it's client sends
+//     * messages within a hardly defined time in the class
+//     * {@link NotEOFConstants}.<br>
+//     * If the LifeSignSystem is activated for the service, it is very
+//     * recommendable to activate it for every client which uses this type of
+//     * service too!
+//     * 
+//     * @see BaseClient
+//     * @see NotEOFConstants
+//     */
+//    public void activateLifeSignSystem() {
+//        super.activateLifeSignSystem(true);
+//    }
+//
     /**
      * Returns the class name of the service which is concerned with this
      * client.

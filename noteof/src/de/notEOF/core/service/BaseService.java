@@ -4,7 +4,6 @@ import java.net.Socket;
 import java.util.List;
 
 import de.notEOF.core.BaseClientOrService;
-import de.notEOF.core.client.BaseClient;
 import de.notEOF.core.communication.TalkLine;
 import de.notEOF.core.constant.NotEOFConstants;
 import de.notEOF.core.exception.ActionFailedException;
@@ -68,6 +67,8 @@ public abstract class BaseService extends BaseClientOrService implements Service
         setServiceId(serviceId);
         TimeOut timeOut = getTimeOutObject();
         talkLine = new TalkLine(socketToClient, timeOut.getMillisCommunication());
+        if (isLifeSignSystemActive())
+        talkLine.activateLifeSignSystem(false);
     }
 
     public boolean isConnectedWithClient() {
@@ -108,22 +109,22 @@ public abstract class BaseService extends BaseClientOrService implements Service
         this.serviceThread = serviceThread;
     }
 
-    /**
-     * Activates the LifeSignSystem to ensure that the client is alive. <br>
-     * When the system is activated the service awaits that it's client sends
-     * messages within a hardly defined time in the class
-     * {@link NotEOFConstants}.<br>
-     * If the LifeSignSystem is activated for the service, it is very
-     * recommendable to activate it for every client which uses this type of
-     * service too!
-     * 
-     * @see BaseClient
-     * @see NotEOFConstants
-     */
-    public void activateLifeSignSystem() {
-        super.activateLifeSignSystem(false);
-    }
-
+//    /**
+//     * Activates the LifeSignSystem to ensure that the client is alive. <br>
+//     * When the system is activated the service awaits that it's client sends
+//     * messages within a hardly defined time in the class
+//     * {@link NotEOFConstants}.<br>
+//     * If the LifeSignSystem is activated for the service, it is very
+//     * recommendable to activate it for every client which uses this type of
+//     * service too!
+//     * 
+//     * @see BaseClient
+//     * @see NotEOFConstants
+//     */
+//    public void activateLifeSignSystem() {
+//        super.activateLifeSignSystem(false);
+//    }
+//
     @SuppressWarnings("unchecked")
     public void run() {
         while (!stopped) {
@@ -214,5 +215,11 @@ public abstract class BaseService extends BaseClientOrService implements Service
      * @param incomingMsgEnum
      */
     public abstract void processMsg(Enum<?> incomingMsgEnum) throws ActionFailedException;
+    
+    /**
+     * Decide if both communication partner - client and service - use the lifeSignSystem 
+     * @return true if the LifeSignSystem is used
+     */
+    public abstract boolean isLifeSignSystemActive();
 
 }

@@ -16,6 +16,8 @@ public enum BaseCommTag {
     RESP_SERVICE(),
 
     // Header for global communication acts
+    REQ_LIFE_SIGN_ACTIVATE(),
+    RESP_LIFE_SIGN_ACTIVATE(),
     REQ_LIFE_SIGN(),
     RESP_LIFE_SIGN(),
     REQ_STOP(),
@@ -23,6 +25,7 @@ public enum BaseCommTag {
 
     // Values
     VAL_OK(),
+    VAL_TRUE(),
     VAL_FALSE(),
     VAL_STOP();
 }

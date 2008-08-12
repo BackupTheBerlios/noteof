@@ -13,6 +13,8 @@ public interface Service {
     public void setThread(Thread serviceThread);
 
     public boolean isRunning();
+    
+    public boolean isLifeSignSystemActive();
 
     public abstract void processMsg(Enum<?> incomingMsgEnum) throws ActionFailedException;
 

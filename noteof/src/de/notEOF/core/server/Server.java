@@ -72,7 +72,7 @@ public class Server implements Runnable {
             notEof_Home = System.getenv("NOTEOF_HOME");
 
         if (Util.isEmpty(notEof_Home)) {
-            System.out.println("Umgebungsvariable 'NOTEOF_HOME' ist nicht gesetzt. !EOF-Server benötigt diese Variable.\n" + //
+            System.out.println("Umgebungsvariable 'NOTEOF_HOME' ist nicht gesetzt. !EOF-Server benï¿½tigt diese Variable.\n" + //
                     "Wert der Variable ist der Ordner unter dem die noteof.jar liegt.\n");
         }
 
@@ -130,6 +130,10 @@ public class Server implements Runnable {
         Service service = assignServiceToClient(clientSocket, deliveredServiceId, serviceTypeName);
         // Confirm the serviceId received by client or tell him another one
         talkLine.awaitRequestAnswerImmediate(BaseCommTag.REQ_SERVICE, BaseCommTag.RESP_SERVICE, service.getServiceId());
+        
+        BaseCommTag activateLifeSigns = BaseCommTag.VAL_FALSE;
+        if (service.isLifeSignSystemActive()) activateLifeSigns = BaseCommTag.VAL_TRUE;
+        talkLine.awaitRequestAnswerImmediate(BaseCommTag.REQ_LIFE_SIGN_ACTIVATE, BaseCommTag.RESP_LIFE_SIGN_ACTIVATE, activateLifeSigns.name());
 
         // start service for client
         // for later use the thread will put into the client

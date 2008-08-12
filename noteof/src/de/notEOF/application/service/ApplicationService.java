@@ -10,7 +10,6 @@ import de.notEOF.core.service.BaseService;
 public class ApplicationService extends BaseService implements Service {
 
     public void init() throws ActionFailedException {
-        super.activateLifeSignSystem();
     }
 
     @Override
@@ -31,4 +30,10 @@ public class ApplicationService extends BaseService implements Service {
             return timeOut;
         return new ApplicationTimeOut();
     }
+
+    @Override
+    public boolean isLifeSignSystemActive() {
+        return false;
+    }
+
 }

@@ -186,7 +186,7 @@ public class DispatchService extends BaseService implements Service {
                                 SimpleSocketData socketData = null;
                                 try {
                                     BaseTimeOut timeout = new BaseTimeOut(1000, 1500);
-                                    dispatchClient = new DispatchClient(eofServerIp.get(i), Util.parseInt(eofServerPort.get(i), 0), timeout, false,
+                                    dispatchClient = new DispatchClient(eofServerIp.get(i), Util.parseInt(eofServerPort.get(i), 0), timeout, 
                                             (String[]) null);
                                     dispatchClient.IS_CLIENT_FOR_SERVICE = true;
                                     socketData = dispatchClient.getSocketData(requestedServiceType, timeOutToSearch);
@@ -252,5 +252,10 @@ public class DispatchService extends BaseService implements Service {
         System.out.println("Service wird gestoppt");
         stopService();
         close();
+    }
+
+    @Override
+    public boolean isLifeSignSystemActive() {
+        return true;
     }
 }

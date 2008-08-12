@@ -21,8 +21,7 @@ import de.notEOF.core.interfaces.TimeOut;
  */
 public class ApplicationClient extends BaseClient {
 
-    public ApplicationClient(boolean activateLifeSignSystem, String... args) {
-        super(activateLifeSignSystem, args);
+    public ApplicationClient(String... args) {
     }
 
     /**
@@ -42,8 +41,8 @@ public class ApplicationClient extends BaseClient {
      * @see ApplicationTimeOut
      * @throws ActionFailedException
      */
-    public ApplicationClient(Socket socketToServer, TimeOut timeout, boolean activateLifeSignSystem, String... args) throws ActionFailedException {
-        super(socketToServer, timeout, activateLifeSignSystem, args);
+    public ApplicationClient(Socket socketToServer, TimeOut timeout, String... args) throws ActionFailedException {
+        super(socketToServer, timeout, args);
     }
 
     /**
@@ -61,8 +60,8 @@ public class ApplicationClient extends BaseClient {
      *            The arguments of the client main method
      * @throws ActionFailedException
      */
-    public ApplicationClient(String ip, int port, TimeOut timeout, boolean activateLifeSignSystem, String... args) throws ActionFailedException {
-        super(ip, port, timeout, activateLifeSignSystem, args);
+    public ApplicationClient(String ip, int port, TimeOut timeout, String... args) throws ActionFailedException {
+        super(ip, port, timeout, args);
     }
 
     @Override
@@ -77,7 +76,7 @@ public class ApplicationClient extends BaseClient {
     }
 
     public void blabla() throws ActionFailedException {
-        // beispiel für benutzen close der superklasse, benutzen der talkLine
+        // beispiel fï¿½r benutzen close der superklasse, benutzen der talkLine
         // der superklasse
         System.out.println(requestTo(ApplicationTag.REQ_CONNECT_ADDITIONAL_NAME, ApplicationTag.RESP_CONNECT_ADDITIONAL_NAME));
     }

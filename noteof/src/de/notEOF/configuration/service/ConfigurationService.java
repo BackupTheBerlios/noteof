@@ -39,4 +39,9 @@ public class ConfigurationService extends BaseService {
             }
         }
     }
+
+    @Override
+    public boolean isLifeSignSystemActive() {
+        return true;
+    }
 }

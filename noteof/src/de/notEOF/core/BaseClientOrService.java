@@ -75,17 +75,17 @@ public abstract class BaseClientOrService {
         this.serviceId = serviceId;
     }
 
-    /**
-     * Activates the LifeSignSystem.<br>
-     * When the system is activated the client periodicaly sends lifesigns to
-     * the service when he has nothing to do. <br>
-     * So the service is informed that the client is alive. It is only
-     * meaningful to do this if for the type of service which the client is
-     * bounded to, is the system activated too.
-     */
-    protected final void activateLifeSignSystem(boolean asClient) {
-        talkLine.activateLifeSignSystem(asClient);
-    }
+//    /**
+//     * Activates the LifeSignSystem.<br>
+//     * When the system is activated the client periodicaly sends lifesigns to
+//     * the service when he has nothing to do. <br>
+//     * So the service is informed that the client is alive. It is only
+//     * meaningful to do this if for the type of service which the client is
+//     * bounded to, is the system activated too.
+//     */
+//    protected final void activateLifeSignSystem(boolean asClient) {
+//        talkLine.activateLifeSignSystem(asClient);
+//    }
 
     /**
      * Fires a request to the communication partner.

@@ -33,4 +33,10 @@ public class TestService extends BaseService implements Service {
             System.out.println("Objekt gesendet.");
         }
     }
+
+    @Override
+    public boolean isLifeSignSystemActive() {
+        // TODO Auto-generated method stub
+        return false;
+    }
 }
