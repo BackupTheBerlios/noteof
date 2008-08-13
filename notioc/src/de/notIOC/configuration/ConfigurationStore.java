@@ -21,7 +21,6 @@ import de.notIOC.util.Util;
 public class ConfigurationStore {
 
     private static SAXBuilder saxBuilder = new SAXBuilder();
-    @SuppressWarnings("unused")
     private String masterXmlFile;
     private List<String> configurationFiles;
     private static ConfigurationStore theStore = new ConfigurationStore();
@@ -54,7 +53,7 @@ public class ConfigurationStore {
      * @return A list with found elements with 1 or more elements.
      * @throws NotIOCException
      */
-    public List<Element> getElement(String elementName) throws NotIOCException {
+    public synchronized List<Element> getElement(String elementName) throws NotIOCException {
         List<Element> foundElement = null;
         for (String sourceFileName : configurationFiles) {
             foundElement = readXmlFile(sourceFileName, elementName);
@@ -78,6 +77,9 @@ public class ConfigurationStore {
      * files which are stored in a master file.
      */
     private void setXmlFile(String xmlFileName) throws NotIOCException {
+        if (null != this.masterXmlFile)
+            throw new NotIOCException(6L, "Xml Datei: " + xmlFileName + "Bereits initialisiert mit: " + this.masterXmlFile);
+
         this.masterXmlFile = xmlFileName;
 
         File masterXmlFile = new File(xmlFileName);
@@ -102,7 +104,7 @@ public class ConfigurationStore {
     /*
      * Read an xml file and search for elements.
      */
-    private List<Element> readXmlFile(String sourceFileName, String elementName) throws NotIOCException {
+    private synchronized List<Element> readXmlFile(String sourceFileName, String elementName) throws NotIOCException {
         Document doc;
         try {
             doc = saxBuilder.build(new File(sourceFileName));
