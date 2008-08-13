@@ -81,8 +81,8 @@ public abstract class BaseClient extends BaseClientOrService {
         if (null == timeout) {
             timeout = getTimeOutObject();
         }
-        talkLine = new TalkLine(ip, port, timeout.getMillisCommunication());
-        registerAtServer(talkLine, timeout, this.args);
+        setTalkLine(new TalkLine(ip, port, timeout.getMillisCommunication()));
+        registerAtServer(getTalkLine(), timeout, this.args);
     }
 
     public void connect(Socket socketToServer, TimeOut timeout) throws ActionFailedException {
@@ -92,8 +92,8 @@ public abstract class BaseClient extends BaseClientOrService {
         if (null == timeout) {
             timeout = getTimeOutObject();
         }
-        talkLine = new TalkLine(socketToServer, timeout.getMillisCommunication());
-        registerAtServer(talkLine, timeout, this.args);
+        setTalkLine(new TalkLine(socketToServer, timeout.getMillisCommunication()));
+        registerAtServer(getTalkLine(), timeout, this.args);
     }
 
     /**
@@ -135,25 +135,25 @@ public abstract class BaseClient extends BaseClientOrService {
      * @return true or false...
      */
     public boolean isLinkedToService() {
-        return (linkedToService && talkLine.isConnected());
+        return (linkedToService && getTalkLine().isConnected());
     }
 
-//    /**
-//     * Activates the LifeSignSystem to ensure that the client is alive. <br>
-//     * When the system is activated the service awaits that it's client sends
-//     * messages within a hardly defined time in the class
-//     * {@link NotEOFConstants}.<br>
-//     * If the LifeSignSystem is activated for the service, it is very
-//     * recommendable to activate it for every client which uses this type of
-//     * service too!
-//     * 
-//     * @see BaseClient
-//     * @see NotEOFConstants
-//     */
-//    public void activateLifeSignSystem() {
-//        super.activateLifeSignSystem(true);
-//    }
-//
+    // /**
+    // * Activates the LifeSignSystem to ensure that the client is alive. <br>
+    // * When the system is activated the service awaits that it's client sends
+    // * messages within a hardly defined time in the class
+    // * {@link NotEOFConstants}.<br>
+    // * If the LifeSignSystem is activated for the service, it is very
+    // * recommendable to activate it for every client which uses this type of
+    // * service too!
+    // *
+    // * @see BaseClient
+    // * @see NotEOFConstants
+    // */
+    // public void activateLifeSignSystem() {
+    // super.activateLifeSignSystem(true);
+    // }
+    //
     /**
      * Returns the class name of the service which is concerned with this
      * client.

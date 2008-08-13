@@ -7,17 +7,17 @@ import de.notEOF.core.util.Util;
  * 
  * @author Dirk
  */
-public class SimpleSocketData {
+public class SimpleSocketConnectionData {
 
     private int port = 0;
     private String ip = "";
 
-    public SimpleSocketData(String ip, int port) {
+    public SimpleSocketConnectionData(String ip, int port) {
         this.ip = ip;
         this.port = port;
     }
 
-    public SimpleSocketData(String ip, String port) {
+    public SimpleSocketConnectionData(String ip, String port) {
         this(ip, Util.parseInt(port, 0));
     }
 

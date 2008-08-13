@@ -54,7 +54,7 @@ public class ActionFailedException extends Exception {
      *         can be null.
      */
     public String getMessage() {
-        return message + ": " + addInfo;
+        return message + "    " + addInfo;
     }
 
     /**

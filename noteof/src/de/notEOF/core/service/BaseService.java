@@ -11,6 +11,7 @@ import de.notEOF.core.interfaces.Service;
 import de.notEOF.core.interfaces.TimeOut;
 import de.notEOF.core.logging.LocalLog;
 import de.notEOF.core.server.Server;
+import de.notIOC.util.Util;
 
 /**
  * Basic class for every !EOF Service.
@@ -32,22 +33,6 @@ public abstract class BaseService extends BaseClientOrService implements Service
     private Thread serviceThread;
     private Server server;
 
-    // /**
-    // * If you don't know what to do with the constructor of your derived class
-    // -
-    // * call this constructor... :<br>
-    // * super(socetToClient);
-    // *
-    // * @param socketToClient
-    // */
-    // public BaseService(Socket socketToClient, Timeout timeOut) throws
-    // ActionFailedException {
-    // if (null == timeOut)
-    // timeOut = new BaseTimeout();
-    // talkLine = new TalkLine(socketToClient,
-    // timeOut.getMillisCommunication());
-    // }
-
     public boolean isRunning() {
         return isRunning;
     }
@@ -66,9 +51,9 @@ public abstract class BaseService extends BaseClientOrService implements Service
     public void initializeConnection(Socket socketToClient, String serviceId) throws ActionFailedException {
         setServiceId(serviceId);
         TimeOut timeOut = getTimeOutObject();
-        talkLine = new TalkLine(socketToClient, timeOut.getMillisCommunication());
+        setTalkLine(new TalkLine(socketToClient, timeOut.getMillisCommunication()));
         if (isLifeSignSystemActive())
-        talkLine.activateLifeSignSystem(false);
+            getTalkLine().activateLifeSignSystem(false);
     }
 
     public boolean isConnectedWithClient() {
@@ -87,6 +72,14 @@ public abstract class BaseService extends BaseClientOrService implements Service
         this.server = server;
     }
 
+    /**
+     * Returns the list of all services which have the name 'serviceTypeName'.
+     * 
+     * @param serviceTypeNameThe
+     *            name of the service types which are searched.
+     * @return A list of active (running) services.
+     * @throws ActionFailedException
+     */
     public final List<Service> getServiceListByTypeName(String serviceTypeName) throws ActionFailedException {
         return server.getServiceListByTypeName(serviceTypeName);
     }
@@ -109,31 +102,15 @@ public abstract class BaseService extends BaseClientOrService implements Service
         this.serviceThread = serviceThread;
     }
 
-//    /**
-//     * Activates the LifeSignSystem to ensure that the client is alive. <br>
-//     * When the system is activated the service awaits that it's client sends
-//     * messages within a hardly defined time in the class
-//     * {@link NotEOFConstants}.<br>
-//     * If the LifeSignSystem is activated for the service, it is very
-//     * recommendable to activate it for every client which uses this type of
-//     * service too!
-//     * 
-//     * @see BaseClient
-//     * @see NotEOFConstants
-//     */
-//    public void activateLifeSignSystem() {
-//        super.activateLifeSignSystem(false);
-//    }
-//
     @SuppressWarnings("unchecked")
     public void run() {
         while (!stopped) {
             try {
-                String msg = talkLine.readMsgTimedOut(NotEOFConstants.LIFE_TIME_INTERVAL_SERVICE);
+                String msg = getTalkLine().readMsgTimedOut(NotEOFConstants.LIFE_TIME_INTERVAL_SERVICE);
 
                 // Check if the lifetime hasn't send longer than allowed
                 // or if any other messages came within the max. allowed time.
-                if (talkLine.lifeSignSucceeded()) {
+                if (getTalkLine().lifeSignSucceeded()) {
                     // if (Util.isEmpty(msg) && nextLifeSign <
                     // System.currentTimeMillis()) {
                     // no message within the lifetime interval
@@ -142,20 +119,20 @@ public abstract class BaseService extends BaseClientOrService implements Service
                     break;
                 }
 
-                // Some messages are valid for every service and must be accept
-                // by them.
-                // Typical events like stop etc. are processed here.
+                if (!Util.isEmpty(msg)) {
 
-                // Client sends stop signal
+                    // client/service specific messages are processed in the
+                    // method processMsg() which must be implemented
+                    // individual in every service.
+                    Class<Enum> tagEnumClass = (Class<Enum>) getCommunicationTagClass();
+                    try {
+                        processMsg(validateEnum(tagEnumClass, msg));
+                    } catch (ActionFailedException afx) {
+                        LocalLog.error("Mapping der Nachricht auf Enum.", afx);
+                        stopped = true;
+                    }
 
-                // The rest of messages is client/service specific and must be
-                // processed in the method handleMsg() which must be implemented
-                // individual in every service.
-                Class<Enum> tagEnumClass = (Class<Enum>) getCommunicationTagClass();
-                try {
-                    processMsg(validateEnum(tagEnumClass, msg));
-                } catch (ActionFailedException afx) {
-                    LocalLog.error("Mapping der Nachricht auf Enum.", afx);
+                } else {
                     stopped = true;
                 }
 
@@ -164,7 +141,10 @@ public abstract class BaseService extends BaseClientOrService implements Service
                 // errNo 24L is ok - timeout at read action
                 // Socket communication problem
                 if (afx.getErrNo() == 23L) {
-                    LocalLog.info("Kommunikation mit Client ist unterbrochen. Service wird beendet.");
+                    LocalLog.info("Kommunikation mit Client ist unterbrochen. Service wird beendet. ServiceType, ServiceId: " + getClass().getSimpleName()
+                            + ", " + getServiceId());
+
+                    getTalkLine();
                     stopped = true;
                 }
                 // Problem when setting timeout
@@ -176,7 +156,7 @@ public abstract class BaseService extends BaseClientOrService implements Service
 
         // close socket to client
         try {
-            talkLine.close();
+            getTalkLine().close();
         } catch (Exception ex) {
             LocalLog.warn("Verbindung zum Client konnte nicht geschlossen werden. Evtl. bestand zu diesem Zeitpunkt keien Verbindung (mehr).", ex);
         }
@@ -194,6 +174,10 @@ public abstract class BaseService extends BaseClientOrService implements Service
         }
         // return null;
         throw new ActionFailedException(151L, "Validierung der Empfangenen Nachricht: " + msg);
+    }
+
+    protected void finalize() {
+        getTalkLine().update(null, null);
     }
 
     /**
@@ -215,10 +199,16 @@ public abstract class BaseService extends BaseClientOrService implements Service
      * @param incomingMsgEnum
      */
     public abstract void processMsg(Enum<?> incomingMsgEnum) throws ActionFailedException;
-    
+
     /**
-     * Decide if both communication partner - client and service - use the lifeSignSystem 
-     * @return true if the LifeSignSystem is used
+     * Decides if both communication partner - client and service - use the
+     * lifeSignSystem. <br>
+     * It is very important that - if the LifeSignSystem is activated for the
+     * services - the client.close() method is called at the end of the client
+     * application. Otherwise the service doesn't know that the client not
+     * longer exists.
+     * 
+     * @return Set the return value to true if the LifeSignSystem shall be used.
      */
     public abstract boolean isLifeSignSystemActive();
 

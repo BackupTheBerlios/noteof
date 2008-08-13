@@ -97,9 +97,10 @@ public class LifeTimer implements Runnable {
     }
 
     /*
-     * Send a special request to server. This messages is a hint for the service that it's client is alive. The response from the service
-     * also shows that the service is alive to. Additional this communication act is used to find out if the service wants the client to
-     * stop.
+     * Send a special request to server. This messages is a hint for the service
+     * that it's client is alive. The response from the service also shows that
+     * the service is alive to. Additional this communication act is used to
+     * find out if the service wants the client to stop.
      */
     protected synchronized void sendLifeSign() {
         if (socketLayer.isConnected() && nextLifeSignToSend < System.currentTimeMillis()) {
@@ -108,9 +109,11 @@ public class LifeTimer implements Runnable {
                 oldTimeOut = socketLayer.getSocketToPartner().getSoTimeout();
                 socketLayer.getSocketToPartner().setSoTimeout(5000);
                 socketLayer.writeMsg(BaseCommTag.REQ_LIFE_SIGN.name());
-                // exactly one read - the response should be BaseCommTag.RESP_LIFE_SIGN
+                // exactly one read - the response should be
+                // BaseCommTag.RESP_LIFE_SIGN
                 // if not the server has ignored the REQ_LIFE_SIGN message
                 // in this version this circumstance is ignored
+                System.out.println("LifeTimer sendLifeSign");
                 socketLayer.readMsg();
             } catch (ActionFailedException afx) {
                 LocalLog.error("Senden des LifeSigns. Verbindung zu Service wird unterbrochen.", afx);

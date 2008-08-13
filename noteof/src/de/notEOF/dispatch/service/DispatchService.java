@@ -5,7 +5,7 @@ import java.util.List;
 
 import de.notEOF.configuration.client.LocalConfigurationClient;
 import de.notEOF.core.communication.BaseTimeOut;
-import de.notEOF.core.communication.SimpleSocketData;
+import de.notEOF.core.communication.SimpleSocketConnectionData;
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.interfaces.Service;
 import de.notEOF.core.logging.LocalLog;
@@ -183,7 +183,7 @@ public class DispatchService extends BaseService implements Service {
 
                             if (eofServerIp.get(i).equals(getServerHostAddress())) {
                             } else {
-                                SimpleSocketData socketData = null;
+                                SimpleSocketConnectionData socketData = null;
                                 try {
                                     BaseTimeOut timeout = new BaseTimeOut(1000, 1500);
                                     dispatchClient = new DispatchClient(eofServerIp.get(i), Util.parseInt(eofServerPort.get(i), 0), timeout, 

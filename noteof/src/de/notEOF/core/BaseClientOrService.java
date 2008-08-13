@@ -9,7 +9,7 @@ import de.notEOF.core.interfaces.TimeOut;
 public abstract class BaseClientOrService {
 
     protected String serviceId;
-    protected TalkLine talkLine;
+    private TalkLine talkLine;
 
     /**
      * Delivers the port of the connected service.
@@ -30,13 +30,17 @@ public abstract class BaseClientOrService {
     }
 
     /**
-     * Delivers a valid message interface to the server
+     * Delivers the active message interface which is used by client or service.
      * 
      * @return An initialized Object which simplifies the communication with the
      *         server
      */
     public TalkLine getTalkLine() {
         return talkLine;
+    }
+
+    protected void setTalkLine(TalkLine talkLine) {
+        this.talkLine = talkLine;
     }
 
     /**
@@ -50,7 +54,10 @@ public abstract class BaseClientOrService {
     }
 
     /**
-     * Disconnect from server, close physical connection.
+     * Disconnect from server, close physical connection. <br>
+     * If the LifeSignSystem is activated it is strongly recommended to call
+     * this method for client objects because otherwise the service doesnt't
+     * know that the client not longer exists.
      * 
      * @throws ActionFailedException
      */
@@ -75,17 +82,17 @@ public abstract class BaseClientOrService {
         this.serviceId = serviceId;
     }
 
-//    /**
-//     * Activates the LifeSignSystem.<br>
-//     * When the system is activated the client periodicaly sends lifesigns to
-//     * the service when he has nothing to do. <br>
-//     * So the service is informed that the client is alive. It is only
-//     * meaningful to do this if for the type of service which the client is
-//     * bounded to, is the system activated too.
-//     */
-//    protected final void activateLifeSignSystem(boolean asClient) {
-//        talkLine.activateLifeSignSystem(asClient);
-//    }
+    // /**
+    // * Activates the LifeSignSystem.<br>
+    // * When the system is activated the client periodicaly sends lifesigns to
+    // * the service when he has nothing to do. <br>
+    // * So the service is informed that the client is alive. It is only
+    // * meaningful to do this if for the type of service which the client is
+    // * bounded to, is the system activated too.
+    // */
+    // protected final void activateLifeSignSystem(boolean asClient) {
+    // talkLine.activateLifeSignSystem(asClient);
+    // }
 
     /**
      * Fires a request to the communication partner.
@@ -236,4 +243,7 @@ public abstract class BaseClientOrService {
         talkLine.sendDataObject(dataObject);
     }
 
+    protected void finalize() {
+        talkLine.update(null, null);
+    }
 }

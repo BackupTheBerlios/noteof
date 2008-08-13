@@ -2,6 +2,8 @@ package de.notEOF.core.communication;
 
 import java.net.ConnectException;
 import java.net.Socket;
+import java.util.Observable;
+import java.util.Observer;
 
 import de.notEOF.core.exception.ActionFailedException;
 
@@ -14,7 +16,7 @@ import de.notEOF.core.exception.ActionFailedException;
  * 
  * @see CommTag The class {@link CommTag} contains messageheaders.
  */
-public class TalkLine {
+public class TalkLine implements Observer {
 
     private SocketLayer socketLayer;
 
@@ -245,16 +247,11 @@ public class TalkLine {
      * @throws ActionFailedException
      */
     public String readMsgTimedOut(int timeOutMillis) throws ActionFailedException {
-        // try {
         int oldTimeOut = socketLayer.getTimeOut();
         socketLayer.setTimeOut(timeOutMillis);
         String msgValue = socketLayer.readMsg();
         socketLayer.setTimeOut(oldTimeOut);
         return msgValue;
-        // } catch (Exception ex) {
-        // throw new ActionFailedException(7522,
-        // "Setzen des Timeouts für Leseoperation auf " + timeOutMillis, ex);
-        // }
     }
 
     /**
@@ -297,5 +294,10 @@ public class TalkLine {
      */
     public void activateLifeSignSystem(Boolean asClient) {
         socketLayer.activateLifeSignSystem(asClient);
+    }
+
+    @Override
+    public void update(Observable arg0, Object arg1) {
+        socketLayer.close();
     }
 }

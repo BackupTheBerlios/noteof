@@ -73,6 +73,7 @@ public class Errors {
         // Services
         errorList.put(150L, "Service konnte nicht dynamisch geladen werden.");
         errorList.put(151L, "Service kennt empfangene Nachricht nicht.");
+        errorList.put(152L, "Service Klasse wurde nicht gefunden. Service muss mittels CLASSPATH auffindbar sein.");
 
         // Special client/service messages up from 1000L
         // Dispatching

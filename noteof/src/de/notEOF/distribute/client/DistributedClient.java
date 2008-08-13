@@ -4,7 +4,7 @@ import java.net.Socket;
 
 import de.notEOF.core.client.BaseClient;
 import de.notEOF.core.communication.BaseTimeOut;
-import de.notEOF.core.communication.SimpleSocketData;
+import de.notEOF.core.communication.SimpleSocketConnectionData;
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.dispatch.client.DispatchClient;
 
@@ -31,7 +31,7 @@ public class DistributedClient {
      *            Individual or basically Object of type BaseTimeOut.
      * @throws ActionFailedException
      */
-    public DistributedClient(BaseClient client, SimpleSocketData socketData, BaseTimeOut timeOut) throws ActionFailedException {
+    public DistributedClient(BaseClient client, SimpleSocketConnectionData socketData, BaseTimeOut timeOut) throws ActionFailedException {
         this.client = client;
         BaseTimeOut baseTimeOut = new BaseTimeOut(0, 60000);
         DispatchClient dispatchClient = new DispatchClient(socketData.getIp(), socketData.getPort(), baseTimeOut, (String[]) null);

@@ -107,6 +107,7 @@ public class SocketLayer {
     }
 
     protected DataObject receiveDataObject() throws ActionFailedException {
+        // TODO Listen verarbeiten
         // dataTypes:
         // 0 = short
         // 1 = int

@@ -30,7 +30,8 @@ public class LocalLog {
     }
 
     public static void error(String additionalInfo, Throwable th) {
-        System.out.println(additionalInfo + ": \n" + th.getStackTrace());
+        System.out.println(additionalInfo);
+        th.printStackTrace();
     }
 
     public static void error(String additionalInfo) {
@@ -38,7 +39,8 @@ public class LocalLog {
     }
 
     public static void warn(String additionalInfo, Throwable th) {
-        System.out.println(additionalInfo + ": \n" + th.getStackTrace());
+        System.out.println(additionalInfo);
+        th.printStackTrace();
     }
 
     public static void warn(String additionalInfo) {
@@ -46,10 +48,12 @@ public class LocalLog {
     }
 
     public static void debug(String additionalInfo, Throwable th) {
+        th.printStackTrace();
     }
 
     public static void info(String additionalInfo, Throwable th) {
-        System.out.println(additionalInfo + ": \n" + th.getStackTrace());
+        System.out.println(additionalInfo);
+        th.printStackTrace();
     }
 
     public static void info(String additionalInfo) {

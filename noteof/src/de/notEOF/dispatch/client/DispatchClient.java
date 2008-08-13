@@ -5,7 +5,7 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 
 import de.notEOF.core.client.BaseClient;
-import de.notEOF.core.communication.SimpleSocketData;
+import de.notEOF.core.communication.SimpleSocketConnectionData;
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.interfaces.TimeOut;
 import de.notEOF.dispatch.enumeration.DispatchTag;
@@ -86,7 +86,7 @@ public class DispatchClient extends BaseClient {
         // the result of this function
         Socket socketToService = null;
 
-        SimpleSocketData socketData = getSocketData(serviceTypeName, timeOutForSearch);
+        SimpleSocketConnectionData socketData = getSocketData(serviceTypeName, timeOutForSearch);
         if (null != socketData) {
             try {
                 socketToService = new Socket(socketData.getIp(), socketData.getPort());
@@ -131,14 +131,14 @@ public class DispatchClient extends BaseClient {
      *            Value 0 for timeOutForSearch means that there is no timeout
      *            used.
      * 
-     * @return An object of type {@link SimpleSocketData} which contains the ip
+     * @return An object of type {@link SimpleSocketConnectionData} which contains the ip
      *         and port to the server with the requested service.
      */
-    public SimpleSocketData getSocketData(String serviceTypeName, int timeOutForSearch) throws ActionFailedException {
+    public SimpleSocketConnectionData getSocketData(String serviceTypeName, int timeOutForSearch) throws ActionFailedException {
         System.out.println("Gesucht wird auf: " + getPartnerHostAddress() + ":" + getPartnerPort());
 
         // the result of this function
-        SimpleSocketData socketData = null;
+        SimpleSocketConnectionData socketData = null;
 
         // opening
         writeMsg(DispatchTag.REQ_SERVICE);
@@ -173,7 +173,7 @@ public class DispatchClient extends BaseClient {
             // ask for ip and port
             String ip = requestTo(DispatchTag.REQ_IP, DispatchTag.RESP_IP);
             String port = requestTo(DispatchTag.REQ_PORT, DispatchTag.RESP_PORT);
-            socketData = new SimpleSocketData(ip, port);
+            socketData = new SimpleSocketConnectionData(ip, port);
         }
 
         close();

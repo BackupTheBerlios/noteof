@@ -3,7 +3,7 @@ package de.notEOF.test;
 import de.notEOF.application.client.ApplicationClient;
 import de.notEOF.configuration.client.ConfigurationClient;
 import de.notEOF.core.communication.DataObject;
-import de.notEOF.core.communication.SimpleSocketData;
+import de.notEOF.core.communication.SimpleSocketConnectionData;
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.distribute.client.DistributedClient;
 
@@ -14,7 +14,7 @@ public class Test {
 
         try {
             ConfigurationClient cfgClient = new ConfigurationClient("127.0.0.1", 3000, null, args);
-            DataObject confObject = cfgClient.getConfigurationValue("serviceTypes", "simpleName");
+            DataObject confObject = cfgClient.getConfigurationObject("serviceTypes", "simpleName");
             System.out.println("Type = " + confObject.getDataType());
             System.out.println("Wert = " + confObject.getConfigurationValue());
 
@@ -35,7 +35,7 @@ public class Test {
 
         try {
             ApplicationClient client = new ApplicationClient(args);
-            SimpleSocketData socketData = new SimpleSocketData("127.0.0.1", 3000);
+            SimpleSocketConnectionData socketData = new SimpleSocketConnectionData("127.0.0.1", 3000);
             @SuppressWarnings("unused")
             DistributedClient distClient = new DistributedClient(client, socketData, null);
 

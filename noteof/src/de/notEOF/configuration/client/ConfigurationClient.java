@@ -33,7 +33,7 @@ public class ConfigurationClient extends BaseClient {
         return null;
     }
 
-    public DataObject getConfigurationValue(String xmlConfKey, String attributeName) throws ActionFailedException {
+    public DataObject getConfigurationObject(String xmlConfKey, String attributeName) throws ActionFailedException {
         writeMsg(ConfigurationTag.REQ_KEY);
         awaitRequestAnswerImmediate(ConfigurationTag.REQ_KEY_PATH, ConfigurationTag.RESP_KEY_PATH, xmlConfKey);
         awaitRequestAnswerImmediate(ConfigurationTag.REQ_ATTRIBUTE_NAME, ConfigurationTag.RESP_ATTRIBUTE_NAME, attributeName);

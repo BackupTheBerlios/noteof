@@ -104,9 +104,9 @@ public class Server implements Runnable {
                 Socket clientSocket = serverSocket.accept();
                 acceptClient(clientSocket);
             } catch (IOException ex) {
-                LocalLog.error("Fehler bei Warten auf Connect durch nï¿½chsten Client", ex);
+                LocalLog.error("Fehler bei Warten auf Connect durch nächsten Client", ex);
             } catch (ActionFailedException afx) {
-                LocalLog.error("Abbruch bei Verbindungsaufbau mit Client", afx);
+                LocalLog.error("Abbruch bei Verbindungsaufbau mit Client.", afx);
             }
         }
     }
@@ -130,9 +130,10 @@ public class Server implements Runnable {
         Service service = assignServiceToClient(clientSocket, deliveredServiceId, serviceTypeName);
         // Confirm the serviceId received by client or tell him another one
         talkLine.awaitRequestAnswerImmediate(BaseCommTag.REQ_SERVICE, BaseCommTag.RESP_SERVICE, service.getServiceId());
-        
+
         BaseCommTag activateLifeSigns = BaseCommTag.VAL_FALSE;
-        if (service.isLifeSignSystemActive()) activateLifeSigns = BaseCommTag.VAL_TRUE;
+        if (service.isLifeSignSystemActive())
+            activateLifeSigns = BaseCommTag.VAL_TRUE;
         talkLine.awaitRequestAnswerImmediate(BaseCommTag.REQ_LIFE_SIGN_ACTIVATE, BaseCommTag.RESP_LIFE_SIGN_ACTIVATE, activateLifeSigns.name());
 
         // start service for client
@@ -246,6 +247,8 @@ public class Server implements Runnable {
 
                 // add new service to type specific map
                 serviceMap.put(deliveredServiceId, service);
+            } else {
+                throw new ActionFailedException(152L, "Suche des Service: " + serviceTypeName);
             }
         }
         return service;

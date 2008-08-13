@@ -19,6 +19,9 @@ public class ServiceGarbage implements Runnable {
     }
 
     public void run() {
+        // 60 * 2000millis = 2 minutes
+        // call gc() all 2 minutes
+        int gcCounter = 60;
         while (!stopped) {
             try {
                 Thread.sleep(2000);
@@ -29,6 +32,7 @@ public class ServiceGarbage implements Runnable {
                     for (Map<String, Service> map : serviceMaps) {
                         Collection<Service> services = map.values();
                         if (null != services) {
+                            System.out.println("count services: " + services.size());
                             for (Service service : services) {
                                 if (!service.isRunning() || //
                                         (null != service.getThread() && //
@@ -42,6 +46,10 @@ public class ServiceGarbage implements Runnable {
                     }
                 }
 
+                if (0 >= gcCounter--) {
+                    gcCounter = 60;
+                    System.gc();
+                }
             } catch (Exception ex) {
                 // nothing to do
             }
