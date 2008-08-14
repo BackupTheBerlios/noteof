@@ -20,6 +20,7 @@ import de.notEOF.core.service.BaseService;
 import de.notEOF.core.service.ServiceFinder;
 import de.notEOF.core.util.ArgsParser;
 import de.notEOF.core.util.Util;
+import de.notIOC.configuration.ConfigurationManager;
 
 /**
  * The central server which has some different tasks: <br>
@@ -62,17 +63,17 @@ public class Server implements Runnable {
      * 
      * @throws ActionFailedException
      */
-    public static void start(int port) throws ActionFailedException {
+    public static void start(int port, String homeVar) throws ActionFailedException {
         // notEof_Home = ConfigurationManager.getApplicationHome();
 
         // look for NOTEOF_HOME as VM environment variable (-DCFGROOT)
         // and - if not found - as SYSTEM environment variable $NOTEOF_HOME
-        notEof_Home = System.getProperty("NOTEOF_HOME");
+        notEof_Home = System.getProperty(homeVar);
         if (Util.isEmpty(notEof_Home))
-            notEof_Home = System.getenv("NOTEOF_HOME");
+            notEof_Home = System.getenv(homeVar);
 
         if (Util.isEmpty(notEof_Home)) {
-            System.out.println("Umgebungsvariable 'NOTEOF_HOME' ist nicht gesetzt. !EOF-Server benï¿½tigt diese Variable.\n" + //
+            System.out.println("Umgebungsvariable '" + homeVar + "' ist nicht gesetzt. !EOF-Server benötigt diese Variable.\n" + //
                     "Wert der Variable ist der Ordner unter dem die noteof.jar liegt.\n");
         }
 
@@ -264,18 +265,22 @@ public class Server implements Runnable {
     // @TODO Hilfe anzeigen
     public static void main(String... args) {
         String portString = "";
+        String homeVar = "NOTEOF_HOME";
         ArgsParser argsParser = new ArgsParser(args);
         if (argsParser.containsStartsWith("--port")) {
             portString = argsParser.getValue("port");
         }
+        if (argsParser.containsStartsWith("--homeVar")) {
+            homeVar = argsParser.getValue("homeVar");
+            ConfigurationManager.setHomeVariableName(homeVar);
+        }
         int port = Util.parseInt(portString, 2512);
 
         try {
-            Server.start(port);
+            Server.start(port, homeVar);
         } catch (Exception ex) {
             LocalLog.error("Der zentrale !EOF-Server konnte nicht gestartet werden.", ex);
             throw new RuntimeException("!EOF Server kann nicht gestartet werden.", ex);
         }
     }
-
 }

@@ -15,9 +15,10 @@ import de.notIOC.logging.LocalLog;
 public class ConfigurationManager {
 
     private static String notEOFHome = null;
+    private static String homeVarName = "NOT_EOF";
     private String configFile = "noteof_master.xml";
 
-    protected static ConfigurationManager configManager = new ConfigurationManager();
+    protected static ConfigurationManager configManager;
 
     private ConfigurationManager() {
         try {
@@ -27,7 +28,12 @@ public class ConfigurationManager {
         }
     }
 
-    public static ConfigurationManager getInstance() throws NotIOCException {
+    public static void setHomeVariableName(String homeVariableName) {
+        homeVarName = homeVariableName;
+        getInstance();
+    }
+
+    public static ConfigurationManager getInstance() {
         if (configManager == null) {
             configManager = new ConfigurationManager();
         }
@@ -51,17 +57,6 @@ public class ConfigurationManager {
         File cfgRoot = new File(getConfigRoot());
         String configFilePath = new File(cfgRoot, configFile).getAbsolutePath();
         LocalLog.info("ConfigManager ConfigFile: " + configFilePath);
-
-        // try {
-        // File x = new File(configFilePath);
-        // URI uri = x.toURI();
-        // URL url = uri.toURL();
-        // basicConfiguration.setURL(url);
-        // } catch (Exception ex) {
-        // throw new ConfigurationException(ex);
-        // }
-
-        System.out.println("ConfigurationManager loadConfiguration mit " + configFilePath);
         ConfigurationStore.setMasterXmlFile(configFilePath);
     }
 
@@ -85,26 +80,26 @@ public class ConfigurationManager {
         // Configuration Root depends to Tomcat variable
         if (notEOFHome == null) {
             try {
-                notEOFHome = (String) new InitialContext().lookup("java:comp/env/NOTEOF_HOME");
+                notEOFHome = (String) new InitialContext().lookup("java:comp/env/" + homeVarName);
                 if (notEOFHome != null)
-                    LocalLog.info("NOTEOF_HOME found as initial context: " + notEOFHome);
+                    LocalLog.info("Home '" + homeVarName + "' found as initial context: " + notEOFHome);
             } catch (NamingException e) {
             }
         }
         // CFGROOT as VM-environment variable (-DCFGROOT)
         if (notEOFHome == null) {
-            notEOFHome = System.getProperty("NOTEOF_HOME");
+            notEOFHome = System.getProperty(homeVarName);
             if (notEOFHome != null)
-                LocalLog.info("NOTEOF_HOME found in VM variable: " + notEOFHome);
+                LocalLog.info("Home '" + homeVarName + "' found in VM variable: " + notEOFHome);
         }
         // NOTEOF_HOME as system variable
         if (notEOFHome == null) {
-            notEOFHome = System.getenv("NOTEOF_HOME");
+            notEOFHome = System.getenv(homeVarName);
             if (notEOFHome != null)
-                LocalLog.info("NOTEOF_HOME found in system variable: " + notEOFHome);
+                LocalLog.info("Home '" + homeVarName + "' found in system variable: " + notEOFHome);
         }
         if (notEOFHome == null) {
-            throw new RuntimeException("Could not determine NOTEOF_HOME");
+            throw new RuntimeException("Could not determine home variable: " + homeVarName);
         }
         return notEOFHome;
     }
