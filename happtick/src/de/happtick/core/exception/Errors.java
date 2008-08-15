@@ -1,10 +1,10 @@
 package de.happtick.core.exception;
+
 import java.util.Hashtable;
 import java.util.Map;
 
 /**
- * Class stores all errors which are used when throwing an
- * HapptickException. <br>
+ * Class stores all errors which are used when throwing an HapptickException. <br>
  * 
  * @author Dirk
  * 
@@ -41,19 +41,25 @@ public class Errors {
         errorList.put(1L, "Nicht erwarteter Fehler.");
 
         // Initializing the happtick client
-        errorList.put(50L, "Unvollst√§ndige Initialisierung des Happtick Client.");
-        
+        errorList.put(50L, "Unvollst‰ndige Initialisierung des Happtick Client.");
+
+        // Initializing the happtick service
+        errorList.put(60L, "Unvollst‰ndige Initialisierung des Happtick Service.");
+
         // Establishing the connection to service
         errorList.put(100L, "Verbindungsaufbau zum Service fehlgeschlagen.");
-        
-        // Lifecycle faults
-        errorList.put(200l, "Beenden der Verbindung mit Service ist fehlgeschlagen.");
+
+        // Client lifecycle faults
+        errorList.put(200L, "Beenden der Verbindung mit Service ist fehlgeschlagen.");
         errorList.put(201L, "Anfrage der Start-Erlaubnis beim Service ist fehlgeschlagen.");
         errorList.put(202L, "Senden einer Fehler-Meldung an den Service ist fehlgeschlagen.");
         errorList.put(203L, "Senden einer Event-Meldung an den Service ist fehlgeschlagen.");
         errorList.put(204L, "Senden einer Alarm-Meldung an den Service ist fehlgeschlagen.");
         errorList.put(205L, "Senden einer Log-Meldung an den Service ist fehlgeschlagen.");
         errorList.put(206L, "Senden der Client-ID an den Service ist fehlgeschlagen.");
+
+        // Service lifecycle faults
+        errorList.put(300L, "");
     }
 
     /*
