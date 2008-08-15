@@ -17,6 +17,8 @@ public class ApplicationService extends BaseService {
         return true;
     }
     
+    public void observeForAlarms()
+    
     @Override
     public void processMsg(Enum<?> incomingMsgEnum) throws ActionFailedException {
         // Application Id
