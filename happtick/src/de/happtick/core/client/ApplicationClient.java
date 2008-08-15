@@ -1,11 +1,19 @@
 package de.happtick.core.client;
 
+import de.happtick.application.client.Client;
 import de.happtick.core.enumeration.ApplicationTag;
 import de.happtick.core.exception.HapptickException;
 import de.happtick.core.service.ApplicationService;
 import de.notEOF.core.client.BaseClient;
 import de.notEOF.core.exception.ActionFailedException;
 
+/**
+ * This client has less business logic and more connection / communication logic. <br>
+ * The business logic is implemented in the Client class.
+ * @see Client
+ * @author dirk
+ *
+ */
 public class ApplicationClient extends BaseClient {
 
     private boolean isWorkAllowed  =false;
@@ -18,6 +26,21 @@ public class ApplicationClient extends BaseClient {
     @Override
     public String serviceForClientByName() {
         return null;
+    }
+    
+    /**
+     * Send id of application to the service.  
+     * @param applicationId Unique id of application.
+     * @throws HapptickException
+     */
+    public void setApplicationId(Long applicationId) throws HapptickException {
+        try {
+            // inform service that an requests for start allowance will follow
+            writeMsg(ApplicationTag.PROCESS_APPLICATION_ID);
+            awaitRequestAnswerImmediate(ApplicationTag.REQ_APPLICATION_ID, ApplicationTag.RESP_APPLICATION_ID, String.valueOf(applicationId));
+        } catch (ActionFailedException e) {
+            throw new HapptickException(206L, e);
+        }
     }
     
     /**

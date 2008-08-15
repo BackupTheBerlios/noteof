@@ -16,7 +16,7 @@ public class Client {
     
     private String serverAddress;
     private int serverPort;
-    private long applicationId;
+    private Long applicationId;
     private boolean isWorkAllowed = false;
     private ApplicationClient applicationClient;
     private AllowanceWaiter allowanceWaiter;
@@ -49,14 +49,7 @@ public class Client {
      * @throws HapptickException 
      */
     public void connect() throws HapptickException {
-        if (Util.isEmpty(serverAddress)) throw new HapptickException(50L, "Server Addresse: " + serverAddress);
-        if (0 == serverPort)throw new HapptickException(50L, "Server Port = " + serverPort);
-        
-        if (null == applicationClient) {
-            applicationClient = new ApplicationClient();
-        }
-        
-        connect(serverAddress, serverPort);
+        connect(this.serverAddress, this.serverPort);
     }
     
     /**
@@ -69,9 +62,15 @@ public class Client {
     public void connect(String serverAddress, int serverPort) throws HapptickException {
         if (Util.isEmpty(serverAddress)) throw new HapptickException(50L, "Server Addresse: " + serverAddress);
         if (0 == serverPort)throw new HapptickException(50L, "Server Port = " + serverPort);
+        if (null == applicationId) throw new HapptickException(50L, "Application Id ist NULL");
         
+        if (null == applicationClient) {
+            applicationClient = new ApplicationClient();
+        }
+
         try {
             applicationClient.connect(serverAddress, serverPort, null);
+            applicationClient.setApplicationId(applicationId);
         } catch (ActionFailedException e) {
             throw new HapptickException(100L, e);
         }
@@ -81,7 +80,7 @@ public class Client {
      * Sets the unique application id.
      * @param applicationId Unique identifier for the configured applications within the happtick configuration. This id is used by the scheduler to distinguish between the applications.
      */
-    public void setApplicationId(long applicationId) {
+    public void setApplicationId(Long applicationId) {
         this.applicationId = applicationId;
     }
     
@@ -89,7 +88,7 @@ public class Client {
      * 
      * @return The hopefully unique application id like which is used in the happtick configuration.
      */
-    public long getApplicationId() {
+    public Long getApplicationId() {
         return this.applicationId;
     }
     
