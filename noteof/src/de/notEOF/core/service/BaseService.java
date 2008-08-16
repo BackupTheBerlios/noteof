@@ -1,18 +1,24 @@
 package de.notEOF.core.service;
 
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.List;
 
 import de.notEOF.core.BaseClientOrService;
 import de.notEOF.core.communication.TalkLine;
 import de.notEOF.core.constant.NotEOFConstants;
+import de.notEOF.core.event.ServiceStartEvent;
+import de.notEOF.core.event.ServiceStopEvent;
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.interfaces.EventObserver;
+import de.notEOF.core.interfaces.NotEOFEvent;
 import de.notEOF.core.interfaces.Service;
+import de.notEOF.core.interfaces.StartEvent;
+import de.notEOF.core.interfaces.StopEvent;
 import de.notEOF.core.interfaces.TimeOut;
 import de.notEOF.core.logging.LocalLog;
 import de.notEOF.core.server.Server;
-import de.notIOC.util.Util;
+import de.notEOF.core.util.Util;
 
 /**
  * Basic class for every !EOF Service.
@@ -26,14 +32,16 @@ import de.notIOC.util.Util;
  * @author Dirk
  * 
  */
-public abstract class BaseService extends BaseClientOrService implements Service, Runnable {
+public abstract class BaseService extends BaseClientOrService implements Service, EventObserver, Runnable {
 
     private boolean connectedWithClient = false;
     private boolean stopped = false;
     public boolean isRunning = true;
     private Thread serviceThread;
     private Server server;
-    protected EventObserver eventObserver;
+    protected List<EventObserver> eventObservers;
+    protected StartEvent startEvent;
+    protected StopEvent stopEvent;
 
     public boolean isRunning() {
         return isRunning;
@@ -50,12 +58,21 @@ public abstract class BaseService extends BaseClientOrService implements Service
     public void init() throws ActionFailedException {
     }
 
+    /**
+     * By now the service begins his life helpful service because the client can
+     * talk with him.
+     * 
+     * @param socketToClient
+     * @param serviceId
+     * @throws ActionFailedException
+     */
     public void initializeConnection(Socket socketToClient, String serviceId) throws ActionFailedException {
         setServiceId(serviceId);
         TimeOut timeOut = getTimeOutObject();
         setTalkLine(new TalkLine(socketToClient, timeOut.getMillisCommunication()));
         if (isLifeSignSystemActive())
             getTalkLine().activateLifeSignSystem(false);
+        this.startEvent = new ServiceStartEvent(serviceId);
     }
 
     public boolean isConnectedWithClient() {
@@ -86,10 +103,20 @@ public abstract class BaseService extends BaseClientOrService implements Service
         return server.getServiceListByTypeName(serviceTypeName);
     }
 
+    /**
+     * Delivers the port of the local server.
+     * 
+     * @return Port
+     */
     public final int getServerPort() {
         return server.getPort();
     }
 
+    /**
+     * Delivers the address (ip) of the local server.
+     * 
+     * @return Ip
+     */
     public final String getServerHostAddress() {
         return server.getHostAddress();
     }
@@ -105,17 +132,68 @@ public abstract class BaseService extends BaseClientOrService implements Service
     }
 
     /**
-     * To observe the service (the events of the client) here an observer of
-     * type EventObserver can register itself. <br>
+     * To observe the service (the events of the client) here one or more
+     * observer of type EventObserver can register themself. <br>
      * Whether a service or an extended class of type service really fires
      * events and which events are fired depends to the single business logic.
      * 
      * @param eventObserver
-     *            The EventObserver which has to decide if he is interested in
-     *            the different incoming event types.
+     *            Later the registered EventObservers have to decide if they are
+     *            interested in the different incoming event types.
      */
     public void registerForEvents(EventObserver eventObserver) {
-        this.eventObserver = eventObserver;
+        if (null == eventObservers)
+            eventObservers = new ArrayList<EventObserver>();
+        eventObservers.add(eventObserver);
+    }
+
+    /**
+     * Observe all services of a certain type.
+     * 
+     * @param observer
+     *            The observing object.
+     * @param serviceTypeName
+     *            The type name of the services to observe.
+     * @throws ActionFailedException
+     */
+    protected final void observeServicesByType(EventObserver observer, String serviceTypeName) throws ActionFailedException {
+        List<Service> services = getServiceListByTypeName(serviceTypeName);
+        if (null != services && services.size() > 0) {
+            for (Service service : services) {
+                service.registerForEvents(observer);
+            }
+        }
+    }
+
+    /**
+     * Fires an event to all registered Observer.
+     * <p>
+     * Precondition for getting information on observer side is to initialize
+     * the observed event list.
+     * 
+     * @param service
+     *            The Observable which fires the event.
+     * @param event
+     *            Implementation of Type NotEOFEvent.
+     */
+    public void updateAllObserver(Service service, NotEOFEvent event) {
+        Util.updateAllObserver(eventObservers, service, event);
+    }
+
+    /**
+     * Callback method to inform the observer about incoming events.
+     * <p>
+     * In the base service implementation the event will be forwarded to all
+     * observer which have registered to the base service.
+     * 
+     * @param service
+     *            The service which fired the event.
+     * @param event
+     *            The incoming event that the client has fired or which was
+     *            detected by the service.
+     */
+    public void update(Service service, NotEOFEvent event) {
+        updateAllObserver(service, event);
     }
 
     @SuppressWarnings("unchecked")
@@ -176,6 +254,8 @@ public abstract class BaseService extends BaseClientOrService implements Service
         } catch (Exception ex) {
             LocalLog.warn("Verbindung zum Client konnte nicht geschlossen werden. Evtl. bestand zu diesem Zeitpunkt keien Verbindung (mehr).", ex);
         }
+        this.stopEvent = new ServiceStopEvent(this.serviceId);
+        update(this, this.stopEvent);
         isRunning = false;
     }
 

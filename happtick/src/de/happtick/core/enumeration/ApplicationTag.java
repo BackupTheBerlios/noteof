@@ -8,6 +8,7 @@ public enum ApplicationTag {
     PROCESS_NEW_ALARM,
     PROCESS_NEW_EVENT,
     PROCESS_NEW_ERROR,
+    PROCESS_STOP_EVENT,
 
     REQ_APPLICATION_ID,
     RESP_APPLICATION_ID,
@@ -36,6 +37,9 @@ public enum ApplicationTag {
 
     REQ_LOG_TEXT,
     RESP_LOG_TEXT,
+
+    REQ_EXIT_CODE,
+    RESP_EXIT_CODE,
 
     INFO_TRUE,
     INFO_FALSE,

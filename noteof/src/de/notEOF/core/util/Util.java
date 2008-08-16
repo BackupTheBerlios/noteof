@@ -2,6 +2,12 @@ package de.notEOF.core.util;
 
 import java.util.Collection;
 import java.util.Date;
+import java.util.List;
+
+import de.notEOF.core.enumeration.EventType;
+import de.notEOF.core.interfaces.EventObserver;
+import de.notEOF.core.interfaces.NotEOFEvent;
+import de.notEOF.core.interfaces.Service;
 
 /**
  * When used several times in one file use this: import static
@@ -283,6 +289,35 @@ public class Util {
             simpleName = simpleName.substring(simpleName.indexOf(".") + 1);
         }
         return simpleName;
+    }
+
+    /**
+     * Fires an event to all registered Observer.
+     * <p>
+     * Precondition for getting information on observer side is to initialize
+     * the observed event list.
+     * 
+     * @param service
+     *            The Observable which fires the event.
+     * @param event
+     *            Implementation of Type ClientEvent.
+     */
+    public synchronized static void updateAllObserver(List<EventObserver> eventObservers, Service service, NotEOFEvent event) {
+        // all observer
+        if (null != eventObservers && eventObservers.size() > 0) {
+            for (EventObserver eventObserver : eventObservers) {
+                // but only inform observer, when event in his list
+                if (null != eventObserver.getObservedEvents()) {
+                    for (EventType type : eventObserver.getObservedEvents()) {
+                        if (type.equals(EventType.EVENT_ALL_TYPES) || type.equals(event.getEventType())) {
+                            eventObserver.update(service, event);
+                            // break for inner loop
+                            break;
+                        }
+                    }
+                }
+            }
+        }
     }
 
 }

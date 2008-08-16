@@ -4,7 +4,7 @@ import de.happtick.core.application.service.ApplicationService;
 import de.happtick.core.enumeration.ApplicationTag;
 import de.happtick.core.events.ApplicationAlarmEvent;
 import de.notEOF.core.exception.ActionFailedException;
-import de.notEOF.core.interfaces.ClientEvent;
+import de.notEOF.core.interfaces.NotEOFEvent;
 
 /**
  * This class is the standard (base class) implementation for application
@@ -26,8 +26,8 @@ public class Service extends ApplicationService {
         if (incomingMsgEnum.equals(ApplicationTag.REQ_SAMPLE_TAG)) {
             @SuppressWarnings("unused")
             String id = requestTo(ApplicationTag.REQ_APPLICATION_ID, ApplicationTag.RESP_APPLICATION_ID);
-            ClientEvent event = new ApplicationAlarmEvent();
-            eventObserver.update(event);
+            NotEOFEvent event = new ApplicationAlarmEvent();
+            updateAllObserver(this, event);
         }
     }
 

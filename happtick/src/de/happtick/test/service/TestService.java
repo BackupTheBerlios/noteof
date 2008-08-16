@@ -3,6 +3,7 @@ package de.happtick.test.service;
 import java.util.List;
 
 import de.happtick.test.enumeration.TestTag;
+import de.notEOF.core.enumeration.EventType;
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.interfaces.Service;
 import de.notEOF.core.service.BaseService;
@@ -30,5 +31,11 @@ public class TestService extends BaseService {
                 System.out.println("Service id = " + service.getServiceId());
             }
         }
+    }
+
+    @Override
+    public List<EventType> getObservedEvents() {
+        // TODO Auto-generated method stub
+        return null;
     }
 }

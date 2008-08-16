@@ -4,6 +4,9 @@ import de.happtick.core.application.client.ApplicationClient;
 import de.happtick.core.exception.HapptickException;
 import de.happtick.core.interfaces.AlarmEvent;
 import de.happtick.core.interfaces.ClientObserver;
+import de.happtick.core.interfaces.ErrorEvent;
+import de.happtick.core.interfaces.EventEvent;
+import de.happtick.core.interfaces.LogEvent;
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.util.Util;
 
@@ -190,9 +193,9 @@ public class HapptickApplication {
      *            Additional information for solving the problem.
      * @throws HapptickException
      */
-    public void setError(long id, int level, String errorDescription) throws HapptickException {
+    public void sendError(ErrorEvent event) throws HapptickException {
         checkApplicationClientInitialized();
-        applicationClient.setError(id, level, errorDescription);
+        applicationClient.sendError(event);
     }
 
     /**
@@ -201,16 +204,14 @@ public class HapptickApplication {
      * Supplemental events and actions can be configured for single
      * applications.
      * 
-     * @param eventId
-     *            An event id which is the link to the configuration.
-     * @param additionalInformation
-     *            Informations which can be used at another place (e.g. the
-     *            happtick monitoring).
+     * @see EventEvent
+     * @param event
+     *            Implementation of EventEvent
      * @throws HapptickException
      */
-    public void setEvent(int eventId, String additionalInformation) throws HapptickException {
+    public void sendEvent(EventEvent event) throws HapptickException {
         checkApplicationClientInitialized();
-        applicationClient.setEvent(eventId, additionalInformation);
+        applicationClient.sendEvent(event);
     }
 
     /**
@@ -218,8 +219,9 @@ public class HapptickApplication {
      * Like errors alarms can have a level. The controlling alarm system of
      * happtick decides what to do depending to the alarm level.
      * 
+     * @see AlarmEvent
      * @param alarm
-     *            The fired event initialized with alarm data.
+     *            Object which implements type AlarmEvent.
      * @throws HapptickException
      */
     public void sendAlarm(AlarmEvent alarm) throws HapptickException {
@@ -231,13 +233,14 @@ public class HapptickApplication {
      * Log informations can be visualized within the happtick monitoring tool or
      * written to log files on the server.
      * 
-     * @param logInformation
-     *            Variable informations, depending to the applications job.
+     * @see LogEvent
+     * @param log
+     *            Object which implements type LogEvent.
      * @throws HapptickException
      */
-    public void setLog(String logInformation) throws HapptickException {
+    public void sendLog(LogEvent log) throws HapptickException {
         checkApplicationClientInitialized();
-        applicationClient.setLog(logInformation);
+        applicationClient.sendLog(log);
     }
 
     /**
@@ -252,15 +255,28 @@ public class HapptickApplication {
      * @throws HapptickException
      */
     public void stop() throws HapptickException {
+        stop(0);
+    }
+
+    /**
+     * Informs the happtick server that the application has stopped.
+     * <p>
+     * Very important to call this at end of work! <br>
+     * The connections between happtick clients and happtick services are
+     * controlled by a so called 'LifeSignSystem'. The connection will not be
+     * closed as long as the underlying communication layer hasn't stopped. And
+     * so the java vm stays active.
+     * 
+     * @param exitCode
+     *            Result value of the application.
+     * @throws HapptickException
+     */
+    public void stop(int exitCode) throws HapptickException {
         if (null != allowanceWaiter)
             allowanceWaiter.stop();
 
         if (null != applicationClient) {
-            try {
-                applicationClient.close();
-            } catch (ActionFailedException e) {
-                throw new HapptickException(200L, e);
-            }
+            applicationClient.stop(exitCode);
         }
     }
 

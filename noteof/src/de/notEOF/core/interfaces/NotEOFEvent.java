@@ -2,7 +2,7 @@ package de.notEOF.core.interfaces;
 
 import de.notEOF.core.enumeration.EventType;
 
-public interface ClientEvent {
+public interface NotEOFEvent {
 
     /**
      * Returns the event type.

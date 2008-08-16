@@ -6,6 +6,7 @@ import java.util.List;
 import de.notEOF.configuration.client.LocalConfigurationClient;
 import de.notEOF.core.communication.BaseTimeOut;
 import de.notEOF.core.communication.SimpleSocketConnectionData;
+import de.notEOF.core.enumeration.EventType;
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.interfaces.Service;
 import de.notEOF.core.logging.LocalLog;
@@ -256,5 +257,10 @@ public class DispatchService extends BaseService implements Service {
     @Override
     public boolean isLifeSignSystemActive() {
         return true;
+    }
+
+    @Override
+    public List<EventType> getObservedEvents() {
+        return null;
     }
 }

@@ -1,11 +1,12 @@
 package de.notEOF.test.service;
 
 import java.io.File;
+import java.util.List;
 
 import de.notEOF.configuration.client.LocalConfigurationClient;
 import de.notEOF.core.communication.DataObject;
+import de.notEOF.core.enumeration.EventType;
 import de.notEOF.core.exception.ActionFailedException;
-import de.notEOF.core.interfaces.EventObserver;
 import de.notEOF.core.interfaces.Service;
 import de.notEOF.core.service.BaseService;
 import de.notEOF.test.enumeration.TestTag;
@@ -42,6 +43,8 @@ public class TestService extends BaseService implements Service {
     }
 
     @Override
-    public void registerForEvents(EventObserver eventObserver) {
+    public List<EventType> getObservedEvents() {
+        // TODO Auto-generated method stub
+        return null;
     }
 }

@@ -1,8 +1,11 @@
 package de.notEOF.configuration.service;
 
+import java.util.List;
+
 import de.notEOF.configuration.client.LocalConfigurationClient;
 import de.notEOF.configuration.enumeration.ConfigurationTag;
 import de.notEOF.core.communication.DataObject;
+import de.notEOF.core.enumeration.EventType;
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.logging.LocalLog;
 import de.notEOF.core.service.BaseService;
@@ -43,5 +46,10 @@ public class ConfigurationService extends BaseService {
     @Override
     public boolean isLifeSignSystemActive() {
         return true;
+    }
+
+    @Override
+    public List<EventType> getObservedEvents() {
+        return null;
     }
 }

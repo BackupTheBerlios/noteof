@@ -57,6 +57,7 @@ public class Errors {
         errorList.put(204L, "Senden einer Alarm-Meldung an den Service ist fehlgeschlagen.");
         errorList.put(205L, "Senden einer Log-Meldung an den Service ist fehlgeschlagen.");
         errorList.put(206L, "Senden der Client-ID an den Service ist fehlgeschlagen.");
+        errorList.put(207L, "Senden der Beendigung des Clients an den Service ist fehlgeschlagen.");
 
         // Service lifecycle faults
         errorList.put(300L, "");

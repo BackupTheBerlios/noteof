@@ -13,7 +13,11 @@ import java.util.Map;
 
 import de.notEOF.core.communication.TalkLine;
 import de.notEOF.core.enumeration.BaseCommTag;
+import de.notEOF.core.event.NewServiceEvent;
 import de.notEOF.core.exception.ActionFailedException;
+import de.notEOF.core.interfaces.EventObservable;
+import de.notEOF.core.interfaces.EventObserver;
+import de.notEOF.core.interfaces.NotEOFEvent;
 import de.notEOF.core.interfaces.Service;
 import de.notEOF.core.logging.LocalLog;
 import de.notEOF.core.service.BaseService;
@@ -33,7 +37,7 @@ import de.notIOC.configuration.ConfigurationManager;
  * 
  * @author Dirk
  */
-public class Server implements Runnable {
+public class Server implements EventObservable, Runnable {
 
     private static Server server;
     private static Thread serverThread;
@@ -43,6 +47,7 @@ public class Server implements Runnable {
     private static String notEof_Home;
     private static Map<String, Map<String, Service>> allServiceMaps;
     private static int lastServiceId = 0;
+    private List<EventObserver> eventObservers;
 
     public static Server getInstance() {
         if (null == server) {
@@ -138,13 +143,14 @@ public class Server implements Runnable {
         talkLine.awaitRequestAnswerImmediate(BaseCommTag.REQ_LIFE_SIGN_ACTIVATE, BaseCommTag.RESP_LIFE_SIGN_ACTIVATE, activateLifeSigns.name());
 
         // start service for client
-        // for later use the thread will put into the client
-        // LocalLog.info("Server assignServiceToClient service = " +
-        // service.getClass().getCanonicalName());
+        // and inform all observer
         if (null != service) {
             Thread serviceThread = new Thread((Runnable) service);
             service.setThread(serviceThread);
             serviceThread.start();
+
+            // Fire event to all observer
+            Util.updateAllObserver(this.eventObservers, null, new NewServiceEvent(service));
         } else {
             // service couldn't be created or found in list by type name
             throw new ActionFailedException(150L, "Service Typ unbekannt.");
@@ -253,6 +259,21 @@ public class Server implements Runnable {
             }
         }
         return service;
+    }
+
+    /**
+     * This method enables the server to inform the services about events or
+     * changes of the system.
+     * 
+     * @param eventObserver
+     *            One or more Observers can register them here. This observers
+     *            will be informed for events at a later moment.
+     */
+    @Override
+    public void registerForEvents(EventObserver eventObserver) {
+        if (null == eventObservers)
+            eventObservers = new ArrayList<EventObserver>();
+        eventObservers.add(eventObserver);
     }
 
     /**

@@ -5,6 +5,9 @@ import de.happtick.core.application.service.ApplicationService;
 import de.happtick.core.enumeration.ApplicationTag;
 import de.happtick.core.exception.HapptickException;
 import de.happtick.core.interfaces.AlarmEvent;
+import de.happtick.core.interfaces.ErrorEvent;
+import de.happtick.core.interfaces.EventEvent;
+import de.happtick.core.interfaces.LogEvent;
 import de.notEOF.core.client.BaseClient;
 import de.notEOF.core.exception.ActionFailedException;
 
@@ -31,11 +34,28 @@ public class ApplicationClient extends BaseClient {
         return null;
     }
 
+    public void stop() throws HapptickException {
+        stop(0);
+    }
+
+    public void stop(int exitCode) throws HapptickException {
+        try {
+            writeMsg(ApplicationTag.PROCESS_STOP_EVENT);
+            awaitRequestAnswerImmediate(ApplicationTag.REQ_EXIT_CODE, ApplicationTag.RESP_EXIT_CODE, String.valueOf(exitCode));
+            // give service a little bit time...
+            readMsgTimedOut(7654);
+            super.close();
+        } catch (ActionFailedException e) {
+            throw new HapptickException(207L, e);
+        }
+    }
+
     /**
      * Send id of application to the service.
      * 
      * @param applicationId
-     *            Unique id of application.
+     *            Unique id of application. This id is used in the happtick
+     *            configuration for scheduling.
      * @throws HapptickException
      */
     public void setApplicationId(Long applicationId) throws HapptickException {
@@ -95,13 +115,13 @@ public class ApplicationClient extends BaseClient {
      *            Additional information for solving the problem.
      * @throws HapptickException
      */
-    public void setError(long errorId, int level, String errorDescription) throws HapptickException {
+    public void sendError(ErrorEvent event) throws HapptickException {
         // inform service that a new error will follow
         try {
             writeMsg(ApplicationTag.PROCESS_NEW_ERROR);
-            awaitRequestAnswerImmediate(ApplicationTag.REQ_ERROR_ID, ApplicationTag.RESP_ERROR_ID, String.valueOf(errorId));
-            awaitRequestAnswerImmediate(ApplicationTag.REQ_ERROR_LEVEL, ApplicationTag.RESP_ERROR_LEVEL, String.valueOf(level));
-            awaitRequestAnswerImmediate(ApplicationTag.REQ_ERROR_TEXT, ApplicationTag.RESP_ERROR_TEXT, errorDescription);
+            awaitRequestAnswerImmediate(ApplicationTag.REQ_ERROR_ID, ApplicationTag.RESP_ERROR_ID, String.valueOf(event.getId()));
+            awaitRequestAnswerImmediate(ApplicationTag.REQ_ERROR_LEVEL, ApplicationTag.RESP_ERROR_LEVEL, String.valueOf(event.getLevel()));
+            awaitRequestAnswerImmediate(ApplicationTag.REQ_ERROR_TEXT, ApplicationTag.RESP_ERROR_TEXT, event.getDescription());
         } catch (ActionFailedException e) {
             throw new HapptickException(202L, e);
         }
@@ -113,19 +133,16 @@ public class ApplicationClient extends BaseClient {
      * Supplemental events and actions can be configured for single
      * applications.
      * 
-     * @param eventId
-     *            An event id which is the link to the configuration.
-     * @param additionalInformation
-     *            Informations which can be used at another place (e.g. the
-     *            happtick monitoring).
+     * @param event
+     *            Object of Type EventEvent
      * @throws HapptickException
      */
-    public void setEvent(int eventId, String additionalInformation) throws HapptickException {
+    public void sendEvent(EventEvent event) throws HapptickException {
         // inform service that a new event will follow
         try {
             writeMsg(ApplicationTag.PROCESS_NEW_EVENT);
-            awaitRequestAnswerImmediate(ApplicationTag.REQ_EVENT_ID, ApplicationTag.RESP_EVENT_ID, String.valueOf(eventId));
-            awaitRequestAnswerImmediate(ApplicationTag.REQ_EVENT_TEXT, ApplicationTag.RESP_EVENT_TEXT, additionalInformation);
+            awaitRequestAnswerImmediate(ApplicationTag.REQ_EVENT_ID, ApplicationTag.RESP_EVENT_ID, String.valueOf(event.getId()));
+            awaitRequestAnswerImmediate(ApplicationTag.REQ_EVENT_TEXT, ApplicationTag.RESP_EVENT_TEXT, event.getInformation());
         } catch (ActionFailedException e) {
             throw new HapptickException(203L, e);
         }
@@ -137,7 +154,7 @@ public class ApplicationClient extends BaseClient {
      * happtick decides what to do depending to the alarm level.
      * 
      * @param alarm
-     *            The fired event initialized with alarm data.
+     *            The fired event of type AlarmEvent.
      * @throws HapptickException
      */
     public void sendAlarm(AlarmEvent alarm) throws HapptickException {
@@ -156,15 +173,15 @@ public class ApplicationClient extends BaseClient {
      * Log informations can be visualized within the happtick monitoring tool or
      * written to log files on the server.
      * 
-     * @param logInformation
-     *            Variable informations, depending to the applications job.
+     * @param log
+     *            Implementation of LogEvent.
      * @throws HapptickException
      */
-    public void setLog(String logInformation) throws HapptickException {
+    public void sendLog(LogEvent log) throws HapptickException {
         // inform service that a new alarm will follow
         try {
             writeMsg(ApplicationTag.PROCESS_NEW_LOG);
-            awaitRequestAnswerImmediate(ApplicationTag.REQ_LOG_TEXT, ApplicationTag.RESP_LOG_TEXT, logInformation);
+            awaitRequestAnswerImmediate(ApplicationTag.REQ_LOG_TEXT, ApplicationTag.RESP_LOG_TEXT, log.getText());
         } catch (ActionFailedException e) {
             throw new HapptickException(205L, e);
         }

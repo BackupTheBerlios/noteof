@@ -17,4 +17,6 @@ public interface Service {
     public boolean isLifeSignSystemActive();
 
     public abstract void processMsg(Enum<?> incomingMsgEnum) throws ActionFailedException;
+
+    public void registerForEvents(EventObserver eventObserver);
 }

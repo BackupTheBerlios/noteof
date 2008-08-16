@@ -1,6 +1,6 @@
 package de.happtick.core.interfaces;
 
-import de.notEOF.core.interfaces.ClientEvent;
+import de.notEOF.core.interfaces.NotEOFEvent;
 
 /**
  * Interface for exchange of alarm events.
@@ -8,7 +8,7 @@ import de.notEOF.core.interfaces.ClientEvent;
  * @author Dirk
  * 
  */
-public interface AlarmEvent extends ClientEvent {
+public interface AlarmEvent extends NotEOFEvent {
 
     /**
      * Set alarm type.
