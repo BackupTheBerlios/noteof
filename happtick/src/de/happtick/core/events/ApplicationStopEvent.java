@@ -1,17 +1,14 @@
 package de.happtick.core.events;
 
-import java.util.Date;
+import de.notEOF.core.event.ServiceStopEvent;
 
-import de.notEOF.core.enumeration.EventType;
-import de.notEOF.core.interfaces.StopEvent;
+public class ApplicationStopEvent extends ServiceStopEvent {
 
-public class ApplicationStopEvent implements StopEvent {
-
-    private Date stopDate = new Date();
     private Long applicationId = new Long(-1);
     private int exitCode;
 
-    public ApplicationStopEvent(Long applicationId, int exitCode) {
+    public ApplicationStopEvent(String serviceId, Long applicationId, int exitCode) {
+        super(serviceId);
         this.applicationId = applicationId;
         this.exitCode = exitCode;
     }
@@ -31,15 +28,4 @@ public class ApplicationStopEvent implements StopEvent {
     public void setExitCode(int exitCode) {
         this.exitCode = exitCode;
     }
-
-    @Override
-    public EventType getEventType() {
-        return EventType.EVENT_STOP;
-    }
-
-    @Override
-    public Date getStopDate() {
-        return this.stopDate;
-    }
-
 }

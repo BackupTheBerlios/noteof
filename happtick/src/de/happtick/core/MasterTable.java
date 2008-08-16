@@ -9,6 +9,7 @@ import de.happtick.configuration.ApplicationConfiguration;
 import de.happtick.core.application.service.ApplicationService;
 import de.happtick.core.events.ApplicationStopEvent;
 import de.notEOF.core.enumeration.EventType;
+import de.notEOF.core.event.ServiceStopEvent;
 import de.notEOF.core.interfaces.EventObservable;
 import de.notEOF.core.interfaces.EventObserver;
 import de.notEOF.core.interfaces.NotEOFEvent;
@@ -56,20 +57,31 @@ public class MasterTable implements EventObservable, EventObserver {
         inAction = true;
         ApplicationService service = applicationServices.get(serviceId);
         Long applicationId = service.getApplicationId();
-        service.getLastEvent(EventType.EVENT_STOP);
-
+        ApplicationStopEvent stopEvent = (ApplicationStopEvent) service.getLastEvent(EventType.EVENT_STOP);
+        if (null == stopEvent) {
+            stopEvent = new ApplicationStopEvent(serviceId, applicationId, 0);
+        }
         applicationServices.remove(serviceId);
-        Util.updateAllObserver(eventObservers, null, new ApplicationStopEvent(applicationId, 0));
+        Util.updateAllObserver(eventObservers, null, stopEvent);
     }
 
+    /**
+     * To observe what happens with the services (the clients) here one or more
+     * observer of type EventObserver can register themself.
+     * <p>
+     * Whether a service or an extended class of type service really fires
+     * events and which events are fired depends to the single business logic.
+     * 
+     * @param eventObserver
+     *            The registered EventObservers.
+     */
     @Override
     public void registerForEvents(EventObserver eventObserver) {
         eventObservers.add(eventObserver);
     }
 
     @Override
-    public List<EventType> getObservedEvents() {
-        // TODO Auto-generated method stub
+    public synchronized List<EventType> getObservedEvents() {
         List<EventType> observedEvents = new ArrayList<EventType>();
         observedEvents.add(EventType.EVENT_STOP);
         observedEvents.add(EventType.EVENT_SERVICE_CHANGE);
@@ -77,8 +89,17 @@ public class MasterTable implements EventObservable, EventObserver {
     }
 
     @Override
-    public void update(Service arg0, NotEOFEvent arg1) {
-        // TODO Auto-generated method stub
+    public void update(Service service, NotEOFEvent event) {
+        // only two eventTypes are allowed (see method getObservedEvents()
+        if (event.getClass().equals(EventType.EVENT_STOP)) {
+            String serviceId = ((ApplicationStopEvent) event).getServiceId();
+            removeApplicationService(serviceId);
+        }
+
+        if (event.getClass().equals(EventType.EVENT_START)) {
+            // TODO ist noch nicht klar, wann das start event ausgelöst wird...
+            // String serviceId = ((ApplicationStopEvent) event).getServiceId();
+        }
 
     }
 }

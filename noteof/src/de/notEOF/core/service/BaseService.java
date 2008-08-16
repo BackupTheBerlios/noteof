@@ -138,8 +138,7 @@ public abstract class BaseService extends BaseClientOrService implements Service
      * events and which events are fired depends to the single business logic.
      * 
      * @param eventObserver
-     *            Later the registered EventObservers have to decide if they are
-     *            interested in the different incoming event types.
+     *            The registered EventObservers.
      */
     public void registerForEvents(EventObserver eventObserver) {
         if (null == eventObservers)

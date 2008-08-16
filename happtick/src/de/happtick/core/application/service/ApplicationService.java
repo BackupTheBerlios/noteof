@@ -28,7 +28,10 @@ public class ApplicationService extends BaseService {
     private EventEvent lastEventEvent;
     private LogEvent lastLogEvent;
     private ApplicationStopEvent stopEvent;
+    // TODO wann wird das startEvent gesetzt?
     private ApplicationStartEvent startEvent;
+
+    private int exitCode = 0;
 
     /**
      * Delivers the communication tag class which client and service use.
@@ -45,6 +48,15 @@ public class ApplicationService extends BaseService {
      */
     public Long getApplicationId() {
         return this.applicationId;
+    }
+
+    /**
+     * The exit code is the 'result' of the client.
+     * 
+     * @return The code which the application has sent before it stopped.
+     */
+    public int getExitCode() {
+        return this.exitCode;
     }
 
     /**
@@ -94,6 +106,12 @@ public class ApplicationService extends BaseService {
         if (event.getClass().equals(LogEvent.class)) {
             lastLogEvent = (LogEvent) event;
         }
+        if (event.getClass().equals(ApplicationStopEvent.class)) {
+            stopEvent = (ApplicationStopEvent) event;
+        }
+        if (event.getClass().equals(ApplicationStartEvent.class)) {
+            startEvent = (ApplicationStartEvent) event;
+        }
         updateAllObserver(this, event);
     }
 
@@ -139,8 +157,8 @@ public class ApplicationService extends BaseService {
         }
 
         if (incomingMsgEnum.equals(ApplicationTag.PROCESS_STOP_EVENT)) {
-            int exitCode = Util.parseInt(requestTo(ApplicationTag.REQ_EXIT_CODE, ApplicationTag.RESP_EXIT_CODE), -1);
-            updateEvent(new ApplicationStopEvent(this.getApplicationId(), exitCode));
+            this.exitCode = Util.parseInt(requestTo(ApplicationTag.REQ_EXIT_CODE, ApplicationTag.RESP_EXIT_CODE), -1);
+            updateEvent(new ApplicationStopEvent(this.getServiceId(), this.getApplicationId(), exitCode));
             writeMsg(ApplicationTag.INFO_TRUE);
         }
 
