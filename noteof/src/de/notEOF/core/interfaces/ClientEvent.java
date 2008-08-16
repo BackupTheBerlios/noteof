@@ -1,6 +1,6 @@
-package de.happtick.core.interfaces;
+package de.notEOF.core.interfaces;
 
-import de.happtick.core.enumeration.EventType;
+import de.notEOF.core.enumeration.EventType;
 
 public interface ClientEvent {
 

@@ -1,7 +1,7 @@
 package de.happtick.core.events;
 
-import de.happtick.core.enumeration.EventType;
 import de.happtick.core.interfaces.AlarmEvent;
+import de.notEOF.core.enumeration.EventType;
 
 public class ApplicationAlarmEvent implements AlarmEvent {
 

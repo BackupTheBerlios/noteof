@@ -1,4 +1,4 @@
-package de.happtick.core.interfaces;
+package de.notEOF.core.interfaces;
 
 public interface EventObserver {
     /**

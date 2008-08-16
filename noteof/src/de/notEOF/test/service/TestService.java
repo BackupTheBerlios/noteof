@@ -5,6 +5,7 @@ import java.io.File;
 import de.notEOF.configuration.client.LocalConfigurationClient;
 import de.notEOF.core.communication.DataObject;
 import de.notEOF.core.exception.ActionFailedException;
+import de.notEOF.core.interfaces.EventObserver;
 import de.notEOF.core.interfaces.Service;
 import de.notEOF.core.service.BaseService;
 import de.notEOF.test.enumeration.TestTag;
@@ -38,5 +39,9 @@ public class TestService extends BaseService implements Service {
     public boolean isLifeSignSystemActive() {
         // TODO Auto-generated method stub
         return false;
+    }
+
+    @Override
+    public void registerForEvents(EventObserver eventObserver) {
     }
 }

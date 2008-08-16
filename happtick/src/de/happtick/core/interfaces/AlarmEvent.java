@@ -1,5 +1,7 @@
 package de.happtick.core.interfaces;
 
+import de.notEOF.core.interfaces.ClientEvent;
+
 /**
  * Interface for exchange of alarm events.
  * 

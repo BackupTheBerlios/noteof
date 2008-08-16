@@ -7,6 +7,7 @@ import de.notEOF.core.BaseClientOrService;
 import de.notEOF.core.communication.TalkLine;
 import de.notEOF.core.constant.NotEOFConstants;
 import de.notEOF.core.exception.ActionFailedException;
+import de.notEOF.core.interfaces.EventObserver;
 import de.notEOF.core.interfaces.Service;
 import de.notEOF.core.interfaces.TimeOut;
 import de.notEOF.core.logging.LocalLog;
@@ -32,6 +33,7 @@ public abstract class BaseService extends BaseClientOrService implements Service
     public boolean isRunning = true;
     private Thread serviceThread;
     private Server server;
+    protected EventObserver eventObserver;
 
     public boolean isRunning() {
         return isRunning;
@@ -100,6 +102,20 @@ public abstract class BaseService extends BaseClientOrService implements Service
      */
     public final void setThread(Thread serviceThread) {
         this.serviceThread = serviceThread;
+    }
+
+    /**
+     * To observe the service (the events of the client) here an observer of
+     * type EventObserver can register itself. <br>
+     * Whether a service or an extended class of type service really fires
+     * events and which events are fired depends to the single business logic.
+     * 
+     * @param eventObserver
+     *            The EventObserver which has to decide if he is interested in
+     *            the different incoming event types.
+     */
+    public void registerForEvents(EventObserver eventObserver) {
+        this.eventObserver = eventObserver;
     }
 
     @SuppressWarnings("unchecked")
@@ -211,5 +227,4 @@ public abstract class BaseService extends BaseClientOrService implements Service
      * @return Set the return value to true if the LifeSignSystem shall be used.
      */
     public abstract boolean isLifeSignSystemActive();
-
 }

@@ -1,4 +1,4 @@
-package de.happtick.core.enumeration;
+package de.notEOF.core.enumeration;
 
 /**
  * Defines constant event types to distinguish between fired events.

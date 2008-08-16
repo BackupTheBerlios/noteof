@@ -3,8 +3,8 @@ package de.happtick.application.service;
 import de.happtick.core.application.service.ApplicationService;
 import de.happtick.core.enumeration.ApplicationTag;
 import de.happtick.core.events.ApplicationAlarmEvent;
-import de.happtick.core.interfaces.ClientEvent;
 import de.notEOF.core.exception.ActionFailedException;
+import de.notEOF.core.interfaces.ClientEvent;
 
 /**
  * This class is the standard (base class) implementation for application

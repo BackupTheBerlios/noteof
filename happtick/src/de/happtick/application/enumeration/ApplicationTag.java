@@ -1,4 +1,4 @@
-package de.notEOF.application.enumeration;
+package de.happtick.application.enumeration;
 
 public enum ApplicationTag {
 

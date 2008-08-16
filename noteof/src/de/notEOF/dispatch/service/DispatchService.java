@@ -186,8 +186,7 @@ public class DispatchService extends BaseService implements Service {
                                 SimpleSocketConnectionData socketData = null;
                                 try {
                                     BaseTimeOut timeout = new BaseTimeOut(1000, 1500);
-                                    dispatchClient = new DispatchClient(eofServerIp.get(i), Util.parseInt(eofServerPort.get(i), 0), timeout, 
-                                            (String[]) null);
+                                    dispatchClient = new DispatchClient(eofServerIp.get(i), Util.parseInt(eofServerPort.get(i), 0), timeout, (String[]) null);
                                     dispatchClient.IS_CLIENT_FOR_SERVICE = true;
                                     socketData = dispatchClient.getSocketData(requestedServiceType, timeOutToSearch);
                                     if (null != socketData) {

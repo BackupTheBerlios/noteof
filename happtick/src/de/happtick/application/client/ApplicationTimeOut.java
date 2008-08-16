@@ -1,4 +1,4 @@
-package de.notEOF.application.client;
+package de.happtick.application.client;
 
 import de.notEOF.core.communication.BaseTimeOut;
 

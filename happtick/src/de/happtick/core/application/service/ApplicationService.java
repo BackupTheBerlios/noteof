@@ -3,14 +3,11 @@ package de.happtick.core.application.service;
 import de.happtick.core.enumeration.ApplicationTag;
 import de.happtick.core.events.ApplicationAlarmEvent;
 import de.happtick.core.interfaces.AlarmEvent;
-import de.happtick.core.interfaces.EventObserver;
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.service.BaseService;
 import de.notEOF.core.util.Util;
 
 public class ApplicationService extends BaseService {
-
-    protected EventObserver eventObserver;
 
     /**
      * Delivers the communication tag class which client and service use.
@@ -27,16 +24,6 @@ public class ApplicationService extends BaseService {
     @Override
     public boolean isLifeSignSystemActive() {
         return true;
-    }
-
-    /**
-     * Register an observer which will be notified if an alarm has released.
-     * 
-     * @param observer
-     *            An Object which implements the ServiceObserver.
-     */
-    public void registerForEvents(EventObserver eventObserver) {
-        this.eventObserver = eventObserver;
     }
 
     /**
