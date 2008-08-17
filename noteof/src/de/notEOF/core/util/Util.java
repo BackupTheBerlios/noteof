@@ -303,8 +303,13 @@ public class Util {
      *            Implementation of Type ClientEvent.
      */
     public synchronized static void updateAllObserver(List<EventObserver> eventObservers, Service service, NotEOFEvent event) {
+        if (null == event)
+            return;
+        if (null == eventObservers)
+            return;
+
         // all observer
-        if (null != eventObservers && eventObservers.size() > 0) {
+        if (eventObservers.size() > 0) {
             for (EventObserver eventObserver : eventObservers) {
                 // but only inform observer, when event in his list
                 if (null != eventObserver.getObservedEvents()) {
