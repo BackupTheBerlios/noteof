@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+	Configuration file for Happtick applications.
+	In standard roll out this file looks a little bit strange.
+	Reason is the big number of comments which describe the nodes meaning.
+	
+	In production environments you can kill the comments and will get a clearly arranged xml file. 
+-->
+
+<root>
+   	<mode simplechain="true" timer="true"></use>
+
+    <!-- simplechain
+         With the simplechain it is possible to define a process chain.
+         The scheduler tries to start the applications in the order like they are configured here.
+         He uses the configuration details for applications:
+         - client
+         - executable
+         Other informations are ignored (options, timeplan, dependencies, etc.).
+         If loop is true the chain will start again.
+    -->
+    <simplechain>
+    	<loop>true</loop>
+		<application>application1</application>
+		<application>application2</application>
+    </simplechain>
+
+	<!-- List of applications.
+	     Beneath of this list the configurations of the different applications follows.
+	     The simple text of the applications here are the node names of the application configurations.
+	     To 'disable' an application (ignored by Happtick) without loose or change the complex configuration surround it with comments here.
+	-->
+	<applications>
+		<application>application1</application>
+		<application>application2</application>
+	</applications>
+
+	<!-- Complex configurations of applications.
+	     Here informations about the applications and the scheduling is defined.
+	-->
+	<!-- application1 is the referenced nodename (see above) -->
+	<application1 applicationId="1">
+        <!-- client
+             ip of the client host (e.g. a pc) where the application should be started.
+        -->
+		<client ip="192.168.130.1"></client>
+		<!-- executable
+		     type options are 'JAVA' or 'UNKNOWN'. If the application was implemented for or with the Happtick framework insert 'JAVA'.
+		     path is the complete description of the executable which the start client has to start.
+		     arg is a calling argument
+		--> 
+		<executable type="JAVA" path="c:/programme/blablubb.bat">
+			<arg>key="--blubb" value="1"</arg>
+			<arg>key="--blase" value="2"</arg>
+		</executable>
+		<!-- schedule
+		     
+		-->
+		<!-- option
+		     multiplestart decides if an application may run multiple at the same time.
+		     enforce is true if the application should run permanently.
+		             If enforce is true and the application doesn't run the scheduler tries to start it. 
+		-->
+		<option multiplestart="false" enforce="false"></option
+		<!-- timeplan
+		     Definition of time points when the application has to run.
+		     seconds  is a simple textual list of the seconds.
+		     minutes  is a simple textual list of the minutes.
+		     hours    is a simple textual list of the hours.
+		     weekday  is a simple textual list of reduction to appointed weekdays.
+		              Use the first two letters of the days (e.g. TH for thursday). Not case sensitive
+		     monthday is a simple textual list of reduction to appointed days of the month (15, 20).
+		     if weekday and monthday is defined the time points can be very seldom (e.g. there are not many Fridays on the 13. day in month).
+		     
+		     Use blanks or comma as delimiter for textual lists here.
+		-->
+		<timeplan> 
+			<seconds>0 30</seconds>
+			<minutes>15</minutes>
+			<hours>22 24</hours>
+			
+			<weekdays>FR</weekdays>
+			<monthdays>13</monthdays>
+		</timeplan>
+		
+		<!-- dependencies
+		     Here you have some facilities:
+		     - Avoid the application start as long as other applications are running but start after they have stopped.
+		     - Start another application AFTER the configured application has stopped.
+		     - Start another application SYNCHRONOUS with the configured application.  
+		-->
+		<dependencies>
+			<waitfor applicationId="55"></waitfor>
+			<waitfor applicationId="66"></waitfor>
+			<startafter applicationId="77"></startafter>
+			<startafter applicationId="88"></startafter>
+			<startsync applicationId="99"></startsync>
+		</dependencies>
+	</application1>
+</root>
