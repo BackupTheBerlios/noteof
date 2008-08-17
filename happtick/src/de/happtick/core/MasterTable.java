@@ -1,6 +1,7 @@
 package de.happtick.core;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -8,12 +9,15 @@ import java.util.Map;
 import de.happtick.configuration.ApplicationConfiguration;
 import de.happtick.core.application.service.ApplicationService;
 import de.happtick.core.events.ApplicationStopEvent;
+import de.happtick.core.exception.HapptickException;
+import de.happtick.core.start.service.StartService;
 import de.notEOF.core.enumeration.EventType;
-import de.notEOF.core.event.ServiceStopEvent;
 import de.notEOF.core.interfaces.EventObservable;
 import de.notEOF.core.interfaces.EventObserver;
 import de.notEOF.core.interfaces.NotEOFEvent;
 import de.notEOF.core.interfaces.Service;
+import de.notEOF.core.interfaces.StopEvent;
+import de.notEOF.core.logging.LocalLog;
 import de.notEOF.core.util.Util;
 
 /**
@@ -29,40 +33,130 @@ import de.notEOF.core.util.Util;
  */
 public class MasterTable implements EventObservable, EventObserver {
 
+    // TODO simplechain als einfache liste
+    // TODO liste der StartServices
+
     private static Map<Long, ApplicationConfiguration> applicationConfigurations = new HashMap<Long, ApplicationConfiguration>();
     private static Map<String, ApplicationService> applicationServices = new HashMap<String, ApplicationService>();
     private static List<EventObserver> eventObservers = new ArrayList<EventObserver>();
+    private static Map<String, StartService> startServices = new HashMap<String, StartService>();
+    private static List<Long> processChain = new ArrayList<Long>();
 
     private static boolean inAction = false;
+    private static boolean confUpdated = false;
 
+    /*
+     * Liest die Konfiguration, initialisiert processChain und
+     * applicationConfigurations
+     */
+    private static void updateCofiguration() {
+        if (!confUpdated) {
+            // TODO implementieren
+            confUpdated = true;
+        }
+    }
+
+    /**
+     * Delivers the configuration of applications
+     * 
+     * @return Map with configurations. applicationId is the key like used in
+     *         configuration file and in the implementations of
+     *         ApplicationClients.
+     */
     public synchronized static Map<Long, ApplicationConfiguration> getApplicationConfigurations() {
+        updateCofiguration();
         return applicationConfigurations;
     }
 
+    public synchronized static List<Long> getProcessChain() {
+        updateCofiguration();
+        return processChain;
+    }
+
+    /**
+     * Delivers the active Services for processes (running applications).
+     * 
+     * @return Map with ApplicationServices. Key ist the serviceId.
+     */
     public synchronized static Map<String, ApplicationService> getApplicationServices() {
         return applicationServices;
     }
 
-    public synchronized static void addApplicationService(ApplicationService service) {
+    /**
+     * Delivers all services which serve a client that has the specified
+     * applicationId.
+     * 
+     * @param applicationId
+     *            Id of application like used in configuration and
+     *            implementation.
+     * @return A list with found services.
+     */
+    public synchronized static List<ApplicationService> getServicesByApplicationId(Long applicationId) {
+        Collection<ApplicationService> services = applicationServices.values();
+        List<ApplicationService> serviceList = null;
+        if (services.size() > 0) {
+            serviceList = new ArrayList<ApplicationService>();
+            for (ApplicationService service : services) {
+                if (service.getApplicationId().longValue() == applicationId.longValue())
+                    serviceList.add(service);
+            }
+        }
+
+        return serviceList;
+    }
+
+    /**
+     * Put a service into the list of ApplicationServices OR StartService.
+     * 
+     * @param service
+     *            The service that must be added. May be of type
+     *            ApplicationService or StartService.
+     * @throws HapptickException
+     */
+    public synchronized static void addService(Service service) {
+        // TODO prüfen, ob isAssignableFrom() so funktioniert...
         while (inAction)
             ;
         inAction = true;
-        applicationServices.put(service.getServiceId(), service);
+        if (service.getClass().isAssignableFrom(ApplicationService.class)) {
+            applicationServices.put(service.getServiceId(), (ApplicationService) service);
+        } else if (service.getClass().isAssignableFrom(StartService.class)) {
+            startServices.put(service.getServiceId(), (StartService) service);
+        } else {
+            LocalLog.warn("Service konnte nicht in die MasterTable eingefügt werden. Type = " + service.getClass().getName());
+        }
         inAction = false;
     }
 
+    /**
+     * Remove a service from the list of ApplicationServices .
+     * 
+     * @param serviceId
+     *            Is the key of the service what must be removed.
+     */
     public synchronized static void removeApplicationService(String serviceId) {
         while (inAction)
             ;
         inAction = true;
+
+        StopEvent stopEvent = null;
+
+        // try for ApplicationServices
         ApplicationService service = applicationServices.get(serviceId);
-        Long applicationId = service.getApplicationId();
-        ApplicationStopEvent stopEvent = (ApplicationStopEvent) service.getLastEvent(EventType.EVENT_STOP);
-        if (null == stopEvent) {
-            stopEvent = new ApplicationStopEvent(serviceId, applicationId, 0);
+        if (null != service) {
+            Long applicationId = service.getApplicationId();
+            stopEvent = (ApplicationStopEvent) service.getLastEvent(EventType.EVENT_STOP);
+            if (null == stopEvent) {
+                stopEvent = new ApplicationStopEvent(serviceId, applicationId, 0);
+            }
+            applicationServices.remove(serviceId);
         }
-        applicationServices.remove(serviceId);
+
+        // try all StartServices
+        startServices.remove(serviceId);
+
         Util.updateAllObserver(eventObservers, null, stopEvent);
+        inAction = false;
     }
 
     /**
@@ -80,6 +174,14 @@ public class MasterTable implements EventObservable, EventObserver {
         eventObservers.add(eventObserver);
     }
 
+    /**
+     * This function delivers a list with the Events for which the Observer is
+     * interested in.
+     * <p>
+     * If the Observer doesn't initialized this list he get's no event.
+     * 
+     * @return A list with the Events which the observer wants to get.
+     */
     @Override
     public synchronized List<EventType> getObservedEvents() {
         List<EventType> observedEvents = new ArrayList<EventType>();
@@ -88,6 +190,19 @@ public class MasterTable implements EventObservable, EventObserver {
         return observedEvents;
     }
 
+    /**
+     * Callback method to inform the observer about incoming events.
+     * 
+     * @param service
+     *            The service which fires the event. If there is a chain of
+     *            services which fire the event her always the last of them is
+     *            referenced. <br>
+     *            The service can be NULL if the Observable is not of type
+     *            Service!
+     * @param event
+     *            The incoming event that the client has fired or which was
+     *            detected by the service.
+     */
     @Override
     public void update(Service service, NotEOFEvent event) {
         // only two eventTypes are allowed (see method getObservedEvents()
@@ -100,6 +215,5 @@ public class MasterTable implements EventObservable, EventObserver {
             // TODO ist noch nicht klar, wann das start event ausgelöst wird...
             // String serviceId = ((ApplicationStopEvent) event).getServiceId();
         }
-
     }
 }
