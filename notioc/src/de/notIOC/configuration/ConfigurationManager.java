@@ -8,6 +8,7 @@ import javax.security.auth.login.Configuration;
 
 import de.notIOC.exception.NotIOCException;
 import de.notIOC.logging.LocalLog;
+import de.notIOC.util.Util;
 
 /**
  * ConfigurationManager is a Singleton...
@@ -16,7 +17,8 @@ public class ConfigurationManager {
 
     private static String notEOFHome = null;
     private static String homeVarName = "NOT_EOF";
-    private String configFile = "noteof_master.xml";
+    private static String configFile = "noteof_master.xml";
+    private static String configPath = "conf";
 
     protected static ConfigurationManager configManager;
 
@@ -28,8 +30,13 @@ public class ConfigurationManager {
         }
     }
 
-    public static void setHomeVariableName(String homeVariableName) {
-        homeVarName = homeVariableName;
+    public static void setInitialEnvironment(String homeVariableName, String baseConfPath, String baseConfFile) {
+        if (!Util.isEmpty(homeVariableName))
+            homeVarName = homeVariableName;
+        if (!Util.isEmpty(baseConfPath))
+            configPath = baseConfPath;
+        if (!Util.isEmpty(baseConfFile))
+            configFile = baseConfFile;
         getInstance();
     }
 
@@ -109,7 +116,7 @@ public class ConfigurationManager {
      *         or NOTEOF_HOME) like $NOTEOF_HOME/conf
      */
     public String getConfigRoot() {
-        return new File(getApplicationHome(), "conf").getAbsolutePath();
+        return new File(getApplicationHome(), configPath).getAbsolutePath();
     }
 
     /**

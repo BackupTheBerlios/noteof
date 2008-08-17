@@ -17,7 +17,6 @@ import de.notEOF.core.event.NewServiceEvent;
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.interfaces.EventObservable;
 import de.notEOF.core.interfaces.EventObserver;
-import de.notEOF.core.interfaces.NotEOFEvent;
 import de.notEOF.core.interfaces.Service;
 import de.notEOF.core.logging.LocalLog;
 import de.notEOF.core.service.BaseService;
@@ -287,14 +286,23 @@ public class Server implements EventObservable, Runnable {
     public static void main(String... args) {
         String portString = "";
         String homeVar = "NOTEOF_HOME";
+        String baseConfFile = "noteof_master.xml";
+        String baseConfPath = "conf";
         ArgsParser argsParser = new ArgsParser(args);
         if (argsParser.containsStartsWith("--port")) {
             portString = argsParser.getValue("port");
         }
         if (argsParser.containsStartsWith("--homeVar")) {
             homeVar = argsParser.getValue("homeVar");
-            ConfigurationManager.setHomeVariableName(homeVar);
         }
+        if (argsParser.containsStartsWith("--baseConfFile")) {
+            baseConfFile = argsParser.getValue("baseConfFile");
+        }
+        if (argsParser.containsStartsWith("--baseConfPath")) {
+            baseConfFile = argsParser.getValue("baseConfPath");
+        }
+        ConfigurationManager.setInitialEnvironment(homeVar, baseConfPath, baseConfFile);
+
         int port = Util.parseInt(portString, 2512);
 
         try {
