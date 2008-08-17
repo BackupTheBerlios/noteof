@@ -9,10 +9,10 @@
 -->
 
 <root>
-   	<mode simplechain="true" timer="true"></use>
+   	<mode chain="true" timer="true"></use>
 
-    <!-- simplechain
-         With the simplechain it is possible to define a process chain.
+    <!-- chain
+         With the simple chain it is possible to define a process chain.
          The scheduler tries to start the applications in the order like they are configured here.
          He uses the configuration details for applications:
          - client
@@ -20,11 +20,11 @@
          Other informations are ignored (options, timeplan, dependencies, etc.).
          If loop is true the chain will start again.
     -->
-    <simplechain>
+    <chain>
     	<loop>true</loop>
 		<application>application1</application>
 		<application>application2</application>
-    </simplechain>
+    </chain>
 
 	<!-- List of applications.
 	     Beneath of this list the configurations of the different applications follows.
