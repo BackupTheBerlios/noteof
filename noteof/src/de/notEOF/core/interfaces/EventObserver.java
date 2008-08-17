@@ -5,6 +5,7 @@ import java.util.List;
 import de.notEOF.core.enumeration.EventType;
 
 public interface EventObserver {
+
     /**
      * Callback method to inform the observer about incoming events.
      * 
