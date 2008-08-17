@@ -61,6 +61,10 @@ public class Errors {
 
         // Service lifecycle faults
         errorList.put(300L, "");
+
+        // MasterTable errors
+        errorList.put(400L, "Hinzufügen eines Service ist fehlgeschlagen. Falscher Service-Typ.");
+
     }
 
     /*
