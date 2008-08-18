@@ -55,7 +55,18 @@ public abstract class BaseService extends BaseClientOrService implements Service
      * 
      * @throws ActionFailedException
      */
-    public void init() throws ActionFailedException {
+    public void implementationFirstSteps() throws ActionFailedException {
+    }
+
+    /**
+     * This method can be overwritten by service implementations. <br>
+     * It is called as last step when the run-method is at end. <br>
+     * When this method runs the client connection maybe is closed! That means
+     * it is not sure that the communication to the client works.
+     * 
+     * @throws ActionFailedException
+     */
+    public void implementationLastSteps() throws ActionFailedException {
     }
 
     /**
@@ -255,6 +266,10 @@ public abstract class BaseService extends BaseClientOrService implements Service
         }
         this.stopEvent = new ServiceStopEvent(this.serviceId);
         update(this, this.stopEvent);
+        try {
+            implementationLastSteps();
+        } catch (ActionFailedException e) {
+        }
         isRunning = false;
     }
 
