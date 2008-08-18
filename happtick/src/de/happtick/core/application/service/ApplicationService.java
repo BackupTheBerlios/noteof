@@ -28,7 +28,6 @@ public class ApplicationService extends BaseService {
     private EventEvent lastEventEvent;
     private LogEvent lastLogEvent;
     private ApplicationStopEvent stopEvent;
-    // TODO wann wird das startEvent gesetzt?
     private ApplicationStartEvent startEvent;
 
     private int exitCode = 0;
@@ -91,7 +90,7 @@ public class ApplicationService extends BaseService {
     }
 
     /*
-     * Set last get event
+     * Set last event of client
      */
     private void updateEvent(NotEOFEvent event) {
         if (event.getClass().equals(AlarmEvent.class)) {
@@ -162,9 +161,13 @@ public class ApplicationService extends BaseService {
             writeMsg(ApplicationTag.INFO_TRUE);
         }
 
+        if (incomingMsgEnum.equals(ApplicationTag.PROCESS_START_WORK_EVENT)) {
+            updateEvent(new ApplicationStartEvent(this.getServiceId(), this.getApplicationId()));
+        }
+
         // Request for start allowance
         if (incomingMsgEnum.equals(ApplicationTag.PROCESS_START_ALLOWANCE)) {
-            // TODO
+            // TODO Wird wohl mit MasterTable oder scheduler ausgehandelt...
         }
     }
 

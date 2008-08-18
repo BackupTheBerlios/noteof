@@ -5,6 +5,7 @@ import de.happtick.core.application.service.ApplicationService;
 import de.happtick.core.enumeration.ApplicationTag;
 import de.happtick.core.exception.HapptickException;
 import de.happtick.core.interfaces.AlarmEvent;
+import de.happtick.core.interfaces.ClientObserver;
 import de.happtick.core.interfaces.ErrorEvent;
 import de.happtick.core.interfaces.EventEvent;
 import de.happtick.core.interfaces.LogEvent;
@@ -23,6 +24,8 @@ import de.notEOF.core.exception.ActionFailedException;
 public class ApplicationClient extends BaseClient {
 
     private boolean isWorkAllowed = false;
+    private AllowanceWaiter allowanceWaiter;
+    private ClientObserver clientObserver;
 
     @Override
     public Class<?> serviceForClientByClass() {
@@ -38,13 +41,33 @@ public class ApplicationClient extends BaseClient {
         stop(0);
     }
 
+    /**
+     * Send stop event to service.
+     * @param exitCode The return code or another result of the application.
+     * @throws HapptickException
+     */
     public void stop(int exitCode) throws HapptickException {
+        if (null != allowanceWaiter)
+            allowanceWaiter.stop();
+
         try {
             writeMsg(ApplicationTag.PROCESS_STOP_EVENT);
             awaitRequestAnswerImmediate(ApplicationTag.REQ_EXIT_CODE, ApplicationTag.RESP_EXIT_CODE, String.valueOf(exitCode));
             // give service a little bit time...
             readMsgTimedOut(7654);
             super.close();
+        } catch (ActionFailedException e) {
+            throw new HapptickException(207L, e);
+        }
+    }
+
+    /**
+     * Send event to service that the client has started his work.
+     * @throws HapptickException
+     */
+    public void startWork() throws HapptickException {
+        try {
+            writeMsg(ApplicationTag.PROCESS_START_WORK_EVENT);
         } catch (ActionFailedException e) {
             throw new HapptickException(207L, e);
         }
@@ -184,6 +207,61 @@ public class ApplicationClient extends BaseClient {
             awaitRequestAnswerImmediate(ApplicationTag.REQ_LOG_TEXT, ApplicationTag.RESP_LOG_TEXT, log.getText());
         } catch (ActionFailedException e) {
             throw new HapptickException(205L, e);
+        }
+    }
+    
+    /**
+     * Alternately to wait for start allowance by calling the method
+     * isWorkAllowed() repeatedly within a loop it is possible to let the
+     * application informed by this method. Condition is that the application
+     * implements the interface Observer and waits for start allowance in the
+     * method update(). When the allowance is given the application client calls
+     * the method observers startAllowanceEvent()<br>
+     * 
+     * @throws HapptickException
+     */
+    public void observeForWorkAllowance(ClientObserver clientObserver) throws HapptickException {
+        this.clientObserver = clientObserver;
+        allowanceWaiter = new AllowanceWaiter();
+        Thread waiterThread = new Thread(allowanceWaiter);
+        waiterThread.start();
+    }
+
+    /**
+     * If the using class has started the observing for awaiting the start
+     * allowance this can be stopped here.
+     */
+    public void stopObservingForStartAllowance() {
+        if (null != allowanceWaiter)
+            allowanceWaiter.stop();
+    }
+
+    /*
+     * Class runs in a thread and waits for allowance by service to start work
+     */
+    private class AllowanceWaiter implements Runnable {
+        private boolean stopped = false;
+
+        public boolean stopped() {
+            return stopped;
+        }
+
+        public void stop() {
+            stopped = true;
+        }
+
+        public void run() {
+            try {
+                while (!stopped || !isWorkAllowed()) {
+                    Thread.sleep(1000);
+                }
+                if (isWorkAllowed()) {
+                    clientObserver.startAllowanceEvent(true);
+                }
+            } catch (Exception e) {
+                stopped = true;
+                clientObserver.startAllowanceEvent(false);
+            }
         }
     }
 }

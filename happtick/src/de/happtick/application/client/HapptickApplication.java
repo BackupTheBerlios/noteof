@@ -27,8 +27,6 @@ public class HapptickApplication {
     private Long applicationId;
     private boolean isWorkAllowed = false;
     private ApplicationClient applicationClient;
-    private AllowanceWaiter allowanceWaiter;
-    private ClientObserver clientObserver;
 
     /**
      * If this constructor is used at a later time point the serverAddress and
@@ -173,10 +171,7 @@ public class HapptickApplication {
      */
     public void observeForWorkAllowance(ClientObserver clientObserver) throws HapptickException {
         checkApplicationClientInitialized();
-        this.clientObserver = clientObserver;
-        allowanceWaiter = new AllowanceWaiter();
-        Thread waiterThread = new Thread(allowanceWaiter);
-        waiterThread.start();
+        applicationClient.observeForWorkAllowance(clientObserver);
     }
 
     /**
@@ -272,12 +267,15 @@ public class HapptickApplication {
      * @throws HapptickException
      */
     public void stop(int exitCode) throws HapptickException {
-        if (null != allowanceWaiter)
-            allowanceWaiter.stop();
 
         if (null != applicationClient) {
             applicationClient.stop(exitCode);
         }
+    }
+    
+    public void startWork() throws HapptickException {
+        checkApplicationClientInitialized();
+        applicationClient.startWork();
     }
 
     /**
@@ -285,8 +283,7 @@ public class HapptickApplication {
      * allowance this can be stopped here.
      */
     public void stopObservingForStartAllowance() {
-        if (null != allowanceWaiter)
-            allowanceWaiter.stop();
+        applicationClient.stopObservingForStartAllowance();
     }
 
     /*
@@ -297,32 +294,4 @@ public class HapptickApplication {
             throw new HapptickException(50L, "Client ist nicht initialisiert. Vermutlich wurde kein connect durchgeführt.");
     }
 
-    /*
-     * Class runs in a thread and waits for allowance by service to start work
-     */
-    private class AllowanceWaiter implements Runnable {
-        private boolean stopped = false;
-
-        public boolean stopped() {
-            return stopped;
-        }
-
-        public void stop() {
-            stopped = true;
-        }
-
-        public void run() {
-            try {
-                while (!stopped || !isWorkAllowed()) {
-                    Thread.sleep(1000);
-                }
-                if (isWorkAllowed()) {
-                    clientObserver.startAllowanceEvent(true);
-                }
-            } catch (Exception e) {
-                stopped = true;
-                clientObserver.startAllowanceEvent(false);
-            }
-        }
-    }
 }
