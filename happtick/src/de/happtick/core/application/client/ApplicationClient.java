@@ -11,6 +11,8 @@ import de.happtick.core.interfaces.EventEvent;
 import de.happtick.core.interfaces.LogEvent;
 import de.notEOF.core.client.BaseClient;
 import de.notEOF.core.exception.ActionFailedException;
+import de.notEOF.core.util.ArgsParser;
+import de.notEOF.core.util.Util;
 
 /**
  * This client has less business logic and more connection / communication
@@ -43,7 +45,9 @@ public class ApplicationClient extends BaseClient {
 
     /**
      * Send stop event to service.
-     * @param exitCode The return code or another result of the application.
+     * 
+     * @param exitCode
+     *            The return code or another result of the application.
      * @throws HapptickException
      */
     public void stop(int exitCode) throws HapptickException {
@@ -63,6 +67,7 @@ public class ApplicationClient extends BaseClient {
 
     /**
      * Send event to service that the client has started his work.
+     * 
      * @throws HapptickException
      */
     public void startWork() throws HapptickException {
@@ -83,11 +88,36 @@ public class ApplicationClient extends BaseClient {
      */
     public void setApplicationId(Long applicationId) throws HapptickException {
         try {
-            // inform service that an requests for start allowance will follow
             writeMsg(ApplicationTag.PROCESS_APPLICATION_ID);
             awaitRequestAnswerImmediate(ApplicationTag.REQ_APPLICATION_ID, ApplicationTag.RESP_APPLICATION_ID, String.valueOf(applicationId));
         } catch (ActionFailedException e) {
             throw new HapptickException(206L, e);
+        }
+    }
+
+    /**
+     * Send start id which the start client has generated and send per args.
+     * 
+     * @param args
+     *            Parameterlist. Maybe it contains the param --startId.
+     * @throws HapptickException
+     */
+    public void setStartId(String... args) throws HapptickException {
+        if (null != args) {
+            String startId = "";
+            ArgsParser argsParser = new ArgsParser(args);
+            if (argsParser.containsStartsWith("--startId")) {
+                startId = argsParser.getValue("startId");
+            }
+
+            if (!Util.isEmpty(startId)) {
+                try {
+                    writeMsg(ApplicationTag.PROCESS_START_ID);
+                    awaitRequestAnswerImmediate(ApplicationTag.REQ_START_ID, ApplicationTag.RESP_START_ID, startId);
+                } catch (ActionFailedException e) {
+                    throw new HapptickException(206L, e);
+                }
+            }
         }
     }
 
@@ -209,7 +239,7 @@ public class ApplicationClient extends BaseClient {
             throw new HapptickException(205L, e);
         }
     }
-    
+
     /**
      * Alternately to wait for start allowance by calling the method
      * isWorkAllowed() repeatedly within a loop it is possible to let the

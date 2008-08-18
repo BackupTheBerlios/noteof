@@ -27,6 +27,7 @@ public class HapptickApplication {
     private Long applicationId;
     private boolean isWorkAllowed = false;
     private ApplicationClient applicationClient;
+    private String[] args;
 
     /**
      * If this constructor is used at a later time point the serverAddress and
@@ -51,10 +52,11 @@ public class HapptickApplication {
      *            The port of the happtick server where the scheduler is
      *            running.
      */
-    public HapptickApplication(long applicationId, String serverAddress, int serverPort) {
+    public HapptickApplication(long applicationId, String serverAddress, int serverPort, String... args) {
         this.applicationId = applicationId;
         this.serverAddress = serverAddress;
         this.serverPort = serverPort;
+        this.args = args;
     }
 
     /**
@@ -97,6 +99,7 @@ public class HapptickApplication {
         try {
             applicationClient.connect(serverAddress, serverPort, null);
             applicationClient.setApplicationId(applicationId);
+            applicationClient.setStartId(args);
         } catch (ActionFailedException e) {
             throw new HapptickException(100L, e);
         }
@@ -272,7 +275,7 @@ public class HapptickApplication {
             applicationClient.stop(exitCode);
         }
     }
-    
+
     public void startWork() throws HapptickException {
         checkApplicationClientInitialized();
         applicationClient.startWork();

@@ -3,6 +3,7 @@ package de.happtick.core.enumeration;
 public enum ApplicationTag {
 
     PROCESS_APPLICATION_ID, //
+    PROCESS_START_ID,
     PROCESS_START_ALLOWANCE,
     PROCESS_NEW_LOG,
     PROCESS_NEW_ALARM,
@@ -13,6 +14,9 @@ public enum ApplicationTag {
 
     REQ_APPLICATION_ID,
     RESP_APPLICATION_ID,
+
+    REQ_START_ID,
+    RESP_START_ID,
 
     REQ_START_ALLOWED,
     RESP_START_ALLOWED,
