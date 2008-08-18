@@ -11,6 +11,7 @@ import de.happtick.core.application.service.ApplicationService;
 import de.happtick.core.events.ApplicationStopEvent;
 import de.happtick.core.exception.HapptickException;
 import de.happtick.core.start.service.StartService;
+import de.happtick.configuration.LocalConfigurationClient;
 import de.notEOF.core.enumeration.EventType;
 import de.notEOF.core.interfaces.EventObservable;
 import de.notEOF.core.interfaces.EventObserver;
@@ -19,6 +20,7 @@ import de.notEOF.core.interfaces.Service;
 import de.notEOF.core.interfaces.StopEvent;
 import de.notEOF.core.logging.LocalLog;
 import de.notEOF.core.util.Util;
+import de.notIOC.exception.NotIOCException;
 
 /**
  * This static class contains two lists: <br>
@@ -33,9 +35,6 @@ import de.notEOF.core.util.Util;
  */
 public class MasterTable implements EventObservable, EventObserver {
 
-    // TODO simplechain als einfache liste
-    // TODO liste der StartServices
-
     private static Map<Long, ApplicationConfiguration> applicationConfigurations = new HashMap<Long, ApplicationConfiguration>();
     private static Map<String, ApplicationService> applicationServices = new HashMap<String, ApplicationService>();
     private static List<EventObserver> eventObservers = new ArrayList<EventObserver>();
@@ -49,9 +48,34 @@ public class MasterTable implements EventObservable, EventObserver {
      * Liest die Konfiguration, initialisiert processChain und
      * applicationConfigurations
      */
-    private static void updateCofiguration() {
+    private static void updateConfiguration() {
         if (!confUpdated) {
             // TODO implementieren
+            
+            // processChain
+            try {
+                // aktiv?
+                Boolean active = Util.parseBoolean(LocalConfigurationClient.getAttribute("scheduler.use", "chain", "false"), false);
+                if (active) {
+                    // Liste der nodes
+                    List<String> nodes = LocalConfigurationClient.getTextList("scheduler.chain.application");
+                    if (null != nodes) {
+                        // for every node search applicationId and put into local list
+                        for (String node : nodes) {
+                            node.trim();
+                            // looks like scheduler.application1
+                            node = "scheduler." + node; 
+                            // attribute applicationId
+                            Long applicationId = Util.parseLong(LocalConfigurationClient.getAttribute(node, "applicationId", "-1"), -1);
+                            processChain.add(applicationId);
+                        }
+                    }
+                }
+                
+            } catch (NotIOCException e) {
+                LocalLog.warn("Konfiguration der Prozesskette konnte nicht gelesen werden.");
+            }
+            
             confUpdated = true;
         }
     }
@@ -64,12 +88,12 @@ public class MasterTable implements EventObservable, EventObserver {
      *         ApplicationClients.
      */
     public synchronized static Map<Long, ApplicationConfiguration> getApplicationConfigurations() {
-        updateCofiguration();
+        updateConfiguration();
         return applicationConfigurations;
     }
 
     public synchronized static List<Long> getProcessChain() {
-        updateCofiguration();
+        updateConfiguration();
         return processChain;
     }
 
@@ -114,7 +138,7 @@ public class MasterTable implements EventObservable, EventObserver {
      * @throws HapptickException
      */
     public synchronized static void addService(Service service) {
-        // TODO prüfen, ob isAssignableFrom() so funktioniert...
+        // TODO prï¿½fen, ob isAssignableFrom() so funktioniert...
         while (inAction)
             ;
         inAction = true;
@@ -123,7 +147,7 @@ public class MasterTable implements EventObservable, EventObserver {
         } else if (service.getClass().isAssignableFrom(StartService.class)) {
             startServices.put(service.getServiceId(), (StartService) service);
         } else {
-            LocalLog.warn("Service konnte nicht in die MasterTable eingefügt werden. Type = " + service.getClass().getName());
+            LocalLog.warn("Service konnte nicht in die MasterTable eingefï¿½gt werden. Type = " + service.getClass().getName());
         }
         inAction = false;
     }
@@ -143,7 +167,7 @@ public class MasterTable implements EventObservable, EventObserver {
 
         // try for ApplicationServices
         ApplicationService service = applicationServices.get(serviceId);
-        if (null != service) {
+        if (null != service) { 
             Long applicationId = service.getApplicationId();
             stopEvent = (ApplicationStopEvent) service.getLastEvent(EventType.EVENT_STOP);
             if (null == stopEvent) {
@@ -169,7 +193,6 @@ public class MasterTable implements EventObservable, EventObserver {
      * @param eventObserver
      *            The registered EventObservers.
      */
-    @Override
     public void registerForEvents(EventObserver eventObserver) {
         eventObservers.add(eventObserver);
     }
@@ -182,7 +205,6 @@ public class MasterTable implements EventObservable, EventObserver {
      * 
      * @return A list with the Events which the observer wants to get.
      */
-    @Override
     public synchronized List<EventType> getObservedEvents() {
         List<EventType> observedEvents = new ArrayList<EventType>();
         observedEvents.add(EventType.EVENT_STOP);
@@ -203,7 +225,6 @@ public class MasterTable implements EventObservable, EventObserver {
      *            The incoming event that the client has fired or which was
      *            detected by the service.
      */
-    @Override
     public void update(Service service, NotEOFEvent event) {
         // only two eventTypes are allowed (see method getObservedEvents()
         if (event.getClass().equals(EventType.EVENT_STOP)) {
@@ -212,7 +233,7 @@ public class MasterTable implements EventObservable, EventObserver {
         }
 
         if (event.getClass().equals(EventType.EVENT_START)) {
-            // TODO ist noch nicht klar, wann das start event ausgelöst wird...
+            // TODO ist noch nicht klar, wann das start event ausgelï¿½st wird...
             // String serviceId = ((ApplicationStopEvent) event).getServiceId();
         }
     }
