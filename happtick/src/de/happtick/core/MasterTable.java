@@ -23,10 +23,7 @@ import de.notEOF.core.util.Util;
 import de.notIOC.exception.NotIOCException;
 
 /**
- * This static class contains two lists: <br>
- * 1. List of all ApplicationConfigurations <br>
- * 2. List of all active ApplicationServices (= active processes)
- * <p>
+ * This static class contains central informations <p>
  * The services and other objects of happtick use this class to get informations
  * about applications and processes.
  * 
@@ -50,10 +47,8 @@ public class MasterTable implements EventObservable, EventObserver {
      */
     private static void updateConfiguration() {
         if (!confUpdated) {
-            // TODO implementieren
-            
-            // processChain
             try {
+                // processChain
                 // aktiv?
                 Boolean active = Util.parseBoolean(LocalConfigurationClient.getAttribute("scheduler.use", "chain", "false"), false);
                 if (active) {
@@ -62,7 +57,6 @@ public class MasterTable implements EventObservable, EventObserver {
                     if (null != nodes) {
                         // for every node search applicationId and put into local list
                         for (String node : nodes) {
-                            node.trim();
                             // looks like scheduler.application1
                             node = "scheduler." + node; 
                             // attribute applicationId
@@ -71,7 +65,23 @@ public class MasterTable implements EventObservable, EventObserver {
                         }
                     }
                 }
-                
+
+                // ApplicationConfigurations
+                // timer gesteuert?
+                Boolean timer = Util.parseBoolean(LocalConfigurationClient.getAttribute("scheduler.use", "timer", "false"), false);
+                if (timer) {
+                    // Liste der nodes
+                    List<String> nodes = LocalConfigurationClient.getTextList("scheduler.applications.application");
+                    if (null != nodes) {
+                        // for every node create Object ApplicationConfiguration
+                        // the Objects read the configuration by themselve
+                        for (String node : nodes) {
+                            ApplicationConfiguration applConf = new ApplicationConfiguration(node);
+                            applicationConfigurations.put(applConf.getApplicationId(), applConf);
+                        }
+                    }
+                }
+
             } catch (NotIOCException e) {
                 LocalLog.warn("Konfiguration der Prozesskette konnte nicht gelesen werden.");
             }
@@ -91,7 +101,21 @@ public class MasterTable implements EventObservable, EventObserver {
         updateConfiguration();
         return applicationConfigurations;
     }
+    
+    /**
+     * Delivers a flat list of ApplicationConfiguration
+     * @return The list.
+     */
+    public static List<ApplicationConfiguration> getApplicationConfigurationsAsList() {
+        List<ApplicationConfiguration> confList = new ArrayList<ApplicationConfiguration>();
+        confList.addAll(getApplicationConfigurations().values());
+        return confList;
+    }
 
+    /**
+     * Delivers the process chain.
+     * @return A list with application id's.
+     */
     public synchronized static List<Long> getProcessChain() {
         updateConfiguration();
         return processChain;

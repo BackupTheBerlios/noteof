@@ -102,7 +102,6 @@ public class ApplicationConfiguration {
         try {
             ids = LocalConfigurationClient.getAttributeList(node, "applicationId");
         } catch (NotIOCException e) {
-            // TODO Auto-generated catch block
             LocalLog.warn("Fehler bei Lesen der Applikationen auf die gewartet werden soll.", e);
         }
         applicationsWaitFor = stringListToLongList(ids);
@@ -113,7 +112,6 @@ public class ApplicationConfiguration {
         try {
             ids = LocalConfigurationClient.getAttributeList(node, "applicationId");
         } catch (NotIOCException e) {
-            // TODO Auto-generated catch block
             LocalLog.warn("Fehler bei Lesen der Applikationen die anschließend gestartet werden sollen.", e);
         }
         applicationsStartAfter = stringListToLongList(ids);
@@ -124,7 +122,6 @@ public class ApplicationConfiguration {
         try {
             ids = LocalConfigurationClient.getAttributeList(node, "applicationId");
         } catch (NotIOCException e) {
-            // TODO Auto-generated catch block
             LocalLog.warn("Fehler bei Lesen der Applikationen die gleichzeitig gestartet werden sollen.", e);
         }
         applicationsStartAfter = stringListToLongList(ids);
