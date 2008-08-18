@@ -42,8 +42,7 @@ public class TestService extends BaseService implements Service {
         return false;
     }
 
-    @Override
-    public List<EventType> getObservedEvents() {
+    public List<EventType> getObservedEvents() { 
         // TODO Auto-generated method stub
         return null;
     }

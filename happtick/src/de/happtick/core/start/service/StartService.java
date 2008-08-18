@@ -26,7 +26,6 @@ public class StartService extends BaseService {
 
     }
 
-    @Override
     public List<EventType> getObservedEvents() {
         // TODO Auto-generated method stub
         return null;

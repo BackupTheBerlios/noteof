@@ -259,7 +259,6 @@ public class DispatchService extends BaseService implements Service {
         return true;
     }
 
-    @Override
     public List<EventType> getObservedEvents() {
         return null;
     }

@@ -13,27 +13,22 @@ public class ApplicationEventEvent implements EventEvent {
         this.information = information;
     }
 
-    @Override
     public Long getId() {
         return this.eventId;
     }
 
-    @Override
     public String getInformation() {
         return this.information;
     }
 
-    @Override
     public void setId(Long eventId) {
         this.eventId = eventId;
     }
 
-    @Override
     public void setInfomation(String information) {
         this.information = information;
     }
 
-    @Override
     public EventType getEventType() {
         return EventType.EVENT_EVENT;
     }

@@ -11,17 +11,14 @@ public class ApplicationLogEvent implements LogEvent {
         this.logText = logText;
     }
 
-    @Override
     public String getText() {
         return this.logText;
     }
 
-    @Override
     public void setText(String logText) {
         this.logText = logText;
     }
 
-    @Override
     public EventType getEventType() {
         return EventType.EVENT_LOG;
     }

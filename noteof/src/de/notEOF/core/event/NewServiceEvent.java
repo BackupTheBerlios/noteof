@@ -12,17 +12,14 @@ public class NewServiceEvent implements ServiceChangeEvent {
         this.service = service;
     }
 
-    @Override
     public Service getService() {
         return this.service;
     }
 
-    @Override
     public void setService(Service service) {
         this.service = service;
     }
 
-    @Override
     public EventType getEventType() {
         return EventType.EVENT_SERVICE_CHANGE;
     }

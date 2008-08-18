@@ -168,7 +168,6 @@ public class ApplicationService extends BaseService {
         }
     }
 
-    @Override
     public List<EventType> getObservedEvents() {
         List<EventType> types = new ArrayList<EventType>();
         types.add(EventType.EVENT_ALL_TYPES);

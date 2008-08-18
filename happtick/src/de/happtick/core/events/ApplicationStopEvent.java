@@ -2,6 +2,7 @@ package de.happtick.core.events;
 
 import de.notEOF.core.event.ServiceStopEvent;
 
+
 public class ApplicationStopEvent extends ServiceStopEvent {
 
     private Long applicationId = new Long(-1);

@@ -296,7 +296,6 @@ public class TalkLine implements Observer {
         socketLayer.activateLifeSignSystem(asClient);
     }
 
-    @Override
     public void update(Observable arg0, Object arg1) {
         socketLayer.close();
     }

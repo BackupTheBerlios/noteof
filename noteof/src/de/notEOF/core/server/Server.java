@@ -77,7 +77,7 @@ public class Server implements EventObservable, Runnable {
             notEof_Home = System.getenv(homeVar);
 
         if (Util.isEmpty(notEof_Home)) {
-            System.out.println("Umgebungsvariable '" + homeVar + "' ist nicht gesetzt. !EOF-Server benötigt diese Variable.\n" + //
+            System.out.println("Umgebungsvariable '" + homeVar + "' ist nicht gesetzt. !EOF-Server benï¿½tigt diese Variable.\n" + //
                     "Wert der Variable ist der Ordner unter dem die noteof.jar liegt.\n");
         }
 
@@ -109,7 +109,7 @@ public class Server implements EventObservable, Runnable {
                 Socket clientSocket = serverSocket.accept();
                 acceptClient(clientSocket);
             } catch (IOException ex) {
-                LocalLog.error("Fehler bei Warten auf Connect durch nächsten Client", ex);
+                LocalLog.error("Fehler bei Warten auf Connect durch nï¿½chsten Client", ex);
             } catch (ActionFailedException afx) {
                 LocalLog.error("Abbruch bei Verbindungsaufbau mit Client.", afx);
             }
@@ -268,7 +268,6 @@ public class Server implements EventObservable, Runnable {
      *            One or more Observers can register them here. This observers
      *            will be informed for events at a later moment.
      */
-    @Override
     public void registerForEvents(EventObserver eventObserver) {
         if (null == eventObservers)
             eventObservers = new ArrayList<EventObserver>();

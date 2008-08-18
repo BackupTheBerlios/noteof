@@ -14,12 +14,10 @@ public class ServiceStartEvent implements StartEvent {
         this.serviceId = serviceId;
     }
 
-    @Override
     public EventType getEventType() {
         return EventType.EVENT_START;
     }
 
-    @Override
     public Date getStartDate() {
         return this.startDate;
     }

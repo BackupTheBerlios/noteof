@@ -48,7 +48,6 @@ public class ConfigurationService extends BaseService {
         return true;
     }
 
-    @Override
     public List<EventType> getObservedEvents() {
         return null;
     }

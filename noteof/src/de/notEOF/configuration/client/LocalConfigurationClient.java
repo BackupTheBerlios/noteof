@@ -20,7 +20,7 @@ public class LocalConfigurationClient {
     }
 
     /**
-     * Delivers a list of the local configuration. <br>
+     * Delivers an attribute list of the local configuration. <br>
      * The list entries always are from type String. <br>
      * Please take notice of the double quotation marks.
      * 
@@ -39,9 +39,25 @@ public class LocalConfigurationClient {
         }
     }
 
-    // private static List<String> getList(String xmlPath, String listTag) {
-    // return ConfigurationManager.getProperty(xmlPath).getList(listTag);
-    // }
+    /**
+     * Delivers a text list of the local configuration. <br>
+     * The list entries always are from type String. <br>
+     * Please take notice of the double quotation marks.
+     * 
+     * @param xmlPath
+     *            Is the xml node to the element.
+     * @param attributeName
+     *            The name of the attribute for which the list must be created.
+     * 
+     * @return A list out of the xml configuration file.
+     */
+    public static List<String> getTextList(String xmlPath) throws NotIOCException {
+        try {
+            return ConfigurationManager.getProperty(xmlPath).getTextList();
+        } catch (Exception ex) {
+            throw new NotIOCException(34L, "Element: " + xmlPath);
+        }
+    }
 
     /**
      * Delivers the String value of a configuration key.
@@ -124,6 +140,28 @@ public class LocalConfigurationClient {
             return Util.parseInt(ConfigurationManager.getProperty(xmlPath).getAttribute(attributeName), 0);
         } catch (Exception ex) {
             throw new NotIOCException(34L, "Element: " + xmlPath);
+        }
+    }
+
+    /**
+     * Delivers the text of a configuration key.
+     * 
+     * @param xmlPath
+     *            The node of the xml element.
+     * @param attributeName
+     *            The name of the attribute for which the value is required.
+     * @return The text of a configuration element.
+     * @throws NotIOCException
+     *             If the node was not found or the value is empty (null or
+     *             length=0) an exception is thrown. The exception tells for
+     *             which key the value was empty.
+     */
+    public static String getText(String xmlPath) {
+        try {
+            return ConfigurationManager.getProperty(xmlPath).getText();
+        } catch (Exception ex) {
+            LocalLog.warn("Konfigurationswert fehlt: " + xmlPath + "; Default Wert wird verwendet: \"\"");
+            return "";
         }
     }
 }

@@ -14,12 +14,10 @@ public class ServiceStopEvent implements StopEvent {
         this.serviceId = serviceId;
     }
 
-    @Override
     public EventType getEventType() {
         return EventType.EVENT_STOP;
     }
 
-    @Override
     public Date getStopDate() {
         return this.stopDate;
     }

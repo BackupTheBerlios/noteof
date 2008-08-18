@@ -1,5 +1,6 @@
 package de.notEOF.core.util;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -18,6 +19,41 @@ public class Util {
     private static Thread consoleWaitThread;
 
     private Util() {
+    }
+    
+    /**
+     * Parses elements of the string which are delimited by the delimiter.
+     * @param simpleString The textual list.
+     * @return A List with the String elements.
+     */
+    public static List<String> stringToList(String simpleString, String delimiter) {
+        List<String> elements = new ArrayList<String>();
+        
+        simpleString.trim();
+        // delimiter at begin or end is not valid
+        while (!isEmpty(simpleString) && simpleString.startsWith(delimiter)) {
+            simpleString = simpleString.substring(1);
+        }
+        while (!isEmpty(simpleString) && simpleString.endsWith(delimiter)) {
+            simpleString = simpleString.substring(0, simpleString.length()-1);
+        }
+        
+        // look for elements
+        while (!isEmpty(simpleString) && simpleString.indexOf(delimiter) > -1) {
+            String element = simpleString.substring(0, simpleString.indexOf(delimiter));
+            elements.add(element);
+            // destroy multiple delimiters
+            while (!isEmpty(simpleString) && simpleString.startsWith(delimiter)) {
+                simpleString = simpleString.substring(1);
+            }
+        }
+        
+        // last entry, no delimiter
+        if (!isEmpty(simpleString)) {
+            elements.add(simpleString);
+        }
+        
+        return elements;
     }
 
     /**
@@ -44,7 +80,7 @@ public class Util {
     }
 
     /**
-     * Prüft ob object NULL, ein Leerstring (getrimmt), ein leeres Array (length
+     * Prï¿½ft ob object NULL, ein Leerstring (getrimmt), ein leeres Array (length
      * == 0) oder eine leere Collection ist.
      * 
      * @param object
@@ -161,7 +197,7 @@ public class Util {
     /**
      * Vergleicht zwei Strings miteinander. <br>
      * Vorteil dieser Methode: NULL-Strings werden zu leeren Strings. <br>
-     * Anschließend wird ein equalsIgnoreCase durchgeführt. <br>
+     * Anschlieï¿½end wird ein equalsIgnoreCase durchgefï¿½hrt. <br>
      * NULL-Objekte werden wie Strings miteinander verglichen.
      * 
      * @param s1
@@ -239,6 +275,14 @@ public class Util {
             if (0 == millis)
                 return def;
             return new Date(millis);
+        } catch (Exception e) {
+            return def;
+        }
+    }
+    
+    public static Boolean parseBoolean(String inputBoolean, Boolean def) {
+        try {
+            return Boolean.parseBoolean(inputBoolean);
         } catch (Exception e) {
             return def;
         }
