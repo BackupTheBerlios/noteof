@@ -26,7 +26,7 @@ public class DispatchService extends BaseService implements Service {
         return DispatchTag.class;
     }
 
-    public void init() {
+    public void implementationFirstSteps() {
         // activateLifeSignSystem();
     }
 

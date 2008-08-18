@@ -240,7 +240,7 @@ public class Server implements EventObservable, Runnable {
                 deliveredServiceId = generateServiceId();
                 ((BaseService) service).setServer(this);
                 ((BaseService) service).initializeConnection(clientSocket, deliveredServiceId);
-                ((BaseService) service).init();
+                ((BaseService) service).implementationFirstSteps();
 
                 // if service type did not exist in general service list till
                 // now create new map for type
