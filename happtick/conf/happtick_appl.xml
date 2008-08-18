@@ -21,8 +21,7 @@
 	         Other informations are ignored (options, timeplan, dependencies, etc.).
 	         If loop is true the chain will start again.
 	    -->
-	    <chain>
-	    	<loop>true</loop>
+	    <chain loop="true">
 			<application>application1</application>
 			<application>application2</application>
 	    </chain>
