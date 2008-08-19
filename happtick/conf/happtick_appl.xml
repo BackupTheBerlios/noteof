@@ -65,12 +65,13 @@
 			<option multiplestart="false" enforce="false"></option>
 			<!-- timeplan
 			     Definition of time points when the application has to run.
-			     seconds  is a simple textual list of the seconds.
-			     minutes  is a simple textual list of the minutes.
-			     hours    is a simple textual list of the hours.
-			     weekday  is a simple textual list of reduction to appointed weekdays.
-			              Use the first two letters of the days (e.g. TH for thursday). Use english or german shortcut. Not case sensitive
-			     monthday is a simple textual list of reduction to appointed days of the month (15, 20).
+			     Multiple values for a time unit (second, minute, ...) must be inserted in ascending order.
+			     seconds   is a simple textual list of the seconds. For full minutes use * or 0.
+			     minutes   is a simple textual list of the minutes. For full hours use * or 0.
+			     hours     is a simple textual list of the hours. For every hour fill in * (not 0!). The day has 24 hours (setting am or pm is not possible). 
+			     weekdays  is a simple textual list of reduction to appointed weekdays.
+			               Use the first two letters of the days (e.g. TH for thursday). Use english or german shortcut. Not case sensitive
+			     monthdays is a simple textual list of reduction to appointed days of the month (15, 20).
 			     if weekday and monthday is defined the time points can be very seldom (e.g. there are not many Fridays on the 13. day in month).
 			     
 			     Use blanks or comma as delimiter for textual lists here.
@@ -79,7 +80,6 @@
 				<seconds>0 30</seconds> <!-- blank OR comma seperated -->
 				<minutes>15</minutes>
 				<hours>22,24</hours> <!-- blank OR comma seperated -->
-				
 				<weekdays>TU MI FR SU</weekdays> <!-- mixed english and german is allowed -->
 				<monthdays>13</monthdays>
 			</timeplan>
@@ -97,6 +97,8 @@
 				<startafter applicationId="88"></startafter>
 				<startsync applicationId="99"></startsync>
 			</dependencies>
+			
+			<runtime maxStartStop="300" maxStepStep="10"></runtime>
 		</application1>
 	</scheduler>	
 </root>
