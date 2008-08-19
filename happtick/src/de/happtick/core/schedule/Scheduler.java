@@ -1,6 +1,7 @@
 package de.happtick.core.schedule;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import de.happtick.configuration.ApplicationConfiguration;
@@ -162,6 +163,7 @@ public class Scheduler {
 
         protected ApplicationScheduler(ApplicationConfiguration conf) {
             this.conf = conf;
+            StartService startService = MasterTable.getStartServiceByIp(conf.getClientIp());
         }
 
         // TODO Die startId wird vom StartClient generiert. Der teilt die dem
@@ -186,6 +188,11 @@ public class Scheduler {
 
         public void run() {
             // TODO offen
+
+            while (true) {
+                // checkStartAllowed();
+                break;
+            }
             stopped = true;
         }
     }
@@ -287,4 +294,14 @@ public class Scheduler {
         }
 
     }
+
+    /*
+     * prooves if the
+     */
+    private boolean checkStart(ApplicationConfiguration applConf) {
+        Date nextStart = applConf.calculateNextStart();
+
+        return false;
+    }
+
 }
