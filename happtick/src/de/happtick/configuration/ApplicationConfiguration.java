@@ -2,6 +2,8 @@ package de.happtick.configuration;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Map;
 
@@ -33,6 +35,8 @@ public class ApplicationConfiguration {
     private List<Long> applicationsWaitFor;
     private List<Long> applicationsStartAfter;
     private List<Long> applicationsStartSync;
+    private int maxStartStop;
+    private int maxStepStep;
 
     /**
      * The class reads the configuration by itself.
@@ -45,11 +49,11 @@ public class ApplicationConfiguration {
 
         this.nodeNameApplication = nodeNameApplication;
         String node = "";
-        
+
         // applicationId
-        node = "scheduler." + nodeNameApplication; 
+        node = "scheduler." + nodeNameApplication;
         applicationId = Util.parseLong(LocalConfigurationClient.getAttribute(node, "applicationId", "-1"), -1);
-        
+
         // clientIp
         node = "scheduler." + nodeNameApplication + ".client";
         clientIp = LocalConfigurationClient.getAttribute(node, "ip", "localhost");
@@ -59,43 +63,75 @@ public class ApplicationConfiguration {
         executableType = LocalConfigurationClient.getAttribute(node, "type", "UNKNOWN");
         // executable path
         executablePath = LocalConfigurationClient.getAttribute(node, "path", "");
-        
+
         // option multiple start
-        node = "scheduler." + nodeNameApplication + ".option"; 
+        node = "scheduler." + nodeNameApplication + ".option";
         multipleStart = Util.parseBoolean(LocalConfigurationClient.getAttribute(node, "multiplestart", "false"), false);
         // option enforce
         enforce = Util.parseBoolean(LocalConfigurationClient.getAttribute(node, "enforce", "false"), false);
-        
+
         // time plan
         String nodeTime = "scheduler." + nodeNameApplication + ".timeplan";
         // seconds
+        // * or 0 means one time per minute
         node = nodeTime + ".seconds";
-        timePlanSeconds = getElementsOfStringAsInt(node);
-        
+        String seconds = LocalConfigurationClient.getText(node);
+        if ("".equals(seconds) || "*".equals(seconds) || "0".equals(seconds)) {
+            timePlanSeconds.add(0);
+        } else {
+            timePlanSeconds = getElementsOfStringAsInt(node);
+        }
+
         // minutes
+        // * or 0 means one time per hour
         node = nodeTime + ".minutes";
-        timePlanMinutes= getElementsOfStringAsInt(node);
+        String minutes = LocalConfigurationClient.getText(node);
+        if ("".equals(minutes) || "*".equals(minutes) || "0".equals(minutes)) {
+            timePlanMinutes.add(0);
+        } else {
+            timePlanMinutes = getElementsOfStringAsInt(node);
+        }
 
         // hours
         node = nodeTime + ".hours";
-        timePlanHours= getElementsOfStringAsInt(node);
-        
+        String hours = LocalConfigurationClient.getText(node);
+        if ("".equals(hours) || "*".equals(hours)) {
+            for (int i = 0; i < 24; i++) {
+                timePlanHours.add(i);
+            }
+        } else {
+            timePlanHours = getElementsOfStringAsInt(node);
+        }
+
         // days of week
         node = nodeTime + ".weekdays";
-        for (String element : (List<String>)getElementsOfString(node)) {
-            if (element.equalsIgnoreCase("MO")) timePlanWeekdays.add(Calendar.MONDAY);
-            if (element.equalsIgnoreCase("TU")) timePlanWeekdays.add(Calendar.TUESDAY);
-            if (element.equalsIgnoreCase("WE") || element.equalsIgnoreCase("MI")) timePlanWeekdays.add(Calendar.WEDNESDAY);
-            if (element.equalsIgnoreCase("TH")|| element.equalsIgnoreCase("DO")) timePlanWeekdays.add(Calendar.THURSDAY);
-            if (element.equalsIgnoreCase("FR")) timePlanWeekdays.add(Calendar.FRIDAY);
-            if (element.equalsIgnoreCase("SA")) timePlanWeekdays.add(Calendar.SATURDAY);
-            if (element.equalsIgnoreCase("SU")|| element.equalsIgnoreCase("SO")) timePlanWeekdays.add(Calendar.SUNDAY);
+        String days = LocalConfigurationClient.getText(node);
+        if ("".equals(days) || "*".equals(days)) {
+            for (int i = 1; i < 8; i++) {
+                timePlanWeekdays.add(Calendar.DAY_OF_WEEK, i);
+            }
+        }
+        for (String element : (List<String>) getElementsOfString(node)) {
+            if (element.equalsIgnoreCase("MO"))
+                timePlanWeekdays.add(Calendar.MONDAY);
+            if (element.equalsIgnoreCase("TU"))
+                timePlanWeekdays.add(Calendar.TUESDAY);
+            if (element.equalsIgnoreCase("WE") || element.equalsIgnoreCase("MI"))
+                timePlanWeekdays.add(Calendar.WEDNESDAY);
+            if (element.equalsIgnoreCase("TH") || element.equalsIgnoreCase("DO"))
+                timePlanWeekdays.add(Calendar.THURSDAY);
+            if (element.equalsIgnoreCase("FR"))
+                timePlanWeekdays.add(Calendar.FRIDAY);
+            if (element.equalsIgnoreCase("SA"))
+                timePlanWeekdays.add(Calendar.SATURDAY);
+            if (element.equalsIgnoreCase("SU") || element.equalsIgnoreCase("SO"))
+                timePlanWeekdays.add(Calendar.SUNDAY);
         }
 
         // days of month
         node = nodeTime + ".monthdays";
-        timePlanMonthdays= getElementsOfStringAsInt(node);
-        
+        timePlanMonthdays = getElementsOfStringAsInt(node);
+
         // applications to wait for
         node = "scheduler." + nodeNameApplication + ".dependencies.waitfor";
         List<String> ids = null;
@@ -125,6 +161,76 @@ public class ApplicationConfiguration {
             LocalLog.warn("Fehler bei Lesen der Applikationen die gleichzeitig gestartet werden sollen.", e);
         }
         applicationsStartAfter = stringListToLongList(ids);
+
+        // maxStartStop
+        node = "scheduler." + nodeNameApplication + ".runtime";
+        maxStartStop = LocalConfigurationClient.getAttributeInt(node, "maxStartStop", 0);
+        // maxStepStep
+        maxStepStep = LocalConfigurationClient.getAttributeInt(node, "maxStepStep", 0);
+    }
+
+    /**
+     * Calculates the next start point up from now
+     * 
+     * @return Date when the application should run only depending to the
+     *         configuration, ignoring other active processes etc.
+     */
+    public Date calculateNextStart() {
+        // when multipleStart or enforce the application could start immediately
+        if (multipleStart || enforce) {
+            // give the system 1 second to work...
+            long now = System.currentTimeMillis() + 1000;
+            return new Date(now);
+        }
+
+        Calendar actDate = new GregorianCalendar();
+        Calendar calcDate = new GregorianCalendar();
+        // seconds
+        for (int confSecond : timePlanSeconds) {
+            calcDate.set(Calendar.SECOND, confSecond);
+            if (calcDate.getTimeInMillis() >= actDate.getTimeInMillis())
+                break;
+        }
+        if (calcDate.getTimeInMillis() < actDate.getTimeInMillis()) {
+            // next minute, smallest second
+            calcDate.set(Calendar.SECOND, timePlanSeconds.get(0));
+            calcDate.roll(Calendar.MINUTE, true);
+        }
+
+        // minutes
+        for (int confMinute : timePlanMinutes) {
+            calcDate.set(Calendar.MINUTE, confMinute);
+            if (calcDate.getTimeInMillis() >= actDate.getTimeInMillis())
+                break;
+        }
+        if (calcDate.getTimeInMillis() < actDate.getTimeInMillis()) {
+            // next hour, smallest minute
+            calcDate.set(Calendar.MINUTE, timePlanMinutes.get(0));
+            calcDate.roll(Calendar.HOUR_OF_DAY, true);
+        }
+
+        // hours
+        for (int confHour : timePlanHours) {
+            calcDate.set(Calendar.HOUR_OF_DAY, confHour);
+            if (calcDate.getTimeInMillis() >= actDate.getTimeInMillis())
+                break;
+        }
+        if (calcDate.getTimeInMillis() < actDate.getTimeInMillis()) {
+            // next day, smallest hour
+            calcDate.set(Calendar.HOUR, timePlanHours.get(0));
+            calcDate.roll(Calendar.DATE, true);
+        }
+
+        // days of month
+        if (timePlanMonthdays.size() > 0) {
+
+        }
+
+        // seconds
+        Calendar cal = new GregorianCalendar();
+        int second = cal.get(Calendar.SECOND);
+
+        return null;
     }
 
     /*
@@ -139,7 +245,7 @@ public class ApplicationConfiguration {
         }
         return newList;
     }
-    
+
     /*
      * delivers elements of a text string comma separated or blank separated
      */
@@ -151,7 +257,7 @@ public class ApplicationConfiguration {
         }
         return intList;
     }
-    
+
     /*
      * delivers elements of a text string comma separated or blank separated
      */
@@ -207,8 +313,11 @@ public class ApplicationConfiguration {
     }
 
     /**
-     * List of days in weeks. <p>
-     * Use Object Calendar to map the values to a weekday (e.g. Calendar.MONDAY). 
+     * List of days in weeks.
+     * <p>
+     * Use Object Calendar to map the values to a weekday (e.g.
+     * Calendar.MONDAY).
+     * 
      * @return
      */
     public List<Integer> getTimePlanWeekdays() {
@@ -217,6 +326,7 @@ public class ApplicationConfiguration {
 
     /**
      * List of days in month.
+     * 
      * @return
      */
     public List<Integer> getTimePlanMonthdays() {
@@ -237,5 +347,13 @@ public class ApplicationConfiguration {
 
     public String getExecutableType() {
         return executableType;
+    }
+
+    public int getMaxStartStop() {
+        return maxStartStop;
+    }
+
+    public int getMaxStepStep() {
+        return maxStepStep;
     }
 }
