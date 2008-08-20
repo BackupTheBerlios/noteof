@@ -8,9 +8,14 @@ import de.happtick.configuration.ApplicationConfiguration;
 import de.happtick.configuration.LocalConfigurationClient;
 import de.happtick.core.MasterTable;
 import de.happtick.core.application.service.ApplicationService;
-import de.happtick.core.exception.HapptickException;
+import de.happtick.core.enumeration.HapptickAlarmLevel;
+import de.happtick.core.enumeration.HapptickAlarmType;
+import de.happtick.core.events.ApplicationAlarmEvent;
+import de.happtick.core.events.ApplicationStopEvent;
 import de.happtick.core.start.service.StartService;
 import de.notEOF.core.enumeration.EventType;
+import de.notEOF.core.event.ServiceStopEvent;
+import de.notEOF.core.interfaces.EventObservable;
 import de.notEOF.core.interfaces.EventObserver;
 import de.notEOF.core.interfaces.NotEOFEvent;
 import de.notEOF.core.interfaces.Service;
@@ -38,7 +43,7 @@ public class Scheduler {
         // Standard via timer
         Boolean useTimer = Util.parseBoolean(LocalConfigurationClient.getAttribute("scheduler.use", "timer", "false"), false);
         if (useTimer) {
-            startAllApplicationRunners();
+            startAllApplicationSchedulers();
 
             SchedulerGarbage garbage = new SchedulerGarbage();
             Thread garbageThread = new Thread(garbage);
@@ -79,45 +84,28 @@ public class Scheduler {
      * For each configured application start a runner. The runner observes the
      * start point. Put the runner into a list.
      */
-    private void startAllApplicationRunners() {
+    private void startAllApplicationSchedulers() {
         for (ApplicationConfiguration conf : MasterTable.getApplicationConfigurationsAsList()) {
-            ApplicationScheduler appSched = startApplicationRunner(conf);
-            if (null != appSched)
-                applicationSchedulers.add(appSched);
+            startApplicationScheduler(conf);
         }
     }
 
     /*
      * Start the runner as thread
      */
-    private ApplicationScheduler startApplicationRunner(ApplicationConfiguration configuration) {
+    private ApplicationScheduler startApplicationScheduler(ApplicationConfiguration configuration) {
         ApplicationScheduler appSched;
-            StartService startService = MasterTable.getStartServiceByIp(configuration.getClientIp());
-            if (null == startService) {
-                LocalLog.warn("Nicht aktiver StartService. applicationId: " + configuration.getApplicationId() + "; clientIp: " + configuration.getClientIp());
-                return null;
-            }
-        appSched = new ApplicationScheduler(configuration, startService);
+        StartService startService = MasterTable.getStartServiceByIp(configuration.getClientIp());
+        if (null == startService) {
+            LocalLog.warn("Nicht aktiver StartService. applicationId: " + configuration.getApplicationId() + "; clientIp: " + configuration.getClientIp());
+            return null;
+        }
+        appSched = new ApplicationScheduler(configuration, startService, false);
+        applicationSchedulers.add(appSched);
         Thread thread = new Thread(appSched);
         appSched.setThread(thread);
         thread.start();
         return appSched;
-    }
-
-    /*
-     * The runner asks here and the allowance is verified with other services,
-     * configurations, runners
-     */
-    private boolean isStartAllowed(Long applicationId) {
-        return false;
-    }
-
-    /*
-     * Runner gets the StartService to tell him that the application must be
-     * started. The Services are also stored in the MasterTable.
-     */
-    private StartService getStartService(String clientId) {
-        return null;
     }
 
     /**
@@ -156,31 +144,22 @@ public class Scheduler {
     /*
      * This class initializes the start of application by talking with
      * StartServices. The StartService gets a startId from Client. This id is
-     * used to identify the ApplicationService in the master tables.
+     * used to identify the ApplicationService in the master tables. If this
+     * scheduler is not working in chain-mode after start the next start point
+     * will be calculated.
      */
-    private class ApplicationScheduler implements Runnable {
+    private class ApplicationScheduler implements Runnable, EventObserver, EventObservable {
         private Thread thread;
         private boolean stopped = false;
+        private boolean appServiceStopped = false;
+        private boolean chainMode = false;
         private ApplicationConfiguration applicationConfiguration;
         private StartService startService;
+        private List<EventObserver> eventObservers;
 
-        // TODO Wenn diese Klasse mit 'chain' aufgerufen wird, muss kein
-        // scheduling durchgefï¿½hrt werden.
-        // Dann wird direkt der StartService benachrichtigt, der wiederum den
-        // client verstï¿½ndigt...
-
-        protected ApplicationScheduler(ApplicationConfiguration applicationConfiguration, StartService startService)  {
+        protected ApplicationScheduler(ApplicationConfiguration applicationConfiguration, StartService startService, boolean chainMode) {
             this.applicationConfiguration = applicationConfiguration;
             this.startService = startService;
-//            MasterTable.isStartAllowed(applicationConfiguration, startService);
-        }
-
-        // TODO Die startId wird vom StartClient generiert. Der teilt die dem
-        // StartService mit. Der 'richtige' Service ist derjenige, der auch die
-        // startId hat...
-        protected ApplicationService getApplicationService() {
-            // TODO !!!
-            return null;
         }
 
         protected boolean hasStopped() {
@@ -198,11 +177,125 @@ public class Scheduler {
         public void run() {
             // TODO offen
 
-            while (true) {
-                // checkStartAllowed();
-                break;
+            try {
+                while (!stopped) {
+                    // check modes
+                    if (chainMode) {
+                        // This runner is part of a chain
+                        // wait for other applications
+                        while (MasterTable.mustWaitForApplication(applicationConfiguration)) {
+                            Thread.sleep(300);
+                        }
+                        // tell StartService to start the application
+                        // when the method startService.startApplication returns
+                        // the client has started. After that there can
+                        // time goes by until the ApplicationService exists.
+                        String startId = startService.startApplication(applicationConfiguration);
+
+                        // after starting the application check other
+                        // dependencies
+                        // applications to start syncronously
+                        for (Long applId : applicationConfiguration.getApplicationsStartSync()) {
+                            ApplicationConfiguration syncConf = MasterTable.getApplicationConfiguration(applId);
+                            if (null != syncConf) {
+                                startApplicationScheduler(syncConf);
+                            }
+                        }
+
+                        // wait for activated ApplicationService
+                        Date endDate = MasterTable.dateToWaitForApplicationService(null);
+                        ApplicationService applicationService = null;
+                        while (null == (applicationService = MasterTable.getApplicationServiceByStartId(startId)) && //
+                                endDate.getTime() < System.currentTimeMillis()) {
+                            Thread.sleep(500);
+                        }
+
+                        // Start of application not checkable
+                        if (null == applicationService) {
+                            // write log entry
+                            LocalLog
+                                    .warn("Anwendung sollte als Teil einer Kette gestartet werden. Start der Anwendung konnte nicht überprüft werden. Kette wird unterbrochen. ApplicationId: "
+                                            + applicationConfiguration.getApplicationId());
+                            stopped = true;
+                            // send to all observer an alarm event
+                            updateAllObserver(eventObservers, null,
+                                              new ApplicationAlarmEvent(HapptickAlarmType.INTERNAL_CHAIN_ALARM.ordinal(),
+                                                      HapptickAlarmLevel.ALARM_LEVEL_SIGNIFICANT.ordinal(),
+                                                      "Anwendung als Teil einer Kette wurde evtl. nicht gestartet. ApplicationId: "
+                                                              + applicationConfiguration.getApplicationId()));
+                            // stop working
+                            break;
+                        }
+
+                        // start was successfull - the ApplicationService is
+                        // running
+                        // register at the ApplicationService and wait for
+                        // application exit by event
+                        applicationService.registerForEvents(this);
+                        while (!appServiceStopped) {
+                            Thread.sleep(500);
+                        }
+
+                        // Fire event to all observer
+                        // probably a chain runner is waiting...
+                        updateAllObserver(eventObservers, null, new ApplicationStopEvent(startService.getServiceId(), applicationConfiguration
+                                .getApplicationId(), applicationService.getExitCode()));
+
+                        // start dependent applications
+                        for (Long applId : applicationConfiguration.getApplicationsStartAfter()) {
+                            ApplicationConfiguration afterConf = MasterTable.getApplicationConfiguration(applId);
+                            if (null != afterConf) {
+                                startApplicationScheduler(afterConf);
+                            }
+                        }
+
+                        // this runner was in chain mode and has done it's work
+                        stopped = true;
+
+                    } else {
+                        // Time Plan Mode
+
+                        // 2. ist enforce und keiner läuft
+                        // 3. ist startzeitpunkt erreicht und multiple
+                        // 4. ist startzeitpunkt erreicht und nicht multiple
+                        // 5. ist startzeitpunkt erreicht, dependencies
+                        // berücksichtigen
+
+                        // laeuft bereits? hier selbst gestartet?
+                    }
+
+                }
+            } catch (InterruptedException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
             }
             stopped = true;
+        }
+
+        public List<EventType> getObservedEvents() {
+            List<EventType> list = new ArrayList<EventType>();
+            // list.add(EventType.EVENT_ALARM);
+            // list.add(EventType.EVENT_START);
+            list.add(EventType.EVENT_STOP);
+            return list;
+        }
+
+        public void registerForEvents(EventObserver observer) {
+            if (null == eventObservers)
+                eventObservers = new ArrayList<EventObserver>();
+            eventObservers.add(observer);
+
+        }
+
+        public void update(Service service, NotEOFEvent event) {
+            // normally here only the stop signal from application service may
+            // come in.
+            if (event.getEventType().equals(EventType.EVENT_STOP))
+                appServiceStopped = true;
+        }
+
+        public void updateAllObserver(List<EventObserver> eventObserver, Service service, NotEOFEvent event) {
+            Util.updateAllObserver(eventObserver, service, event);
         }
     }
 
@@ -256,9 +349,12 @@ public class Scheduler {
             try {
                 loopChain = Util.parseBoolean(LocalConfigurationClient.getAttribute("scheduler.chain", "loop"), true);
             } catch (NotIOCException e) {
-                LocalLog.warn("Attribut 'loop' fï¿½r chain-Konfiguration konnte nicht ermittelt werden.", e);
+                LocalLog.warn("Attribut 'loop' für chain-Konfiguration konnte nicht ermittelt werden.", e);
             }
         }
+
+        // TODO chain startet runner. runner nicht vergessen in die runnerliste
+        // einzutragen, da sonst der Müllmann nicht aufräumen kann.
 
         public void run() {
             // TODO Noch offen...
@@ -299,18 +395,9 @@ public class Scheduler {
         public void update(Service service, NotEOFEvent event) {
             if (!event.getEventType().equals(EventType.EVENT_STOP))
                 return;
-            stoppedServiceId = service.getServiceId();
+            stoppedServiceId = ((ServiceStopEvent) event).getServiceId();
         }
 
-    }
-
-    /*
-     * prooves if the
-     */
-    private boolean checkStart(ApplicationConfiguration applConf) {
-        Date nextStart = applConf.calculateNextStart();
-
-        return false;
     }
 
 }
