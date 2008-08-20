@@ -10,6 +10,7 @@ import de.notEOF.core.constant.NotEOFConstants;
 import de.notEOF.core.event.ServiceStartEvent;
 import de.notEOF.core.event.ServiceStopEvent;
 import de.notEOF.core.exception.ActionFailedException;
+import de.notEOF.core.interfaces.EventObservable;
 import de.notEOF.core.interfaces.EventObserver;
 import de.notEOF.core.interfaces.NotEOFEvent;
 import de.notEOF.core.interfaces.Service;
@@ -32,7 +33,7 @@ import de.notEOF.core.util.Util;
  * @author Dirk
  * 
  */
-public abstract class BaseService extends BaseClientOrService implements Service, EventObserver, Runnable {
+public abstract class BaseService extends BaseClientOrService implements Service, EventObserver, EventObservable, Runnable {
 
     private boolean connectedWithClient = false;
     private boolean stopped = false;
@@ -187,7 +188,11 @@ public abstract class BaseService extends BaseClientOrService implements Service
      *            Implementation of Type NotEOFEvent.
      */
     public void updateAllObserver(Service service, NotEOFEvent event) {
-        Util.updateAllObserver(eventObservers, service, event);
+        updateAllObserver(eventObservers, service, event);
+    }
+
+    public void updateAllObserver(List<EventObserver> list, Service service, NotEOFEvent event) {
+        Util.updateAllObserver(list, service, event);
     }
 
     /**

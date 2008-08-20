@@ -12,4 +12,6 @@ import de.notEOF.core.interfaces.NotEOFEvent;
  */
 public interface StopEvent extends NotEOFEvent {
     public Date getStopDate();
+
+    public String getServiceId();
 }

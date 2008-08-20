@@ -149,7 +149,7 @@ public class Server implements EventObservable, Runnable {
             serviceThread.start();
 
             // Fire event to all observer
-            Util.updateAllObserver(this.eventObservers, null, new NewServiceEvent(service));
+            Util.updateAllObserver(eventObservers, null, new NewServiceEvent(service));
         } else {
             // service couldn't be created or found in list by type name
             throw new ActionFailedException(150L, "Service Typ unbekannt.");
