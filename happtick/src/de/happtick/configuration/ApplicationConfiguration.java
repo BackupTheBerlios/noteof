@@ -7,6 +7,7 @@ import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Map;
 
+import de.happtick.core.MasterTable;
 import de.notEOF.core.util.Util;
 import de.notIOC.exception.NotIOCException;
 import de.notIOC.logging.LocalLog;
@@ -183,8 +184,8 @@ public class ApplicationConfiguration {
     public Date calculateNextStart() {
         // when multipleStart or enforce the application could start immediately
         if (multipleStart || enforce) {
-            // give the system 100 milliseconds to work...
-            long now = System.currentTimeMillis() + 100;
+            // give the system a little bit time to work...
+            long now = System.currentTimeMillis() + MasterTable.getTimeDelayForStart();
             return new Date(now);
         }
 
@@ -255,6 +256,8 @@ public class ApplicationConfiguration {
             calcDate.set(Calendar.DAY_OF_MONTH, timePlanMonthdays.get(dayOfMonth));
         }
 
+        // buffer for performance problems
+        calcDate.add(Calendar.MILLISECOND, MasterTable.getTimeDelayForStart());
         return calcDate.getTime();
     }
 

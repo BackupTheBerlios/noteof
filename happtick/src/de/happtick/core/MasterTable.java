@@ -207,7 +207,7 @@ public class MasterTable implements EventObservable {
      * @throws HapptickException
      */
     public synchronized static void addService(Service service) {
-        // TODO prüfen, ob isAssignableFrom() so funktioniert...
+        // TODO prï¿½fen, ob isAssignableFrom() so funktioniert...
         while (inAction)
             try {
                 Thread.sleep(100);
@@ -220,7 +220,7 @@ public class MasterTable implements EventObservable {
         } else if (service.getClass().isAssignableFrom(StartService.class)) {
             startServices.put(service.getServiceId(), (StartService) service);
         } else {
-            LocalLog.warn("Service konnte nicht in die MasterTable eingefügt werden. Type = " + service.getClass().getName());
+            LocalLog.warn("Service konnte nicht in die MasterTable eingefï¿½gt werden. Type = " + service.getClass().getName());
         }
         inAction = false;
     }
@@ -288,6 +288,15 @@ public class MasterTable implements EventObservable {
         observedEvents.add(EventType.EVENT_STOP);
         observedEvents.add(EventType.EVENT_SERVICE_CHANGE);
         return observedEvents;
+    }
+    
+    /**
+     * Returns the delay for starting applications (+ -) in milliseconds. <p>
+     * The delay is used for the time which goes by between request for and response of the next start point of an application. So the delay is a buffer for system performance 'problems'.
+     * @return The delay.
+     */
+    public static int getTimeDelayForStart() {
+        return 1000;
     }
 
     // /**
