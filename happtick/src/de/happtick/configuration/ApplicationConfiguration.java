@@ -57,7 +57,7 @@ public class ApplicationConfiguration {
 
         // clientIp
         node = "scheduler." + nodeNameApplication + ".client";
-        clientIp = LocalConfigurationClient.getAttribute(node, "ip", "localhost");
+        clientIp = LocalConfigurationClient.getAttribute(node, "clientIp", "localhost");
 
         // executable type
         node = "scheduler." + nodeNameApplication + ".executable";
@@ -135,7 +135,7 @@ public class ApplicationConfiguration {
         if ("".equals(months) || "*".equals(months)) {
             timePlanMonthdays.add(0);
         } else {
-        timePlanMonthdays = getElementsOfStringAsInt(node);
+            timePlanMonthdays = getElementsOfStringAsInt(node);
         }
 
         // applications to wait for
@@ -235,21 +235,20 @@ public class ApplicationConfiguration {
         while (!found) {
             for (int dayOfWeek : timePlanWeekdays) {
                 if (calcDate.getTimeInMillis() >= actDate.getTimeInMillis() && //
-                    (calcDate.get(Calendar.DATE) == timePlanMonthdays.get(dayOfMonth) || //
-                            timePlanMonthdays.get(dayOfMonth) == 0) && //
-                    (calcDate.get(Calendar.DAY_OF_WEEK) == dayOfWeek ||
-                     dayOfWeek == 0)) {
+                        (calcDate.get(Calendar.DATE) == timePlanMonthdays.get(dayOfMonth) || //
+                        timePlanMonthdays.get(dayOfMonth) == 0) && //
+                        (calcDate.get(Calendar.DAY_OF_WEEK) == dayOfWeek || dayOfWeek == 0)) {
                     found = true;
                     break;
                 }
             }
             if (found) {
-                System.out.println("Gefunden: " + calcDate.get(Calendar.DATE) + "." + (calcDate.get(Calendar.MONTH) +1) + "." + calcDate.get(Calendar.YEAR));
+                System.out.println("Gefunden: " + calcDate.get(Calendar.DATE) + "." + (calcDate.get(Calendar.MONTH) + 1) + "." + calcDate.get(Calendar.YEAR));
                 break;
             }
-            
+
             dayOfMonth++;
-            if (dayOfMonth == timePlanMonthdays.size() ) {
+            if (dayOfMonth == timePlanMonthdays.size()) {
                 dayOfMonth = 0;
                 calcDate.add(Calendar.MONTH, 1);
             }
@@ -294,7 +293,7 @@ public class ApplicationConfiguration {
         String elements = LocalConfigurationClient.getText(node);
         elements.replace(" ", ",");
         elements.replace(",,", ",");
-            elementList = Util.stringToList(elements, ",");
+        elementList = Util.stringToList(elements, ",");
         return elementList;
     }
 
