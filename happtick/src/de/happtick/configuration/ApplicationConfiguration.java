@@ -130,7 +130,12 @@ public class ApplicationConfiguration {
 
         // days of month
         node = nodeTime + ".monthdays";
+        String months = LocalConfigurationClient.getText(node);
+        if ("".equals(months) || "*".equals(months)) {
+            timePlanMonthdays.add(0);
+        } else {
         timePlanMonthdays = getElementsOfStringAsInt(node);
+        }
 
         // applications to wait for
         node = "scheduler." + nodeNameApplication + ".dependencies.waitfor";
@@ -178,8 +183,8 @@ public class ApplicationConfiguration {
     public Date calculateNextStart() {
         // when multipleStart or enforce the application could start immediately
         if (multipleStart || enforce) {
-            // give the system 1 second to work...
-            long now = System.currentTimeMillis() + 1000;
+            // give the system 100 milliseconds to work...
+            long now = System.currentTimeMillis() + 100;
             return new Date(now);
         }
 
@@ -194,7 +199,7 @@ public class ApplicationConfiguration {
         if (calcDate.getTimeInMillis() < actDate.getTimeInMillis()) {
             // next minute, smallest second
             calcDate.set(Calendar.SECOND, timePlanSeconds.get(0));
-            calcDate.roll(Calendar.MINUTE, true);
+            calcDate.add(Calendar.MINUTE, 1);
         }
 
         // minutes
@@ -206,7 +211,7 @@ public class ApplicationConfiguration {
         if (calcDate.getTimeInMillis() < actDate.getTimeInMillis()) {
             // next hour, smallest minute
             calcDate.set(Calendar.MINUTE, timePlanMinutes.get(0));
-            calcDate.roll(Calendar.HOUR_OF_DAY, true);
+            calcDate.add(Calendar.HOUR_OF_DAY, 1);
         }
 
         // hours
@@ -218,19 +223,39 @@ public class ApplicationConfiguration {
         if (calcDate.getTimeInMillis() < actDate.getTimeInMillis()) {
             // next day, smallest hour
             calcDate.set(Calendar.HOUR, timePlanHours.get(0));
-            calcDate.roll(Calendar.DATE, true);
+            calcDate.add(Calendar.DATE, 1);
         }
 
-        // days of month
-        if (timePlanMonthdays.size() > 0) {
-
+        // days of month and days of week
+        boolean found = false;
+        int dayOfMonth = 0;
+        if (timePlanMonthdays.get(dayOfMonth) > calcDate.get(Calendar.DATE))
+            calcDate.set(Calendar.DATE, timePlanMonthdays.get(dayOfMonth));
+        while (!found) {
+            for (int dayOfWeek : timePlanWeekdays) {
+                if (calcDate.getTimeInMillis() >= actDate.getTimeInMillis() && //
+                    (calcDate.get(Calendar.DATE) == timePlanMonthdays.get(dayOfMonth) || //
+                            timePlanMonthdays.get(dayOfMonth) == 0) && //
+                    (calcDate.get(Calendar.DAY_OF_WEEK) == dayOfWeek ||
+                     dayOfWeek == 0)) {
+                    found = true;
+                    break;
+                }
+            }
+            if (found) {
+                System.out.println("Gefunden: " + calcDate.get(Calendar.DATE) + "." + (calcDate.get(Calendar.MONTH) +1) + "." + calcDate.get(Calendar.YEAR));
+                break;
+            }
+            
+            dayOfMonth++;
+            if (dayOfMonth == timePlanMonthdays.size() ) {
+                dayOfMonth = 0;
+                calcDate.add(Calendar.MONTH, 1);
+            }
+            calcDate.set(Calendar.DAY_OF_MONTH, timePlanMonthdays.get(dayOfMonth));
         }
 
-        // seconds
-        Calendar cal = new GregorianCalendar();
-        int second = cal.get(Calendar.SECOND);
-
-        return null;
+        return calcDate.getTime();
     }
 
     /*
@@ -264,11 +289,9 @@ public class ApplicationConfiguration {
     private List<String> getElementsOfString(String node) {
         List<String> elementList;
         String elements = LocalConfigurationClient.getText(node);
-        if (elements.indexOf(",") > 0) {
+        elements.replace(" ", ",");
+        elements.replace(",,", ",");
             elementList = Util.stringToList(elements, ",");
-        } else {
-            elementList = Util.stringToList(elements, " ");
-        }
         return elementList;
     }
 
