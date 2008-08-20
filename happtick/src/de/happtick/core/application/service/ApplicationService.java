@@ -188,9 +188,9 @@ public class ApplicationService extends BaseService {
     }
 
     public List<EventType> getObservedEvents() {
-        List<EventType> types = new ArrayList<EventType>();
-        types.add(EventType.EVENT_ALL_TYPES);
-        return types;
+        List<EventType> observedTypes = new ArrayList<EventType>();
+        observedTypes.add(EventType.EVENT_ALL_TYPES);
+        return observedTypes;
     }
 
     /**
