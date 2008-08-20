@@ -97,8 +97,12 @@ public class HapptickApplication {
         }
 
         try {
+            // connect with service
             applicationClient.connect(serverAddress, serverPort, null);
+            // set unique application id
             applicationClient.setApplicationId(applicationId);
+            // use args to set start id if start client has started this and the
+            // id was set within the calling parameters
             applicationClient.setStartId(args);
         } catch (ActionFailedException e) {
             throw new HapptickException(100L, e);
