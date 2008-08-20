@@ -8,6 +8,7 @@ import de.happtick.configuration.ApplicationConfiguration;
 import de.happtick.configuration.LocalConfigurationClient;
 import de.happtick.core.MasterTable;
 import de.happtick.core.application.service.ApplicationService;
+import de.happtick.core.exception.HapptickException;
 import de.happtick.core.start.service.StartService;
 import de.notEOF.core.enumeration.EventType;
 import de.notEOF.core.interfaces.EventObserver;
@@ -90,7 +91,13 @@ public class Scheduler {
      * Start the runner as thread
      */
     private ApplicationScheduler startApplicationRunner(ApplicationConfiguration configuration) {
-        ApplicationScheduler appSched = new ApplicationScheduler(configuration);
+        ApplicationScheduler appSched;
+            StartService startService = MasterTable.getStartServiceByIp(configuration.getClientIp());
+            if (null == startService) {
+                LocalLog.warn("Nicht aktiver StartService. applicationId: " + configuration.getApplicationId() + "; clientIp: " + configuration.getClientIp());
+                return null;
+            }
+        appSched = new ApplicationScheduler(configuration, startService);
         Thread thread = new Thread(appSched);
         appSched.setThread(thread);
         thread.start();
@@ -154,16 +161,18 @@ public class Scheduler {
     private class ApplicationScheduler implements Runnable {
         private Thread thread;
         private boolean stopped = false;
-        private ApplicationConfiguration conf;
+        private ApplicationConfiguration applicationConfiguration;
+        private StartService startService;
 
         // TODO Wenn diese Klasse mit 'chain' aufgerufen wird, muss kein
-        // scheduling durchgeführt werden.
+        // scheduling durchgefï¿½hrt werden.
         // Dann wird direkt der StartService benachrichtigt, der wiederum den
-        // client verständigt...
+        // client verstï¿½ndigt...
 
-        protected ApplicationScheduler(ApplicationConfiguration conf) {
-            this.conf = conf;
-            StartService startService = MasterTable.getStartServiceByIp(conf.getClientIp());
+        protected ApplicationScheduler(ApplicationConfiguration applicationConfiguration, StartService startService)  {
+            this.applicationConfiguration = applicationConfiguration;
+            this.startService = startService;
+//            MasterTable.isStartAllowed(applicationConfiguration, startService);
         }
 
         // TODO Die startId wird vom StartClient generiert. Der teilt die dem
@@ -247,7 +256,7 @@ public class Scheduler {
             try {
                 loopChain = Util.parseBoolean(LocalConfigurationClient.getAttribute("scheduler.chain", "loop"), true);
             } catch (NotIOCException e) {
-                LocalLog.warn("Attribut 'loop' für chain-Konfiguration konnte nicht ermittelt werden.", e);
+                LocalLog.warn("Attribut 'loop' fï¿½r chain-Konfiguration konnte nicht ermittelt werden.", e);
             }
         }
 

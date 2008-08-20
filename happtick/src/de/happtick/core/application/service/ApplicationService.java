@@ -24,7 +24,7 @@ import de.notEOF.core.util.Util;
 public class ApplicationService extends BaseService {
 
     private Long applicationId = new Long(-1);
-    private String startId = "";
+    private String startId;
     private AlarmEvent lastAlarmEvent;
     private ErrorEvent lastErrorEvent;
     private EventEvent lastEventEvent;
