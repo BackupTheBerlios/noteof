@@ -15,11 +15,13 @@
 	    <!-- chain
 	         With the simple chain it is possible to define a process chain.
 	         The scheduler tries to start the applications in the order like they are configured here.
-	         He uses the configuration details for applications:
-	         - client
+	         He uses this configuration details for applications:
+	         - applicationId
+	         - client ip
 	         - executable
-	         Other informations are ignored (options, timeplan, dependencies, etc.).
-	         If loop is true the chain will start again.
+	         - dependencies
+	         Other informations are ignored (options, timeplan).
+	         If loop is true the chain will start again after the last application has finished.
 	    -->
 	    <chain loop="true">
 			<application>application1</application>
@@ -44,7 +46,7 @@
 	        <!-- client
 	             ip of the client host (e.g. a pc) where the application should be started.
 	        -->
-			<client ip="192.168.130.1"></client>
+			<client clientIp="192.168.130.1"></client>
 			<!-- executable
 			     type options are 'JAVA' or 'UNKNOWN'. If the application was implemented for or with the Happtick framework insert 'JAVA'.
 			     path is the complete description of the executable which the start client has to start.
