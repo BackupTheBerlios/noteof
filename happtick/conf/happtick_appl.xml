@@ -13,20 +13,48 @@
 	   	<use chain="true" timer="true"></use>
 	
 	    <!-- chain
-	         With the simple chain it is possible to define a process chain.
-	         The scheduler tries to start the applications in the order like they are configured here.
-	         He uses this configuration details for applications:
+	         With chains it is possible to define process chains depending to events or other chains.
+	         The scheduler tries to start the applications in the order like they are configured within a chain.
+	         He uses the configuration details for applications:
 	         - applicationId
 	         - client ip
 	         - executable
 	         - dependencies
-	         Other informations are ignored (options, timeplan).
-	         If loop is true the chain will start again after the last application has finished.
+	         Other informations are ignored (options, timeplan, dependencies, etc.).
+	    
+	         If loop is true the chain will start again. For a chain which must be started depending to another chain it make
+	         no sense setting loop to true.
+	         Application start can depend to one event or prevented by one event.
+	         When the skip flag is set to false the chain waits for the end of the application.
+	         If skip = true and the preventEvent for a application is fired the chain overleaps this application and starts the next one.  
+	     -->
+	    <chains>
+		    <!-- The list of chains.
+		    	Here also the order within the list is the order how the scheduler starts chains.
+		     -->
+	    	<chain>chain1</chain>
+	    	<chain>chain2</chain>
+
+		    <chain1 depends="false" loop="true" chainId="1">
+				<application applicationId="1" conditionEventId="1" preventEvendId="2" skip="false"></application>
+				<application applicationId="2"></application>
+				<chain>chainId="2"</chain>
+		    </chain1>
+		    <chain2 depends="true" loop="false" chainId="2">
+				<application applicationId="1"></application>
+				<application applicationId="2"></application>
+		    </chain2>
+	    </chains>
+	    
+	    <!-- Events
+	    	Events are raised by ApplicationClients and identified by the eventId or eventName.
+	    	With events it is possible to start another application or a chain or both.
+	    	The following list stores the events for which the system has to react.
 	    -->
-	    <chain loop="true">
-			<application>application1</application>
-			<application>application2</application>
-	    </chain>
+	    <events>
+	    	<event eventId="1" eventName="ApplicationStopEvent" startApplicationId="1" startChainId="1"></event>
+	    	<event eventId="2" eventName="AlarmEvent" startApplicationId="2"></event>
+	    </events>
 	
 		<!-- List of applications.
 		     Beneath of this list the configurations of the different applications follows.
