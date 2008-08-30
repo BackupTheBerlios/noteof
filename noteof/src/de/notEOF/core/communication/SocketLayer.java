@@ -10,6 +10,9 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 import de.notEOF.core.enumeration.BaseCommTag;
 import de.notEOF.core.exception.ActionFailedException;
@@ -183,6 +186,34 @@ public class SocketLayer {
             case 10:
                 // TODO Datum empfangen
                 break;
+
+            case 11:
+                // Map<String, String>
+                int mapSize = inputStream.readInt();
+                if (0 != mapSize) {
+                    Map<String, String> map = new HashMap<String, String>();
+                    for (int i = 0; i < mapSize; i++) {
+                        String key = bufferedReader.readLine();
+                        String value = bufferedReader.readLine();
+                        map.put(key, value);
+                    }
+                }
+
+                if (null != dataObject.getMap()) {
+                    PrintWriter printWriterMap = new PrintWriter(new OutputStreamWriter(socketToPartner.getOutputStream()));
+                    Map<String, String> map = dataObject.getMap();
+                    // Collection<String> keys = map.values();
+                    Set<Map.Entry<String, String>> mapSet = map.entrySet();
+                    printWriterMap.print(mapSet.size());
+                    for (Map.Entry<String, String> mapEntry : mapSet) {
+                        // send key
+                        printWriterMap.print(mapEntry.getKey());
+                        // send value
+                        printWriterMap.print(mapEntry.getValue());
+                    }
+                }
+                break;
+
             }
 
         } catch (SocketTimeoutException ex) {
@@ -277,6 +308,25 @@ public class SocketLayer {
 
             case 10:
                 // TODO Datum senden und empfangen...
+                break;
+
+            case 11:
+                // Map<String, String>
+                PrintWriter printWriterMap = new PrintWriter(new OutputStreamWriter(socketToPartner.getOutputStream()));
+                if (null != dataObject.getMap()) {
+                    Map<String, String> map = dataObject.getMap();
+                    Set<Map.Entry<String, String>> mapSet = map.entrySet();
+                    printWriterMap.print(mapSet.size());
+                    for (Map.Entry<String, String> mapEntry : mapSet) {
+                        // send key
+                        printWriterMap.print(mapEntry.getKey());
+                        // send value
+                        printWriterMap.print(mapEntry.getValue());
+                    }
+                } else {
+                    // send size of map is 0
+                    printWriterMap.print(0);
+                }
                 break;
 
             }

@@ -7,6 +7,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Date;
+import java.util.Map;
 
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.util.Util;
@@ -33,6 +34,7 @@ public class DataObject {
     private Date dateValue;
     private String lineValue;
     private String fileName;
+    private Map<String, String> mapValue;
     private int dataType = -1;
     private String canonicalFileName;
 
@@ -209,6 +211,24 @@ public class DataObject {
         return (int) outputFile.length();
     }
 
+    public void setDate(Date dateValue) {
+        setDataType(10);
+        this.dateValue = dateValue;
+    }
+
+    public Date getDate() {
+        return dateValue;
+    }
+
+    public Map<String, String> getMap() {
+        return this.mapValue;
+    }
+
+    public void setMap(Map<String, String> mapValue) {
+        setDataType(11);
+        this.mapValue = mapValue;
+    }
+
     /**
      * dataTypes: <br>
      * 00 = short <br>
@@ -221,7 +241,8 @@ public class DataObject {
      * 07 = line (terminated by \n) <br>
      * 08 = file <br>
      * 09 = configurationValue <br>
-     * 10 = Date
+     * 10 = Date <br>
+     * 11 = Map<String, String> <br>
      */
     public int getDataType() {
         return dataType;
@@ -231,13 +252,5 @@ public class DataObject {
         if (-1 == this.dataType) {
             this.dataType = dataType;
         }
-    }
-
-    public void setDateValue(Date dateValue) {
-        this.dateValue = dateValue;
-    }
-
-    public Date getDateValue() {
-        return dateValue;
     }
 }
