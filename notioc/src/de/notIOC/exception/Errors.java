@@ -45,6 +45,7 @@ public class Errors {
         // Basic problemes with configuration
         errorList.put(5L, "Konfigurationsdatei konnte nicht verarbeitet werden.");
         errorList.put(6L, "Unzulässige mehrfache Initialisierung der zentralen Konfigurationsdatei.");
+        errorList.put(7L, "Refresh auf Konfiguration ist fehlgeschlagen.");
 
         // Configuration
         errorList.put(10L, "Konfigurationseintrag konnte nicht gespeichert werden.");
