@@ -40,7 +40,14 @@ public class ApplicationConfiguration {
     private int maxStepStep;
 
     /**
-     * The class reads the configuration by itself.
+     * Simple constructor
+     */
+    public ApplicationConfiguration(Long applicationId) {
+        this.applicationId = applicationId;
+    }
+
+    /**
+     * Using this constructor the class reads the configuration by itself.
      * 
      * @param nodeNameApplication
      *            Reference within the configuration file to the configuration
@@ -380,5 +387,77 @@ public class ApplicationConfiguration {
 
     public int getMaxStepStep() {
         return maxStepStep;
+    }
+
+    public String getNodeNameApplication() {
+        return nodeNameApplication;
+    }
+
+    public void setNodeNameApplication(String nodeNameApplication) {
+        this.nodeNameApplication = nodeNameApplication;
+    }
+
+    public void setClientIp(String clientIp) {
+        this.clientIp = clientIp;
+    }
+
+    public void setExecutableType(String executableType) {
+        this.executableType = executableType;
+    }
+
+    public void setExecutablePath(String executablePath) {
+        this.executablePath = executablePath;
+    }
+
+    public void setMultipleStart(boolean multipleStart) {
+        this.multipleStart = multipleStart;
+    }
+
+    public void setEnforce(boolean enforce) {
+        this.enforce = enforce;
+    }
+
+    public void setExecutableArgs(Map<String, String> executableArgs) {
+        this.executableArgs = executableArgs;
+    }
+
+    public void setTimePlanSeconds(List<Integer> timePlanSeconds) {
+        this.timePlanSeconds = timePlanSeconds;
+    }
+
+    public void setTimePlanMinutes(List<Integer> timePlanMinutes) {
+        this.timePlanMinutes = timePlanMinutes;
+    }
+
+    public void setTimePlanHours(List<Integer> timePlanHours) {
+        this.timePlanHours = timePlanHours;
+    }
+
+    public void setTimePlanWeekdays(List<Integer> timePlanWeekdays) {
+        this.timePlanWeekdays = timePlanWeekdays;
+    }
+
+    public void setTimePlanMonthdays(List<Integer> timePlanMonthdays) {
+        this.timePlanMonthdays = timePlanMonthdays;
+    }
+
+    public void setApplicationsWaitFor(List<Long> applicationsWaitFor) {
+        this.applicationsWaitFor = applicationsWaitFor;
+    }
+
+    public void setApplicationsStartAfter(List<Long> applicationsStartAfter) {
+        this.applicationsStartAfter = applicationsStartAfter;
+    }
+
+    public void setApplicationsStartSync(List<Long> applicationsStartSync) {
+        this.applicationsStartSync = applicationsStartSync;
+    }
+
+    public void setMaxStartStop(int maxStartStop) {
+        this.maxStartStop = maxStartStop;
+    }
+
+    public void setMaxStepStep(int maxStepStep) {
+        this.maxStepStep = maxStepStep;
     }
 }

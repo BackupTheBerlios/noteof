@@ -48,12 +48,15 @@
 	    
 	    <!-- Events
 	    	Events are raised by ApplicationClients and identified by the eventId or eventName.
+	    	The actions after an event can differ for every client.
+	    	If the event is essential for every client, the key 'firedByClient' can be omitted
+	    	or the value of 'firedByClient' must be empty.
 	    	With events it is possible to start another application or a chain or both.
 	    	The following list stores the events for which the system has to react.
 	    -->
 	    <events>
-	    	<event eventId="1" eventName="ApplicationStopEvent" startApplicationId="1" startChainId="1"></event>
-	    	<event eventId="2" eventName="AlarmEvent" startApplicationId="2"></event>
+	    	<event eventId="1" firedByApplicationId="4" eventClassName="ApplicationStopEvent" startApplicationId="1" startChainId="1"></event>
+	    	<event eventId="2" firedByApplicationId="" eventClassName="AlarmEvent" startApplicationId="2"></event>
 	    </events>
 	
 		<!-- List of applications.
