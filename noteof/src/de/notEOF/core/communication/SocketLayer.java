@@ -10,7 +10,9 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -109,6 +111,7 @@ public class SocketLayer {
         return msg;
     }
 
+    @SuppressWarnings("unchecked")
     protected DataObject receiveDataObject() throws ActionFailedException {
         // TODO Listen verarbeiten
         // dataTypes:
@@ -120,6 +123,11 @@ public class SocketLayer {
         // 5 = char
         // 6 = char[]
         // 7 = line (terminated by \n)
+        // 8 = file
+        // 9 = configuration value
+        // 10 = date
+        // 11 = Map <String, String>
+        // 12 = List<?>
 
         DataObject dataObject = new DataObject();
         try {
@@ -197,20 +205,33 @@ public class SocketLayer {
                         String value = bufferedReader.readLine();
                         map.put(key, value);
                     }
+                    dataObject.setMap(map);
                 }
+                break;
 
-                if (null != dataObject.getMap()) {
-                    PrintWriter printWriterMap = new PrintWriter(new OutputStreamWriter(socketToPartner.getOutputStream()));
-                    Map<String, String> map = dataObject.getMap();
-                    // Collection<String> keys = map.values();
-                    Set<Map.Entry<String, String>> mapSet = map.entrySet();
-                    printWriterMap.print(mapSet.size());
-                    for (Map.Entry<String, String> mapEntry : mapSet) {
-                        // send key
-                        printWriterMap.print(mapEntry.getKey());
-                        // send value
-                        printWriterMap.print(mapEntry.getValue());
+            case 12:
+                // List<?>
+                int listSize = inputStream.readInt();
+                int listObjectDataType = inputStream.readInt();
+                List list = new ArrayList();
+                if (0 != listSize) {
+                    for (int i = 0; i < listSize; i++) {
+                        String line = bufferedReader.readLine();
+                        switch (listObjectDataType) {
+                        case 1:
+                            list.add(Integer.valueOf(line));
+                            break;
+
+                        case 2:
+                            list.add(Long.valueOf(line));
+                            break;
+
+                        case 7:
+                            list.add(line);
+                            break;
+                        }
                     }
+                    dataObject.setList(list);
                 }
                 break;
 
@@ -237,6 +258,8 @@ public class SocketLayer {
         // 8 = file
         // 9 = configuration value
         // 10 = date
+        // 11 = Map <String, String>
+        // 12 = List<?>
 
         try {
             DataOutputStream outputStream = new DataOutputStream(socketToPartner.getOutputStream());
@@ -326,6 +349,32 @@ public class SocketLayer {
                 } else {
                     // send size of map is 0
                     printWriterMap.print(0);
+                }
+                break;
+
+            case 12:
+                // List<?>
+                PrintWriter printWriterList = new PrintWriter(new OutputStreamWriter(socketToPartner.getOutputStream()));
+                if (null != dataObject.getList()) {
+                    List<?> list = dataObject.getList();
+                    printWriterList.print(list.size());
+                    String value = "";
+                    printWriterList.print(dataObject.getListObjectType());
+                    for (Object obj : list) {
+                        switch (dataObject.getListObjectType()) {
+                        case 1:
+                        case 2:
+                            value = String.valueOf(obj);
+                            break;
+                        case 7:
+                            value = (String) obj;
+                            break;
+                        }
+                    }
+                    printWriterList.print(value);
+                } else {
+                    // send size of map is 0
+                    printWriterList.print(0);
                 }
                 break;
 

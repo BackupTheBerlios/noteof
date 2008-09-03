@@ -7,6 +7,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 import de.notEOF.core.exception.ActionFailedException;
@@ -35,7 +36,9 @@ public class DataObject {
     private String lineValue;
     private String fileName;
     private Map<String, String> mapValue;
+    private List<?> listValue;
     private int dataType = -1;
+    private int listObjectType = -1;
     private String canonicalFileName;
 
     public short getShort() {
@@ -59,6 +62,44 @@ public class DataObject {
         }
         setCharArray(charArray);
         setLine(value);
+    }
+
+    /**
+     * 
+     * @param list
+     *            List with Objects. Actual there are only Strings, Integers or
+     *            Longs supported.
+     */
+    public void setList(List<?> list) {
+        setDataType(12);
+        if (null == list)
+            return;
+        Object obj = list.get(0);
+        if (null == obj)
+            return;
+        this.listValue = list;
+        if (obj.getClass().equals(Integer.class)) {
+            setListObjectType(1);
+        }
+        if (obj.getClass().equals(Long.class)) {
+            setListObjectType(2);
+        }
+        if (obj.getClass().equals(String.class)) {
+            setListObjectType(7);
+        }
+    }
+
+    /**
+     * Returns the value as a list. <br>
+     * Which object type the list elements are shows the function
+     * getListObjectType().
+     * 
+     * @see getListObjectType().
+     * 
+     * @return A list containing objects.
+     */
+    public List<?> getList() {
+        return this.listValue;
     }
 
     public String getConfigurationValue() {
@@ -243,6 +284,7 @@ public class DataObject {
      * 09 = configurationValue <br>
      * 10 = Date <br>
      * 11 = Map<String, String> <br>
+     * 12 = List<?> <br>
      */
     public int getDataType() {
         return dataType;
@@ -252,5 +294,21 @@ public class DataObject {
         if (-1 == this.dataType) {
             this.dataType = dataType;
         }
+    }
+
+    /**
+     * object Types in list: <br>
+     * 01 = Integer <br>
+     * 02 = Long <br>
+     * 07 = String <br>
+     * 
+     * @return
+     */
+    public int getListObjectType() {
+        return listObjectType;
+    }
+
+    private void setListObjectType(int listObjectType) {
+        this.listObjectType = listObjectType;
     }
 }

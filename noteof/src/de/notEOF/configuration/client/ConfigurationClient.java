@@ -42,5 +42,4 @@ public class ConfigurationClient extends BaseClient {
         }
         return null;
     }
-
 }
