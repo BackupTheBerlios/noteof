@@ -135,6 +135,10 @@ public class SocketLayer {
             // den Datentyp ermitteln
             int dataType = inputStream.readInt();
 
+            System.out.println("================================");
+            System.out.println("data type = " + dataType);
+            System.out.println("================================");
+
             switch (dataType) {
             case 0:
                 // short
@@ -211,11 +215,17 @@ public class SocketLayer {
 
             case 12:
                 // List<?>
+                System.out.println(" vor listSize ermitteln...");
                 int listSize = inputStream.readInt();
+                System.out.println("list size = " + listSize);
+                System.out.println(" vor listObjectDataType ermitteln...");
                 int listObjectDataType = inputStream.readInt();
+                System.out.println("listObjectType = " + listObjectDataType);
                 List list = new ArrayList();
                 if (0 != listSize) {
+                    System.out.println("hier 1");
                     for (int i = 0; i < listSize; i++) {
+                        System.out.println("hier 2");
                         String line = bufferedReader.readLine();
                         switch (listObjectDataType) {
                         case 1:
@@ -233,6 +243,7 @@ public class SocketLayer {
                     }
                     dataObject.setList(list);
                 }
+                System.out.println("hier 2");
                 break;
 
             }
@@ -266,6 +277,7 @@ public class SocketLayer {
             // den Datentyp ermitteln
             int dataType = dataObject.getDataType();
             outputStream.writeInt(dataType);
+            outputStream.flush();
 
             switch (dataType) {
             case 0:
@@ -356,25 +368,38 @@ public class SocketLayer {
                 // List<?>
                 PrintWriter printWriterList = new PrintWriter(new OutputStreamWriter(socketToPartner.getOutputStream()));
                 if (null != dataObject.getList()) {
+                    System.out.println(" ================= ");
+                    System.out.println("vor print list.size");
                     List<?> list = dataObject.getList();
-                    printWriterList.print(list.size());
+                    System.out.println("list.size(): " + list.size());
+
+                    printWriterList.print(2);
+                    // printWriterList.print(list.size());
+                    printWriterList.flush();
+                    System.out.println("nach print list.size");
                     String value = "";
+                    System.out.println("getListObjectType... " + dataObject.getListObjectType());
                     printWriterList.print(dataObject.getListObjectType());
                     for (Object obj : list) {
                         switch (dataObject.getListObjectType()) {
                         case 1:
                         case 2:
                             value = String.valueOf(obj);
+                            System.out.println("value 1 = " + value);
                             break;
                         case 7:
                             value = (String) obj;
+                            System.out.println("value 2 = " + value);
                             break;
                         }
+                        printWriterList.print(value);
                     }
-                    printWriterList.print(value);
+                    System.out.println(" ================= ");
                 } else {
                     // send size of map is 0
                     printWriterList.print(0);
+                    printWriterList.flush();
+                    System.out.println("map size ist 0");
                 }
                 break;
 

@@ -8,6 +8,7 @@ public class StartClient extends BaseClient {
      * suffix will sent by service later. Makes the startId's unique in the
      * whole system.
      */
+    @SuppressWarnings("unused")
     private String startIdSuffix;
 
     @Override

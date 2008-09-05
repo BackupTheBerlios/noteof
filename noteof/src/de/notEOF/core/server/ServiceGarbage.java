@@ -32,7 +32,6 @@ public class ServiceGarbage implements Runnable {
                     for (Map<String, Service> map : serviceMaps) {
                         Collection<Service> services = map.values();
                         if (null != services) {
-                            System.out.println("count services: " + services.size());
                             for (Service service : services) {
                                 if (!service.isRunning() || //
                                         (null != service.getThread() && //
