@@ -8,8 +8,9 @@ import de.notIOC.exception.NotIOCException;
 import de.notIOC.util.Util;
 
 /**
- * This client supports the access to a local configuration.
+ * This client supports the access to a local configuration (file).
  * 
+ * @see ConfigurationClient
  * @author Dirk
  * 
  */

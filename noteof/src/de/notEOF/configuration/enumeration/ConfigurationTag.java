@@ -1,7 +1,8 @@
 package de.notEOF.configuration.enumeration;
 
 public enum ConfigurationTag {
-    REQ_KEY, //
+    REQ_ATTRIBUTE, //
+    REQ_TEXT,
 
     REQ_KEY_PATH,
     RESP_KEY_PATH,

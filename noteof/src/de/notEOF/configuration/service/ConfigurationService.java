@@ -13,6 +13,9 @@ import de.notIOC.exception.NotIOCException;
 
 public class ConfigurationService extends BaseService {
 
+    /**
+     * Used by the framework.
+     */
     @Override
     public Class<?> getCommunicationTagClass() {
         return ConfigurationTag.class;
@@ -20,39 +23,60 @@ public class ConfigurationService extends BaseService {
 
     @Override
     public void processMsg(Enum<?> incomingMsgEnum) throws ActionFailedException {
-        if (incomingMsgEnum.equals(ConfigurationTag.REQ_KEY)) {
+        List<String> values = null;
+        Enum<ConfigurationTag> valueFound = ConfigurationTag.INFO_FAULT;
+
+        // look for attribute value
+        if (incomingMsgEnum.equals(ConfigurationTag.REQ_ATTRIBUTE)) {
             String xmlPath = requestTo(ConfigurationTag.REQ_KEY_PATH, ConfigurationTag.RESP_KEY_PATH);
             String attributeName = requestTo(ConfigurationTag.REQ_ATTRIBUTE_NAME, ConfigurationTag.RESP_ATTRIBUTE_NAME);
-
-            Enum<ConfigurationTag> valueFound = ConfigurationTag.INFO_FAULT;
-            List<String> values = null;
             try {
                 values = LocalConfigurationClient.getAttributeList(xmlPath, attributeName);
                 valueFound = ConfigurationTag.INFO_OK;
             } catch (NotIOCException e) {
                 LocalLog.warn("Gesuchter Konfigurationswert konnte nicht ermittelt werden: " + xmlPath + "/" + attributeName, e);
             }
-            awaitRequestAnswerImmediate(ConfigurationTag.REQ_KEY_FOUND, ConfigurationTag.RESP_KEY_FOUND, valueFound.name());
-
-            if (null != values) {
-                DataObject configObject = new DataObject();
-                if (values.size() > 1) {
-                    // list found
-                    configObject.setList(values);
-                } else {
-                    configObject.setConfigurationValue(values.get(0));
-                }
-                System.out.println("Aufruf sendDataObject im ConfigurationService");
-                sendDataObject(configObject);
+        }
+        
+        // look for text value
+        if (incomingMsgEnum.equals(ConfigurationTag.REQ_TEXT)) {
+            String xmlPath = requestTo(ConfigurationTag.REQ_KEY_PATH, ConfigurationTag.RESP_KEY_PATH);
+            try {
+                values = LocalConfigurationClient.getTextList(xmlPath);
+                valueFound = ConfigurationTag.INFO_OK;
+            } catch (NotIOCException e) {
+                LocalLog.warn("Gesuchter Konfigurationswert konnte nicht ermittelt werden: " + xmlPath, e);
             }
+        }
+        
+        // tell client if value was found
+        awaitRequestAnswerImmediate(ConfigurationTag.REQ_KEY_FOUND, ConfigurationTag.RESP_KEY_FOUND, valueFound.name());
+
+        // if values found send object
+        if (null != values) {
+            DataObject configObject = new DataObject();
+            if (values.size() > 1) {
+                // list found
+                configObject.setList(values);
+            } else {
+                configObject.setConfigurationValue(values.get(0));
+            }
+            System.out.println("Aufruf sendDataObject im ConfigurationService");
+            sendDataObject(configObject);
         }
     }
 
+    /**
+     * Used by framework.
+     */
     @Override
     public boolean isLifeSignSystemActive() {
         return true;
     }
 
+    /**
+     * Used by framework.
+     */
     public List<EventType> getObservedEvents() {
         return null;
     }
