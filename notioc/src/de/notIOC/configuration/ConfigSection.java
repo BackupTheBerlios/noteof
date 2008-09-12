@@ -4,7 +4,7 @@ package de.notIOC.configuration;
  * Klasse zur Vereinheitlichung und eindeutigen Zuordnung von 'Konstanten'.
  * <p>
  * Zur Unterscheidung zwischen Vorlage und Konfiguration dienen die Typen 'Template' und 'Configuration'. <br>
- * Die �brigen Typen werden fuer den Zugriff auf die Sektionen verwendet.
+ * Die Uebrigen Typen werden fuer den Zugriff auf die Sektionen verwendet.
  */
 public enum ConfigSection {
 

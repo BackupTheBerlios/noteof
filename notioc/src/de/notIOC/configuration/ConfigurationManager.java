@@ -11,12 +11,17 @@ import de.notIOC.logging.LocalLog;
 import de.notIOC.util.Util;
 
 /**
- * ConfigurationManager is a Singleton...
+ * ConfigurationManager is a Singleton... <p>
+ * ... and used for get the configuration. <br>
+ * He delivers the central configuration path and objects of type ConfigProperty. <p>
+ * The ConfigurationManager should be initialized by the method setInitialEnvironment(). 
+ * If not he uses default values.
+ * @see setInitialEnvironment().
  */
 public class ConfigurationManager {
 
     private static String notEOFHome = null;
-    private static String homeVarName = "NOT_EOF";
+    private static String homeVarName = "NOT_EOF_HOME";
     private static String configFile = "noteof_master.xml";
     private static String configPath = "conf";
 
@@ -30,6 +35,14 @@ public class ConfigurationManager {
         }
     }
 
+    /**
+     * The configuration manager must know where the configuration is stored. <br>
+     * Typically there must be set a central HOME variable, a path (folder) where the configuration file is stored and a configuration file. <br>
+     * The configuration is searched in this path: $NOT_EOF_HOME/conf/noteof_master.xml
+     * @param homeVariableName e.g. NOT_EOF_HOME (default)
+     * @param baseConfPath e.g. conf (default)
+     * @param baseConfFile e.g. noteof_master.xml (default)
+     */
     public static void setInitialEnvironment(String homeVariableName, String baseConfPath, String baseConfFile) {
         if (!Util.isEmpty(homeVariableName))
             homeVarName = homeVariableName;

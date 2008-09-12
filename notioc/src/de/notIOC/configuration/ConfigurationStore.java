@@ -40,7 +40,7 @@ public class ConfigurationStore {
     /**
      * The master file contains the single xml files.
      * 
-     * @param fileName
+     * @param xmlFileName The complete path of file.
      */
     public static void setMasterXmlFile(String xmlFileName) throws NotIOCException {
         theStore.setXmlFile(xmlFileName, false);
