@@ -7,7 +7,7 @@ public class TestClient {
 
     public static void main(String... args) throws ActionFailedException {
         ConfigurationClient confClient = new ConfigurationClient("localhost", 3000, null, args);
-        confClient.getConfigurationObject("test.element", "data");
+        confClient.getAttribute("test.element", "data");
     }
 
 }

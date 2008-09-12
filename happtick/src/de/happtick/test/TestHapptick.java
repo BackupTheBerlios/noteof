@@ -12,7 +12,7 @@ public class TestHapptick {
         try {
             ConfigurationClient configClient = new ConfigurationClient();
             configClient.connect("localhost", 3000, null);
-            DataObject dataObject = configClient.getConfigurationObject("serviceTypes", "simpleName");
+            DataObject dataObject = configClient.getAttribute("serviceTypes", "simpleName");
             System.out.println("Erhalten: " + dataObject.getLine());
 
             TestClient testClient = new TestClient();
