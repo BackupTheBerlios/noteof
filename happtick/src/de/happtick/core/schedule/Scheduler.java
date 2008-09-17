@@ -5,7 +5,6 @@ import java.util.Date;
 import java.util.List;
 
 import de.happtick.configuration.ApplicationConfiguration;
-import de.happtick.configuration.LocalConfigurationClient;
 import de.happtick.core.MasterTable;
 import de.happtick.core.application.service.ApplicationService;
 import de.happtick.core.enumeration.HapptickAlarmLevel;
@@ -13,10 +12,13 @@ import de.happtick.core.enumeration.HapptickAlarmType;
 import de.happtick.core.events.ApplicationAlarmEvent;
 import de.happtick.core.events.ApplicationStopEvent;
 import de.happtick.core.start.service.StartService;
+import de.notEOF.configuration.LocalConfiguration;
+import de.notEOF.configuration.client.LocalConfigurationClient;
 import de.notEOF.core.enumeration.EventType;
 import de.notEOF.core.event.ServiceStopEvent;
 import de.notEOF.core.interfaces.EventObservable;
 import de.notEOF.core.interfaces.EventObserver;
+import de.notEOF.core.interfaces.NotEOFConfiguration;
 import de.notEOF.core.interfaces.NotEOFEvent;
 import de.notEOF.core.interfaces.Service;
 import de.notEOF.core.logging.LocalLog;
@@ -40,8 +42,9 @@ public class Scheduler {
      * Initialize...
      */
     private Scheduler() {
+        NotEOFConfiguration conf = new LocalConfiguration();
         // Standard via timer
-        Boolean useTimer = Util.parseBoolean(LocalConfigurationClient.getAttribute("scheduler.use", "timer", "false"), false);
+        Boolean useTimer = Util.parseBoolean(conf.getAttribute("scheduler.use", "timer", "false"), false);
         if (useTimer) {
             startAllApplicationSchedulers();
 
@@ -51,7 +54,7 @@ public class Scheduler {
         }
 
         // process chain is active
-        Boolean useChain = Util.parseBoolean(LocalConfigurationClient.getAttribute("scheduler.use", "chain", "false"), false);
+        Boolean useChain = Util.parseBoolean(conf.getAttribute("scheduler.use", "chain", "false"), false);
         if (useChain) {
 
         }

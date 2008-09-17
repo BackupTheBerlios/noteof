@@ -3,18 +3,18 @@ package de.notEOF.dispatch.service;
 import java.util.GregorianCalendar;
 import java.util.List;
 
-import de.notEOF.configuration.client.LocalConfigurationClient;
+import de.notEOF.configuration.LocalConfiguration;
 import de.notEOF.core.communication.BaseTimeOut;
 import de.notEOF.core.communication.SimpleSocketConnectionData;
 import de.notEOF.core.enumeration.EventType;
 import de.notEOF.core.exception.ActionFailedException;
+import de.notEOF.core.interfaces.NotEOFConfiguration;
 import de.notEOF.core.interfaces.Service;
 import de.notEOF.core.logging.LocalLog;
 import de.notEOF.core.service.BaseService;
 import de.notEOF.core.util.Util;
 import de.notEOF.dispatch.client.DispatchClient;
 import de.notEOF.dispatch.enumeration.DispatchTag;
-import de.notIOC.exception.NotIOCException;
 
 public class DispatchService extends BaseService implements Service {
 
@@ -50,6 +50,7 @@ public class DispatchService extends BaseService implements Service {
      */
     @Override
     public void processMsg(Enum<?> incomingMsgEnum) throws ActionFailedException {
+        NotEOFConfiguration conf = new LocalConfiguration();
         if (incomingMsgEnum.equals(DispatchTag.REQ_SERVICE)) {
             String serviceIp = "";
             String servicePort = "";
@@ -102,10 +103,10 @@ public class DispatchService extends BaseService implements Service {
             List<String> simpleNames = null;
             List<String> maxClients = null;
             try {
-                simpleNames = LocalConfigurationClient.getAttributeList("serviceTypes", "simpleName");
-                maxClients = LocalConfigurationClient.getAttributeList("serviceTypes", "maxClients");
-            } catch (NotIOCException nex) {
-                LocalLog.warn("Configuration of services maybe is corrupt or missed (serviceTypes by simpleName).", nex);
+                simpleNames = conf.getAttributeList("serviceTypes", "simpleName");
+                maxClients = conf.getAttributeList("serviceTypes", "maxClients");
+            } catch (ActionFailedException afx) {
+                LocalLog.warn("Configuration of services maybe is corrupt or missed (serviceTypes by simpleName).", afx);
             }
 
             // search matching type in configuration via simple class name
@@ -131,9 +132,9 @@ public class DispatchService extends BaseService implements Service {
                 // name
                 List<String> canonicalNames = null;
                 try {
-                    canonicalNames = LocalConfigurationClient.getAttributeList("serviceTypes", "canonicalName");
-                } catch (NotIOCException nex) {
-                    LocalLog.warn("Configuration of services maybe is corrupt or missed(serviceTypes by canonicalName).", nex);
+                    canonicalNames = conf.getAttributeList("serviceTypes", "canonicalName");
+                } catch (ActionFailedException afx) {
+                    LocalLog.warn("Configuration of services maybe is corrupt or missed(serviceTypes by canonicalName).", afx);
                 }
                 if (null != canonicalNames && null != maxClients && canonicalNames.size() == maxClients.size()) {
                     dispatchSupported = true;
@@ -170,8 +171,8 @@ public class DispatchService extends BaseService implements Service {
                 List<String> eofServerIp = null;
                 List<String> eofServerPort = null;
                 try {
-                    eofServerIp = LocalConfigurationClient.getAttributeList("notEOFServer", "ip");
-                    eofServerPort = LocalConfigurationClient.getAttributeList("notEOFServer", "port");
+                    eofServerIp = conf.getAttributeList("notEOFServer", "ip");
+                    eofServerPort = conf.getAttributeList("notEOFServer", "port");
 
                     // search by ip's
                     // if configuration here isn't correct, make an entry into
@@ -216,7 +217,7 @@ public class DispatchService extends BaseService implements Service {
                     } else {
                         LocalLog.warn("Configuration of serverlist is empty.");
                     }
-                } catch (NotIOCException nex) {
+                } catch (ActionFailedException afx) {
                     LocalLog.warn("Configuration of serverlist maybe is corrupt or missed.");
                 }
             }

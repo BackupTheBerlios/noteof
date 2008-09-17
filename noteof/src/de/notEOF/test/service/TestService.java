@@ -3,7 +3,7 @@ package de.notEOF.test.service;
 import java.io.File;
 import java.util.List;
 
-import de.notEOF.configuration.client.LocalConfigurationClient;
+import de.notEOF.configuration.LocalConfiguration;
 import de.notEOF.core.communication.DataObject;
 import de.notEOF.core.enumeration.EventType;
 import de.notEOF.core.exception.ActionFailedException;
@@ -29,7 +29,7 @@ public class TestService extends BaseService implements Service {
 
             // String testString = "abcdef";
 
-            File testFile = new File(LocalConfigurationClient.getApplicationHome() + "/conf/noteof_services.xml");
+            File testFile = new File(LocalConfiguration.getApplicationHome() + "/conf/noteof_services.xml");
             dataObject.setFile(testFile);
             sendDataObject(dataObject);
             System.out.println("Objekt gesendet.");

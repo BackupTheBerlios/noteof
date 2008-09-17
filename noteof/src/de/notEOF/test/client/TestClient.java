@@ -2,7 +2,7 @@ package de.notEOF.test.client;
 
 import java.io.File;
 
-import de.notEOF.configuration.client.LocalConfigurationClient;
+import de.notEOF.configuration.LocalConfiguration;
 import de.notEOF.core.client.BaseClient;
 import de.notEOF.core.communication.DataObject;
 import de.notEOF.core.exception.ActionFailedException;
@@ -37,7 +37,7 @@ public class TestClient extends BaseClient {
         DataObject dataObject = receiveDataObject();
         System.out.println("Request erfolgreich? " + requestValue);
         System.out.println("Datentype: " + dataObject.getDataType());
-        File testFile = new File(LocalConfigurationClient.getApplicationHome() + "/conf/noteof_services_test.xml");
+        File testFile = new File(LocalConfiguration.getApplicationHome() + "/conf/noteof_services_test.xml");
         int fileSize = dataObject.getFile(testFile, true);
         System.out.println("FileSize: " + fileSize);
     }

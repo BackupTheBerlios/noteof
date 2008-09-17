@@ -8,15 +8,17 @@ import java.util.List;
 import java.util.Map;
 
 import de.happtick.configuration.ApplicationConfiguration;
-import de.happtick.configuration.LocalConfigurationClient;
 import de.happtick.core.application.service.ApplicationService;
 import de.happtick.core.events.ApplicationStopEvent;
 import de.happtick.core.exception.HapptickException;
 import de.happtick.core.start.service.StartService;
+import de.notEOF.configuration.LocalConfiguration;
 import de.notEOF.core.enumeration.EventType;
 import de.notEOF.core.event.ServiceStopEvent;
+import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.interfaces.EventObservable;
 import de.notEOF.core.interfaces.EventObserver;
+import de.notEOF.core.interfaces.NotEOFConfiguration;
 import de.notEOF.core.interfaces.Service;
 import de.notEOF.core.interfaces.StopEvent;
 import de.notEOF.core.logging.LocalLog;
@@ -47,15 +49,16 @@ public class MasterTable implements EventObservable {
      * Liest die Konfiguration, initialisiert processChain und
      * applicationConfigurations
      */
-    private static void updateConfiguration() {
+    private static void updateConfiguration() throws ActionFailedException {
         if (!confUpdated) {
+            NotEOFConfiguration conf = new LocalConfiguration();
             try {
                 // processChain
                 // aktiv?
-                Boolean useChain = Util.parseBoolean(LocalConfigurationClient.getAttribute("scheduler.use", "chain", "false"), false);
+                Boolean useChain = Util.parseBoolean(conf.getAttribute("scheduler.use", "chain", "false"), false);
                 if (useChain) {
                     // Liste der nodes
-                    List<String> nodes = LocalConfigurationClient.getTextList("scheduler.chain.application");
+                    List<String> nodes = conf.getTextList("scheduler.chain.application");
                     if (null != nodes) {
                         // for every node search applicationId and put into
                         // local list
@@ -63,7 +66,7 @@ public class MasterTable implements EventObservable {
                             // looks like scheduler.application1
                             node = "scheduler." + node;
                             // attribute applicationId
-                            Long applicationId = Util.parseLong(LocalConfigurationClient.getAttribute(node, "applicationId", "-1"), -1);
+                            Long applicationId = Util.parseLong(conf.getAttribute(node, "applicationId", "-1"), -1);
                             processChain.add(applicationId);
                         }
                     }
@@ -71,22 +74,22 @@ public class MasterTable implements EventObservable {
 
                 // ApplicationConfigurations
                 // timer gesteuert?
-                Boolean useTimer = Util.parseBoolean(LocalConfigurationClient.getAttribute("scheduler.use", "timer", "false"), false);
+                Boolean useTimer = Util.parseBoolean(conf.getAttribute("scheduler.use", "timer", "false"), false);
                 if (useTimer) {
                     // Liste der nodes
-                    List<String> nodes = LocalConfigurationClient.getTextList("scheduler.applications.application");
+                    List<String> nodes = conf.getTextList("scheduler.applications.application");
                     if (null != nodes) {
                         // for every node create Object ApplicationConfiguration
                         // the Objects read the configuration by themselve
                         for (String node : nodes) {
-                            ApplicationConfiguration applConf = new ApplicationConfiguration(node);
+                            ApplicationConfiguration applConf = new ApplicationConfiguration(node, conf);
                             applicationConfigurations.put(applConf.getApplicationId(), applConf);
                         }
                     }
                 }
 
-            } catch (NotIOCException e) {
-                LocalLog.warn("Konfiguration der Prozesskette konnte nicht gelesen werden.");
+            } catch (ActionFailedException e) {
+                LocalLog.warn("Konfiguration der Prozesskette konnte nicht gelesen werden.", e);
             }
 
             confUpdated = true;
@@ -100,7 +103,7 @@ public class MasterTable implements EventObservable {
      *         configuration file and in the implementations of
      *         ApplicationClients.
      */
-    public synchronized static Map<Long, ApplicationConfiguration> getApplicationConfigurations() {
+    public synchronized static Map<Long, ApplicationConfiguration> getApplicationConfigurations() throws ActionFailedException {
         updateConfiguration();
         return applicationConfigurations;
     }
@@ -109,8 +112,9 @@ public class MasterTable implements EventObservable {
      * Delivers a flat list of ApplicationConfiguration
      * 
      * @return The list.
+     * @throws ActionFailedException
      */
-    public static List<ApplicationConfiguration> getApplicationConfigurationsAsList() {
+    public static List<ApplicationConfiguration> getApplicationConfigurationsAsList() throws ActionFailedException {
         List<ApplicationConfiguration> confList = new ArrayList<ApplicationConfiguration>();
         confList.addAll(getApplicationConfigurations().values());
         return confList;
@@ -120,8 +124,9 @@ public class MasterTable implements EventObservable {
      * Delivers the process chain.
      * 
      * @return A list with application id's.
+     * @throws ActionFailedException
      */
-    public synchronized static List<Long> getProcessChain() {
+    public synchronized static List<Long> getProcessChain() throws ActionFailedException {
         updateConfiguration();
         return processChain;
     }

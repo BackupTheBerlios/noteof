@@ -1,24 +1,10 @@
-package de.notEOF.configuration.client;
+package de.notEOF.core.interfaces;
 
 import java.util.List;
 
-import de.notEOF.core.logging.LocalLog;
-import de.notIOC.configuration.ConfigurationManager;
-import de.notIOC.exception.NotIOCException;
-import de.notIOC.util.Util;
+import de.notEOF.core.exception.ActionFailedException;
 
-/**
- * This client supports the access to a local configuration (file).
- * 
- * @see ConfigurationClient
- * @author Dirk
- * 
- */
-public class LocalConfigurationClient {
-
-    public static String getApplicationHome() {
-        return ConfigurationManager.getApplicationHome();
-    }
+public interface NotEOFConfiguration {
 
     /**
      * Delivers an attribute list of the local configuration. <br>
@@ -32,13 +18,7 @@ public class LocalConfigurationClient {
      * 
      * @return A list out of the xml configuration file.
      */
-    public static List<String> getAttributeList(String xmlPath, String attributeName) throws NotIOCException {
-        try {
-            return ConfigurationManager.getProperty(xmlPath).getAttributeList(attributeName);
-        } catch (Exception ex) {
-            throw new NotIOCException(34L, "Element: " + xmlPath);
-        }
-    }
+    public List<String> getAttributeList(String xmlPath, String attributeName) throws ActionFailedException;
 
     /**
      * Delivers a text list of the local configuration. <br>
@@ -52,13 +32,7 @@ public class LocalConfigurationClient {
      * 
      * @return A list out of the xml configuration file.
      */
-    public static List<String> getTextList(String xmlPath) throws NotIOCException {
-        try {
-            return ConfigurationManager.getProperty(xmlPath).getTextList();
-        } catch (Exception ex) {
-            throw new NotIOCException(34L, "Element: " + xmlPath);
-        }
-    }
+    public List<String> getTextList(String xmlPath) throws ActionFailedException;
 
     /**
      * Delivers the String value of a configuration key.
@@ -72,14 +46,7 @@ public class LocalConfigurationClient {
      *            length=0) this value will be returned.
      * @return The value for the key as a String.
      */
-    public static String getAttribute(String xmlPath, String attributeName, String defaultValue) {
-        try {
-            return ConfigurationManager.getProperty(xmlPath).getAttribute(attributeName, defaultValue);
-        } catch (Exception ex) {
-            LocalLog.warn("Konfigurationswert fehlt: " + xmlPath + "; Default Wert wird verwendet: " + defaultValue);
-            return defaultValue;
-        }
-    }
+    public String getAttribute(String xmlPath, String attributeName, String defaultValue) throws ActionFailedException;
 
     /**
      * Delivers the String value of a configuration key.
@@ -89,18 +56,12 @@ public class LocalConfigurationClient {
      * @return The value for the key as a String.
      * @param attributeName
      *            The name of the attribute for which the value is required.
-     * @throws NotIOCException
+     * @throws ActionFailedException
      *             If the key was not found or the value is empty (null or
      *             length=0) an exception is thrown. The exception tells for
      *             which key the value was empty.
      */
-    public static String getAttribute(String xmlPath, String attributeName) throws NotIOCException {
-        try {
-            return ConfigurationManager.getProperty(xmlPath).getAttribute(attributeName);
-        } catch (Exception ex) {
-            throw new NotIOCException(34L, "Element: " + xmlPath);
-        }
-    }
+    public String getAttribute(String xmlPath, String attributeName) throws ActionFailedException;
 
     /**
      * Delivers the int value of a configuration key.
@@ -114,14 +75,7 @@ public class LocalConfigurationClient {
      *            length=0) this value will be returned.
      * @return The value for the key as an int.
      */
-    public static int getAttributeInt(String xmlPath, String attributeName, int defaultValue) {
-        try {
-            return Util.parseInt(ConfigurationManager.getProperty(xmlPath).getAttribute(attributeName), defaultValue);
-        } catch (Exception ex) {
-            LocalLog.warn("Konfigurationswert fehlt: " + xmlPath + "; Default Wert wird verwendet: " + defaultValue);
-            return defaultValue;
-        }
-    }
+    public int getAttributeInt(String xmlPath, String attributeName, int defaultValue) throws ActionFailedException;
 
     /**
      * Delivers the int value of a configuration key.
@@ -131,38 +85,39 @@ public class LocalConfigurationClient {
      * @param attributeName
      *            The name of the attribute for which the value is required.
      * @return The value for the key as an int.
-     * @throws NotIOCException
+     * @throws ActionFailedException
      *             If the node was not found or the value is empty (null or
      *             length=0) an exception is thrown. The exception tells for
      *             which key the value was empty.
      */
-    public static int getAttributeInt(String xmlPath, String attributeName) throws NotIOCException {
-        try {
-            return Util.parseInt(ConfigurationManager.getProperty(xmlPath).getAttribute(attributeName), 0);
-        } catch (Exception ex) {
-            throw new NotIOCException(34L, "Element: " + xmlPath);
-        }
-    }
+    public int getAttributeInt(String xmlPath, String attributeName) throws ActionFailedException;
 
     /**
      * Delivers the text of a configuration key.
      * 
      * @param xmlPath
      *            The node of the xml element.
-     * @param attributeName
-     *            The name of the attribute for which the value is required.
      * @return The text of a configuration element.
-     * @throws NotIOCException
+     * @throws ActionFailedException
      *             If the node was not found or the value is empty (null or
      *             length=0) an exception is thrown. The exception tells for
      *             which key the value was empty.
      */
-    public static String getText(String xmlPath) {
-        try {
-            return ConfigurationManager.getProperty(xmlPath).getText();
-        } catch (Exception ex) {
-            LocalLog.warn("Konfigurationswert fehlt: " + xmlPath + "; Default Wert wird verwendet: \"\"");
-            return "";
-        }
-    }
+    public String getText(String xmlPath) throws ActionFailedException;
+
+    /**
+     * Delivers the text of a configuration key.
+     * 
+     * @param xmlPath
+     *            The node of the xml element.
+     * @param defaultValue
+     *            If the key was not found or the value is empty (null or
+     *            length=0) this value will be returned.
+     * @return The text of a configuration element.
+     * @throws ActionFailedException
+     *             If the node was not found or the value is empty (null or
+     *             length=0) an exception is thrown. The exception tells for
+     *             which key the value was empty.
+     */
+    public String getText(String xmlPath, String defaultValue) throws ActionFailedException;
 }

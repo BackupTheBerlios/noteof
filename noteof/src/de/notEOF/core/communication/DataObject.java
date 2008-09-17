@@ -10,6 +10,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import de.notEOF.core.enumeration.DataObjectDataTypes;
+import de.notEOF.core.enumeration.DataObjectListTypes;
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.util.Util;
 
@@ -37,8 +39,8 @@ public class DataObject {
     private String fileName;
     private Map<String, String> mapValue;
     private List<?> listValue;
-    private int dataType = -1;
-    private int listObjectType = -1;
+    private DataObjectDataTypes dataType = DataObjectDataTypes.UNKNOWN;
+    private DataObjectListTypes listObjectType = DataObjectListTypes.UNKNOWN;
     private String canonicalFileName;
 
     public short getShort() {
@@ -46,12 +48,12 @@ public class DataObject {
     }
 
     public void setShort(short shortValue) {
-        setDataType(0);
+        setDataType(DataObjectDataTypes.SHORT);
         this.shortValue = shortValue;
     }
 
     public void setConfigurationValue(String value) {
-        setDataType(9);
+        setDataType(DataObjectDataTypes.CONFIGURATION_VALUE);
         setShort(Util.parseShort(value, (short) 0));
         setFloat(Util.parseFloat(value, 0));
         setLong(Util.parseLong(value, 0));
@@ -71,7 +73,7 @@ public class DataObject {
      *            Longs supported.
      */
     public void setList(List<?> list) {
-        setDataType(12);
+        setDataType(DataObjectDataTypes.LIST);
         if (null == list)
             return;
         Object obj = list.get(0);
@@ -79,13 +81,13 @@ public class DataObject {
             return;
         this.listValue = list;
         if (obj.getClass().equals(Integer.class)) {
-            setListObjectType(1);
+            setListObjectType(DataObjectListTypes.INTEGER);
         }
         if (obj.getClass().equals(Long.class)) {
-            setListObjectType(2);
+            setListObjectType(DataObjectListTypes.LONG);
         }
         if (obj.getClass().equals(String.class)) {
-            setListObjectType(7);
+            setListObjectType(DataObjectListTypes.STRING);
         }
     }
 
@@ -114,7 +116,7 @@ public class DataObject {
     }
 
     public void setInt(int intValue) {
-        setDataType(1);
+        setDataType(DataObjectDataTypes.INT);
         this.intValue = intValue;
     }
 
@@ -123,7 +125,7 @@ public class DataObject {
     }
 
     public void setLong(long longValue) {
-        setDataType(2);
+        setDataType(DataObjectDataTypes.LONG);
         this.longValue = longValue;
     }
 
@@ -132,7 +134,7 @@ public class DataObject {
     }
 
     public void setFloat(float floatValue) {
-        setDataType(3);
+        setDataType(DataObjectDataTypes.FLOAT);
         this.floatValue = floatValue;
     }
 
@@ -141,7 +143,7 @@ public class DataObject {
     }
 
     public void setDouble(double doubleValue) {
-        setDataType(4);
+        setDataType(DataObjectDataTypes.DOUBLE);
         this.doubleValue = doubleValue;
     }
 
@@ -150,7 +152,7 @@ public class DataObject {
     }
 
     public void setChar(char charValue) {
-        setDataType(5);
+        setDataType(DataObjectDataTypes.CHAR);
         this.charValue = charValue;
     }
 
@@ -163,7 +165,7 @@ public class DataObject {
     }
 
     public void setCharArray(char[] charArrayValue) {
-        setDataType(6);
+        setDataType(DataObjectDataTypes.CHAR_ARRAY);
         this.charArrayValue = charArrayValue;
     }
 
@@ -179,12 +181,12 @@ public class DataObject {
     }
 
     public void setLine(String lineValue) {
-        setDataType(7);
+        setDataType(DataObjectDataTypes.LINE);
         this.lineValue = lineValue;
     }
 
     public void setFileName(String fileName) {
-        setDataType(8);
+        setDataType(DataObjectDataTypes.FILE);
         this.fileName = fileName;
     }
 
@@ -205,7 +207,7 @@ public class DataObject {
     }
 
     public void setFile(File inputFile) throws ActionFailedException {
-        setDataType(8);
+        setDataType(DataObjectDataTypes.FILE);
         try {
             String canonicalFileName = inputFile.getCanonicalPath();
 
@@ -253,7 +255,7 @@ public class DataObject {
     }
 
     public void setDate(Date dateValue) {
-        setDataType(10);
+        setDataType(DataObjectDataTypes.DATE);
         this.dateValue = dateValue;
     }
 
@@ -266,7 +268,7 @@ public class DataObject {
     }
 
     public void setMap(Map<String, String> mapValue) {
-        setDataType(11);
+        setDataType(DataObjectDataTypes.MAP_STRING_STRING);
         this.mapValue = mapValue;
     }
 
@@ -286,12 +288,12 @@ public class DataObject {
      * 11 = Map<String, String> <br>
      * 12 = List<?> <br>
      */
-    public int getDataType() {
+    public DataObjectDataTypes getDataType() {
         return dataType;
     }
 
-    private void setDataType(int dataType) {
-        if (-1 == this.dataType) {
+    private void setDataType(DataObjectDataTypes dataType) {
+        if (DataObjectDataTypes.UNKNOWN == this.dataType) {
             this.dataType = dataType;
         }
     }
@@ -304,11 +306,11 @@ public class DataObject {
      * 
      * @return
      */
-    public int getListObjectType() {
+    public DataObjectListTypes getListObjectType() {
         return listObjectType;
     }
 
-    private void setListObjectType(int listObjectType) {
+    private void setListObjectType(DataObjectListTypes listObjectType) {
         this.listObjectType = listObjectType;
     }
 }

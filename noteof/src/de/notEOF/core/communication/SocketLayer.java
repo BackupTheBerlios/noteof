@@ -17,6 +17,8 @@ import java.util.Map;
 import java.util.Set;
 
 import de.notEOF.core.enumeration.BaseCommTag;
+import de.notEOF.core.enumeration.DataObjectDataTypes;
+import de.notEOF.core.enumeration.DataObjectListTypes;
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.logging.LocalLog;
 import de.notEOF.core.util.Util;
@@ -86,11 +88,22 @@ public class SocketLayer {
         return msg;
     }
 
-    private String readUnqualifiedMsg() throws ActionFailedException {
-        String msg = "";
+    /*
+     * Perhaps the reader is yet null.
+     */
+    private void initBufferedReader() throws ActionFailedException {
         try {
             if (null == bufferedReader)
                 bufferedReader = new BufferedReader(new InputStreamReader(socketToPartner.getInputStream()));
+        } catch (IOException ex) {
+            throw new ActionFailedException(23L, ex);
+        }
+    }
+
+    private String readUnqualifiedMsg() throws ActionFailedException {
+        String msg = "";
+        initBufferedReader();
+        try {
             msg = bufferedReader.readLine();
             if (!Util.isEmpty(msg)) {
                 if (msg.startsWith("#")) {
@@ -129,59 +142,48 @@ public class SocketLayer {
         // 11 = Map <String, String>
         // 12 = List<?>
 
+        initBufferedReader();
         DataObject dataObject = new DataObject();
         try {
             DataInputStream inputStream = new DataInputStream(socketToPartner.getInputStream());
             // den Datentyp ermitteln
-            int dataType = inputStream.readInt();
-
-            System.out.println("================================");
-            System.out.println("data type = " + dataType);
-            System.out.println("================================");
+            int dataTypeInt = inputStream.readInt();
+            DataObjectDataTypes dataType = DataObjectDataTypes.values()[dataTypeInt];
 
             switch (dataType) {
-            case 0:
-                // short
+            case SHORT:
                 dataObject.setShort(inputStream.readShort());
                 break;
 
-            case 1:
-                // int
+            case INT:
                 dataObject.setInt(inputStream.readInt());
                 break;
 
-            case 2:
-                // long
+            case LONG:
                 dataObject.setLong(inputStream.readLong());
                 break;
 
-            case 3:
-                // float
+            case FLOAT:
                 dataObject.setFloat(inputStream.readFloat());
                 break;
 
-            case 4:
-                // double
+            case DOUBLE:
                 dataObject.setDouble(inputStream.readDouble());
                 break;
 
-            case 5:
-                // char
+            case CHAR:
                 dataObject.setChar(inputStream.readChar());
                 break;
 
-            case 6:
-                // char array
+            case CHAR_ARRAY:
                 receiveDataObjectCharArray(dataObject, inputStream);
                 break;
 
-            case 7:
-                // String
+            case LINE:
                 dataObject.setLine(bufferedReader.readLine());
                 break;
 
-            case 8:
-                // file
+            case FILE:
                 // first step: get file name and canonical file name
                 dataObject.setFileName(bufferedReader.readLine());
                 dataObject.setCanonicalFileName(bufferedReader.readLine());
@@ -190,17 +192,15 @@ public class SocketLayer {
                 receiveDataObjectCharArray(dataObject, inputStream);
                 break;
 
-            case 9:
-                // conf value
+            case CONFIGURATION_VALUE:
                 dataObject.setConfigurationValue(bufferedReader.readLine());
                 break;
 
-            case 10:
+            case DATE:
                 // TODO Datum empfangen
                 break;
 
-            case 11:
-                // Map<String, String>
+            case MAP_STRING_STRING:
                 int mapSize = inputStream.readInt();
                 if (0 != mapSize) {
                     Map<String, String> map = new HashMap<String, String>();
@@ -213,37 +213,31 @@ public class SocketLayer {
                 }
                 break;
 
-            case 12:
-                // List<?>
-                System.out.println(" vor listSize ermitteln...");
+            case LIST:
                 int listSize = inputStream.readInt();
-                System.out.println("list size = " + listSize);
-                System.out.println(" vor listObjectDataType ermitteln...");
-                int listObjectDataType = inputStream.readInt();
-                System.out.println("listObjectType = " + listObjectDataType);
+                int listTypeInt = inputStream.readInt();
+                DataObjectListTypes listType = DataObjectListTypes.values()[listTypeInt];
+
                 List list = new ArrayList();
                 if (0 != listSize) {
-                    System.out.println("hier 1");
                     for (int i = 0; i < listSize; i++) {
-                        System.out.println("hier 2");
                         String line = bufferedReader.readLine();
-                        switch (listObjectDataType) {
-                        case 1:
+                        switch (listType) {
+                        case INTEGER:
                             list.add(Integer.valueOf(line));
                             break;
 
-                        case 2:
+                        case LONG:
                             list.add(Long.valueOf(line));
                             break;
 
-                        case 7:
+                        case STRING:
                             list.add(line);
                             break;
                         }
                     }
                     dataObject.setList(list);
                 }
-                System.out.println("hier 2");
                 break;
 
             }
@@ -274,132 +268,109 @@ public class SocketLayer {
 
         try {
             DataOutputStream outputStream = new DataOutputStream(socketToPartner.getOutputStream());
+            PrintWriter printWriter = new PrintWriter(new OutputStreamWriter(socketToPartner.getOutputStream()));
             // den Datentyp ermitteln
-            int dataType = dataObject.getDataType();
-            outputStream.writeInt(dataType);
+            DataObjectDataTypes dataType = dataObject.getDataType();
+            outputStream.writeInt(dataType.ordinal());
             outputStream.flush();
 
             switch (dataType) {
-            case 0:
-                // short
+            case SHORT:
                 outputStream.writeShort(dataObject.getShort());
                 break;
 
-            case 1:
-                // int
+            case INT:
                 outputStream.writeInt(dataObject.getInt());
                 break;
 
-            case 2:
-                // long
+            case LONG:
                 outputStream.writeLong(dataObject.getLong());
                 break;
 
-            case 3:
-                // float
+            case FLOAT:
                 outputStream.writeFloat(dataObject.getFloat());
                 break;
 
-            case 4:
-                // double
+            case DOUBLE:
                 outputStream.writeDouble(dataObject.getDouble());
                 break;
 
-            case 5:
-                // char
+            case CHAR:
                 outputStream.writeChar(dataObject.getChar());
                 break;
 
-            case 6:
-                // char array
+            case CHAR_ARRAY:
                 sendDataObjectCharArray(dataObject, outputStream);
                 break;
 
-            case 7:
-                // line
-                PrintWriter printWriterString = new PrintWriter(new OutputStreamWriter(socketToPartner.getOutputStream()));
-                printWriterString.println(dataObject.getLine());
-                printWriterString.flush();
+            case LINE:
+                printWriter.println(dataObject.getLine());
+                printWriter.flush();
                 break;
 
-            case 8:
-                // file
+            case FILE:
                 // at first send fileName and canonicalFileName
-                PrintWriter printWriterFileName = new PrintWriter(new OutputStreamWriter(socketToPartner.getOutputStream()));
-                printWriterFileName.println(dataObject.getFileName());
-                printWriterFileName.println(dataObject.getCanonicalFileName());
-                printWriterFileName.flush();
+                printWriter.println(dataObject.getFileName());
+                printWriter.println(dataObject.getCanonicalFileName());
+                printWriter.flush();
 
                 // then send fileData
                 sendDataObjectCharArray(dataObject, outputStream);
                 break;
 
-            case 9:
-                // configuration value
-                PrintWriter printWriterConf = new PrintWriter(new OutputStreamWriter(socketToPartner.getOutputStream()));
-                printWriterConf.println(dataObject.getLine());
-                printWriterConf.flush();
+            case CONFIGURATION_VALUE:
+                printWriter.println(dataObject.getLine());
+                printWriter.flush();
                 break;
 
-            case 10:
+            case DATE:
                 // TODO Datum senden und empfangen...
                 break;
 
-            case 11:
-                // Map<String, String>
-                PrintWriter printWriterMap = new PrintWriter(new OutputStreamWriter(socketToPartner.getOutputStream()));
+            case MAP_STRING_STRING:
                 if (null != dataObject.getMap()) {
                     Map<String, String> map = dataObject.getMap();
                     Set<Map.Entry<String, String>> mapSet = map.entrySet();
-                    printWriterMap.print(mapSet.size());
+                    outputStream.writeInt(mapSet.size());
                     for (Map.Entry<String, String> mapEntry : mapSet) {
                         // send key
-                        printWriterMap.print(mapEntry.getKey());
+                        printWriter.println(mapEntry.getKey());
                         // send value
-                        printWriterMap.print(mapEntry.getValue());
+                        printWriter.println(mapEntry.getValue());
                     }
                 } else {
                     // send size of map is 0
-                    printWriterMap.print(0);
+                    outputStream.writeInt(0);
+                    outputStream.flush();
                 }
                 break;
 
-            case 12:
-                // List<?>
-                PrintWriter printWriterList = new PrintWriter(new OutputStreamWriter(socketToPartner.getOutputStream()));
+            case LIST:
                 if (null != dataObject.getList()) {
-                    System.out.println(" ================= ");
-                    System.out.println("vor print list.size");
                     List<?> list = dataObject.getList();
-                    System.out.println("list.size(): " + list.size());
 
-                    printWriterList.print(2);
-                    // printWriterList.print(list.size());
-                    printWriterList.flush();
-                    System.out.println("nach print list.size");
+                    outputStream.writeInt(list.size());
+                    outputStream.flush();
                     String value = "";
-                    System.out.println("getListObjectType... " + dataObject.getListObjectType());
-                    printWriterList.print(dataObject.getListObjectType());
+                    outputStream.writeInt(dataObject.getListObjectType().ordinal());
+                    outputStream.flush();
                     for (Object obj : list) {
                         switch (dataObject.getListObjectType()) {
-                        case 1:
-                        case 2:
+                        case INTEGER:
+                        case LONG:
                             value = String.valueOf(obj);
-                            System.out.println("value 1 = " + value);
                             break;
-                        case 7:
+                        case STRING:
                             value = (String) obj;
-                            System.out.println("value 2 = " + value);
                             break;
                         }
-                        printWriterList.print(value);
+                        printWriter.println(value);
+                        printWriter.flush();
                     }
-                    System.out.println(" ================= ");
                 } else {
-                    // send size of map is 0
-                    printWriterList.print(0);
-                    printWriterList.flush();
-                    System.out.println("map size ist 0");
+                    // send that size of list is 0
+                    outputStream.writeInt(0);
+                    outputStream.flush();
                 }
                 break;
 
@@ -411,26 +382,33 @@ public class SocketLayer {
         }
     }
 
-    private void receiveDataObjectCharArray(DataObject dataObject, DataInputStream inputStream) throws IOException {
-        // size block 1 and count of blocks for 1
-        int sizeBlock1 = inputStream.readInt();
-        int countBlock1 = inputStream.readInt();
-        // size block 2 and count of blocks for 2
-        int sizeBlock2 = inputStream.readInt();
-        int countBlock2 = inputStream.readInt();
-        char[] charArray = new char[(sizeBlock1 * countBlock1) + (sizeBlock2 * countBlock2)];
+    private void receiveDataObjectCharArray(DataObject dataObject, DataInputStream inputStream) throws ActionFailedException {
+        initBufferedReader();
 
-        int pos = 0;
-        for (int i = 0; i < countBlock1; i++) {
-            bufferedReader.read(charArray, pos, sizeBlock1);
-            pos += sizeBlock1;
-        }
-        for (int i = 0; i < countBlock2; i++) {
-            bufferedReader.read(charArray, pos, sizeBlock2);
-            pos += sizeBlock2;
+        try {
+            // size block 1 and count of blocks for 1
+            int sizeBlock1 = inputStream.readInt();
+            int countBlock1 = inputStream.readInt();
+            // size block 2 and count of blocks for 2
+            int sizeBlock2 = inputStream.readInt();
+            int countBlock2 = inputStream.readInt();
+            char[] charArray = new char[(sizeBlock1 * countBlock1) + (sizeBlock2 * countBlock2)];
+
+            int pos = 0;
+            for (int i = 0; i < countBlock1; i++) {
+                bufferedReader.read(charArray, pos, sizeBlock1);
+                pos += sizeBlock1;
+            }
+            for (int i = 0; i < countBlock2; i++) {
+                bufferedReader.read(charArray, pos, sizeBlock2);
+                pos += sizeBlock2;
+            }
+
+            dataObject.setCharArray(charArray);
+        } catch (IOException ex) {
+            throw new ActionFailedException(23L, ex);
         }
 
-        dataObject.setCharArray(charArray);
     }
 
     private void sendDataObjectCharArray(DataObject dataObject, DataOutputStream outputStream) throws IOException {

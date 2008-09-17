@@ -2,14 +2,14 @@ package de.notEOF.configuration.service;
 
 import java.util.List;
 
-import de.notEOF.configuration.client.LocalConfigurationClient;
+import de.notEOF.configuration.LocalConfiguration;
 import de.notEOF.configuration.enumeration.ConfigurationTag;
 import de.notEOF.core.communication.DataObject;
 import de.notEOF.core.enumeration.EventType;
 import de.notEOF.core.exception.ActionFailedException;
+import de.notEOF.core.interfaces.NotEOFConfiguration;
 import de.notEOF.core.logging.LocalLog;
 import de.notEOF.core.service.BaseService;
-import de.notIOC.exception.NotIOCException;
 
 public class ConfigurationService extends BaseService {
 
@@ -23,6 +23,8 @@ public class ConfigurationService extends BaseService {
 
     @Override
     public void processMsg(Enum<?> incomingMsgEnum) throws ActionFailedException {
+        NotEOFConfiguration conf = new LocalConfiguration();
+
         List<String> values = null;
         Enum<ConfigurationTag> valueFound = ConfigurationTag.INFO_FAULT;
 
@@ -31,24 +33,24 @@ public class ConfigurationService extends BaseService {
             String xmlPath = requestTo(ConfigurationTag.REQ_KEY_PATH, ConfigurationTag.RESP_KEY_PATH);
             String attributeName = requestTo(ConfigurationTag.REQ_ATTRIBUTE_NAME, ConfigurationTag.RESP_ATTRIBUTE_NAME);
             try {
-                values = LocalConfigurationClient.getAttributeList(xmlPath, attributeName);
+                values = conf.getAttributeList(xmlPath, attributeName);
                 valueFound = ConfigurationTag.INFO_OK;
-            } catch (NotIOCException e) {
+            } catch (ActionFailedException e) {
                 LocalLog.warn("Gesuchter Konfigurationswert konnte nicht ermittelt werden: " + xmlPath + "/" + attributeName, e);
             }
         }
-        
+
         // look for text value
         if (incomingMsgEnum.equals(ConfigurationTag.REQ_TEXT)) {
             String xmlPath = requestTo(ConfigurationTag.REQ_KEY_PATH, ConfigurationTag.RESP_KEY_PATH);
             try {
-                values = LocalConfigurationClient.getTextList(xmlPath);
+                values = conf.getTextList(xmlPath);
                 valueFound = ConfigurationTag.INFO_OK;
-            } catch (NotIOCException e) {
+            } catch (ActionFailedException e) {
                 LocalLog.warn("Gesuchter Konfigurationswert konnte nicht ermittelt werden: " + xmlPath, e);
             }
         }
-        
+
         // tell client if value was found
         awaitRequestAnswerImmediate(ConfigurationTag.REQ_KEY_FOUND, ConfigurationTag.RESP_KEY_FOUND, valueFound.name());
 
@@ -59,6 +61,7 @@ public class ConfigurationService extends BaseService {
                 // list found
                 configObject.setList(values);
             } else {
+                // single value
                 configObject.setConfigurationValue(values.get(0));
             }
             System.out.println("Aufruf sendDataObject im ConfigurationService");

@@ -8,8 +8,9 @@ import java.util.List;
 import java.util.Map;
 
 import de.happtick.core.MasterTable;
+import de.notEOF.core.exception.ActionFailedException;
+import de.notEOF.core.interfaces.NotEOFConfiguration;
 import de.notEOF.core.util.Util;
-import de.notIOC.exception.NotIOCException;
 import de.notIOC.logging.LocalLog;
 
 /**
@@ -53,133 +54,138 @@ public class ApplicationConfiguration {
      *            Reference within the configuration file to the configuration
      *            of this client.
      */
-    public ApplicationConfiguration(String nodeNameApplication) {
+    public ApplicationConfiguration(String nodeNameApplication, NotEOFConfiguration conf) {
 
-        this.nodeNameApplication = nodeNameApplication;
-        String node = "";
+        try {
+            this.nodeNameApplication = nodeNameApplication;
+            String node = "";
 
-        // applicationId
-        node = "scheduler." + nodeNameApplication;
-        applicationId = Util.parseLong(LocalConfigurationClient.getAttribute(node, "applicationId", "-1"), -1);
+            // applicationId
+            node = "scheduler." + nodeNameApplication;
+            applicationId = Util.parseLong(conf.getAttribute(node, "applicationId", "-1"), -1);
 
-        // clientIp
-        node = "scheduler." + nodeNameApplication + ".client";
-        clientIp = LocalConfigurationClient.getAttribute(node, "clientIp", "localhost");
+            // clientIp
+            node = "scheduler." + nodeNameApplication + ".client";
+            clientIp = conf.getAttribute(node, "clientIp", "localhost");
 
-        // executable type
-        node = "scheduler." + nodeNameApplication + ".executable";
-        executableType = LocalConfigurationClient.getAttribute(node, "type", "UNKNOWN");
-        // executable path
-        executablePath = LocalConfigurationClient.getAttribute(node, "path", "");
+            // executable type
+            node = "scheduler." + nodeNameApplication + ".executable";
+            executableType = conf.getAttribute(node, "type", "UNKNOWN");
+            // executable path
+            executablePath = conf.getAttribute(node, "path", "");
 
-        // option multiple start
-        node = "scheduler." + nodeNameApplication + ".option";
-        multipleStart = Util.parseBoolean(LocalConfigurationClient.getAttribute(node, "multiplestart", "false"), false);
-        // option enforce
-        enforce = Util.parseBoolean(LocalConfigurationClient.getAttribute(node, "enforce", "false"), false);
+            // option multiple start
+            node = "scheduler." + nodeNameApplication + ".option";
+            multipleStart = Util.parseBoolean(conf.getAttribute(node, "multiplestart", "false"), false);
+            // option enforce
+            enforce = Util.parseBoolean(conf.getAttribute(node, "enforce", "false"), false);
 
-        // time plan
-        String nodeTime = "scheduler." + nodeNameApplication + ".timeplan";
-        // seconds
-        // * or 0 means one time per minute
-        node = nodeTime + ".seconds";
-        String seconds = LocalConfigurationClient.getText(node);
-        if ("".equals(seconds) || "*".equals(seconds) || "0".equals(seconds)) {
-            timePlanSeconds.add(0);
-        } else {
-            timePlanSeconds = getElementsOfStringAsInt(node);
-        }
-
-        // minutes
-        // * or 0 means one time per hour
-        node = nodeTime + ".minutes";
-        String minutes = LocalConfigurationClient.getText(node);
-        if ("".equals(minutes) || "*".equals(minutes) || "0".equals(minutes)) {
-            timePlanMinutes.add(0);
-        } else {
-            timePlanMinutes = getElementsOfStringAsInt(node);
-        }
-
-        // hours
-        node = nodeTime + ".hours";
-        String hours = LocalConfigurationClient.getText(node);
-        if ("".equals(hours) || "*".equals(hours)) {
-            for (int i = 0; i < 24; i++) {
-                timePlanHours.add(i);
+            // time plan
+            String nodeTime = "scheduler." + nodeNameApplication + ".timeplan";
+            // seconds
+            // * or 0 means one time per minute
+            node = nodeTime + ".seconds";
+            String seconds = conf.getText(node);
+            if ("".equals(seconds) || "*".equals(seconds) || "0".equals(seconds)) {
+                timePlanSeconds.add(0);
+            } else {
+                timePlanSeconds = getElementsOfStringAsInt(node, conf);
             }
-        } else {
-            timePlanHours = getElementsOfStringAsInt(node);
-        }
 
-        // days of week
-        node = nodeTime + ".weekdays";
-        String days = LocalConfigurationClient.getText(node);
-        if ("".equals(days) || "*".equals(days)) {
-            for (int i = 1; i < 8; i++) {
-                timePlanWeekdays.add(Calendar.DAY_OF_WEEK, i);
+            // minutes
+            // * or 0 means one time per hour
+            node = nodeTime + ".minutes";
+            String minutes = conf.getText(node);
+            if ("".equals(minutes) || "*".equals(minutes) || "0".equals(minutes)) {
+                timePlanMinutes.add(0);
+            } else {
+                timePlanMinutes = getElementsOfStringAsInt(node, conf);
             }
-        }
-        for (String element : (List<String>) getElementsOfString(node)) {
-            if (element.equalsIgnoreCase("MO"))
-                timePlanWeekdays.add(Calendar.MONDAY);
-            if (element.equalsIgnoreCase("TU"))
-                timePlanWeekdays.add(Calendar.TUESDAY);
-            if (element.equalsIgnoreCase("WE") || element.equalsIgnoreCase("MI"))
-                timePlanWeekdays.add(Calendar.WEDNESDAY);
-            if (element.equalsIgnoreCase("TH") || element.equalsIgnoreCase("DO"))
-                timePlanWeekdays.add(Calendar.THURSDAY);
-            if (element.equalsIgnoreCase("FR"))
-                timePlanWeekdays.add(Calendar.FRIDAY);
-            if (element.equalsIgnoreCase("SA"))
-                timePlanWeekdays.add(Calendar.SATURDAY);
-            if (element.equalsIgnoreCase("SU") || element.equalsIgnoreCase("SO"))
-                timePlanWeekdays.add(Calendar.SUNDAY);
-        }
 
-        // days of month
-        node = nodeTime + ".monthdays";
-        String months = LocalConfigurationClient.getText(node);
-        if ("".equals(months) || "*".equals(months)) {
-            timePlanMonthdays.add(0);
-        } else {
-            timePlanMonthdays = getElementsOfStringAsInt(node);
-        }
+            // hours
+            node = nodeTime + ".hours";
+            String hours = conf.getText(node);
+            if ("".equals(hours) || "*".equals(hours)) {
+                for (int i = 0; i < 24; i++) {
+                    timePlanHours.add(i);
+                }
+            } else {
+                timePlanHours = getElementsOfStringAsInt(node, conf);
+            }
 
-        // applications to wait for
-        node = "scheduler." + nodeNameApplication + ".dependencies.waitfor";
-        List<String> ids = null;
-        try {
-            ids = LocalConfigurationClient.getAttributeList(node, "applicationId");
-        } catch (NotIOCException e) {
-            LocalLog.warn("Fehler bei Lesen der Applikationen auf die gewartet werden soll.", e);
-        }
-        applicationsWaitFor = stringListToLongList(ids);
+            // days of week
+            node = nodeTime + ".weekdays";
+            String days = conf.getText(node);
+            if ("".equals(days) || "*".equals(days)) {
+                for (int i = 1; i < 8; i++) {
+                    timePlanWeekdays.add(Calendar.DAY_OF_WEEK, i);
+                }
+            }
+            for (String element : (List<String>) getElementsOfString(node, conf)) {
+                if (element.equalsIgnoreCase("MO"))
+                    timePlanWeekdays.add(Calendar.MONDAY);
+                if (element.equalsIgnoreCase("TU"))
+                    timePlanWeekdays.add(Calendar.TUESDAY);
+                if (element.equalsIgnoreCase("WE") || element.equalsIgnoreCase("MI"))
+                    timePlanWeekdays.add(Calendar.WEDNESDAY);
+                if (element.equalsIgnoreCase("TH") || element.equalsIgnoreCase("DO"))
+                    timePlanWeekdays.add(Calendar.THURSDAY);
+                if (element.equalsIgnoreCase("FR"))
+                    timePlanWeekdays.add(Calendar.FRIDAY);
+                if (element.equalsIgnoreCase("SA"))
+                    timePlanWeekdays.add(Calendar.SATURDAY);
+                if (element.equalsIgnoreCase("SU") || element.equalsIgnoreCase("SO"))
+                    timePlanWeekdays.add(Calendar.SUNDAY);
+            }
 
-        // applications to start after
-        node = "scheduler." + nodeNameApplication + ".dependencies.startafter";
-        ids = null;
-        try {
-            ids = LocalConfigurationClient.getAttributeList(node, "applicationId");
-        } catch (NotIOCException e) {
-            LocalLog.warn("Fehler bei Lesen der Applikationen die anschließend gestartet werden sollen.", e);
-        }
-        applicationsStartAfter = stringListToLongList(ids);
+            // days of month
+            node = nodeTime + ".monthdays";
+            String months = conf.getText(node);
+            if ("".equals(months) || "*".equals(months)) {
+                timePlanMonthdays.add(0);
+            } else {
+                timePlanMonthdays = getElementsOfStringAsInt(node, conf);
+            }
 
-        // applications to start synchronously
-        node = "scheduler." + nodeNameApplication + ".dependencies.startsync";
-        ids = null;
-        try {
-            ids = LocalConfigurationClient.getAttributeList(node, "applicationId");
-        } catch (NotIOCException e) {
-            LocalLog.warn("Fehler bei Lesen der Applikationen die gleichzeitig gestartet werden sollen.", e);
-        }
-        applicationsStartAfter = stringListToLongList(ids);
+            // applications to wait for
+            node = "scheduler." + nodeNameApplication + ".dependencies.waitfor";
+            List<String> ids = null;
+            try {
+                ids = conf.getAttributeList(node, "applicationId");
+            } catch (ActionFailedException e) {
+                LocalLog.warn("Fehler bei Lesen der Applikationen auf die gewartet werden soll.", e);
+            }
+            applicationsWaitFor = stringListToLongList(ids);
 
-        // maxStartStop
-        node = "scheduler." + nodeNameApplication + ".runtime";
-        maxStartStop = LocalConfigurationClient.getAttributeInt(node, "maxStartStop", 0);
-        // maxStepStep
-        maxStepStep = LocalConfigurationClient.getAttributeInt(node, "maxStepStep", 0);
+            // applications to start after
+            node = "scheduler." + nodeNameApplication + ".dependencies.startafter";
+            ids = null;
+            try {
+                ids = conf.getAttributeList(node, "applicationId");
+            } catch (ActionFailedException e) {
+                LocalLog.warn("Fehler bei Lesen der Applikationen die anschließend gestartet werden sollen.", e);
+            }
+            applicationsStartAfter = stringListToLongList(ids);
+
+            // applications to start synchronously
+            node = "scheduler." + nodeNameApplication + ".dependencies.startsync";
+            ids = null;
+            try {
+                ids = conf.getAttributeList(node, "applicationId");
+            } catch (ActionFailedException e) {
+                LocalLog.warn("Fehler bei Lesen der Applikationen die gleichzeitig gestartet werden sollen.", e);
+            }
+            applicationsStartAfter = stringListToLongList(ids);
+
+            // maxStartStop
+            node = "scheduler." + nodeNameApplication + ".runtime";
+            maxStartStop = conf.getAttributeInt(node, "maxStartStop", 0);
+            // maxStepStep
+            maxStepStep = conf.getAttributeInt(node, "maxStepStep", 0);
+
+        } catch (Exception ex) {
+            LocalLog.error("Konfiguration der Applikation konnte nicht fehlerfrei gelesen werden. Applikation: " + nodeNameApplication, ex);
+        }
     }
 
     /**
@@ -283,8 +289,8 @@ public class ApplicationConfiguration {
     /*
      * delivers elements of a text string comma separated or blank separated
      */
-    private List<Integer> getElementsOfStringAsInt(String node) {
-        List<String> elementList = getElementsOfString(node);
+    private List<Integer> getElementsOfStringAsInt(String node, NotEOFConfiguration conf) throws ActionFailedException {
+        List<String> elementList = getElementsOfString(node, conf);
         List<Integer> intList = new ArrayList<Integer>();
         for (String element : elementList) {
             intList.add(Util.parseInt(element, -1));
@@ -295,9 +301,9 @@ public class ApplicationConfiguration {
     /*
      * delivers elements of a text string comma separated or blank separated
      */
-    private List<String> getElementsOfString(String node) {
+    private List<String> getElementsOfString(String node, NotEOFConfiguration conf) throws ActionFailedException {
         List<String> elementList;
-        String elements = LocalConfigurationClient.getText(node);
+        String elements = conf.getText(node);
         elements.replace(" ", ",");
         elements.replace(",,", ",");
         elementList = Util.stringToList(elements, ",");
