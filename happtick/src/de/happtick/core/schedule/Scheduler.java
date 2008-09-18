@@ -13,9 +13,9 @@ import de.happtick.core.events.ApplicationAlarmEvent;
 import de.happtick.core.events.ApplicationStopEvent;
 import de.happtick.core.start.service.StartService;
 import de.notEOF.configuration.LocalConfiguration;
-import de.notEOF.configuration.client.LocalConfigurationClient;
 import de.notEOF.core.enumeration.EventType;
 import de.notEOF.core.event.ServiceStopEvent;
+import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.interfaces.EventObservable;
 import de.notEOF.core.interfaces.EventObserver;
 import de.notEOF.core.interfaces.NotEOFConfiguration;
@@ -25,7 +25,6 @@ import de.notEOF.core.logging.LocalLog;
 import de.notEOF.core.util.ArgsParser;
 import de.notEOF.core.util.Util;
 import de.notIOC.configuration.ConfigurationManager;
-import de.notIOC.exception.NotIOCException;
 
 /**
  * The scheduler is not available from outside exept the start method.
@@ -44,19 +43,23 @@ public class Scheduler {
     private Scheduler() {
         NotEOFConfiguration conf = new LocalConfiguration();
         // Standard via timer
-        Boolean useTimer = Util.parseBoolean(conf.getAttribute("scheduler.use", "timer", "false"), false);
-        if (useTimer) {
-            startAllApplicationSchedulers();
+        try {
+            Boolean useTimer = Util.parseBoolean(conf.getAttribute("scheduler.use", "timer", "false"), false);
+            if (useTimer) {
+                startAllApplicationSchedulers();
 
-            SchedulerGarbage garbage = new SchedulerGarbage();
-            Thread garbageThread = new Thread(garbage);
-            garbageThread.start();
-        }
+                SchedulerGarbage garbage = new SchedulerGarbage();
+                Thread garbageThread = new Thread(garbage);
+                garbageThread.start();
+            }
 
-        // process chain is active
-        Boolean useChain = Util.parseBoolean(conf.getAttribute("scheduler.use", "chain", "false"), false);
-        if (useChain) {
+            // process chain is active
+            Boolean useChain = Util.parseBoolean(conf.getAttribute("scheduler.use", "chain", "false"), false);
+            if (useChain) {
 
+            }
+        } catch (ActionFailedException afx) {
+            LocalLog.error("Fehler bei Lesen der Konfiguration für Anwendungsscheduler.", afx);
         }
     }
 
@@ -88,8 +91,12 @@ public class Scheduler {
      * start point. Put the runner into a list.
      */
     private void startAllApplicationSchedulers() {
-        for (ApplicationConfiguration conf : MasterTable.getApplicationConfigurationsAsList()) {
-            startApplicationScheduler(conf);
+        try {
+            for (ApplicationConfiguration conf : MasterTable.getApplicationConfigurationsAsList()) {
+                startApplicationScheduler(conf);
+            }
+        } catch (ActionFailedException afx) {
+            LocalLog.error("Fehler bei Start der Anwendugnsscheduler.", afx);
         }
     }
 
@@ -341,17 +348,18 @@ public class Scheduler {
         }
     }
 
-    private class chainStarter implements Runnable, EventObserver {
+    private class ChainStarter implements Runnable, EventObserver {
 
         // List of applicationId's decides the order of application starts
         private boolean stopped = false;
         private boolean loopChain;
         private String stoppedServiceId;
 
-        public chainStarter() {
+        public ChainStarter() {
+            NotEOFConfiguration conf = new LocalConfiguration();
             try {
-                loopChain = Util.parseBoolean(LocalConfigurationClient.getAttribute("scheduler.chain", "loop"), true);
-            } catch (NotIOCException e) {
+                loopChain = Util.parseBoolean(conf.getAttribute("scheduler.chain", "loop"), true);
+            } catch (ActionFailedException e) {
                 LocalLog.warn("Attribut 'loop' für chain-Konfiguration konnte nicht ermittelt werden.", e);
             }
         }
@@ -360,29 +368,34 @@ public class Scheduler {
         // einzutragen, da sonst der Müllmann nicht aufräumen kann.
 
         public void run() {
-            // TODO Noch offen...
-            do {
-                for (Long applicationId : MasterTable.getProcessChain()) {
-                    ApplicationConfiguration applConf = MasterTable.getApplicationConfiguration(applicationId);
-                    if (null != applConf) {
-                        stoppedServiceId = "";
-                        // Runner for application must deliver service
-                        // so chainStarter can observe the service for stop
-                        // event
-                        // when stop event is raised and the service id is the
-                        // same like here the next application may run.
+            try {
+                // TODO Noch offen...
+                do {
+                    for (Long applicationId : MasterTable.getProcessChain()) {
+                        ApplicationConfiguration applConf = MasterTable.getApplicationConfiguration(applicationId);
+                        if (null != applConf) {
+                            stoppedServiceId = "";
+                            // Runner for application must deliver service
+                            // so chainStarter can observe the service for stop
+                            // event
+                            // when stop event is raised and the service id is
+                            // the
+                            // same like here the next application may run.
 
-                        ApplicationService applicationService = null;
-                        while (!stopped && !stoppedServiceId.equals(applicationService.getServiceId())) {
-                            try {
-                                Thread.sleep(300);
-                            } catch (InterruptedException e) {
-                                break;
+                            ApplicationService applicationService = null;
+                            while (!stopped && !stoppedServiceId.equals(applicationService.getServiceId())) {
+                                try {
+                                    Thread.sleep(300);
+                                } catch (InterruptedException e) {
+                                    break;
+                                }
                             }
                         }
                     }
-                }
-            } while (!stopped && loopChain);
+                } while (!stopped && loopChain);
+            } catch (ActionFailedException afx) {
+                LocalLog.error("Fehler in der run Methode des ChainStarter.", afx);
+            }
         }
 
         public List<EventType> getObservedEvents() {

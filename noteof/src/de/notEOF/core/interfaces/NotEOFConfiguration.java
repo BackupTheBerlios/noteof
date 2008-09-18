@@ -120,4 +120,11 @@ public interface NotEOFConfiguration {
      *             which key the value was empty.
      */
     public String getText(String xmlPath, String defaultValue) throws ActionFailedException;
+
+    /**
+     * Close connections, files, whatever. Depending to the kind of the
+     * implementation it is possible that the implementation does nothing (empty
+     * body).
+     */
+    public void close() throws ActionFailedException;
 }

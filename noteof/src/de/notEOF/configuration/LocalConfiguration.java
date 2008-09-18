@@ -89,4 +89,11 @@ public class LocalConfiguration implements NotEOFConfiguration {
         }
     }
 
+    /**
+     * Exists only for compatibality. Does nothing in this implementation of
+     * {@link NotEOFConfiguration}.
+     */
+    public void close() throws ActionFailedException {
+
+    }
 }
