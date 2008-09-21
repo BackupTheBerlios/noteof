@@ -6,15 +6,12 @@ import java.util.Map;
 
 import de.happtick.configuration.ApplicationConfiguration;
 import de.happtick.configuration.enumeration.HapptickConfigTag;
-import de.notEOF.configuration.client.ConfigurationClient;
 import de.notEOF.core.client.BaseClient;
 import de.notEOF.core.communication.DataObject;
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.util.Util;
 
 public class HapptickConfigurationClient extends BaseClient {
-    
-    private ConfigurationClient configurationClient;
 
     /**
      * Requests the service for a list of all configured applications. <br>
@@ -85,32 +82,6 @@ public class HapptickConfigurationClient extends BaseClient {
         return applConfs;
     }
 
-    
-    /**
-     * Delivers a DataObject with a configuration attribute value (also can be a list of values).
-     * @param xmlConfKey Configuration key used in xml format (e.g. chains.chain.used)
-     * @param attributeName Attribute Name of the attribute.
-     * @return A DataObject which holds the values or null if the xmlConfKey doesn't point to a valid xml path.  
-     * @see DataObject
-     * @throws ActionFailedException
-     */
-    public DataObject getAttribute(String xmlConfKey, String attributeName) throws ActionFailedException {
-        if (null == configurationClient) configurationClient = new ConfigurationClient(this.getPartnerHostAddress(), this.getPartnerPort(), this.getTimeOutObject());
-        return configurationClient.getAttribute(xmlConfKey, attributeName);
-    }
-
-    /**
-     * Delivers a DataObject with a configuration text value (also can be a list of values).
-     * @param xmlConfKey Configuration key used in xml format (e.g. chains.chain.used)
-     * @return A DataObject which holds the values or null if the xmlConfKey doesn't point to a valid xml path.  
-     * @see DataObject
-     * @throws ActionFailedException
-     */
-    public DataObject getText(String xmlConfKey) throws ActionFailedException {
-        if (null == configurationClient) configurationClient = new ConfigurationClient(this.getPartnerHostAddress(), this.getPartnerPort(), this.getTimeOutObject());
-        return configurationClient.getText(xmlConfKey);
-    }
-
     private List<Integer> csv2ListInteger(Map<String, String> confVars, String key) {
         String csvString = confVars.get(key);
         if (null == csvString)
@@ -137,13 +108,11 @@ public class HapptickConfigurationClient extends BaseClient {
         return intList;
     }
 
-    @Override
     public Class<?> serviceForClientByClass() {
         // TODO Auto-generated method stub
         return null;
     }
 
-    @Override
     public String serviceForClientByName() {
         return "de.happtick.configuration.service.HapptickConfigurationService";
     }

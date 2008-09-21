@@ -24,9 +24,11 @@ public class LocalConfiguration implements NotEOFConfiguration {
 
     public List<String> getAttributeList(String xmlPath, String attributeName) throws ActionFailedException {
         try {
+            System.out.println("xmlPath = " + xmlPath + ";");
+            System.out.println("attributeName = " + attributeName + ";");
             return ConfigurationManager.getProperty(xmlPath).getAttributeList(attributeName);
         } catch (Exception ex) {
-            throw new ActionFailedException(34L, "Element: " + xmlPath);
+            throw new ActionFailedException(34L, "Element: " + xmlPath, ex);
         }
     }
 
@@ -34,7 +36,7 @@ public class LocalConfiguration implements NotEOFConfiguration {
         try {
             return ConfigurationManager.getProperty(xmlPath).getTextList();
         } catch (Exception ex) {
-            throw new ActionFailedException(34L, "Element: " + xmlPath);
+            throw new ActionFailedException(34L, "Element: " + xmlPath, ex);
         }
     }
 
@@ -51,7 +53,7 @@ public class LocalConfiguration implements NotEOFConfiguration {
         try {
             return ConfigurationManager.getProperty(xmlPath).getAttribute(attributeName);
         } catch (Exception ex) {
-            throw new ActionFailedException(34L, "Element: " + xmlPath);
+            throw new ActionFailedException(34L, "Element: " + xmlPath, ex);
         }
     }
 
@@ -68,7 +70,7 @@ public class LocalConfiguration implements NotEOFConfiguration {
         try {
             return Util.parseInt(ConfigurationManager.getProperty(xmlPath).getAttribute(attributeName), 0);
         } catch (Exception ex) {
-            throw new ActionFailedException(34L, "Element: " + xmlPath);
+            throw new ActionFailedException(34L, "Element: " + xmlPath, ex);
         }
     }
 
@@ -76,7 +78,7 @@ public class LocalConfiguration implements NotEOFConfiguration {
         try {
             return ConfigurationManager.getProperty(xmlPath).getText();
         } catch (Exception ex) {
-            throw new ActionFailedException(34L, "Element: " + xmlPath);
+            throw new ActionFailedException(34L, "Element: " + xmlPath, ex);
         }
     }
 
