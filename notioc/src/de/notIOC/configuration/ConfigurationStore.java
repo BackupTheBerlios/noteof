@@ -40,7 +40,8 @@ public class ConfigurationStore {
     /**
      * The master file contains the single xml files.
      * 
-     * @param xmlFileName The complete path of file.
+     * @param xmlFileName
+     *            The complete path of file.
      */
     public static void setMasterXmlFile(String xmlFileName) throws NotIOCException {
         theStore.setXmlFile(xmlFileName, false);
@@ -123,7 +124,7 @@ public class ConfigurationStore {
      */
     private synchronized List<Element> readXmlFile(String sourceFileName, String elementName, boolean refresh) throws NotIOCException {
         // look for the document in the map...
-        // should optimize the performance becaus read on every xml file is
+        // should optimize the performance because read on every xml file is
         // needed only one time
         if (refresh || null == docMap) {
             docMap = new HashMap<String, Document>();

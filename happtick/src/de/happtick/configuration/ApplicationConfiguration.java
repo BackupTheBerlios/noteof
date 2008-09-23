@@ -54,7 +54,7 @@ public class ApplicationConfiguration {
      *            Reference within the configuration file to the configuration
      *            of this client.
      */
-    public ApplicationConfiguration(String nodeNameApplication, NotEOFConfiguration conf) {
+    public ApplicationConfiguration(String nodeNameApplication, NotEOFConfiguration conf) throws ActionFailedException {
 
         try {
             this.nodeNameApplication = nodeNameApplication;
@@ -114,6 +114,7 @@ public class ApplicationConfiguration {
             }
 
             // days of week
+            timePlanWeekdays = new ArrayList<Integer>();
             node = nodeTime + ".weekdays";
             String days = conf.getText(node);
             if ("".equals(days) || "*".equals(days)) {
@@ -185,6 +186,7 @@ public class ApplicationConfiguration {
 
         } catch (Exception ex) {
             LocalLog.error("Konfiguration der Applikation konnte nicht fehlerfrei gelesen werden. Applikation: " + nodeNameApplication, ex);
+            throw new ActionFailedException(401, "Initialisierung ApplicationConfiguration", ex);
         }
     }
 
@@ -256,7 +258,6 @@ public class ApplicationConfiguration {
                 }
             }
             if (found) {
-                System.out.println("Gefunden: " + calcDate.get(Calendar.DATE) + "." + (calcDate.get(Calendar.MONTH) + 1) + "." + calcDate.get(Calendar.YEAR));
                 break;
             }
 
@@ -304,18 +305,14 @@ public class ApplicationConfiguration {
     private List<String> getElementsOfString(String node, NotEOFConfiguration conf) throws ActionFailedException {
         List<String> elementList;
         String elements = conf.getText(node);
-        elements.replace(" ", ",");
-        elements.replace(",,", ",");
+        elements = elements.replace(" ", ",");
+        elements = elements.replace(",,", ",");
         elementList = Util.stringToList(elements, ",");
         return elementList;
     }
 
     public Long getApplicationId() {
         return applicationId;
-    }
-
-    public String getNodeNameOfApplication() {
-        return nodeNameApplication;
     }
 
     public String getClientIp() {

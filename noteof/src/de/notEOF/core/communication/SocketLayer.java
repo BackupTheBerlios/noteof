@@ -180,20 +180,20 @@ public class SocketLayer {
                 break;
 
             case LINE:
-                dataObject.setLine(bufferedReader.readLine());
+                dataObject.setLine(readMsg());
                 break;
 
             case FILE:
                 // first step: get file name and canonical file name
-                dataObject.setFileName(bufferedReader.readLine());
-                dataObject.setCanonicalFileName(bufferedReader.readLine());
+                dataObject.setFileName(readMsg());
+                dataObject.setCanonicalFileName(readMsg());
 
                 // second step: receive FileData
                 receiveDataObjectCharArray(dataObject, inputStream);
                 break;
 
             case CONFIGURATION_VALUE:
-                dataObject.setConfigurationValue(bufferedReader.readLine());
+                dataObject.setConfigurationValue(readMsg());
                 break;
 
             case DATE:
@@ -205,8 +205,8 @@ public class SocketLayer {
                 if (0 != mapSize) {
                     Map<String, String> map = new HashMap<String, String>();
                     for (int i = 0; i < mapSize; i++) {
-                        String key = bufferedReader.readLine();
-                        String value = bufferedReader.readLine();
+                        String key = readMsg();
+                        String value = readMsg();
                         map.put(key, value);
                     }
                     dataObject.setMap(map);
@@ -221,7 +221,7 @@ public class SocketLayer {
                 List list = new ArrayList();
                 if (0 != listSize) {
                     for (int i = 0; i < listSize; i++) {
-                        String line = bufferedReader.readLine();
+                        String line = readMsg();
                         switch (listType) {
                         case INTEGER:
                             list.add(Integer.valueOf(line));
@@ -268,7 +268,6 @@ public class SocketLayer {
 
         try {
             DataOutputStream outputStream = new DataOutputStream(socketToPartner.getOutputStream());
-            PrintWriter printWriter = new PrintWriter(new OutputStreamWriter(socketToPartner.getOutputStream()));
             // den Datentyp ermitteln
             DataObjectDataTypes dataType = dataObject.getDataType();
             outputStream.writeInt(dataType.ordinal());
@@ -304,23 +303,20 @@ public class SocketLayer {
                 break;
 
             case LINE:
-                printWriter.println(dataObject.getLine());
-                printWriter.flush();
+                writeMsg(dataObject.getLine());
                 break;
 
             case FILE:
                 // at first send fileName and canonicalFileName
-                printWriter.println(dataObject.getFileName());
-                printWriter.println(dataObject.getCanonicalFileName());
-                printWriter.flush();
+                writeMsg(dataObject.getFileName());
+                writeMsg(dataObject.getCanonicalFileName());
 
                 // then send fileData
                 sendDataObjectCharArray(dataObject, outputStream);
                 break;
 
             case CONFIGURATION_VALUE:
-                printWriter.println(dataObject.getLine());
-                printWriter.flush();
+                writeMsg(dataObject.getLine());
                 break;
 
             case DATE:
@@ -334,9 +330,9 @@ public class SocketLayer {
                     outputStream.writeInt(mapSet.size());
                     for (Map.Entry<String, String> mapEntry : mapSet) {
                         // send key
-                        printWriter.println(mapEntry.getKey());
+                        writeMsg(mapEntry.getKey());
                         // send value
-                        printWriter.println(mapEntry.getValue());
+                        writeMsg(mapEntry.getValue());
                     }
                 } else {
                     // send size of map is 0
@@ -364,8 +360,7 @@ public class SocketLayer {
                             value = (String) obj;
                             break;
                         }
-                        printWriter.println(value);
-                        printWriter.flush();
+                        writeMsg(value);
                     }
                 } else {
                     // send that size of list is 0

@@ -20,39 +20,47 @@ public class Util {
 
     private Util() {
     }
-    
+
     /**
      * Parses elements of the string which are delimited by the delimiter.
-     * @param simpleString The textual list.
+     * 
+     * @param simpleString
+     *            The textual list.
      * @return A List with the String elements.
      */
     public static List<String> stringToList(String simpleString, String delimiter) {
         List<String> elements = new ArrayList<String>();
-        
+
+        System.out.println("Was passiert mit diesem String? " + simpleString);
         simpleString.trim();
         // delimiter at begin or end is not valid
         while (!isEmpty(simpleString) && simpleString.startsWith(delimiter)) {
             simpleString = simpleString.substring(1);
         }
         while (!isEmpty(simpleString) && simpleString.endsWith(delimiter)) {
-            simpleString = simpleString.substring(0, simpleString.length()-1);
+            simpleString = simpleString.substring(0, simpleString.length() - 1);
         }
-        
+
         // look for elements
         while (!isEmpty(simpleString) && simpleString.indexOf(delimiter) > -1) {
             String element = simpleString.substring(0, simpleString.indexOf(delimiter));
             elements.add(element);
+            simpleString = simpleString.substring(simpleString.indexOf(delimiter));
             // destroy multiple delimiters
             while (!isEmpty(simpleString) && simpleString.startsWith(delimiter)) {
                 simpleString = simpleString.substring(1);
             }
         }
-        
+
         // last entry, no delimiter
         if (!isEmpty(simpleString)) {
             elements.add(simpleString);
         }
-        
+
+        for (String bla : elements) {
+            System.out.println("Element in Liste: " + bla);
+        }
+
         return elements;
     }
 
@@ -80,8 +88,8 @@ public class Util {
     }
 
     /**
-     * Pr�ft ob object NULL, ein Leerstring (getrimmt), ein leeres Array (length
-     * == 0) oder eine leere Collection ist.
+     * Pr�ft ob object NULL, ein Leerstring (getrimmt), ein leeres Array
+     * (length == 0) oder eine leere Collection ist.
      * 
      * @param object
      * @return
@@ -279,7 +287,7 @@ public class Util {
             return def;
         }
     }
-    
+
     public static Boolean parseBoolean(String inputBoolean, Boolean def) {
         try {
             return Boolean.parseBoolean(inputBoolean);

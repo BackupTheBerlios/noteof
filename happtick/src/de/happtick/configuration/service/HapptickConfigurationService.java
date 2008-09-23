@@ -31,11 +31,10 @@ public class HapptickConfigurationService extends BaseService {
             deliverApplicationConfiguration();
         }
     }
-    
-    
+
     /*
-     * client has asked for application configurations.
-     * here the data is exchanged between client and service.
+     * client has asked for application configurations. here the data is
+     * exchanged between client and service.
      */
     private void deliverApplicationConfiguration() throws ActionFailedException {
         List<ApplicationConfiguration> applicationConfigurations = MasterTable.getApplicationConfigurationsAsList();
@@ -56,7 +55,7 @@ public class HapptickConfigurationService extends BaseService {
                 // confVars.put("applicationId",
                 // String.valueOf(applicationConfiguration
                 // .getApplicationId()));
-                confVars.put("nodeNameApplication", String.valueOf(applicationConfiguration.getNodeNameOfApplication()));
+                confVars.put("nodeNameApplication", String.valueOf(applicationConfiguration.getNodeNameApplication()));
                 confVars.put("clientIp", String.valueOf(applicationConfiguration.getClientIp()));
                 confVars.put("executableType", String.valueOf(applicationConfiguration.getExecutableType()));
                 confVars.put("executablePath", String.valueOf(applicationConfiguration.getExecutablePath()));
@@ -68,12 +67,15 @@ public class HapptickConfigurationService extends BaseService {
                 // time values comma separated
                 // seconds
                 String timePlanString = "";
+                System.out.println("Größe der Liste der Sekunden... " + applicationConfiguration.getTimePlanSeconds().size());
                 if (null != applicationConfiguration.getTimePlanSeconds()) {
                     for (Integer timeValue : applicationConfiguration.getTimePlanSeconds()) {
-                        timePlanString = timePlanString + timeValue + ",";
+                        timePlanString += timeValue + ",";
                     }
+                    System.out.println("timePlanString 1 = " + timePlanString);
                     if (timePlanString.endsWith(","))
                         timePlanString = timePlanString.substring(0, timePlanString.length() - 1);
+                    System.out.println("timePlanString 2 = " + timePlanString);
                 }
                 confVars.put("timePlanSeconds", timePlanString);
 

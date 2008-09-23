@@ -8,17 +8,23 @@ import org.jdom.Element;
 import de.notIOC.exception.NotIOCException;
 
 /**
- * A ConfigProperty holds informations about one configuration part. <p>
- * The object will be constructed by using the node of xml schema. After that text or attribute values are available. 
+ * A ConfigProperty holds informations about one configuration part.
+ * <p>
+ * The object will be constructed by using the node of xml schema. After that
+ * text or attribute values are available.
+ * 
  * @author Dirk
- *
+ * 
  */
 public class ConfigProperty {
     private List<Element> propertyList;
 
     /**
      * Initialization of the ConfigProperty by nodeName.
-     * @param nodeName Is the xml path to a tag within the configuration. E.g. scheduler.chains.chain
+     * 
+     * @param nodeName
+     *            Is the xml path to a tag within the configuration. E.g.
+     *            scheduler.chains.chain
      * @throws NotIOCException
      */
     public ConfigProperty(String nodeName) throws NotIOCException {
@@ -27,8 +33,12 @@ public class ConfigProperty {
 
     /**
      * Delivers the attribute value of the property.
-     * @param attributeName Name of the attribute. E.g. chain here is the attribute < use chain="true" >< /use >
-     * @param defaultValue If no value is found the default value will be returned.
+     * 
+     * @param attributeName
+     *            Name of the attribute. E.g. chain here is the attribute < use
+     *            chain="true" >< /use >
+     * @param defaultValue
+     *            If no value is found the default value will be returned.
      * @return Found attribute value or defaultValue
      */
     public String getAttribute(String attributeName, String defaultValue) {
@@ -41,7 +51,9 @@ public class ConfigProperty {
 
     /**
      * Delivers the text value of the property.
-     * @param defaultValue If no value is found the default value will be returned.
+     * 
+     * @param defaultValue
+     *            If no value is found the default value will be returned.
      * @return Found text value or defaultValue
      */
     public String getText(String defaultValue) {

@@ -133,20 +133,19 @@
 			
 			<runtime maxStartStop="300" maxStepStep="10"></runtime>
 		</application1>
-
-		<!-- application2 is the referenced nodename (see above) -->
-		<application1 applicationId="1">
+		
+		<application2 applicationId="2">
 			<client clientIp="192.168.130.1"></client>
-			<executable type="JAVA" path="c:/programme/blablubb.bat">
-				<arg>key="--blubb" value="1"</arg>
-				<arg>key="--blase" value="2"</arg>
+			<executable type="JAVA" path="c:/programme/holterdipolter.bat">
+				<arg>key="--xxx" value="10"</arg>
+				<arg>key="--yyy" value="20"</arg>
 			</executable>
-			<option multiplestart="false" enforce="false"></option>
+			<option multiplestart="true" enforce="true"></option>
 			<timeplan> 
-				<seconds>0 30</seconds> <!-- blank OR comma seperated -->
+				<seconds>0 30</seconds>
 				<minutes>15</minutes>
-				<hours>22,24</hours> <!-- blank OR comma seperated -->
-				<weekdays>TU MI FR SU</weekdays> <!-- mixed english and german is allowed -->
+				<hours>22,24</hours>
+				<weekdays>TU MI FR SU</weekdays>
 				<monthdays>13</monthdays>
 			</timeplan>
 			
@@ -160,5 +159,6 @@
 			
 			<runtime maxStartStop="300" maxStepStep="10"></runtime>
 		</application2>
+		
 	</scheduler>	
 </root>

@@ -23,7 +23,6 @@ import de.notEOF.core.interfaces.Service;
 import de.notEOF.core.interfaces.StopEvent;
 import de.notEOF.core.logging.LocalLog;
 import de.notEOF.core.util.Util;
-import de.notIOC.exception.NotIOCException;
 
 /**
  * This static class contains central informations
@@ -52,45 +51,46 @@ public class MasterTable implements EventObservable {
     private static void updateConfiguration() throws ActionFailedException {
         if (!confUpdated) {
             NotEOFConfiguration conf = new LocalConfiguration();
-            try {
-                // processChain
-                // aktiv?
-                Boolean useChain = Util.parseBoolean(conf.getAttribute("scheduler.use", "chain", "false"), false);
-                if (useChain) {
-                    // Liste der nodes
-                    List<String> nodes = conf.getTextList("scheduler.chain.application");
-                    if (null != nodes) {
-                        // for every node search applicationId and put into
-                        // local list
-                        for (String node : nodes) {
-                            // looks like scheduler.application1
-                            node = "scheduler." + node;
-                            // attribute applicationId
-                            Long applicationId = Util.parseLong(conf.getAttribute(node, "applicationId", "-1"), -1);
-                            processChain.add(applicationId);
-                        }
+            // try {
+            // processChain
+            // aktiv?
+            Boolean useChain = Util.parseBoolean(conf.getAttribute("scheduler.use", "chain", "false"), false);
+            if (useChain) {
+                // Liste der nodes
+                List<String> nodes = conf.getTextList("scheduler.chain.application");
+                if (null != nodes) {
+                    // for every node search applicationId and put into
+                    // local list
+                    for (String node : nodes) {
+                        // looks like scheduler.application1
+                        node = "scheduler." + node;
+                        // attribute applicationId
+                        Long applicationId = Util.parseLong(conf.getAttribute(node, "applicationId", "-1"), -1);
+                        processChain.add(applicationId);
                     }
                 }
-
-                // ApplicationConfigurations
-                // timer gesteuert?
-                Boolean useTimer = Util.parseBoolean(conf.getAttribute("scheduler.use", "timer", "false"), false);
-                if (useTimer) {
-                    // Liste der nodes
-                    List<String> nodes = conf.getTextList("scheduler.applications.application");
-                    if (null != nodes) {
-                        // for every node create Object ApplicationConfiguration
-                        // the Objects read the configuration by themselve
-                        for (String node : nodes) {
-                            ApplicationConfiguration applConf = new ApplicationConfiguration(node, conf);
-                            applicationConfigurations.put(applConf.getApplicationId(), applConf);
-                        }
-                    }
-                }
-
-            } catch (ActionFailedException e) {
-                LocalLog.warn("Konfiguration der Prozesskette konnte nicht gelesen werden.", e);
             }
+
+            // ApplicationConfigurations
+            // timer gesteuert?
+            Boolean useTimer = Util.parseBoolean(conf.getAttribute("scheduler.use", "timer", "false"), false);
+            if (useTimer) {
+                // Liste der nodes
+                List<String> nodes = conf.getTextList("scheduler.applications.application");
+                if (null != nodes) {
+                    // for every node create Object ApplicationConfiguration
+                    // the Objects read the configuration by themselve
+                    for (String node : nodes) {
+                        ApplicationConfiguration applConf = new ApplicationConfiguration(node, conf);
+                        applicationConfigurations.put(applConf.getApplicationId(), applConf);
+                    }
+                }
+            }
+
+            // } catch (ActionFailedException e) {
+            // LocalLog.warn(
+            // "Konfiguration für MasterTable konnte nicht gelesen werden.", e);
+            // }
 
             confUpdated = true;
         }

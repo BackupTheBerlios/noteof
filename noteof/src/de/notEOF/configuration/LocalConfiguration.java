@@ -42,6 +42,8 @@ public class LocalConfiguration implements NotEOFConfiguration {
 
     public String getAttribute(String xmlPath, String attributeName, String defaultValue) throws ActionFailedException {
         try {
+            System.out.println("xmlPath = " + xmlPath + ";");
+            System.out.println("attributeName = " + attributeName + ";");
             return ConfigurationManager.getProperty(xmlPath).getAttribute(attributeName, defaultValue);
         } catch (Exception ex) {
             LocalLog.warn("Konfigurationswert fehlt: " + xmlPath + "; Default Wert wird verwendet: " + defaultValue);

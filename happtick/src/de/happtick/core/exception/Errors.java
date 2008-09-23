@@ -41,7 +41,7 @@ public class Errors {
         errorList.put(1L, "Nicht erwarteter Fehler.");
 
         // Initializing the happtick client
-        errorList.put(50L, "Unvollstï¿½ndige Initialisierung des Happtick Client.");
+        errorList.put(50L, "Unvollständige Initialisierung des Happtick Client.");
 
         // Initializing the happtick service
         errorList.put(60L, "Unvollstï¿½ndige Initialisierung des Happtick Service.");
@@ -62,8 +62,9 @@ public class Errors {
         // Service lifecycle faults
         errorList.put(300L, "");
 
-        // MasterTable errors
-        errorList.put(400L, "Hinzufï¿½gen eines Service ist fehlgeschlagen. Falscher Service-Typ.");
+        // MasterTable errors / Configuration
+        errorList.put(400L, "Hinzufügen eines Service ist fehlgeschlagen. Falscher Service-Typ.");
+        errorList.put(401L, "Fehler bei Lesen der Client-Konfiguration.");
 
         // Scheduler faults
         errorList.put(500L, "Ermitteln des Startservice zur Anwendung ist fehlgeschlagen.");

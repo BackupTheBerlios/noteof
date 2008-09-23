@@ -1,5 +1,6 @@
 package de.happtick.configuration.client;
 
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -9,9 +10,18 @@ import de.happtick.configuration.enumeration.HapptickConfigTag;
 import de.notEOF.core.client.BaseClient;
 import de.notEOF.core.communication.DataObject;
 import de.notEOF.core.exception.ActionFailedException;
+import de.notEOF.core.interfaces.TimeOut;
 import de.notEOF.core.util.Util;
 
 public class HapptickConfigurationClient extends BaseClient {
+
+    public HapptickConfigurationClient(Socket socketToServer, TimeOut timeout, String[] args) throws ActionFailedException {
+        super(socketToServer, timeout, args);
+    }
+
+    public HapptickConfigurationClient(String ip, int port, TimeOut timeout, String... args) throws ActionFailedException {
+        super(ip, port, timeout, args);
+    }
 
     /**
      * Requests the service for a list of all configured applications. <br>
@@ -77,6 +87,7 @@ public class HapptickConfigurationClient extends BaseClient {
                 applConfs.add(applConf);
 
                 applicationId = requestTo(HapptickConfigTag.REQ_NEXT_APPLICATION_CONFIGURATION, HapptickConfigTag.RESP_NEXT_APPLICATION_CONFIGURATION);
+                System.out.println("applicationId = '" + applicationId + "'");
             }
         }
         return applConfs;
