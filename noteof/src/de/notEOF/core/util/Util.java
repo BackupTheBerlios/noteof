@@ -30,8 +30,6 @@ public class Util {
      */
     public static List<String> stringToList(String simpleString, String delimiter) {
         List<String> elements = new ArrayList<String>();
-
-        System.out.println("Was passiert mit diesem String? " + simpleString);
         simpleString.trim();
         // delimiter at begin or end is not valid
         while (!isEmpty(simpleString) && simpleString.startsWith(delimiter)) {
@@ -55,10 +53,6 @@ public class Util {
         // last entry, no delimiter
         if (!isEmpty(simpleString)) {
             elements.add(simpleString);
-        }
-
-        for (String bla : elements) {
-            System.out.println("Element in Liste: " + bla);
         }
 
         return elements;

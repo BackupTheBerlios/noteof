@@ -75,6 +75,10 @@ public class Errors {
         errorList.put(151L, "Service kennt empfangene Nachricht nicht.");
         errorList.put(152L, "Service Klasse wurde nicht gefunden. Service muss mittels CLASSPATH auffindbar sein.");
 
+        // Converting problems
+        errorList.put(200L, "Fehler bei Umwandlung eines Strings in eine Zahl.");
+        errorList.put(201L, "Fehler bei Umwandlung einer Zahl in einen String.");
+
         // Special client/service messages up from 1000L
         // Dispatching
         errorList.put(1000L, "Dispatch Service steht auf angefragtem Server nicht zur Verfügung.");

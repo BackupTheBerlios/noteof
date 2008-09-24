@@ -66,6 +66,96 @@ public class SocketLayer {
         }
     }
 
+    protected int readInt() throws ActionFailedException {
+        String value = readMsg();
+        try {
+            return Integer.parseInt(value);
+        } catch (Exception e) {
+            throw new ActionFailedException(200, "Integer String: " + value, e);
+        }
+    }
+
+    protected long readLong() throws ActionFailedException {
+        String value = readMsg();
+        try {
+            return Long.parseLong(value);
+        } catch (Exception e) {
+            throw new ActionFailedException(200, "Long String: " + value, e);
+        }
+    }
+
+    protected float readFloat() throws ActionFailedException {
+        String value = readMsg();
+        try {
+            return Float.parseFloat(value);
+        } catch (Exception e) {
+            throw new ActionFailedException(200, "Float String: " + value, e);
+        }
+    }
+
+    protected double readDouble() throws ActionFailedException {
+        String value = readMsg();
+        try {
+            return Double.parseDouble(value);
+        } catch (Exception e) {
+            throw new ActionFailedException(200, "Double String: " + value, e);
+        }
+    }
+
+    protected short readShort() throws ActionFailedException {
+        String value = readMsg();
+        try {
+            return Short.parseShort(value);
+        } catch (Exception e) {
+            throw new ActionFailedException(200, "Short String: " + value, e);
+        }
+    }
+
+    protected void writeInt(int value) throws ActionFailedException {
+        try {
+            String msg = String.valueOf(value);
+            writeMsg(msg);
+        } catch (Exception e) {
+            throw new ActionFailedException(201, "Int Value: " + value, e);
+        }
+    }
+
+    protected void writeLong(long value) throws ActionFailedException {
+        try {
+            String msg = String.valueOf(value);
+            writeMsg(msg);
+        } catch (Exception e) {
+            throw new ActionFailedException(201, "Long Value: " + value, e);
+        }
+    }
+
+    protected void writeDouble(double value) throws ActionFailedException {
+        try {
+            String msg = String.valueOf(value);
+            writeMsg(msg);
+        } catch (Exception e) {
+            throw new ActionFailedException(201, "Double Value: " + value, e);
+        }
+    }
+
+    protected void writeFloat(float value) throws ActionFailedException {
+        try {
+            String msg = String.valueOf(value);
+            writeMsg(msg);
+        } catch (Exception e) {
+            throw new ActionFailedException(200, "Float Value: " + value, e);
+        }
+    }
+
+    protected void writeShort(short value) throws ActionFailedException {
+        try {
+            String msg = String.valueOf(value);
+            writeMsg(msg);
+        } catch (Exception e) {
+            throw new ActionFailedException(200, "Short Value: " + value, e);
+        }
+    }
+
     /*
      * If a message contains lifesigns, a read is required once more. Additional
      * the last time when a lifesign came in will be updated. This method
@@ -152,23 +242,23 @@ public class SocketLayer {
 
             switch (dataType) {
             case SHORT:
-                dataObject.setShort(inputStream.readShort());
+                dataObject.setShort(readShort());
                 break;
 
             case INT:
-                dataObject.setInt(inputStream.readInt());
+                dataObject.setInt(readInt());
                 break;
 
             case LONG:
-                dataObject.setLong(inputStream.readLong());
+                dataObject.setLong(readLong());
                 break;
 
             case FLOAT:
-                dataObject.setFloat(inputStream.readFloat());
+                dataObject.setFloat(readFloat());
                 break;
 
             case DOUBLE:
-                dataObject.setDouble(inputStream.readDouble());
+                dataObject.setDouble(readDouble());
                 break;
 
             case CHAR:
@@ -201,7 +291,7 @@ public class SocketLayer {
                 break;
 
             case MAP_STRING_STRING:
-                int mapSize = inputStream.readInt();
+                int mapSize = readInt();
                 if (0 != mapSize) {
                     Map<String, String> map = new HashMap<String, String>();
                     for (int i = 0; i < mapSize; i++) {
@@ -214,8 +304,8 @@ public class SocketLayer {
                 break;
 
             case LIST:
-                int listSize = inputStream.readInt();
-                int listTypeInt = inputStream.readInt();
+                int listSize = readInt();
+                int listTypeInt = readInt();
                 DataObjectListTypes listType = DataObjectListTypes.values()[listTypeInt];
 
                 List list = new ArrayList();
@@ -275,23 +365,23 @@ public class SocketLayer {
 
             switch (dataType) {
             case SHORT:
-                outputStream.writeShort(dataObject.getShort());
+                writeShort(dataObject.getShort());
                 break;
 
             case INT:
-                outputStream.writeInt(dataObject.getInt());
+                writeInt(dataObject.getInt());
                 break;
 
             case LONG:
-                outputStream.writeLong(dataObject.getLong());
+                writeLong(dataObject.getLong());
                 break;
 
             case FLOAT:
-                outputStream.writeFloat(dataObject.getFloat());
+                writeFloat(dataObject.getFloat());
                 break;
 
             case DOUBLE:
-                outputStream.writeDouble(dataObject.getDouble());
+                writeDouble(dataObject.getDouble());
                 break;
 
             case CHAR:
@@ -327,7 +417,7 @@ public class SocketLayer {
                 if (null != dataObject.getMap()) {
                     Map<String, String> map = dataObject.getMap();
                     Set<Map.Entry<String, String>> mapSet = map.entrySet();
-                    outputStream.writeInt(mapSet.size());
+                    writeInt(mapSet.size());
                     for (Map.Entry<String, String> mapEntry : mapSet) {
                         // send key
                         writeMsg(mapEntry.getKey());
@@ -336,8 +426,7 @@ public class SocketLayer {
                     }
                 } else {
                     // send size of map is 0
-                    outputStream.writeInt(0);
-                    outputStream.flush();
+                    writeInt(0);
                 }
                 break;
 
@@ -345,11 +434,9 @@ public class SocketLayer {
                 if (null != dataObject.getList()) {
                     List<?> list = dataObject.getList();
 
-                    outputStream.writeInt(list.size());
-                    outputStream.flush();
+                    writeInt(list.size());
                     String value = "";
-                    outputStream.writeInt(dataObject.getListObjectType().ordinal());
-                    outputStream.flush();
+                    writeInt(dataObject.getListObjectType().ordinal());
                     for (Object obj : list) {
                         switch (dataObject.getListObjectType()) {
                         case INTEGER:
@@ -364,8 +451,7 @@ public class SocketLayer {
                     }
                 } else {
                     // send that size of list is 0
-                    outputStream.writeInt(0);
-                    outputStream.flush();
+                    writeInt(0);
                 }
                 break;
 

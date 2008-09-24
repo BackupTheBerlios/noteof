@@ -64,7 +64,6 @@ public class ConfigurationService extends BaseService {
                 // single value
                 configObject.setConfigurationValue(values.get(0));
             }
-            System.out.println("Aufruf sendDataObject im ConfigurationService");
             sendDataObject(configObject);
         }
     }
