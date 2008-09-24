@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import de.happtick.configuration.ApplicationConfiguration;
+import de.happtick.configuration.ApplicationConfigurationWrapper;
 import de.happtick.configuration.enumeration.HapptickConfigTag;
 import de.happtick.core.MasterTable;
 import de.notEOF.core.communication.DataObject;
@@ -43,126 +44,17 @@ public class HapptickConfigurationService extends BaseService {
             // request for them
             responseTo(HapptickConfigTag.RESP_ALL_APPLICATION_CONFIGURATIONS, HapptickConfigTag.INFO_OK.name());
             for (ApplicationConfiguration applicationConfiguration : applicationConfigurations) {
-                // prepare and send part one:
-                // the applicationId like configured
                 awaitRequestAnswerImmediate(HapptickConfigTag.REQ_NEXT_APPLICATION_CONFIGURATION, HapptickConfigTag.RESP_NEXT_APPLICATION_CONFIGURATION,
-                                            applicationConfiguration.getApplicationId().toString());
+                                            HapptickConfigTag.INFO_OK.name());
 
-                // prepare part two:
-                // all data except the map of calling arguments (parameters)
-                // as one big list
-                Map<String, String> confVars = new HashMap<String, String>();
-                // confVars.put("applicationId",
-                // String.valueOf(applicationConfiguration
-                // .getApplicationId()));
-                confVars.put("nodeNameApplication", String.valueOf(applicationConfiguration.getNodeNameApplication()));
-                confVars.put("clientIp", String.valueOf(applicationConfiguration.getClientIp()));
-                confVars.put("executableType", String.valueOf(applicationConfiguration.getExecutableType()));
-                confVars.put("executablePath", String.valueOf(applicationConfiguration.getExecutablePath()));
-                confVars.put("multipleStart", String.valueOf(applicationConfiguration.isMultipleStart()));
-                confVars.put("enforce", String.valueOf(applicationConfiguration.isEnforce()));
-                confVars.put("maxStartStop", String.valueOf(applicationConfiguration.getMaxStartStop()));
-                confVars.put("maxStepStep", String.valueOf(applicationConfiguration.getMaxStepStep()));
+                ApplicationConfigurationWrapper applWrap = new ApplicationConfigurationWrapper(applicationConfiguration);
+                Map<String, String> confVars = applWrap.getMap();
 
-                // time values comma separated
-                // seconds
-                String timePlanString = "";
-                System.out.println("Größe der Liste der Sekunden... " + applicationConfiguration.getTimePlanSeconds().size());
-                if (null != applicationConfiguration.getTimePlanSeconds()) {
-                    for (Integer timeValue : applicationConfiguration.getTimePlanSeconds()) {
-                        timePlanString += timeValue + ",";
-                    }
-                    System.out.println("timePlanString 1 = " + timePlanString);
-                    if (timePlanString.endsWith(","))
-                        timePlanString = timePlanString.substring(0, timePlanString.length() - 1);
-                    System.out.println("timePlanString 2 = " + timePlanString);
-                }
-                confVars.put("timePlanSeconds", timePlanString);
-
-                // minutes
-                timePlanString = "";
-                if (null != applicationConfiguration.getTimePlanMinutes()) {
-                    for (Integer timeValue : applicationConfiguration.getTimePlanMinutes()) {
-                        timePlanString = timePlanString + timeValue + ",";
-                    }
-                    if (timePlanString.endsWith(","))
-                        timePlanString = timePlanString.substring(0, timePlanString.length() - 1);
-                }
-                confVars.put("timePlanMinutes", timePlanString);
-
-                // hours
-                timePlanString = "";
-                if (null != applicationConfiguration.getTimePlanHours()) {
-                    for (Integer timeValue : applicationConfiguration.getTimePlanHours()) {
-                        timePlanString = timePlanString + timeValue + ",";
-                    }
-                    if (timePlanString.endsWith(","))
-                        timePlanString = timePlanString.substring(0, timePlanString.length() - 1);
-                }
-                confVars.put("timePlanHours", timePlanString);
-
-                // weekdays
-                timePlanString = "";
-                if (null != applicationConfiguration.getTimePlanWeekdays()) {
-                    for (Integer timeValue : applicationConfiguration.getTimePlanWeekdays()) {
-                        timePlanString = timePlanString + timeValue + ",";
-                    }
-                    if (timePlanString.endsWith(","))
-                        timePlanString = timePlanString.substring(0, timePlanString.length() - 1);
-                }
-                confVars.put("timePlanWeekdays", timePlanString);
-
-                // days of month
-                timePlanString = "";
-                if (null != applicationConfiguration.getTimePlanMonthdays()) {
-                    for (Integer timeValue : applicationConfiguration.getTimePlanMonthdays()) {
-                        timePlanString = timePlanString + timeValue + ",";
-                    }
-                    if (timePlanString.endsWith(","))
-                        timePlanString = timePlanString.substring(0, timePlanString.length() - 1);
-                }
-                confVars.put("timePlanMonthdays", timePlanString);
-
-                // dependencies also as comma separated lists
-                // applications to wait for
-                String appIdString = "";
-                if (null != applicationConfiguration.getApplicationsWaitFor()) {
-                    for (Long appId : applicationConfiguration.getApplicationsWaitFor()) {
-                        appIdString = appIdString + appId + ",";
-                    }
-                    if (appIdString.endsWith(","))
-                        appIdString = appIdString.substring(0, appIdString.length() - 1);
-                }
-                confVars.put("applicationsWaitFor", appIdString);
-
-                // applications to start after
-                appIdString = "";
-                if (null != applicationConfiguration.getApplicationsStartAfter()) {
-                    for (Long appId : applicationConfiguration.getApplicationsStartAfter()) {
-                        appIdString = appIdString + appId + ",";
-                    }
-                    if (appIdString.endsWith(","))
-                        appIdString = appIdString.substring(0, appIdString.length() - 1);
-                }
-                confVars.put("applicationsStartAfter", appIdString);
-
-                // applications start synchronously
-                appIdString = "";
-                if (null != applicationConfiguration.getApplicationsStartSync()) {
-                    for (Long appId : applicationConfiguration.getApplicationsStartSync()) {
-                        appIdString = appIdString + appId + ",";
-                    }
-                    if (appIdString.endsWith(","))
-                        appIdString = appIdString.substring(0, appIdString.length() - 1);
-                }
-                confVars.put("applicationsStartSync", appIdString);
-
-                // send part two: the map with list-data
+                // send the map with list-data
                 DataObject confObject = new DataObject();
                 confObject.setMap(confVars);
                 sendDataObject(confObject);
 
-                // prepare and send part three:
                 // arguments
                 DataObject argsData = new DataObject();
                 Map<String, String> args;
@@ -175,9 +67,10 @@ public class HapptickConfigurationService extends BaseService {
 
             }
             // the client requests as long for next configuration as we send
-            // a valid applicationId. So the next statement answers with an
-            // empty id.
-            awaitRequestAnswerImmediate(HapptickConfigTag.REQ_NEXT_APPLICATION_CONFIGURATION, HapptickConfigTag.RESP_NEXT_APPLICATION_CONFIGURATION, "");
+            // an OK . So the next statement answers with no more
+            // configurations.
+            awaitRequestAnswerImmediate(HapptickConfigTag.REQ_NEXT_APPLICATION_CONFIGURATION, HapptickConfigTag.RESP_NEXT_APPLICATION_CONFIGURATION,
+                                        HapptickConfigTag.INFO_NO_CONFIGURATION.name());
         }
     }
 

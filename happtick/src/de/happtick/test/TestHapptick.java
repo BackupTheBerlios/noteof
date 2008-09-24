@@ -43,7 +43,21 @@ public class TestHapptick {
             List<ApplicationConfiguration> list = hConfClient.getApplicationConfigurations();
             if (null != list && list.size() > 0) {
                 for (ApplicationConfiguration appConf : list) {
-                    System.out.println("appConf... " + appConf.getNodeNameApplication());
+                    System.out.println("appConf... Name: " + appConf.getNodeNameApplication());
+                    System.out.println("appConf... Id:   " + appConf.getApplicationId());
+
+                    for (Integer integer : appConf.getTimePlanSeconds()) {
+                        System.out.println("Sekunden... :" + integer);
+                    }
+                    for (Integer integer : appConf.getTimePlanMinutes()) {
+                        System.out.println("Minuten... :" + integer);
+                    }
+                    for (Integer integer : appConf.getTimePlanMonthdays()) {
+                        System.out.println("MonthDays... :" + integer);
+                    }
+                    for (Integer integer : appConf.getTimePlanWeekdays()) {
+                        System.out.println("WeekDays... :" + integer);
+                    }
                 }
             }
             hConfClient.close();
