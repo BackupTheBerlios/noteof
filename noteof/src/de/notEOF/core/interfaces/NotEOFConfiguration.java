@@ -122,6 +122,20 @@ public interface NotEOFConfiguration {
     public String getText(String xmlPath, String defaultValue) throws ActionFailedException;
 
     /**
+     * Enforce the server to use one more configuration file that is not stored
+     * within the basic config file. This file may be stored under another path
+     * than the other ones.
+     * 
+     * @param fileName
+     *            Must be the complete path on server side (e.g.
+     *            /home/conf/fileName.xml).
+     * @throws ActionFailedException
+     *             If there are problems during the communication or the server
+     *             tells that an error occured.
+     */
+    public void addConfigurationFile(String fileName) throws ActionFailedException;
+
+    /**
      * Close connections, files, whatever. Depending to the kind of the
      * implementation it is possible that the implementation does nothing (empty
      * body).

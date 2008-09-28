@@ -84,6 +84,11 @@ public class ConfigurationClient extends BaseClient implements NotEOFConfigurati
         return "de.notEOF.configuration.service.ConfigurationService";
     }
 
+    public void addConfigurationFile(String fileName) throws ActionFailedException {
+        writeMsg(ConfigurationTag.REQ_ADD_CONF_FILE);
+        awaitRequestAnswerImmediate(ConfigurationTag.REQ_CONF_FILE_NAME, ConfigurationTag.RESP_CONF_FILE_NAME, fileName);
+    }
+
     public String getAttribute(String xmlConfKey, String attributeName) throws ActionFailedException {
         List<String> newList = getAttributeList(xmlConfKey, attributeName);
         if (null == newList)

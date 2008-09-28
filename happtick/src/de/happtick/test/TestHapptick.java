@@ -18,7 +18,7 @@ public class TestHapptick {
         try {
             // Umgebungsvariablen sind durch Server-Start-Einstellungen bekannt
             NotEOFConfiguration conf1 = new ConfigurationClient("localhost", 3000, null);
-            NotEOFConfiguration conf2 = new LocalConfiguration();
+            conf1.addConfigurationFile("c:/Projekte/workspace/happtick/conf/happtick_appl.xml");
 
             List<String> serviceTypes = conf1.getAttributeList("serviceTypes", "simpleName");
             if (null != serviceTypes) {
@@ -28,7 +28,9 @@ public class TestHapptick {
             }
 
             // Für lokale Konfiguration Umgebungsvariablen festlegen
+            NotEOFConfiguration conf2 = new LocalConfiguration();
             ConfigurationManager.setInitialEnvironment("NOTEOF_HOME", "conf", "noteof_master.xml");
+            conf2.addConfigurationFile("c:/Projekte/workspace/happtick/conf/happtick_appl.xml");
             System.out.println("bla... " + ConfigurationManager.getApplicationHome());
             serviceTypes = conf2.getAttributeList("serviceTypes", "simpleName");
             if (null != serviceTypes) {

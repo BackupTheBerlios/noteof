@@ -13,6 +13,10 @@ public enum ConfigurationTag {
     REQ_KEY_FOUND,
     RESP_KEY_FOUND,
 
+    REQ_ADD_CONF_FILE,
+    REQ_CONF_FILE_NAME,
+    RESP_CONF_FILE_NAME,
+
     INFO_OK,
     INFO_FAULT
 }

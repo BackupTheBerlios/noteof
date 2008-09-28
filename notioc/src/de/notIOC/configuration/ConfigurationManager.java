@@ -91,6 +91,23 @@ public class ConfigurationManager {
     }
 
     /**
+     * Add one more file to the configuration.
+     * <p>
+     * With this method it is possible to add a xml configuration file which is
+     * not stored under the same path as the master xml and the other
+     * configuration files.
+     * 
+     * @param fileName
+     *            Complete path (e.g. /home/conf/fileName.xml)
+     * @throws NotIOCException
+     *             If fileName is NULL or file described by this path doesn't
+     *             exists.
+     */
+    public static void addConfigurationFile(String fileName) throws NotIOCException {
+        ConfigurationStore.addConfigurationFile(fileName);
+    }
+
+    /**
      * Delivers the manager itself. <br>
      * Normally the manager is not requested by other objects except for the
      * central configuration management. <br>
@@ -107,6 +124,11 @@ public class ConfigurationManager {
      * @return Central configuration path (CFGROOT, NOTEOF_HOME)
      */
     public static String getApplicationHome() {
+        boolean showInfo = false;
+        if (null == notEOFHome) {
+            showInfo = true;
+        }
+
         // Configuration Root depends to Tomcat variable
         if (notEOFHome == null) {
             try {
@@ -131,7 +153,9 @@ public class ConfigurationManager {
         if (notEOFHome == null) {
             throw new RuntimeException("Could not determine home variable: " + homeVarName);
         }
-        System.out.println("Project environment home variable: '" + homeVarName + "'; Value: " + notEOFHome);
+
+        if (showInfo)
+            System.out.println("Project environment home variable: '" + homeVarName + "'; Value: " + notEOFHome);
         return notEOFHome;
     }
 

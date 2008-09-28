@@ -14,6 +14,21 @@ import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.interfaces.TimeOut;
 import de.notEOF.core.util.Util;
 
+/**
+ * Because of it is possible that the configuration of happtick is stored at
+ * another server, the configuration should be read in a network manner. <br>
+ * This class offers access to the happtick configuration by using the !EOF
+ * client/server functionality. <br>
+ * 
+ * It delivers <br>
+ * - Configurations of applications <br>
+ * - Configurations of events <br>
+ * - Configurations of chains <br>
+ * - The kind how the scheduling of happtick is used (chains and/or timer).
+ * 
+ * @author Dirk
+ * 
+ */
 public class HapptickConfigurationClient extends BaseClient {
 
     public HapptickConfigurationClient(Socket socketToServer, TimeOut timeout, String[] args) throws ActionFailedException {

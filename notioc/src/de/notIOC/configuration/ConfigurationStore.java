@@ -16,6 +16,16 @@ import de.notIOC.util.Util;
 
 /**
  * Read and (in a later version) write XML files.
+ * <p>
+ * 
+ * Normally an application under !EOF tells the framework the name of the master
+ * environment variable (e.g. NOT_EOF_HOME), the value of this variable (e.g.
+ * /home/notEof), the configuration pathname (e.g. conf) and the name of the
+ * master xml file (e.g. noteof_master.xml). <br>
+ * The master xml can contain configuration parameters and other names of
+ * configuration files which are used. <br>
+ * This files must stored under the same configuration path as the master xml
+ * file.
  * 
  * @author Dirk
  * 
@@ -48,6 +58,27 @@ public class ConfigurationStore {
     }
 
     /**
+     * Add one more file to the configuration.
+     * <p>
+     * With this method it is possible to add a xml configuration file which is
+     * not stored under the same path as the master xml and the other
+     * configuration files.
+     * 
+     * @param fileName
+     *            Complete path (e.g. /home/conf/fileName.xml)
+     */
+    public static void addConfigurationFile(String fileName) throws NotIOCException {
+        if (null == fileName)
+            throw new NotIOCException(5L, "Name der Konfigurationsdatei is NULL");
+        File dummyFile = new File(fileName);
+        if (dummyFile.exists())
+            theStore.addXmlFile(fileName);
+        else {
+            throw new NotIOCException(5L, "Datei existiert nicht.");
+        }
+    }
+
+    /**
      * Returns an node element of the xml configuration.
      * <p>
      * 
@@ -68,7 +99,9 @@ public class ConfigurationStore {
     }
 
     /*
-     * Add an xml file to the configuration.
+     * Add xml-configuration file to the configuration.
+     * 
+     * @param fileName The complete path.
      */
     private void addXmlFile(String fileName) {
         if (null == configurationFiles)

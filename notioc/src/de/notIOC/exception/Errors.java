@@ -43,7 +43,7 @@ public class Errors {
         errorList.put(1L, "Nicht erwarteter Fehler.");
 
         // Basic problemes with configuration
-        errorList.put(5L, "Konfigurationsdatei konnte nicht verarbeitet werden.");
+        errorList.put(5L, "Fehler bei Verarbeitung einer Konfigurationsdatei.");
         errorList.put(6L, "Unzulässige mehrfache Initialisierung der zentralen Konfigurationsdatei.");
         errorList.put(7L, "Refresh auf Konfiguration ist fehlgeschlagen.");
 
@@ -55,6 +55,7 @@ public class Errors {
         errorList.put(14L, "Konfigurationswert ist leer oder existiert nicht.");
         errorList.put(15L, "Sichtbarkeit des Konfigurationswertes konnte nicht ermittelt werden.");
         errorList.put(16L, "Option zu Schlüssel wurde nicht gefunden.");
+
     }
 
     /*

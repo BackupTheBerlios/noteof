@@ -1,6 +1,5 @@
 package de.happtick.core.application.client;
 
-import de.happtick.application.client.HapptickApplication;
 import de.happtick.core.application.service.ApplicationService;
 import de.happtick.core.enumeration.ApplicationTag;
 import de.happtick.core.exception.HapptickException;
@@ -19,7 +18,6 @@ import de.notEOF.core.util.Util;
  * logic. <br>
  * The business logic is implemented in the Client class.
  * 
- * @see HapptickApplication
  * @author dirk
  * 
  */

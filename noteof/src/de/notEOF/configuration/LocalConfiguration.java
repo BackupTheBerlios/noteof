@@ -7,6 +7,7 @@ import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.interfaces.NotEOFConfiguration;
 import de.notEOF.core.logging.LocalLog;
 import de.notIOC.configuration.ConfigurationManager;
+import de.notIOC.exception.NotIOCException;
 import de.notIOC.util.Util;
 
 /**
@@ -20,6 +21,14 @@ public class LocalConfiguration implements NotEOFConfiguration {
 
     public static String getApplicationHome() {
         return ConfigurationManager.getApplicationHome();
+    }
+
+    public void addConfigurationFile(String fileName) throws ActionFailedException {
+        try {
+            ConfigurationManager.addConfigurationFile(fileName);
+        } catch (NotIOCException e) {
+            throw new ActionFailedException(36L, "Dateiname: " + fileName, e);
+        }
     }
 
     public List<String> getAttributeList(String xmlPath, String attributeName) throws ActionFailedException {
