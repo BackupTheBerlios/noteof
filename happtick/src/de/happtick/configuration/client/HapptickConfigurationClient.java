@@ -8,6 +8,7 @@ import java.util.Map;
 import de.happtick.configuration.ApplicationConfiguration;
 import de.happtick.configuration.ApplicationConfigurationWrapper;
 import de.happtick.configuration.ChainConfiguration;
+import de.happtick.configuration.ChainConfigurationWrapper;
 import de.happtick.configuration.enumeration.HapptickConfigTag;
 import de.notEOF.core.client.BaseClient;
 import de.notEOF.core.communication.DataObject;
@@ -61,7 +62,17 @@ public class HapptickConfigurationClient extends BaseClient {
             // service perhaps will send some chains
             String next = requestTo(HapptickConfigTag.REQ_NEXT_CHAIN_CONFIGURATION, HapptickConfigTag.RESP_NEXT_CHAIN_CONFIGURATION);
             while (!Util.isEmpty(next) && next.equals(HapptickConfigTag.INFO_OK.name())) {
+                ChainConfiguration chainConf = null;
+                DataObject vars = receiveDataObject();
+                if (null != vars) {
+                    Map<String, String> confVars = vars.getMap();
+                    if (null != confVars) {
+                        ChainConfigurationWrapper chainWrap = new ChainConfigurationWrapper(confVars);
+                        chainConf = chainWrap.getChainConfiguration();
+                    }
+                }
 
+                chainConfs.add(chainConf);
                 next = requestTo(HapptickConfigTag.REQ_NEXT_CHAIN_CONFIGURATION, HapptickConfigTag.RESP_NEXT_CHAIN_CONFIGURATION);
             }
         }

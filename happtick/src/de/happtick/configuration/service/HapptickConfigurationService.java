@@ -30,6 +30,14 @@ public class HapptickConfigurationService extends BaseService {
         if (HapptickConfigTag.REQ_ALL_APPLICATION_CONFIGURATIONS.equals(configTag)) {
             deliverApplicationConfiguration();
         }
+
+        if (HapptickConfigTag.REQ_ALL_CHAIN_CONFIGURATIONS.equals(configTag)) {
+            deliverChainConfiguration();
+        }
+    }
+
+    private void deliverChainConfiguration() throws ActionFailedException {
+
     }
 
     /*
