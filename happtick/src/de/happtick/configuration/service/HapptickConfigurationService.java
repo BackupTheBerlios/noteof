@@ -1,6 +1,5 @@
 package de.happtick.configuration.service;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -54,17 +53,6 @@ public class HapptickConfigurationService extends BaseService {
                 DataObject confObject = new DataObject();
                 confObject.setMap(confVars);
                 sendDataObject(confObject);
-
-                // arguments
-                DataObject argsData = new DataObject();
-                Map<String, String> args;
-                args = applicationConfiguration.getExecutableArgs();
-                if (null == args) {
-                    args = new HashMap<String, String>();
-                }
-                argsData.setMap(args);
-                sendDataObject(argsData);
-
             }
             // the client requests as long for next configuration as we send
             // an OK . So the next statement answers with no more

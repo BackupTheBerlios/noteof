@@ -30,19 +30,32 @@
 	     -->
 	    <chains>
 		    <!-- The list of chains.
+		    	Chains can be chained to...
 		    	Here also the order within the list is the order how the scheduler starts chains.
 		     -->
 	    	<chain>chain1</chain>
 	    	<chain>chain2</chain>
 
 		    <chain1 depends="false" loop="true" chainId="1">
-				<application applicationId="1" conditionEventId="1" preventEvendId="2" skip="false"></application>
-				<application applicationId="2"></application>
-				<chain>chainId="2"</chain>
+		    	<!-- The order for start applications and ...chains -->
+		    	<link>link0</link>
+		    	<link>link2</link>
+		    	<link>link1</link>
+		    	
+		    	<!-- The applications and chains to start
+		    	     Note that id's here are named id for applications and for chains.
+		    	     skip is optional, default is false.
+		    	-->
+				<link0 type="application" id="1" conditionEventId="1" preventEvendId="2" skip="false"></link0>
+				<link1 type="application" id="2"></link1>
+				<link2 type="chain" id="2"></link2>
 		    </chain1>
+		    
 		    <chain2 depends="true" loop="false" chainId="2">
-				<application applicationId="1"></application>
-				<application applicationId="2"></application>
+		    	<link>link0</link>
+		    	<link>link1</link>
+				<link0 type="application" id="1"></link0>
+				<link1 type="application" id="2"></link1>
 		    </chain2>
 	    </chains>
 	    
@@ -84,8 +97,7 @@
 			     arg is a calling argument
 			--> 
 			<executable type="JAVA" path="c:/programme/blablubb.bat">
-				<arg>key="--blubb" value="1"</arg>
-				<arg>key="--blase" value="2"</arg>
+				<args>--blubb="1" --blase=2</args>
 			</executable>
 			<!-- schedule
 			     
@@ -137,8 +149,7 @@
 		<application2 applicationId="2">
 			<client clientIp="192.168.130.1"></client>
 			<executable type="JAVA" path="c:/programme/holterdipolter.bat">
-				<arg>key="--xxx" value="10"</arg>
-				<arg>key="--yyy" value="20"</arg>
+				<args>--xxx="10" --yyy=20</args>
 			</executable>
 			<option multiplestart="true" enforce="true"></option>
 			<timeplan> 

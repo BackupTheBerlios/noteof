@@ -16,10 +16,12 @@ import de.notEOF.core.util.Util;
 /**
  * This client has less business logic and more connection / communication
  * logic. <br>
- * The business logic is implemented in the Client class.
+ * The business logic must be implemented in the class which uses this client. <br>
+ * The main goal to use the ApplicationClient is e.g. to ensure that no
+ * instances of the application already is running and to inform the service
+ * about events. <br>
  * 
  * @author dirk
- * 
  */
 public class ApplicationClient extends BaseClient {
 

@@ -52,6 +52,21 @@ public class HapptickConfiguration {
     }
 
     /**
+     * Requests the service for a list of all configured chains. <br>
+     * Every call of this function executes a complex communication act between
+     * the client and the service. So be sure that a repeated call is really
+     * required before you do so.
+     * 
+     * @return A list with the chain configurations like stored in the happtick
+     *         xml file.
+     * @throws ActionFailedException
+     *             If any exception occurs.
+     */
+    public List<ChainConfiguration> getChainConfigurations() throws ActionFailedException {
+        return happConfClient.getChainConfigurations();
+    }
+
+    /**
      * The scheduler of happtick can work in different manners. <br>
      * This method looks if the timer-mode is active.
      * 

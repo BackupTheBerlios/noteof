@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 import de.happtick.configuration.ApplicationConfiguration;
+import de.happtick.configuration.ChainConfiguration;
 import de.happtick.core.application.service.ApplicationService;
 import de.happtick.core.events.ApplicationStopEvent;
 import de.happtick.core.exception.HapptickException;
@@ -39,7 +40,7 @@ public class MasterTable implements EventObservable {
     private static Map<String, ApplicationService> applicationServices = new HashMap<String, ApplicationService>();
     private static List<EventObserver> eventObservers = new ArrayList<EventObserver>();
     private static Map<String, StartService> startServices = new HashMap<String, StartService>();
-    private static List<Long> processChain = new ArrayList<Long>();
+    private static Map<Long, ChainConfiguration> chainConfigurations = new HashMap<Long, ChainConfiguration>();
 
     private static boolean inAction = false;
     private static boolean confUpdated = false;
@@ -57,16 +58,13 @@ public class MasterTable implements EventObservable {
             Boolean useChain = Util.parseBoolean(conf.getAttribute("scheduler.use", "chain", "false"), false);
             if (useChain) {
                 // Liste der nodes
-                List<String> nodes = conf.getTextList("scheduler.chain.application");
+                List<String> nodes = conf.getTextList("scheduler.chains.chain");
                 if (null != nodes) {
-                    // for every node search applicationId and put into
-                    // local list
+                    // for every node create object of type ChainConfiguration
+                    // the objects initialize themselve with configuration data
                     for (String node : nodes) {
-                        // looks like scheduler.application1
-                        node = "scheduler." + node;
-                        // attribute applicationId
-                        Long applicationId = Util.parseLong(conf.getAttribute(node, "applicationId", "-1"), -1);
-                        processChain.add(applicationId);
+                        ChainConfiguration chainConf = new ChainConfiguration(node, conf);
+                        chainConfigurations.put(chainConf.getChainId(), chainConf);
                     }
                 }
             }
@@ -121,14 +119,38 @@ public class MasterTable implements EventObservable {
     }
 
     /**
+     * Delivers the configuration object for one chain.
+     * 
+     * @param chainId
+     *            The identifier of the chain.
+     * @return The object if found or null.
+     */
+    public synchronized static ChainConfiguration getChainConfiguration(Long chainId) {
+        return chainConfigurations.get(chainId);
+    }
+
+    /**
+     * Delivers the configuration of chains
+     * 
+     * @return Map with configurations. chainId is the key like used in
+     *         configuration file and in the implementations of
+     *         ChainConfigurations.
+     */
+    public synchronized static Map<Long, ChainConfiguration> getChainConfigurations() throws ActionFailedException {
+        updateConfiguration();
+        return chainConfigurations;
+    }
+
+    /**
      * Delivers the process chain.
      * 
      * @return A list with application id's.
      * @throws ActionFailedException
      */
-    public synchronized static List<Long> getProcessChain() throws ActionFailedException {
-        updateConfiguration();
-        return processChain;
+    public synchronized static List<ChainConfiguration> getChainConfigurationsAsList() throws ActionFailedException {
+        List<ChainConfiguration> confList = new ArrayList<ChainConfiguration>();
+        confList.addAll(getChainConfigurations().values());
+        return confList;
     }
 
     /**
@@ -149,7 +171,7 @@ public class MasterTable implements EventObservable {
      *            implementation.
      * @return A list with found services.
      */
-    public synchronized static List<ApplicationService> getApplicationServicesByApplicationId(Long applicationId) {
+    public synchronized static List<ApplicationService> getApplicationServicesById(Long applicationId) {
         Collection<ApplicationService> services = applicationServices.values();
         List<ApplicationService> serviceList = null;
         if (services.size() > 0) {
@@ -395,9 +417,9 @@ public class MasterTable implements EventObservable {
      */
     public static boolean mustWaitForApplication(ApplicationConfiguration applicationConfiguration) {
         // iterate over the list of applications to wait for
-        for (Long applicationId : applicationConfiguration.getApplicationsWaitFor()) {
+        for (Long id : applicationConfiguration.getApplicationsWaitFor()) {
             // if list with found services > 0 there exists one or more service
-            if (getApplicationServicesByApplicationId(applicationId).size() > 0)
+            if (getApplicationServicesById(id).size() > 0)
                 return true;
         }
         return false;

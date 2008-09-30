@@ -89,6 +89,7 @@ public class ApplicationConfigurationWrapper {
         map.put("enforce", String.valueOf(applicationConfiguration.isEnforce()));
         map.put("maxStartStop", String.valueOf(applicationConfiguration.getMaxStartStop()));
         map.put("maxStepStep", String.valueOf(applicationConfiguration.getMaxStepStep()));
+        map.put("executableArgs", String.valueOf(applicationConfiguration.getExecutableArgs()));
 
         // time values comma separated
         // seconds
@@ -196,6 +197,7 @@ public class ApplicationConfigurationWrapper {
         applicationConfiguration.setEnforce(Util.parseBoolean(map.get("enforce"), false));
         applicationConfiguration.setMaxStartStop(Util.parseInt(map.get("maxStartStop"), 0));
         applicationConfiguration.setMaxStepStep(Util.parseInt(map.get("maxStepStep"), 0));
+        applicationConfiguration.setExecutableArgs(map.get("executableArgs"));
 
         // timeplan values as list are formatted like csv (comma
         // separated)

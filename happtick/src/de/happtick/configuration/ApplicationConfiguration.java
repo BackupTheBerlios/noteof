@@ -5,7 +5,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
-import java.util.Map;
 
 import de.happtick.core.MasterTable;
 import de.notEOF.core.exception.ActionFailedException;
@@ -28,7 +27,7 @@ public class ApplicationConfiguration {
     private String executablePath;
     private boolean multipleStart;
     private boolean enforce;
-    private Map<String, String> executableArgs;
+    private String executableArgs;
     private List<Integer> timePlanSeconds;
     private List<Integer> timePlanMinutes;
     private List<Integer> timePlanHours;
@@ -74,11 +73,15 @@ public class ApplicationConfiguration {
             // executable path
             executablePath = conf.getAttribute(node, "path", "");
 
+            // arguments of executable
+            node = "scheduler." + nodeNameApplication + ".executable.args";
+            executableArgs = conf.getText(node, "");
+
             // option multiple start
             node = "scheduler." + nodeNameApplication + ".option";
-            multipleStart = Util.parseBoolean(conf.getAttribute(node, "multiplestart", "false"), false);
+            multipleStart = Util.parseBoolean(conf.getAttribute(node, "multiplestart"), false);
             // option enforce
-            enforce = Util.parseBoolean(conf.getAttribute(node, "enforce", "false"), false);
+            enforce = Util.parseBoolean(conf.getAttribute(node, "enforce"), false);
 
             // time plan
             String nodeTime = "scheduler." + nodeNameApplication + ".timeplan";
@@ -331,7 +334,7 @@ public class ApplicationConfiguration {
         return enforce;
     }
 
-    public Map<String, String> getExecutableArgs() {
+    public String getExecutableArgs() {
         return executableArgs;
     }
 
@@ -420,7 +423,7 @@ public class ApplicationConfiguration {
         this.enforce = enforce;
     }
 
-    public void setExecutableArgs(Map<String, String> executableArgs) {
+    public void setExecutableArgs(String executableArgs) {
         this.executableArgs = executableArgs;
     }
 

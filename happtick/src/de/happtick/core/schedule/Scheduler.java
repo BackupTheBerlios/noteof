@@ -5,6 +5,7 @@ import java.util.Date;
 import java.util.List;
 
 import de.happtick.configuration.ApplicationConfiguration;
+import de.happtick.configuration.ChainConfiguration;
 import de.happtick.core.MasterTable;
 import de.happtick.core.application.service.ApplicationService;
 import de.happtick.core.enumeration.HapptickAlarmLevel;
@@ -107,7 +108,7 @@ public class Scheduler {
         ApplicationScheduler appSched;
         StartService startService = MasterTable.getStartServiceByIp(configuration.getClientIp());
         if (null == startService) {
-            LocalLog.warn("Nicht aktiver StartService. applicationId: " + configuration.getApplicationId() + "; clientIp: " + configuration.getClientIp());
+            LocalLog.warn("Nicht aktiver StartService. Id: " + configuration.getApplicationId() + "; clientIp: " + configuration.getClientIp());
             return null;
         }
         appSched = new ApplicationScheduler(configuration, startService, false);
@@ -224,15 +225,13 @@ public class Scheduler {
                         if (null == applicationService) {
                             // write log entry
                             LocalLog
-                                    .warn("Anwendung sollte als Teil einer Kette gestartet werden. Start der Anwendung konnte nicht überprüft werden. Kette wird unterbrochen. ApplicationId: "
+                                    .warn("Anwendung sollte als Teil einer Kette gestartet werden. Start der Anwendung konnte nicht überprüft werden. Kette wird unterbrochen. Id: "
                                             + applicationConfiguration.getApplicationId());
                             stopped = true;
                             // send to all observer an alarm event
-                            updateAllObserver(eventObservers, null,
-                                              new ApplicationAlarmEvent(HapptickAlarmType.INTERNAL_CHAIN_ALARM.ordinal(),
-                                                      HapptickAlarmLevel.ALARM_LEVEL_SIGNIFICANT.ordinal(),
-                                                      "Anwendung als Teil einer Kette wurde evtl. nicht gestartet. ApplicationId: "
-                                                              + applicationConfiguration.getApplicationId()));
+                            updateAllObserver(eventObservers, null, new ApplicationAlarmEvent(HapptickAlarmType.INTERNAL_CHAIN_ALARM.ordinal(),
+                                    HapptickAlarmLevel.ALARM_LEVEL_SIGNIFICANT.ordinal(), "Anwendung als Teil einer Kette wurde evtl. nicht gestartet. Id: "
+                                            + applicationConfiguration.getApplicationId()));
                             // stop working
                             break;
                         }
@@ -350,7 +349,7 @@ public class Scheduler {
 
     private class ChainStarter implements Runnable, EventObserver {
 
-        // List of applicationId's decides the order of application starts
+        // List of application id's decides the order of application starts
         private boolean stopped = false;
         private boolean loopChain;
         private String stoppedServiceId;
@@ -371,26 +370,7 @@ public class Scheduler {
             try {
                 // TODO Noch offen...
                 do {
-                    for (Long applicationId : MasterTable.getProcessChain()) {
-                        ApplicationConfiguration applConf = MasterTable.getApplicationConfiguration(applicationId);
-                        if (null != applConf) {
-                            stoppedServiceId = "";
-                            // Runner for application must deliver service
-                            // so chainStarter can observe the service for stop
-                            // event
-                            // when stop event is raised and the service id is
-                            // the
-                            // same like here the next application may run.
-
-                            ApplicationService applicationService = null;
-                            while (!stopped && !stoppedServiceId.equals(applicationService.getServiceId())) {
-                                try {
-                                    Thread.sleep(300);
-                                } catch (InterruptedException e) {
-                                    break;
-                                }
-                            }
-                        }
+                    for (ChainConfiguration chainConf : MasterTable.getChainConfigurationsAsList()) {
                     }
                 } while (!stopped && loopChain);
             } catch (ActionFailedException afx) {
