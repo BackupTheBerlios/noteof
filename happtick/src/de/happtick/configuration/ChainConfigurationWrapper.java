@@ -1,6 +1,7 @@
 package de.happtick.configuration;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import de.notEOF.core.exception.ActionFailedException;
@@ -80,22 +81,23 @@ public class ChainConfigurationWrapper {
         map.put("loop", String.valueOf(chainConfiguration.isLoop()));
 
         // number of links
-        int numberOfLinks = chainConfiguration.getLinkCount();
+        List<ChainLink> chainLinks = chainConfiguration.getChainLinkList();
+        int numberOfLinks = chainLinks.size();
+        map.put("linkCount", String.valueOf(numberOfLinks));
         if (0 < numberOfLinks) {
-            map.put("linkCount", String.valueOf(numberOfLinks));
             for (int i = 0; i < numberOfLinks; i++) {
-                map.put("linkId_" + i, String.valueOf(chainConfiguration.getLinkId(i)));
-                map.put("linkType_" + i, String.valueOf(chainConfiguration.getLinkType(i)));
+                map.put("linkId_" + i, String.valueOf(chainLinks.get(i).getId()));
+                map.put("linkType_" + i, String.valueOf(chainLinks.get(i).getType()));
 
-                Long condId = chainConfiguration.getLinkConditionEventId(i);
+                Long condId = chainLinks.get(i).getConditionEventId();
                 if (null != condId)
                     map.put("linkConditionEventId_" + i, String.valueOf(condId));
 
-                Long preventId = chainConfiguration.getLinkPreventEventId(i);
+                Long preventId = chainLinks.get(i).getPreventEventId();
                 if (null != preventId)
                     map.put("linkPreventEventId_" + i, String.valueOf(preventId));
 
-                map.put("linkSkip_" + i, String.valueOf(chainConfiguration.getLinkSkip(i)));
+                map.put("linkSkip_" + i, String.valueOf(chainLinks.get(i).isSkip()));
             }
         }
     }
@@ -123,7 +125,8 @@ public class ChainConfigurationWrapper {
                     preventId = null;
                 boolean skip = Util.parseBoolean(map.get("linkSkip_" + i), false);
 
-                chainConfiguration.addToLinkList(linkId, type, condId, preventId, skip);
+                ChainLink link = new ChainLink(linkId, type, condId, preventId, skip);
+                chainConfiguration.addLink(link);
             }
         }
     }

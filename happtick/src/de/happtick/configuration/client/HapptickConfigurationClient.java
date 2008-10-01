@@ -77,7 +77,7 @@ public class HapptickConfigurationClient extends BaseClient {
             }
         }
 
-        return null;
+        return chainConfs;
     }
 
     /**
