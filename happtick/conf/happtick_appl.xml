@@ -46,30 +46,57 @@
 		    	     Note that id's here are named id for applications and for chains.
 		    	     skip is optional, default is false.
 		    	-->
-				<link0 type="application" id="1" conditionEventId="1" preventEvendId="2" skip="false"></link0>
-				<link1 type="application" id="2"></link1>
-				<link2 type="chain" id="2"></link2>
+				<link0 applicationType="application" id="1" conditionEventId="1" preventEventId="2" skip="false"></link0>
+				<link1 applicationType="application" id="2"></link1>
+				<link2 applicationType="chain" id="2"></link2>
 		    </chain1>
 		    
 		    <chain2 depends="true" loop="false" chainId="2">
 		    	<link>link0</link>
 		    	<link>link1</link>
-				<link0 type="application" id="1"></link0>
-				<link1 type="application" id="2"></link1>
+				<link0 applicationType="application" id="1"></link0>
+				<link1 applicationType="application" id="2"></link1>
 		    </chain2>
 	    </chains>
 	    
 	    <!-- Events
-	    	Events are raised by ApplicationClients and identified by the eventId or eventName.
+	    	Events are raised by ApplicationClients and identified by the eventId or eventClassName.
 	    	The actions after an event can differ for every client.
-	    	If the event is essential for every client, the key 'firedByClient' can be omitted
-	    	or the value of 'firedByClient' must be empty.
+	    	If the event is essential for every client, the key 'firedByApplicationId' can be omitted
+	    	or the value of 'firedByApplicationId' must be empty.
 	    	With events it is possible to start another application or a chain or both.
-	    	The following list stores the events for which the system has to react.
 	    -->
 	    <events>
-	    	<event eventId="1" firedByApplicationId="4" eventClassName="ApplicationStopEvent" startApplicationId="1" startChainId="1"></event>
-	    	<event eventId="2" firedByApplicationId="" eventClassName="AlarmEvent" startApplicationId="2"></event>
+	    	<!-- List of events -->
+	    	<event>event1</event>
+	    	<event>event2</event>
+	    	<event>event3</event>
+
+			<!--
+				- eventId not yet interesting but should be set with a dummy value
+			    - eventClassName the class name of the fired event
+			-->	    	
+	    	<event1 eventId="1" eventClassName="ApplicationStopEvent">
+	    		<!-- 
+	    		    List of actions
+				    - actionType what to do with the application/chain - 'start' or 'stop' is possible here
+				    - applicationType 'application' or 'chain' is possible here
+				    - id is applicationId of an application or chainId of a chain
+	    		-->
+	    			<action>action0</action>
+	    			<action>action1</action>
+
+	    			<action0 actionType="start" applicationType="application" id="1"></action0>
+	    			<action1 actionType="start" applicationType="application" id="2"></action1>
+	    	</event1>
+	    	<event2 eventId="2" eventClassName="AlarmEvent">
+	    		<action>action0</action>
+	    		<action0 actionType="stop" applicationType="chain" id="1"></action0>
+	    	</event2>
+	    	<event3 eventId="3" eventClassName="ServiceStartEvent">
+	    		<action>action0</action>
+	    		<action0 actionType="start" applicationType="chain" id="2"></action0>
+	    	</event3>
 	    </events>
 	
 		<!-- List of applications.
@@ -85,18 +112,23 @@
 		<!-- Complex configurations of applications.
 		     Here informations about the applications and the scheduling is defined.
 		-->
-		<!-- application1 is the referenced nodename (see above) -->
+
+		<!--
+			- application1 is the referenced nodename (see above)
+		    - applicationId is the id which is used by programmers to identify the applications type
+		                    the id is referenced here on several parts 
+		-->
 		<application1 applicationId="1">
 	        <!-- client
 	             ip of the client host (e.g. a pc) where the application should be started.
 	        -->
 			<client clientIp="192.168.130.1"></client>
 			<!-- executable
-			     type options are 'JAVA' or 'UNKNOWN'. If the application was implemented for or with the Happtick framework insert 'JAVA'.
+			     type options are 'java' or 'unknown'. If the application was implemented for or with the Happtick framework insert 'JAVA'.
 			     path is the complete description of the executable which the start client has to start.
 			     arg is a calling argument
 			--> 
-			<executable type="JAVA" path="c:/programme/blablubb.bat">
+			<executable type="java" path="c:/programme/blablubb.bat">
 				<args>--blubb="1" --blase=2</args>
 			</executable>
 			<!-- schedule
