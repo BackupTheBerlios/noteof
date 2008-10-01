@@ -162,19 +162,19 @@ public class SocketLayer {
      * 'clears' the messages from the lifesign by rereading.
      */
     protected String readMsg() throws ActionFailedException {
-        String msg = BaseCommTag.REQ_LIFE_SIGN.name();
-        while (BaseCommTag.REQ_LIFE_SIGN.name().equals(msg)) {
-            msg = readUnqualifiedMsg();
+        String msg = readUnqualifiedMsg();
+        while (BaseCommTag.REQ_LIFE_SIGN.name().equals(msg) || //
+                BaseCommTag.RESP_LIFE_SIGN.name().equals(msg)) {
+
             if (BaseCommTag.REQ_LIFE_SIGN.name().equals(msg)) {
                 responseToPartner(BaseCommTag.RESP_LIFE_SIGN.name(), BaseCommTag.VAL_OK.name());
             }
-            // no more read in this case
-            // the next msg in the buffer can be sent independent to the
-            // lifesign system
             if (BaseCommTag.RESP_LIFE_SIGN.name().equals(msg)) {
                 lifeTimer.lifeSignReceived();
             }
+            msg = readUnqualifiedMsg();
         }
+
         return msg;
     }
 
@@ -216,7 +216,6 @@ public class SocketLayer {
 
     @SuppressWarnings("unchecked")
     protected DataObject receiveDataObject() throws ActionFailedException {
-        // TODO Listen verarbeiten
         // dataTypes:
         // 0 = short
         // 1 = int
@@ -237,7 +236,7 @@ public class SocketLayer {
         try {
             DataInputStream inputStream = new DataInputStream(socketToPartner.getInputStream());
             // den Datentyp ermitteln
-            int dataTypeInt = inputStream.readInt();
+            int dataTypeInt = readInt();
             DataObjectDataTypes dataType = DataObjectDataTypes.values()[dataTypeInt];
 
             switch (dataType) {
@@ -360,7 +359,7 @@ public class SocketLayer {
             DataOutputStream outputStream = new DataOutputStream(socketToPartner.getOutputStream());
             // den Datentyp ermitteln
             DataObjectDataTypes dataType = dataObject.getDataType();
-            outputStream.writeInt(dataType.ordinal());
+            writeInt(dataType.ordinal());
             outputStream.flush();
 
             switch (dataType) {
