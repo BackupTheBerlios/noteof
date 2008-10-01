@@ -161,21 +161,30 @@ public class SocketLayer {
      * the last time when a lifesign came in will be updated. This method
      * 'clears' the messages from the lifesign by rereading.
      */
-    protected String readMsg() throws ActionFailedException {
+    protected String readMsg(boolean lifeSign) throws ActionFailedException {
+        String respLifeSign = BaseCommTag.RESP_LIFE_SIGN.name() + "=" + BaseCommTag.VAL_OK.name();
         String msg = readUnqualifiedMsg();
-        while (BaseCommTag.REQ_LIFE_SIGN.name().equals(msg) || //
-                BaseCommTag.RESP_LIFE_SIGN.name().equals(msg)) {
+        while (!lifeSign && //
+                (BaseCommTag.REQ_LIFE_SIGN.name().equals(msg) || //
+                respLifeSign.equals(msg))) {
 
             if (BaseCommTag.REQ_LIFE_SIGN.name().equals(msg)) {
                 responseToPartner(BaseCommTag.RESP_LIFE_SIGN.name(), BaseCommTag.VAL_OK.name());
             }
-            if (BaseCommTag.RESP_LIFE_SIGN.name().equals(msg)) {
+            if (respLifeSign.equals(msg)) {
                 lifeTimer.lifeSignReceived();
             }
             msg = readUnqualifiedMsg();
         }
-
         return msg;
+    }
+
+    /*
+     * Reads a message. The message is cleared from communication parts. Also it
+     * is independent from lifeSign system.
+     */
+    protected String readMsg() throws ActionFailedException {
+        return readMsg(false);
     }
 
     /*
