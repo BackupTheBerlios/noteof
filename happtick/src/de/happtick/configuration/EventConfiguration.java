@@ -1,33 +1,93 @@
 package de.happtick.configuration;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import de.notEOF.core.exception.ActionFailedException;
+import de.notEOF.core.interfaces.NotEOFConfiguration;
+import de.notEOF.core.util.Util;
+import de.notIOC.logging.LocalLog;
+
 /**
- * Stores configuration of events
+ * Represents the configuration of an event which is stored in the configuration
+ * file.
  * 
- * @author Dirk eventClassName="ApplicationStopEvent" startApplicationId="1"
- *         startChainId="1"></event>
+ * @author Dirk
+ * 
  */
 public class EventConfiguration {
 
     private Long eventId;
-    private Long firedByApplicationId;
+    private String nodeNameEvent;
     private String eventClassName;
-    private Long startApplicationId;
-    private Long startChainId;
+    private List<EventAction> actionList = new ArrayList<EventAction>();
+
+    /**
+     * Simple constructor
+     */
+    public EventConfiguration(Long eventId) {
+        this.eventId = eventId;
+    }
+
+    /**
+     * Using this constructor the class fills up itself with data by reading the
+     * configuration.
+     * 
+     * @param nodeNameEvent
+     *            The xml path of the events configuration (e.g.
+     *            scheduler.events.event1).
+     * @param conf
+     *            Object for reading access to the configuration
+     */
+    public EventConfiguration(String nodeNameEvent, NotEOFConfiguration conf) throws ActionFailedException {
+        try {
+            this.nodeNameEvent = nodeNameEvent;
+
+            String node = "";
+
+            // eventId
+            // scheduler.events.chain1
+            node = "scheduler.events." + nodeNameEvent;
+            eventId = Util.parseLong(conf.getAttribute(node, "eventId", "-1"), -1);
+            // eventClassName
+            eventClassName = conf.getAttribute(node, "eventClassName");
+
+            // list of event actions
+            // scheduler.events.event1.action
+            List<String> actionNames = conf.getTextList(node + ".action");
+            if (null != actionNames) {
+                for (String actionName : actionNames) {
+                    node = "scheduler.events." + nodeNameEvent + "." + actionName;
+                    // scheduler.events.event1.action0
+                    EventAction action = new EventAction(node, conf);
+                    actionList.add(action);
+                }
+            }
+
+        } catch (Exception ex) {
+            LocalLog.error("Konfiguration der Events konnte nicht fehlerfrei gelesen werden. Event: " + nodeNameEvent, ex);
+            throw new ActionFailedException(401, "Initialisierung EventConfiguration", ex);
+        }
+    }
+
+    public List<EventAction> getEventActionList() {
+        return actionList;
+    }
+
+    public void addEventAction(EventAction eventAction) {
+        actionList.add(eventAction);
+    }
 
     public Long getEventId() {
         return eventId;
     }
 
-    public void setEventId(Long eventId) {
-        this.eventId = eventId;
+    public String getNodeNameEvent() {
+        return nodeNameEvent;
     }
 
-    public Long getFiredByApplicationId() {
-        return firedByApplicationId;
-    }
-
-    public void setFiredByApplicationId(Long firedByApplicationId) {
-        this.firedByApplicationId = firedByApplicationId;
+    public void setNodeNameEvent(String nodeNameEvent) {
+        this.nodeNameEvent = nodeNameEvent;
     }
 
     public String getEventClassName() {
@@ -36,22 +96,6 @@ public class EventConfiguration {
 
     public void setEventClassName(String eventClassName) {
         this.eventClassName = eventClassName;
-    }
-
-    public Long getStartApplicationId() {
-        return startApplicationId;
-    }
-
-    public void setStartApplicationId(Long startApplicationId) {
-        this.startApplicationId = startApplicationId;
-    }
-
-    public Long getStartChainId() {
-        return startChainId;
-    }
-
-    public void setStartChainId(Long startChainId) {
-        this.startChainId = startChainId;
     }
 
 }

@@ -87,7 +87,7 @@ public class ChainConfigurationWrapper {
         if (0 < numberOfLinks) {
             for (int i = 0; i < numberOfLinks; i++) {
                 map.put("linkId_" + i, String.valueOf(chainLinks.get(i).getId()));
-                map.put("linkType_" + i, String.valueOf(chainLinks.get(i).getType()));
+                map.put("linkApplicationType_" + i, String.valueOf(chainLinks.get(i).getApplicationType()));
 
                 Long condId = chainLinks.get(i).getConditionEventId();
                 if (null != condId)
@@ -116,7 +116,7 @@ public class ChainConfigurationWrapper {
         if (0 < numberOfLinks) {
             for (int i = 0; i < numberOfLinks; i++) {
                 Long linkId = Util.parseLong(map.get("linkId_" + i), 0);
-                String type = map.get("linkType_" + i);
+                String applicationType = map.get("linkApplicationType_" + i);
                 Long condId = Util.parseLong(map.get("linkConditionEventId_" + i), -1);
                 if (-1 == condId)
                     condId = null;
@@ -125,7 +125,7 @@ public class ChainConfigurationWrapper {
                     preventId = null;
                 boolean skip = Util.parseBoolean(map.get("linkSkip_" + i), false);
 
-                ChainLink link = new ChainLink(linkId, type, condId, preventId, skip);
+                ChainLink link = new ChainLink(linkId, applicationType, condId, preventId, skip);
                 chainConfiguration.addLink(link);
             }
         }

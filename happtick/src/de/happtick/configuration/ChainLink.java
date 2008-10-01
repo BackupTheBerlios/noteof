@@ -6,7 +6,7 @@ import de.notEOF.core.util.Util;
 
 public class ChainLink {
     private Long id;
-    private String type;
+    private String applicationType;
     private Long conditionEventId;
     private Long preventEventId;
     private boolean skip;
@@ -14,15 +14,15 @@ public class ChainLink {
     public ChainLink(String node, NotEOFConfiguration conf) throws ActionFailedException {
         // sample node: scheduler.chains.chain1.link0
         id = Util.parseLong(conf.getAttribute(node, "id"), -1);
-        type = conf.getAttribute(node, "type");
+        applicationType = conf.getAttribute(node, "applicationType");
         conditionEventId = Util.parseLong(conf.getAttribute(node, "conditionEventId"), -1);
         preventEventId = Util.parseLong(conf.getAttribute(node, "preventEventId"), -1);
         skip = Util.parseBoolean(conf.getAttribute(node, "skip"), false);
     }
 
-    public ChainLink(Long id, String type, Long conditionEventId, Long preventEventId, boolean skip) {
+    public ChainLink(Long id, String applicationType, Long conditionEventId, Long preventEventId, boolean skip) {
         this.id = id;
-        this.type = type;
+        this.applicationType = applicationType;
         this.conditionEventId = conditionEventId;
         this.preventEventId = preventEventId;
         this.skip = skip;
@@ -63,7 +63,7 @@ public class ChainLink {
     /**
      * @return the type
      */
-    public String getType() {
-        return type;
+    public String getApplicationType() {
+        return applicationType;
     }
 }

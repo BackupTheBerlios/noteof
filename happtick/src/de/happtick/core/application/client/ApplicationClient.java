@@ -58,6 +58,7 @@ public class ApplicationClient extends BaseClient {
             writeMsg(ApplicationTag.PROCESS_STOP_EVENT);
             awaitRequestAnswerImmediate(ApplicationTag.REQ_EXIT_CODE, ApplicationTag.RESP_EXIT_CODE, String.valueOf(exitCode));
             // give service a little bit time...
+            // TODO Was ist das für eine Zahl?
             readMsgTimedOut(7654);
             super.close();
         } catch (ActionFailedException e) {
@@ -244,11 +245,12 @@ public class ApplicationClient extends BaseClient {
      * Alternately to wait for start allowance by calling the method
      * isWorkAllowed() repeatedly within a loop it is possible to let the
      * application informed by this method. Condition is that the application
-     * implements the interface Observer and waits for start allowance in the
-     * method update(). When the allowance is given the application client calls
-     * the method observers startAllowanceEvent()<br>
+     * implements the interface ClientObserver and waits for start allowance in
+     * the method update(). When the allowance is given the application client
+     * calls the method observers startAllowanceEvent()<br>
      * 
      * @throws HapptickException
+     * @see {@link ClientObserver}
      */
     public void observeForWorkAllowance(ClientObserver clientObserver) throws HapptickException {
         this.clientObserver = clientObserver;

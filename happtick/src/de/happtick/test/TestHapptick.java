@@ -1,13 +1,15 @@
 package de.happtick.test;
 
+import java.util.Date;
 import java.util.List;
 
 import de.happtick.application.client.ApplicationTimeOut;
 import de.happtick.configuration.ApplicationConfiguration;
+import de.happtick.configuration.ChainConfiguration;
+import de.happtick.configuration.ChainLink;
 import de.happtick.configuration.client.HapptickConfigurationClient;
 import de.notEOF.configuration.LocalConfiguration;
 import de.notEOF.configuration.client.ConfigurationClient;
-import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.interfaces.NotEOFConfiguration;
 import de.notIOC.configuration.ConfigurationManager;
 
@@ -62,9 +64,33 @@ public class TestHapptick {
                     }
                 }
             }
-            hConfClient.close();
 
-        } catch (ActionFailedException e) {
+            List<ChainConfiguration> chainList = hConfClient.getChainConfigurations();
+            if (null != chainList && chainList.size() > 0) {
+                for (ChainConfiguration chainConf : chainList) {
+                    System.out.println("chainConf... Depends: " + chainConf.isDepends());
+                    System.out.println("chainConf... Loop: " + chainConf.isLoop());
+                    System.out.println("chainConf... Id:   " + chainConf.getChainId());
+
+                    for (ChainLink link : chainConf.getChainLinkList()) {
+                        System.out.println("--- chainLink... Id:     " + link.getId());
+                        System.out.println("--- chainLink... Type:   " + link.getApplicationType());
+                        System.out.println("--- chainLink... Skip:   " + link.isSkip());
+                        System.out.println("--- chainLink... CEvent: " + link.getConditionEventId());
+                        Thread.sleep(500);
+                        System.out.println("--- chainLink... PEvent: " + link.getPreventEventId());
+                    }
+                }
+            }
+
+            long stop = new Date().getTime() + 60000;
+            while (stop > new Date().getTime()) {
+                Thread.sleep(500);
+            }
+            hConfClient.close();
+            System.exit(0);
+
+        } catch (Exception e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
