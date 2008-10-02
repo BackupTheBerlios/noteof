@@ -275,6 +275,7 @@ public abstract class BaseService extends BaseClientOrService implements Service
             implementationLastSteps();
         } catch (ActionFailedException e) {
         }
+        System.out.println("Service wird beendet: " + this.getClass().getCanonicalName() + "; id: " + getServiceId());
         isRunning = false;
     }
 
