@@ -9,7 +9,7 @@ import de.happtick.configuration.ChainConfiguration;
 import de.happtick.configuration.ChainLink;
 import de.happtick.configuration.EventAction;
 import de.happtick.configuration.EventConfiguration;
-import de.happtick.configuration.client.HapptickConfigurationClient;
+import de.happtick.information.client.HapptickInformationClient;
 import de.notEOF.configuration.LocalConfiguration;
 import de.notEOF.configuration.client.ConfigurationClient;
 import de.notEOF.core.interfaces.NotEOFConfiguration;
@@ -45,7 +45,7 @@ public class TestHapptick {
             conf1.close();
             conf2.close();
 
-            HapptickConfigurationClient hConfClient = new HapptickConfigurationClient("localhost", 3000, new ApplicationTimeOut());
+            HapptickInformationClient hConfClient = new HapptickInformationClient("localhost", 3000, new ApplicationTimeOut());
             List<ApplicationConfiguration> list = hConfClient.getApplicationConfigurations();
             if (null != list && list.size() > 0) {
                 for (ApplicationConfiguration appConf : list) {

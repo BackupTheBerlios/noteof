@@ -210,6 +210,12 @@ public class MasterTable implements EventObservable {
         return applicationServices;
     }
 
+    public synchronized static List<ApplicationService> getApplicationServicesAsList() throws ActionFailedException {
+        List<ApplicationService> appList = new ArrayList<ApplicationService>();
+        appList.addAll(getApplicationServices().values());
+        return appList;
+    }
+
     /**
      * Delivers all services which serve a client that has the specified
      * applicationId.

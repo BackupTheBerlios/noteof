@@ -1,4 +1,4 @@
-package de.happtick.configuration.service;
+package de.happtick.information.service;
 
 import java.util.List;
 import java.util.Map;
@@ -16,7 +16,7 @@ import de.notEOF.core.enumeration.EventType;
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.service.BaseService;
 
-public class HapptickConfigurationService extends BaseService {
+public class HapptickInformationService extends BaseService {
 
     @Override
     public Class<?> getCommunicationTagClass() {

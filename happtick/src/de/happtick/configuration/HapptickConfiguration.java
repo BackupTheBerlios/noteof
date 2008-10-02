@@ -3,7 +3,7 @@ package de.happtick.configuration;
 import java.net.Socket;
 import java.util.List;
 
-import de.happtick.configuration.client.HapptickConfigurationClient;
+import de.happtick.information.client.HapptickInformationClient;
 import de.notEOF.configuration.client.ConfigurationClient;
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.interfaces.TimeOut;
@@ -20,19 +20,19 @@ import de.notEOF.core.util.Util;
  */
 public class HapptickConfiguration {
 
-    private HapptickConfigurationClient happConfClient;
+    private HapptickInformationClient happConfClient;
     private ConfigurationClient confClient;
     private Socket socketToServer;
     private String ip;
     private int port;
 
     public HapptickConfiguration(Socket socketToServer, TimeOut timeout, String[] args) throws ActionFailedException {
-        happConfClient = new HapptickConfigurationClient(socketToServer, timeout, args);
+        happConfClient = new HapptickInformationClient(socketToServer, timeout, args);
         this.socketToServer = socketToServer;
     }
 
     public HapptickConfiguration(String ip, int port, TimeOut timeout, String... args) throws ActionFailedException {
-        happConfClient = new HapptickConfigurationClient(ip, port, timeout, args);
+        happConfClient = new HapptickInformationClient(ip, port, timeout, args);
         this.ip = ip;
         this.port = port;
     }

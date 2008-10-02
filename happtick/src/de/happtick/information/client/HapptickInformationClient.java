@@ -1,4 +1,4 @@
-package de.happtick.configuration.client;
+package de.happtick.information.client;
 
 import java.net.Socket;
 import java.util.ArrayList;
@@ -33,13 +33,13 @@ import de.notEOF.core.util.Util;
  * @author Dirk
  * 
  */
-public class HapptickConfigurationClient extends BaseClient {
+public class HapptickInformationClient extends BaseClient {
 
-    public HapptickConfigurationClient(Socket socketToServer, TimeOut timeout, String[] args) throws ActionFailedException {
+    public HapptickInformationClient(Socket socketToServer, TimeOut timeout, String[] args) throws ActionFailedException {
         super(socketToServer, timeout, args);
     }
 
-    public HapptickConfigurationClient(String ip, int port, TimeOut timeout, String... args) throws ActionFailedException {
+    public HapptickInformationClient(String ip, int port, TimeOut timeout, String... args) throws ActionFailedException {
         super(ip, port, timeout, args);
     }
 
@@ -167,6 +167,6 @@ public class HapptickConfigurationClient extends BaseClient {
     }
 
     public String serviceForClientByName() {
-        return "de.happtick.configuration.service.HapptickConfigurationService";
+        return "de.happtick.information.service.HapptickInformationService";
     }
 }
