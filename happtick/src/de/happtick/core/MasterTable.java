@@ -9,6 +9,7 @@ import java.util.Map;
 
 import de.happtick.configuration.ApplicationConfiguration;
 import de.happtick.configuration.ChainConfiguration;
+import de.happtick.configuration.EventConfiguration;
 import de.happtick.core.application.service.ApplicationService;
 import de.happtick.core.events.ApplicationStopEvent;
 import de.happtick.core.exception.HapptickException;
@@ -37,10 +38,11 @@ import de.notEOF.core.util.Util;
 public class MasterTable implements EventObservable {
 
     private static Map<Long, ApplicationConfiguration> applicationConfigurations = new HashMap<Long, ApplicationConfiguration>();
+    private static Map<Long, ChainConfiguration> chainConfigurations = new HashMap<Long, ChainConfiguration>();
+    private static Map<Long, EventConfiguration> eventConfigurations = new HashMap<Long, EventConfiguration>();
     private static Map<String, ApplicationService> applicationServices = new HashMap<String, ApplicationService>();
     private static List<EventObserver> eventObservers = new ArrayList<EventObserver>();
     private static Map<String, StartService> startServices = new HashMap<String, StartService>();
-    private static Map<Long, ChainConfiguration> chainConfigurations = new HashMap<Long, ChainConfiguration>();
 
     private static boolean inAction = false;
     private static boolean confUpdated = false;
@@ -52,10 +54,10 @@ public class MasterTable implements EventObservable {
     private static void updateConfiguration() throws ActionFailedException {
         if (!confUpdated) {
             NotEOFConfiguration conf = new LocalConfiguration();
-            // try {
+
             // processChain
             // aktiv?
-            Boolean useChain = Util.parseBoolean(conf.getAttribute("scheduler.use", "chain", "false"), false);
+            Boolean useChain = Util.parseBoolean(conf.getAttribute("scheduler.use", "chain"), false);
             if (useChain) {
                 // Liste der nodes
                 List<String> nodes = conf.getTextList("scheduler.chains.chain");
@@ -71,7 +73,7 @@ public class MasterTable implements EventObservable {
 
             // ApplicationConfigurations
             // timer gesteuert?
-            Boolean useTimer = Util.parseBoolean(conf.getAttribute("scheduler.use", "timer", "false"), false);
+            Boolean useTimer = Util.parseBoolean(conf.getAttribute("scheduler.use", "timer"), false);
             if (useTimer) {
                 // Liste der nodes
                 List<String> nodes = conf.getTextList("scheduler.applications.application");
@@ -85,10 +87,21 @@ public class MasterTable implements EventObservable {
                 }
             }
 
-            // } catch (ActionFailedException e) {
-            // LocalLog.warn(
-            // "Konfiguration für MasterTable konnte nicht gelesen werden.", e);
-            // }
+            // Events
+            // Events nutzen?
+            Boolean useEvent = Util.parseBoolean(conf.getAttribute("scheduler.use", "event"), false);
+            if (useEvent) {
+                // Liste der nodes
+                List<String> nodes = conf.getTextList("scheduler.events.event");
+                if (null != nodes) {
+                    // for every node create object of type EventConfiguration
+                    // the objects initialize themselve with configuration data
+                    for (String node : nodes) {
+                        EventConfiguration eventConf = new EventConfiguration(node, conf);
+                        eventConfigurations.put(eventConf.getEventId(), eventConf);
+                    }
+                }
+            }
 
             confUpdated = true;
         }
@@ -144,12 +157,47 @@ public class MasterTable implements EventObservable {
     /**
      * Delivers the process chain.
      * 
-     * @return A list with application id's.
+     * @return A list with chains.
      * @throws ActionFailedException
      */
     public synchronized static List<ChainConfiguration> getChainConfigurationsAsList() throws ActionFailedException {
         List<ChainConfiguration> confList = new ArrayList<ChainConfiguration>();
         confList.addAll(getChainConfigurations().values());
+        return confList;
+    }
+
+    /**
+     * Delivers the configuration object for one event.
+     * 
+     * @param eventId
+     *            The identifier of the event.
+     * @return The object if found or null.
+     */
+    public synchronized static EventConfiguration getEventConfiguration(Long eventId) {
+        return eventConfigurations.get(eventId);
+    }
+
+    /**
+     * Delivers the configuration of events
+     * 
+     * @return Map with configurations. eventId is the key like used in
+     *         configuration file and in the implementations of
+     *         EventConfigurations.
+     */
+    public synchronized static Map<Long, EventConfiguration> getEventConfigurations() throws ActionFailedException {
+        updateConfiguration();
+        return eventConfigurations;
+    }
+
+    /**
+     * Delivers the events.
+     * 
+     * @return A list with events.
+     * @throws ActionFailedException
+     */
+    public synchronized static List<EventConfiguration> getEventConfigurationsAsList() throws ActionFailedException {
+        List<EventConfiguration> confList = new ArrayList<EventConfiguration>();
+        confList.addAll(getEventConfigurations().values());
         return confList;
     }
 

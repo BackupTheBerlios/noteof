@@ -7,6 +7,8 @@ import de.happtick.configuration.ApplicationConfiguration;
 import de.happtick.configuration.ApplicationConfigurationWrapper;
 import de.happtick.configuration.ChainConfiguration;
 import de.happtick.configuration.ChainConfigurationWrapper;
+import de.happtick.configuration.EventConfiguration;
+import de.happtick.configuration.EventConfigurationWrapper;
 import de.happtick.configuration.enumeration.HapptickConfigTag;
 import de.happtick.core.MasterTable;
 import de.notEOF.core.communication.DataObject;
@@ -36,6 +38,40 @@ public class HapptickConfigurationService extends BaseService {
         // Client asks for all chain configurations
         if (HapptickConfigTag.REQ_ALL_CHAIN_CONFIGURATIONS.equals(configTag)) {
             deliverChainConfiguration();
+        }
+
+        // Client asks for all event configurations
+        if (HapptickConfigTag.REQ_ALL_EVENT_CONFIGURATIONS.equals(configTag)) {
+            deliverEventConfiguration();
+        }
+    }
+
+    /*
+     * Client asked for event configurations. Here the service sends the data.
+     */
+    private void deliverEventConfiguration() throws ActionFailedException {
+        List<EventConfiguration> eventConfigurations = MasterTable.getEventConfigurationsAsList();
+        if (null != eventConfigurations) {
+            // tell client that there are configurations and he can begin to
+            // request for them
+            responseTo(HapptickConfigTag.RESP_ALL_EVENT_CONFIGURATIONS, HapptickConfigTag.INFO_OK.name());
+            for (EventConfiguration eventConfiguration : eventConfigurations) {
+                awaitRequestAnswerImmediate(HapptickConfigTag.REQ_NEXT_EVENT_CONFIGURATION, HapptickConfigTag.RESP_NEXT_EVENT_CONFIGURATION,
+                                            HapptickConfigTag.INFO_OK.name());
+
+                EventConfigurationWrapper eventWrap = new EventConfigurationWrapper(eventConfiguration);
+                Map<String, String> confVars = eventWrap.getMap();
+
+                // send the map with list-data
+                DataObject confObject = new DataObject();
+                confObject.setMap(confVars);
+                sendDataObject(confObject);
+            }
+            // the client requests as long for next configuration as we send
+            // an OK . So the next statement answers with no more
+            // configurations.
+            awaitRequestAnswerImmediate(HapptickConfigTag.REQ_NEXT_EVENT_CONFIGURATION, HapptickConfigTag.RESP_NEXT_EVENT_CONFIGURATION,
+                                        HapptickConfigTag.INFO_NO_CONFIGURATION.name());
         }
     }
 

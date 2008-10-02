@@ -9,6 +9,8 @@ import de.happtick.configuration.ApplicationConfiguration;
 import de.happtick.configuration.ApplicationConfigurationWrapper;
 import de.happtick.configuration.ChainConfiguration;
 import de.happtick.configuration.ChainConfigurationWrapper;
+import de.happtick.configuration.EventConfiguration;
+import de.happtick.configuration.EventConfigurationWrapper;
 import de.happtick.configuration.enumeration.HapptickConfigTag;
 import de.notEOF.core.client.BaseClient;
 import de.notEOF.core.communication.DataObject;
@@ -39,6 +41,45 @@ public class HapptickConfigurationClient extends BaseClient {
 
     public HapptickConfigurationClient(String ip, int port, TimeOut timeout, String... args) throws ActionFailedException {
         super(ip, port, timeout, args);
+    }
+
+    /**
+     * Requests the service for a list of all configured events.
+     * <p>
+     * Informations about configuration are transported over network by every
+     * single use of this method.
+     * 
+     * @return A list with the event configurations stoed in the happtick xml
+     *         file, null if there is no configuration.
+     * @throws ActionFailedException
+     *             Can be fired by network/communication problems or other
+     *             faults.
+     */
+    public List<EventConfiguration> getEventConfigurations() throws ActionFailedException {
+        // Initialize return list
+        List<EventConfiguration> eventConfs = new ArrayList<EventConfiguration>();
+
+        // send first request to service that the chains are required
+        if (HapptickConfigTag.INFO_OK.name().equals(requestTo(HapptickConfigTag.REQ_ALL_EVENT_CONFIGURATIONS, HapptickConfigTag.RESP_ALL_EVENT_CONFIGURATIONS))) {
+            // service perhaps will send some chains
+            String next = requestTo(HapptickConfigTag.REQ_NEXT_EVENT_CONFIGURATION, HapptickConfigTag.RESP_NEXT_EVENT_CONFIGURATION);
+            while (!Util.isEmpty(next) && next.equals(HapptickConfigTag.INFO_OK.name())) {
+                EventConfiguration eventConf = null;
+                DataObject vars = receiveDataObject();
+                if (null != vars) {
+                    Map<String, String> confVars = vars.getMap();
+                    if (null != confVars) {
+                        EventConfigurationWrapper eventWrap = new EventConfigurationWrapper(confVars);
+                        eventConf = eventWrap.getEventConfiguration();
+                    }
+                }
+
+                eventConfs.add(eventConf);
+                next = requestTo(HapptickConfigTag.REQ_NEXT_EVENT_CONFIGURATION, HapptickConfigTag.RESP_NEXT_EVENT_CONFIGURATION);
+            }
+        }
+
+        return eventConfs;
     }
 
     /**

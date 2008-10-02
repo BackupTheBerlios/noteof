@@ -19,6 +19,7 @@ public class EventAction {
     public EventAction(Long id, String applicationType, String actionType) {
         this.id = id;
         this.applicationType = applicationType;
+        this.actionType = actionType;
     }
 
     /**

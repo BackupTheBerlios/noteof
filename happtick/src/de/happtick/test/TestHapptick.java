@@ -7,6 +7,8 @@ import de.happtick.application.client.ApplicationTimeOut;
 import de.happtick.configuration.ApplicationConfiguration;
 import de.happtick.configuration.ChainConfiguration;
 import de.happtick.configuration.ChainLink;
+import de.happtick.configuration.EventAction;
+import de.happtick.configuration.EventConfiguration;
 import de.happtick.configuration.client.HapptickConfigurationClient;
 import de.notEOF.configuration.LocalConfiguration;
 import de.notEOF.configuration.client.ConfigurationClient;
@@ -67,10 +69,11 @@ public class TestHapptick {
 
             List<ChainConfiguration> chainList = hConfClient.getChainConfigurations();
             if (null != chainList && chainList.size() > 0) {
+                System.out.println("--------------------------------------");
                 for (ChainConfiguration chainConf : chainList) {
                     System.out.println("chainConf... Depends: " + chainConf.isDepends());
-                    System.out.println("chainConf... Loop: " + chainConf.isLoop());
-                    System.out.println("chainConf... Id:   " + chainConf.getChainId());
+                    System.out.println("chainConf... Loop:    " + chainConf.isLoop());
+                    System.out.println("chainConf... Id:      " + chainConf.getChainId());
 
                     for (ChainLink link : chainConf.getChainLinkList()) {
                         System.out.println("--- chainLink... Id:     " + link.getId());
@@ -79,6 +82,21 @@ public class TestHapptick {
                         System.out.println("--- chainLink... CEvent: " + link.getConditionEventId());
                         Thread.sleep(500);
                         System.out.println("--- chainLink... PEvent: " + link.getPreventEventId());
+                    }
+                }
+            }
+
+            List<EventConfiguration> eventList = hConfClient.getEventConfigurations();
+            if (null != eventList && eventList.size() > 0) {
+                System.out.println("--------------------------------------");
+                for (EventConfiguration conf : eventList) {
+                    System.out.println("events... EventId:   " + conf.getEventId());
+                    System.out.println("events... EventConf: " + conf.getEventClassName());
+
+                    for (EventAction action : conf.getEventActionList()) {
+                        System.out.println("--- eventAction... Id:              " + action.getId());
+                        System.out.println("--- eventAction... ApplicationType: " + action.getApplicationType());
+                        System.out.println("--- eventAction... ActionType:      " + action.getActionType());
                     }
                 }
             }
