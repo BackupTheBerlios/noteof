@@ -72,7 +72,7 @@ public class StartService extends BaseService {
     }
 
     @Override
-    public void processMsg(Enum<?> arg0) throws ActionFailedException {
+    public void processClientMsg(Enum<?> arg0) throws ActionFailedException {
         // TODO Auto-generated method stub
 
         // anmelden an MasterTable

@@ -6,7 +6,6 @@ import java.util.List;
 import de.notEOF.configuration.LocalConfiguration;
 import de.notEOF.core.communication.BaseTimeOut;
 import de.notEOF.core.communication.SimpleSocketConnectionData;
-import de.notEOF.core.enumeration.EventType;
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.interfaces.NotEOFConfiguration;
 import de.notEOF.core.interfaces.Service;
@@ -49,7 +48,7 @@ public class DispatchService extends BaseService implements Service {
      * - Service is available by ip and port (can be another !EOF server)
      */
     @Override
-    public void processMsg(Enum<?> incomingMsgEnum) throws ActionFailedException {
+    public void processClientMsg(Enum<?> incomingMsgEnum) throws ActionFailedException {
         NotEOFConfiguration conf = new LocalConfiguration();
         if (incomingMsgEnum.equals(DispatchTag.REQ_SERVICE)) {
             String serviceIp = "";
@@ -260,7 +259,4 @@ public class DispatchService extends BaseService implements Service {
         return true;
     }
 
-    public List<EventType> getObservedEvents() {
-        return null;
-    }
 }

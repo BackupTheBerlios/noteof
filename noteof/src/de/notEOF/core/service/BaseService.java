@@ -7,10 +7,11 @@ import java.util.List;
 import de.notEOF.core.BaseClientOrService;
 import de.notEOF.core.communication.TalkLine;
 import de.notEOF.core.constant.NotEOFConstants;
+import de.notEOF.core.enumeration.EventType;
+import de.notEOF.core.event.NewMailEvent;
 import de.notEOF.core.event.ServiceStartEvent;
 import de.notEOF.core.event.ServiceStopEvent;
 import de.notEOF.core.exception.ActionFailedException;
-import de.notEOF.core.interfaces.EventObservable;
 import de.notEOF.core.interfaces.EventObserver;
 import de.notEOF.core.interfaces.NotEOFEvent;
 import de.notEOF.core.interfaces.Service;
@@ -18,6 +19,7 @@ import de.notEOF.core.interfaces.StartEvent;
 import de.notEOF.core.interfaces.StopEvent;
 import de.notEOF.core.interfaces.TimeOut;
 import de.notEOF.core.logging.LocalLog;
+import de.notEOF.core.mail.NotEOFMail;
 import de.notEOF.core.server.Server;
 import de.notEOF.core.util.Util;
 
@@ -33,14 +35,14 @@ import de.notEOF.core.util.Util;
  * @author Dirk
  * 
  */
-public abstract class BaseService extends BaseClientOrService implements Service, EventObserver, EventObservable, Runnable {
+public abstract class BaseService extends BaseClientOrService implements Service, EventObserver, Runnable {
 
     private boolean connectedWithClient = false;
     private boolean stopped = false;
     public boolean isRunning = true;
     private Thread serviceThread;
     private Server server;
-    protected List<EventObserver> eventObservers;
+    List<EventType> eventTypes;
     protected StartEvent startEvent;
     protected StopEvent stopEvent;
 
@@ -103,6 +105,10 @@ public abstract class BaseService extends BaseClientOrService implements Service
         this.server = server;
     }
 
+    public final Server getServer() {
+        return this.server;
+    }
+
     /**
      * Returns the list of all services which have the name 'serviceTypeName'.
      * 
@@ -144,62 +150,10 @@ public abstract class BaseService extends BaseClientOrService implements Service
     }
 
     /**
-     * To observe the service (the events of the client) here one or more
-     * observer of type EventObserver can register themself. <br>
-     * Whether a service or an extended class of type service really fires
-     * events and which events are fired depends to the single business logic.
-     * 
-     * @param eventObserver
-     *            The registered EventObservers.
-     */
-    public void registerForEvents(EventObserver eventObserver) {
-        if (null == eventObservers)
-            eventObservers = new ArrayList<EventObserver>();
-        eventObservers.add(eventObserver);
-    }
-
-    /**
-     * Observe all services of a certain type.
-     * 
-     * @param observer
-     *            The observing object.
-     * @param serviceTypeName
-     *            The type name of the services to observe.
-     * @throws ActionFailedException
-     */
-    protected final void observeServicesByType(EventObserver observer, String serviceTypeName) throws ActionFailedException {
-        List<Service> services = getServiceListByTypeName(serviceTypeName);
-        if (null != services && services.size() > 0) {
-            for (Service service : services) {
-                service.registerForEvents(observer);
-            }
-        }
-    }
-
-    /**
-     * Fires an event to all registered Observer.
-     * <p>
-     * Precondition for getting information on observer side is to initialize
-     * the observed event list.
-     * 
-     * @param service
-     *            The Observable which fires the event.
-     * @param event
-     *            Implementation of Type NotEOFEvent.
-     */
-    public void updateAllObserver(Service service, NotEOFEvent event) {
-        updateAllObserver(eventObservers, service, event);
-    }
-
-    public void updateAllObserver(List<EventObserver> list, Service service, NotEOFEvent event) {
-        Util.updateAllObserver(list, service, event);
-    }
-
-    /**
      * Callback method to inform the observer about incoming events.
      * <p>
-     * In the base service implementation the event will be forwarded to all
-     * observer which have registered to the base service.
+     * If this method is overwritten it is highly recommended to call this one
+     * by super() for easy use of the internal mail system.
      * 
      * @param service
      *            The service which fired the event.
@@ -208,7 +162,31 @@ public abstract class BaseService extends BaseClientOrService implements Service
      *            detected by the service.
      */
     public void update(Service service, NotEOFEvent event) {
-        updateAllObserver(service, event);
+        if (EventType.EVENT_NEW_MSG.equals(event.getEventType())) {
+            // search for msg
+            NotEOFMail mail = server.getMessage(((NewMailEvent) event).getMailId());
+
+            // wenn mail fuer service bestimmt war, an client senden.
+        }
+    }
+
+    // TODO Nachricht (Request) geht an Server. Der erzeugt ein msg event. die
+    // observer (services) pruefen, ob die ApplicationId im Event passt. Dann
+    // holen sie sich die Nachricht aus dem nachrichtenpool der mastertable
+    // ueber die msgId und senden sie an den client.
+    // Der client muss antworten mit response. die response geht ebenfalls in
+    // den pool. Dann werden wieder alle services benachrichtig. diesmal wird
+    // die serviceid des empfaengers (gleichzeitig eindeutig fuer client)
+    // verwendet. Nur der eine client mit dieser id erhaelt die antwort.
+    // Aehnlich laeuft's bei events. allerdings wird dafuer keine antwort
+    // erwartet.
+    public final void mailFromClient(String msg) {
+        // server.postMsgRequest(msg, this);
+    }
+
+    // TODO implementieren
+    public final void mailToClient(NotEOFMail mail) {
+
     }
 
     @SuppressWarnings("unchecked")
@@ -235,7 +213,7 @@ public abstract class BaseService extends BaseClientOrService implements Service
                     // individual in every service.
                     Class<Enum> tagEnumClass = (Class<Enum>) getCommunicationTagClass();
                     try {
-                        processMsg(validateEnum(tagEnumClass, msg));
+                        processClientMsg(validateEnum(tagEnumClass, msg));
                     } catch (ActionFailedException afx) {
                         LocalLog.error("Mapping der Nachricht auf Enum.", afx);
                         stopped = true;
@@ -279,6 +257,30 @@ public abstract class BaseService extends BaseClientOrService implements Service
         isRunning = false;
     }
 
+    /**
+     * Used by framework.
+     * <p>
+     * Overwrite this method if the specialized service is interested in events.
+     * <br>
+     * In your implementation you have to return a simple List which contains
+     * the relevant types.
+     */
+    public List<EventType> getObservedEvents() {
+        if (null == eventTypes) {
+            eventTypes = new ArrayList<EventType>();
+            eventTypes.add(EventType.EVENT_NEW_MSG);
+        }
+        return eventTypes;
+    }
+
+    protected void addObservedEventType(EventType type) {
+        if (null == eventTypes) {
+            eventTypes = new ArrayList<EventType>();
+            eventTypes.add(EventType.EVENT_NEW_MSG);
+        }
+        eventTypes.add(type);
+    }
+
     @SuppressWarnings("unchecked")
     private Enum validateEnum(Class<Enum> tagEnumClass, String msg) throws ActionFailedException {
         // try {
@@ -314,7 +316,7 @@ public abstract class BaseService extends BaseClientOrService implements Service
      * 
      * @param incomingMsgEnum
      */
-    public abstract void processMsg(Enum<?> incomingMsgEnum) throws ActionFailedException;
+    public abstract void processClientMsg(Enum<?> incomingMsgEnum) throws ActionFailedException;
 
     /**
      * Decides if both communication partner - client and service - use the

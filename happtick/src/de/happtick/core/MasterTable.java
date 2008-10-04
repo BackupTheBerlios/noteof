@@ -18,12 +18,11 @@ import de.notEOF.configuration.LocalConfiguration;
 import de.notEOF.core.enumeration.EventType;
 import de.notEOF.core.event.ServiceStopEvent;
 import de.notEOF.core.exception.ActionFailedException;
-import de.notEOF.core.interfaces.EventObservable;
-import de.notEOF.core.interfaces.EventObserver;
 import de.notEOF.core.interfaces.NotEOFConfiguration;
 import de.notEOF.core.interfaces.Service;
 import de.notEOF.core.interfaces.StopEvent;
 import de.notEOF.core.logging.LocalLog;
+import de.notEOF.core.server.Server;
 import de.notEOF.core.util.Util;
 
 /**
@@ -35,17 +34,20 @@ import de.notEOF.core.util.Util;
  * @author Dirk
  * 
  */
-public class MasterTable implements EventObservable {
+public class MasterTable {
 
     private static Map<Long, ApplicationConfiguration> applicationConfigurations = new HashMap<Long, ApplicationConfiguration>();
     private static Map<Long, ChainConfiguration> chainConfigurations = new HashMap<Long, ChainConfiguration>();
     private static Map<Long, EventConfiguration> eventConfigurations = new HashMap<Long, EventConfiguration>();
     private static Map<String, ApplicationService> applicationServices = new HashMap<String, ApplicationService>();
-    private static List<EventObserver> eventObservers = new ArrayList<EventObserver>();
     private static Map<String, StartService> startServices = new HashMap<String, StartService>();
+    // private static List<EventObserver> eventObservers = new
+    // ArrayList<EventObserver>();
 
     private static boolean inAction = false;
     private static boolean confUpdated = false;
+
+    private static Server server;
 
     /*
      * Liest die Konfiguration, initialisiert processChain und
@@ -312,7 +314,11 @@ public class MasterTable implements EventObservable {
      * @throws HapptickException
      */
     public synchronized static void addService(Service service) {
-        // TODO pr�fen, ob isAssignableFrom() so funktioniert...
+        // TODO Kommt man so an den Server???
+        if (null == server)
+            service.getServer();
+
+        // TODO pruefen, ob isAssignableFrom() so funktioniert...
         while (inAction)
             try {
                 Thread.sleep(100);
@@ -353,31 +359,17 @@ public class MasterTable implements EventObservable {
                 stopEvent = new ApplicationStopEvent(service.getServiceId(), applicationId, 0);
             }
             applicationServices.remove(service.getServiceId());
-            Util.updateAllObserver(eventObservers, null, stopEvent);
+            server.updateObservers(null, stopEvent);
         }
 
         // try all StartServices
         if (service.getClass().isAssignableFrom(StartService.class)) {
             StopEvent stopEvent = new ServiceStopEvent(service.getServiceId());
             startServices.remove(service.getServiceId());
-            Util.updateAllObserver(eventObservers, null, stopEvent);
+            server.updateObservers(null, stopEvent);
         }
 
         inAction = false;
-    }
-
-    /**
-     * To observe what happens with the services (the clients) here one or more
-     * observer of type EventObserver can register themself.
-     * <p>
-     * Whether a service or an extended class of type service really fires
-     * events and which events are fired depends to the single business logic.
-     * 
-     * @param eventObserver
-     *            The registered EventObservers.
-     */
-    public void registerForEvents(EventObserver eventObserver) {
-        eventObservers.add(eventObserver);
     }
 
     /**

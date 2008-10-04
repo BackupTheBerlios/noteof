@@ -343,6 +343,8 @@ public class Util {
      * Precondition for getting information on observer side is to initialize
      * the observed event list.
      * 
+     * @param eventObservers
+     *            List which contains all observers.
      * @param service
      *            The Observable which fires the event.
      * @param event

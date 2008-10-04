@@ -18,6 +18,7 @@ import de.happtick.core.interfaces.LogEvent;
 import de.notEOF.core.enumeration.EventType;
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.interfaces.NotEOFEvent;
+import de.notEOF.core.server.Server;
 import de.notEOF.core.service.BaseService;
 import de.notEOF.core.util.Util;
 
@@ -121,7 +122,7 @@ public class ApplicationService extends BaseService {
         if (event.getClass().equals(ApplicationStartEvent.class)) {
             startEvent = (ApplicationStartEvent) event;
         }
-        updateAllObserver(this, event);
+        Server.getInstance().updateObservers(this, event);
     }
 
     /**
@@ -129,7 +130,7 @@ public class ApplicationService extends BaseService {
      * and an application service is implemented.
      */
     @Override
-    public void processMsg(Enum<?> incomingMsgEnum) throws ActionFailedException {
+    public void processClientMsg(Enum<?> incomingMsgEnum) throws ActionFailedException {
         // Application Id
         if (incomingMsgEnum.equals(ApplicationTag.PROCESS_APPLICATION_ID)) {
             Long applicationId = new Long(requestTo(ApplicationTag.REQ_APPLICATION_ID, ApplicationTag.RESP_APPLICATION_ID));

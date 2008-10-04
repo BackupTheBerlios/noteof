@@ -45,7 +45,7 @@ public class Scheduler {
         NotEOFConfiguration conf = new LocalConfiguration();
         // Standard via timer
         try {
-            Boolean useTimer = Util.parseBoolean(conf.getAttribute("scheduler.use", "timer", "false"), false);
+            Boolean useTimer = Util.parseBoolean(conf.getAttribute("scheduler.use", "timer"), false);
             if (useTimer) {
                 startAllApplicationSchedulers();
 
@@ -55,8 +55,13 @@ public class Scheduler {
             }
 
             // process chain is active
-            Boolean useChain = Util.parseBoolean(conf.getAttribute("scheduler.use", "chain", "false"), false);
+            Boolean useChain = Util.parseBoolean(conf.getAttribute("scheduler.use", "chain"), false);
             if (useChain) {
+
+            }
+            // events are active
+            Boolean useEvents = Util.parseBoolean(conf.getAttribute("scheduler.use", "event"), false);
+            if (useEvents) {
 
             }
         } catch (ActionFailedException afx) {
@@ -240,7 +245,7 @@ public class Scheduler {
                         // running
                         // register at the ApplicationService and wait for
                         // application exit by event
-                        applicationService.registerForEvents(this);
+                        // applicationService.registerForEvents(this);
                         while (!appServiceStopped) {
                             Thread.sleep(500);
                         }

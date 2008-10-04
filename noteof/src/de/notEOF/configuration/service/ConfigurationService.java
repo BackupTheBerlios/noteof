@@ -5,7 +5,6 @@ import java.util.List;
 import de.notEOF.configuration.LocalConfiguration;
 import de.notEOF.configuration.enumeration.ConfigurationTag;
 import de.notEOF.core.communication.DataObject;
-import de.notEOF.core.enumeration.EventType;
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.interfaces.NotEOFConfiguration;
 import de.notEOF.core.logging.LocalLog;
@@ -25,7 +24,7 @@ public class ConfigurationService extends BaseService {
     }
 
     @Override
-    public void processMsg(Enum<?> incomingMsgEnum) throws ActionFailedException {
+    public void processClientMsg(Enum<?> incomingMsgEnum) throws ActionFailedException {
         NotEOFConfiguration conf = new LocalConfiguration();
 
         List<String> values = null;
@@ -90,12 +89,5 @@ public class ConfigurationService extends BaseService {
     @Override
     public boolean isLifeSignSystemActive() {
         return true;
-    }
-
-    /**
-     * Used by framework.
-     */
-    public List<EventType> getObservedEvents() {
-        return null;
     }
 }

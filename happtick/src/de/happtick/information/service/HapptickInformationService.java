@@ -29,7 +29,7 @@ public class HapptickInformationService extends BaseService {
     }
 
     @Override
-    public void processMsg(Enum<?> configTag) throws ActionFailedException {
+    public void processClientMsg(Enum<?> configTag) throws ActionFailedException {
         // Client asks for all application configurations
         if (HapptickConfigTag.REQ_ALL_APPLICATION_CONFIGURATIONS.equals(configTag)) {
             deliverApplicationConfiguration();

@@ -14,5 +14,3 @@ java de.happtick.test.TestHapptick
 
 @echo on
 
-
-pause

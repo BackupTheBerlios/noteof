@@ -13,12 +13,15 @@ import java.util.Map;
 
 import de.notEOF.core.communication.TalkLine;
 import de.notEOF.core.enumeration.BaseCommTag;
+import de.notEOF.core.event.NewMailEvent;
 import de.notEOF.core.event.NewServiceEvent;
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.interfaces.EventObservable;
 import de.notEOF.core.interfaces.EventObserver;
+import de.notEOF.core.interfaces.NotEOFEvent;
 import de.notEOF.core.interfaces.Service;
 import de.notEOF.core.logging.LocalLog;
+import de.notEOF.core.mail.NotEOFMail;
 import de.notEOF.core.service.BaseService;
 import de.notEOF.core.service.ServiceFinder;
 import de.notEOF.core.util.ArgsParser;
@@ -44,22 +47,16 @@ public class Server implements EventObservable, Runnable {
     private boolean stop = false;
     private static ServerSocket serverSocket;
     private static String notEof_Home;
-    private static Map<String, Map<String, Service>> allServiceMaps;
     private static int lastServiceId = 0;
     private List<EventObserver> eventObservers;
+    private Map<String, NotEOFMail> mails;
+    private static Map<String, Map<String, Service>> allServiceMaps;
 
     public static Server getInstance() {
         if (null == server) {
             server = new Server();
         }
         return server;
-    }
-
-    /*
-     * Returns the map with all service types and services
-     */
-    protected Map<String, Map<String, Service>> getAllServiceMaps() {
-        return allServiceMaps;
     }
 
     /**
@@ -148,7 +145,7 @@ public class Server implements EventObservable, Runnable {
             service.setThread(serviceThread);
             serviceThread.start();
 
-            // Fire event to all observer
+            // Fire event to all observers which are interested in
             Util.updateAllObserver(eventObservers, null, new NewServiceEvent(service));
         } else {
             // service couldn't be created or found in list by type name
@@ -261,6 +258,22 @@ public class Server implements EventObservable, Runnable {
     }
 
     /**
+     * Fire an event to all registered observers.
+     * <p>
+     * Only observers that are interested in the raised event will be informed
+     * about it. <br>
+     * Events are not replied to.
+     * 
+     * @param service
+     *            The service that fired the event.
+     * @param event
+     *            The event itself.
+     */
+    public void updateObservers(Service service, NotEOFEvent event) {
+        Util.updateAllObserver(eventObservers, service, event);
+    }
+
+    /**
      * This method enables the server to inform the services about events or
      * changes of the system.
      * 
@@ -272,6 +285,67 @@ public class Server implements EventObservable, Runnable {
         if (null == eventObservers)
             eventObservers = new ArrayList<EventObserver>();
         eventObservers.add(eventObserver);
+    }
+
+    /*
+     * Returns the map with all service types and services
+     */
+    protected Map<String, Map<String, Service>> getAllServiceMaps() {
+        return allServiceMaps;
+    }
+
+    public Map<String, NotEOFMail> getMessageMap() {
+        return mails;
+    }
+
+    public NotEOFMail getMessage(String messageId) {
+        return mails.get(messageId);
+    }
+
+    /**
+     * Server can be used as post office.
+     * <p>
+     * The server stores incoming messages and informs services by sending an
+     * event. <br>
+     * The services by themself proove if the message is for them. Then they
+     * send it to their clients. <br>
+     * For reaching an acceptor either the toServiceId or the destination must
+     * be set. If both are NULL or empty the message will be destroyed and the
+     * sender gets an error response.
+     * 
+     */
+    public void postMailRequest(NotEOFMail mail, Service fromService) {
+        if (Util.isEmpty(mail.getToServiceId()) && Util.isEmpty(mail.getDestination())) {
+            NotEOFMail respMail = new NotEOFMail();
+            respMail.setBody("Error: Empty toServiceId and empty Destination. Message ignored.");
+            respMail.setToServiceId(mail.getFromServiceId());
+            respMail.setFromServiceId("Server");
+
+            mailToService(fromService, respMail);
+
+        }
+
+        // Recipient is perhaps is not yet known. Then toServiceId is empty.
+        mails.put(mail.getMailId(), mail);
+
+        // Send Observers the event that a new msg has arrived
+        updateObservers(fromService, new NewMailEvent(mail.getMailId(), mail.getToServiceId(), mail.getDestination()));
+    }
+
+    public void postMailResponse(NotEOFMail mail, Service fromService, String mailRequestId) {
+
+    }
+
+    /**
+     * Send message directly to a service.
+     * 
+     * @param service
+     *            The recipient.
+     * @param mail
+     *            The message.
+     */
+    public void mailToService(Service service, NotEOFMail mail) {
+        service.mailToClient(mail);
     }
 
     /**

@@ -23,7 +23,7 @@ public class TestService extends BaseService {
     }
 
     @Override
-    public void processMsg(Enum<?> arg0) throws ActionFailedException {
+    public void processClientMsg(Enum<?> arg0) throws ActionFailedException {
         System.out.println("processMsg");
         List<Service> services = getServiceListByTypeName("ConfigurationService");
         if (null != services) {
