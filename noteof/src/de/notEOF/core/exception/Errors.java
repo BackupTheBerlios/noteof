@@ -91,6 +91,10 @@ public class Errors {
         errorList.put(1006L, "Dispatch Service konnte Konfiguration der Services nicht lesen.");
         errorList.put(1007L, "Dispatch Service konnte Konfiguration der Server nicht lesen.");
 
+        // Mail functions
+        errorList.put(1100L, "Unvollständige Mail.");
+        errorList.put(1101L, "Problem bei Zuordnung einer Mail zu einem Service.");
+
     }
 
     /*

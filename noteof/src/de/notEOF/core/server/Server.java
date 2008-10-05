@@ -50,6 +50,7 @@ public class Server implements EventObservable, Runnable {
     private static int lastServiceId = 0;
     private List<EventObserver> eventObservers;
     private Map<String, NotEOFMail> mails;
+    private Map<String, Service> mailRecipients;
     private static Map<String, Map<String, Service>> allServiceMaps;
 
     public static Server getInstance() {
@@ -294,12 +295,16 @@ public class Server implements EventObservable, Runnable {
         return allServiceMaps;
     }
 
-    public Map<String, NotEOFMail> getMessageMap() {
-        return mails;
-    }
-
-    public NotEOFMail getMessage(String messageId) {
-        return mails.get(messageId);
+    /**
+     * Delivers a mail by the mailId.
+     * 
+     * @param mailId
+     * @return A mail or NULL if not found by the mailId.
+     */
+    public NotEOFMail getMail(String mailId) {
+        if (null == mails)
+            return null;
+        return mails.get(mailId);
     }
 
     /**
@@ -309,31 +314,45 @@ public class Server implements EventObservable, Runnable {
      * event. <br>
      * The services by themself proove if the message is for them. Then they
      * send it to their clients. <br>
-     * For reaching an acceptor either the toServiceId or the destination must
-     * be set. If both are NULL or empty the message will be destroyed and the
-     * sender gets an error response.
-     * 
      */
-    public void postMailRequest(NotEOFMail mail, Service fromService) {
-        if (Util.isEmpty(mail.getToServiceId()) && Util.isEmpty(mail.getDestination())) {
-            NotEOFMail respMail = new NotEOFMail();
-            respMail.setBody("Error: Empty toServiceId and empty Destination. Message ignored.");
-            respMail.setToServiceId(mail.getFromServiceId());
-            respMail.setFromServiceId("Server");
+    public void postMail(NotEOFMail mail, Service fromService) {
+        if (mails == null)
+            mails = new HashMap<String, NotEOFMail>();
 
-            mailToService(fromService, respMail);
-
+        // if mailRequestId is not empty the recipient is stored in the relation
+        // map
+        if (!Util.isEmpty(mail.getRequestMailId())) {
+            Service service = mailRecipients.get(mail.getRequestMailId());
+            mailToService(mail, service);
+            mailRecipients.remove(mail.getRequestMailId());
+        } else {
+            // Recipient is not yet known at this time point.
+            mails.put(mail.getRequestMailId(), mail);
+            // Send Observers the event that a new msg has arrived
+            updateObservers(fromService, new NewMailEvent(mail.getRequestMailId(), mail.getDestination()));
         }
-
-        // Recipient is perhaps is not yet known. Then toServiceId is empty.
-        mails.put(mail.getMailId(), mail);
-
-        // Send Observers the event that a new msg has arrived
-        updateObservers(fromService, new NewMailEvent(mail.getMailId(), mail.getToServiceId(), mail.getDestination()));
     }
 
-    public void postMailResponse(NotEOFMail mail, Service fromService, String mailRequestId) {
+    /**
+     * Builds relationship between mail and recipient for later response.
+     * 
+     * @param mailId
+     *            Identifier of the mail.
+     * @param recipient
+     *            Service which has taken the mail.
+     * @throws ActionFailedException
+     *             If relation already exists.
+     */
+    public void relateMailToRecipient(NotEOFMail mail, Service recipient) throws ActionFailedException {
+        Service service = mailRecipients.get(mail.getRequestMailId());
+        if (null != service)
+            throw new ActionFailedException(1101L, "Mail wurde bereits zugeordnet. Zugeordneter Service: " + service.getServiceId());
 
+        // fill up mail with recipient for later response
+        mailRecipients.put(mail.getRequestMailId(), recipient);
+
+        // delete incoming mail
+        mails.remove(mail.getRequestMailId());
     }
 
     /**
@@ -344,7 +363,7 @@ public class Server implements EventObservable, Runnable {
      * @param mail
      *            The message.
      */
-    public void mailToService(Service service, NotEOFMail mail) {
+    public void mailToService(NotEOFMail mail, Service service) {
         service.mailToClient(mail);
     }
 

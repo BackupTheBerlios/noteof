@@ -164,9 +164,24 @@ public abstract class BaseService extends BaseClientOrService implements Service
     public void update(Service service, NotEOFEvent event) {
         if (EventType.EVENT_NEW_MSG.equals(event.getEventType())) {
             // search for msg
-            NotEOFMail mail = server.getMessage(((NewMailEvent) event).getMailId());
+            NotEOFMail mail = server.getMail(((NewMailEvent) event).getMailId());
 
-            // wenn mail fuer service bestimmt war, an client senden.
+            // wenn mail fuer service bestimmt war,
+            // erstmal dem Server mitteilen, dass es einen recipienten gibt,
+            // dann an client senden.
+            // hier nur eine simple unnuetze Implementierung...
+            // Normalerweise sollte sich der Service fuer den Header
+            // interessieren.
+            // Oder z.B. in Happtick fuer die destination, die eine
+            // ApplikationsId enthaelt...
+            if (mail.getDestination().equals(getServiceId())) {
+                try {
+                    server.relateMailToRecipient(mail, this);
+                    mailToClient(mail);
+                } catch (ActionFailedException e) {
+                    LocalLog.warn("Mehrere Services versuchen auf eine Nachricht zuzugreifen. Header: " + mail.getHeader());
+                }
+            }
         }
     }
 
@@ -181,7 +196,7 @@ public abstract class BaseService extends BaseClientOrService implements Service
     // Aehnlich laeuft's bei events. allerdings wird dafuer keine antwort
     // erwartet.
     public final void mailFromClient(String msg) {
-        // server.postMsgRequest(msg, this);
+        // muss die requestMailId enthalten
     }
 
     // TODO implementieren

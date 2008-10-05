@@ -2,48 +2,107 @@ package de.notEOF.core.mail;
 
 import java.util.Date;
 
+import de.notEOF.core.communication.DataObject;
+import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.interfaces.Service;
+import de.notIOC.util.Util;
 
 public class NotEOFMail {
-    private String body;
-    private String mailId;
+    private String bodyText;
+    private DataObject bodyData;
+    private String header;
+    private String requestMailId;
     private String fromServiceId;
-    private String toServiceId;
     private String destination;
     private Date generated;
+    private String responseMailId;
 
     /**
-     * @param body
-     *            The content of the message.
+     * @param bodyText
+     *            The content of the message as simple String.
+     * @param fromServiceId
+     *            The service id is unique during the server runtime.
+     * @param destination
+     *            The 'address' of the recipient. May not be NULL. The services
+     *            by themselve check the destination information if they are
+     *            interested in this mail.
+     */
+    public NotEOFMail(String header, String bodyText, Service fromService, String destination) throws ActionFailedException {
+        if (Util.isEmpty(bodyText))
+            throw new ActionFailedException(1100L, "Body Text ist leer.");
+        this.bodyText = bodyText;
+        initMail(header, fromService, destination);
+    }
+
+    /**
+     * @param bodyData
+     *            The content of the message as complex DataObject.
      * @param fromServiceId
      *            The service id is unique during the server runtime.
      * @param toServiceId
-     *            The 'address' of the recipient. May be NULL if it is not
-     *            known. If the value of toServiceId is NULL the server and the
-     *            services try to find out one or more recipients by the
-     *            destination string value.
-     * @param destination
+     *            The 'address' of the recipient. May not be NULL.
      */
-    public NotEOFMail(String body, Service fromService, String toServiceId, String destination) {
-        this.body = body;
-        this.fromServiceId = fromService.getServiceId();
-        this.toServiceId = toServiceId;
-        this.destination = destination;
-        this.generated = new Date();
-        this.mailId = String.valueOf(new Date().getTime()) + fromServiceId;
-        this.generated = new Date();
+    public NotEOFMail(String header, DataObject bodyData, Service fromService, String toServiceId) throws ActionFailedException {
+        if (null == bodyData)
+            throw new ActionFailedException(1100L, "Body DataObject ist NULL.");
+        this.setBodyData(bodyData);
+        initMail(header, fromService, toServiceId);
     }
 
     public NotEOFMail() {
 
     }
 
-    public String getBody() {
-        return body;
+    private void initMail(String header, Service fromService, String destination) throws ActionFailedException {
+        if (null == fromService)
+            throw new ActionFailedException(1100L, "fromService ist NULL.");
+        if (Util.isEmpty(destination))
+            throw new ActionFailedException(1100L, "destination ist NULL.");
+
+        this.setHeader(header);
+        this.fromServiceId = fromService.getServiceId();
+        this.destination = destination;
+        this.generated = new Date();
+        this.requestMailId = String.valueOf(new Date().getTime()) + fromServiceId;
+        this.generated = new Date();
     }
 
-    public void setBody(String body) {
-        this.body = body;
+    /**
+     * @param header
+     *            the header to set
+     */
+    public void setHeader(String header) {
+        this.header = header;
+    }
+
+    /**
+     * @return the header
+     */
+    public String getHeader() {
+        return header;
+    }
+
+    /**
+     * @param bodyData
+     *            the bodyData to set
+     */
+    public void setBodyData(DataObject bodyData) {
+        this.bodyData = bodyData;
+    }
+
+    /**
+     * @return the bodyData
+     */
+    public DataObject getBodyData() {
+        return bodyData;
+    }
+
+    public String getBodyText() {
+        return bodyText;
+    }
+
+    public void setBodyText(String bodyText) {
+        this.bodyText = bodyText;
     }
 
     public String getFromServiceId() {
@@ -52,14 +111,6 @@ public class NotEOFMail {
 
     public void setFromServiceId(String fromServiceId) {
         this.fromServiceId = fromServiceId;
-    }
-
-    public String getToServiceId() {
-        return toServiceId;
-    }
-
-    public void setToServiceId(String toServiceId) {
-        this.toServiceId = toServiceId;
     }
 
     public String getDestination() {
@@ -84,7 +135,22 @@ public class NotEOFMail {
         this.generated = generated;
     }
 
-    public String getMailId() {
-        return this.mailId;
+    public String getRequestMailId() {
+        return this.requestMailId;
+    }
+
+    /**
+     * @param responseMailId
+     *            the responseMailId to set
+     */
+    public void setResponseMailId(String responseMailId) {
+        this.responseMailId = responseMailId;
+    }
+
+    /**
+     * @return the responseMailId
+     */
+    public String getResponseMailId() {
+        return responseMailId;
     }
 }
