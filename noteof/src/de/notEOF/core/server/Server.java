@@ -7,6 +7,7 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,11 +22,12 @@ import de.notEOF.core.interfaces.EventObserver;
 import de.notEOF.core.interfaces.NotEOFEvent;
 import de.notEOF.core.interfaces.Service;
 import de.notEOF.core.logging.LocalLog;
-import de.notEOF.core.mail.NotEOFMail;
 import de.notEOF.core.service.BaseService;
 import de.notEOF.core.service.ServiceFinder;
 import de.notEOF.core.util.ArgsParser;
 import de.notEOF.core.util.Util;
+import de.notEOF.mail.NotEOFMail;
+import de.notEOF.mail.service.MailEventService;
 import de.notIOC.configuration.ConfigurationManager;
 
 /**
@@ -50,7 +52,6 @@ public class Server implements EventObservable, Runnable {
     private static int lastServiceId = 0;
     private List<EventObserver> eventObservers;
     private Map<String, NotEOFMail> mails;
-    private Map<String, Service> mailRecipients;
     private static Map<String, Map<String, Service>> allServiceMaps;
 
     public static Server getInstance() {
@@ -122,6 +123,10 @@ public class Server implements EventObservable, Runnable {
         // Client asks for registration
         talkLine.awaitRequestAnswerImmediate(BaseCommTag.REQ_REGISTRATION, BaseCommTag.RESP_REGISTRATION, BaseCommTag.VAL_OK.name());
 
+        // client wants it's own id
+        String clientNetId = talkLine.getHostAddress() + new Date().getTime();
+        talkLine.awaitRequestAnswerImmediate(BaseCommTag.REQ_CLIENT_ID, BaseCommTag.RESP_CLIENT_ID, clientNetId);
+
         // server asks for perhaps existing service id
         String deliveredServiceId = talkLine.requestTo(BaseCommTag.REQ_SERVICE_ID, BaseCommTag.RESP_SERVICE_ID);
         String serviceTypeName = talkLine.requestTo(BaseCommTag.REQ_TYPE_NAME, BaseCommTag.RESP_TYPE_NAME);
@@ -130,7 +135,7 @@ public class Server implements EventObservable, Runnable {
 
         // Lookup for a service which is assigned to the client. If not found
         // create a new one
-        Service service = assignServiceToClient(clientSocket, deliveredServiceId, serviceTypeName);
+        Service service = assignServiceToClient(clientSocket, clientNetId, deliveredServiceId, serviceTypeName);
         // Confirm the serviceId received by client or tell him another one
         talkLine.awaitRequestAnswerImmediate(BaseCommTag.REQ_SERVICE, BaseCommTag.RESP_SERVICE, service.getServiceId());
 
@@ -215,7 +220,8 @@ public class Server implements EventObservable, Runnable {
      * Second step: Look for matching service by existing serviceId and
      * clientTypeName
      */
-    private Service assignServiceToClient(Socket clientSocket, String deliveredServiceId, String serviceTypeName) throws ActionFailedException {
+    private Service assignServiceToClient(Socket clientSocket, String clientNetId, String deliveredServiceId, String serviceTypeName)
+            throws ActionFailedException {
 
         // Initialization of map for storing serviceLists
         // the typeNames are sent by the clients during the connecting act
@@ -237,6 +243,7 @@ public class Server implements EventObservable, Runnable {
                 // generate new serviceId
                 deliveredServiceId = generateServiceId();
                 ((BaseService) service).setServer(this);
+                ((BaseService) service).setClientNetId(clientNetId);
                 ((BaseService) service).initializeConnection(clientSocket, deliveredServiceId);
                 ((BaseService) service).implementationFirstSteps();
 
@@ -319,40 +326,10 @@ public class Server implements EventObservable, Runnable {
         if (mails == null)
             mails = new HashMap<String, NotEOFMail>();
 
-        // if mailRequestId is not empty the recipient is stored in the relation
-        // map
-        if (!Util.isEmpty(mail.getRequestMailId())) {
-            Service service = mailRecipients.get(mail.getRequestMailId());
-            mailToService(mail, service);
-            mailRecipients.remove(mail.getRequestMailId());
-        } else {
-            // Recipient is not yet known at this time point.
-            mails.put(mail.getRequestMailId(), mail);
-            // Send Observers the event that a new msg has arrived
-            updateObservers(fromService, new NewMailEvent(mail.getRequestMailId(), mail.getDestination()));
-        }
-    }
-
-    /**
-     * Builds relationship between mail and recipient for later response.
-     * 
-     * @param mailId
-     *            Identifier of the mail.
-     * @param recipient
-     *            Service which has taken the mail.
-     * @throws ActionFailedException
-     *             If relation already exists.
-     */
-    public void relateMailToRecipient(NotEOFMail mail, Service recipient) throws ActionFailedException {
-        Service service = mailRecipients.get(mail.getRequestMailId());
-        if (null != service)
-            throw new ActionFailedException(1101L, "Mail wurde bereits zugeordnet. Zugeordneter Service: " + service.getServiceId());
-
-        // fill up mail with recipient for later response
-        mailRecipients.put(mail.getRequestMailId(), recipient);
-
-        // delete incoming mail
-        mails.remove(mail.getRequestMailId());
+        // Recipient is not yet known at this time point.
+        mails.put(mail.getMailId(), mail);
+        // Send Observers the event that a new msg has arrived
+        updateObservers(fromService, new NewMailEvent(mail.getMailId(), mail.getToClientNetId(), mail.getDestination(), mail.getHeader()));
     }
 
     /**
@@ -363,7 +340,7 @@ public class Server implements EventObservable, Runnable {
      * @param mail
      *            The message.
      */
-    public void mailToService(NotEOFMail mail, Service service) {
+    public void mailToService(NotEOFMail mail, MailEventService service) throws ActionFailedException {
         service.mailToClient(mail);
     }
 

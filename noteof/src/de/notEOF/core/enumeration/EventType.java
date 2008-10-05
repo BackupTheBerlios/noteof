@@ -15,6 +15,6 @@ public enum EventType {
     EVENT_START,
     EVENT_STOP,
     EVENT_SERVICE_CHANGE,
-    EVENT_NEW_MSG,
+    EVENT_MAIL,
     EVENT_ALL_TYPES;
 }

@@ -1,7 +1,6 @@
 package de.notEOF.core.interfaces;
 
 import de.notEOF.core.exception.ActionFailedException;
-import de.notEOF.core.mail.NotEOFMail;
 import de.notEOF.core.server.Server;
 
 public interface Service {
@@ -19,8 +18,6 @@ public interface Service {
     public boolean isLifeSignSystemActive();
 
     public abstract void processClientMsg(Enum<?> incomingMsgEnum) throws ActionFailedException;
-
-    public void mailToClient(NotEOFMail msg);
 
     public Server getServer();
 }

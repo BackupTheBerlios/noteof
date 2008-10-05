@@ -13,6 +13,7 @@ public class ServerRegistration {
      */
 
     private boolean linkedToService = false;
+    private String clientNetId;
     private String serviceId;
 
     /**
@@ -62,6 +63,10 @@ public class ServerRegistration {
         return serviceId;
     }
 
+    public String getClientNetId() {
+        return this.clientNetId;
+    }
+
     /**
      * Tells if the registration at the server was successfull.
      * 
@@ -109,6 +114,9 @@ public class ServerRegistration {
                 throw new ActionFailedException(22L, "Anmeldung vom Server abgelehnt.");
             }
 
+            // second step: Get netwide id
+            clientNetId = talkLine.requestTo(BaseCommTag.REQ_CLIENT_ID, BaseCommTag.RESP_CLIENT_ID);
+
             // see if a service id already is given with the args (calling
             // parameter)
             String deliveredServiceId = "";
@@ -117,15 +125,15 @@ public class ServerRegistration {
                 deliveredServiceId = argsParser.getValue("serviceId_");
             }
 
-            // Second step: Server asks client for an existing service id
+            // Third step: Server asks client for an existing service id
             talkLine.awaitRequestAnswerImmediate(BaseCommTag.REQ_SERVICE_ID, BaseCommTag.RESP_SERVICE_ID, deliveredServiceId);
 
-            // Third step: Ask for a service
+            // Fourth step: Ask for a service
             // It is not guaranteed that the service number is the same as
             // delivered by args
             talkLine.awaitRequestAnswerImmediate(BaseCommTag.REQ_TYPE_NAME, BaseCommTag.RESP_TYPE_NAME, serviceClassName);
             String serviceId = talkLine.requestTo(BaseCommTag.REQ_SERVICE, BaseCommTag.RESP_SERVICE);
-            String activateLifeSignSystem =         talkLine.requestTo(BaseCommTag.REQ_LIFE_SIGN_ACTIVATE, BaseCommTag.RESP_LIFE_SIGN_ACTIVATE);
+            String activateLifeSignSystem = talkLine.requestTo(BaseCommTag.REQ_LIFE_SIGN_ACTIVATE, BaseCommTag.RESP_LIFE_SIGN_ACTIVATE);
             if (BaseCommTag.VAL_TRUE.name().equals(activateLifeSignSystem)) {
                 talkLine.activateLifeSignSystem(true);
             }

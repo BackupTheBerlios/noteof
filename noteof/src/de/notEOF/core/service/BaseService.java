@@ -8,7 +8,6 @@ import de.notEOF.core.BaseClientOrService;
 import de.notEOF.core.communication.TalkLine;
 import de.notEOF.core.constant.NotEOFConstants;
 import de.notEOF.core.enumeration.EventType;
-import de.notEOF.core.event.NewMailEvent;
 import de.notEOF.core.event.ServiceStartEvent;
 import de.notEOF.core.event.ServiceStopEvent;
 import de.notEOF.core.exception.ActionFailedException;
@@ -19,9 +18,9 @@ import de.notEOF.core.interfaces.StartEvent;
 import de.notEOF.core.interfaces.StopEvent;
 import de.notEOF.core.interfaces.TimeOut;
 import de.notEOF.core.logging.LocalLog;
-import de.notEOF.core.mail.NotEOFMail;
 import de.notEOF.core.server.Server;
 import de.notEOF.core.util.Util;
+import de.notEOF.mail.NotEOFMail;
 
 /**
  * Basic class for every !EOF Service.
@@ -45,6 +44,7 @@ public abstract class BaseService extends BaseClientOrService implements Service
     List<EventType> eventTypes;
     protected StartEvent startEvent;
     protected StopEvent stopEvent;
+    protected String clientNetId;
 
     public boolean isRunning() {
         return isRunning;
@@ -57,6 +57,7 @@ public abstract class BaseService extends BaseClientOrService implements Service
      * E.g. this could be the place to activate the lifesign system.
      * 
      * @throws ActionFailedException
+     *             Depends to the Service implementation.
      */
     public void implementationFirstSteps() throws ActionFailedException {
     }
@@ -91,6 +92,14 @@ public abstract class BaseService extends BaseClientOrService implements Service
 
     public boolean isConnectedWithClient() {
         return connectedWithClient;
+    }
+
+    public void setClientNetId(String clientNetId) {
+        this.clientNetId = clientNetId;
+    }
+
+    public String getClientNetId() {
+        return this.clientNetId;
     }
 
     public void stopService() {
@@ -162,46 +171,6 @@ public abstract class BaseService extends BaseClientOrService implements Service
      *            detected by the service.
      */
     public void update(Service service, NotEOFEvent event) {
-        if (EventType.EVENT_NEW_MSG.equals(event.getEventType())) {
-            // search for msg
-            NotEOFMail mail = server.getMail(((NewMailEvent) event).getMailId());
-
-            // wenn mail fuer service bestimmt war,
-            // erstmal dem Server mitteilen, dass es einen recipienten gibt,
-            // dann an client senden.
-            // hier nur eine simple unnuetze Implementierung...
-            // Normalerweise sollte sich der Service fuer den Header
-            // interessieren.
-            // Oder z.B. in Happtick fuer die destination, die eine
-            // ApplikationsId enthaelt...
-            if (mail.getDestination().equals(getServiceId())) {
-                try {
-                    server.relateMailToRecipient(mail, this);
-                    mailToClient(mail);
-                } catch (ActionFailedException e) {
-                    LocalLog.warn("Mehrere Services versuchen auf eine Nachricht zuzugreifen. Header: " + mail.getHeader());
-                }
-            }
-        }
-    }
-
-    // TODO Nachricht (Request) geht an Server. Der erzeugt ein msg event. die
-    // observer (services) pruefen, ob die ApplicationId im Event passt. Dann
-    // holen sie sich die Nachricht aus dem nachrichtenpool der mastertable
-    // ueber die msgId und senden sie an den client.
-    // Der client muss antworten mit response. die response geht ebenfalls in
-    // den pool. Dann werden wieder alle services benachrichtig. diesmal wird
-    // die serviceid des empfaengers (gleichzeitig eindeutig fuer client)
-    // verwendet. Nur der eine client mit dieser id erhaelt die antwort.
-    // Aehnlich laeuft's bei events. allerdings wird dafuer keine antwort
-    // erwartet.
-    public final void mailFromClient(String msg) {
-        // muss die requestMailId enthalten
-    }
-
-    // TODO implementieren
-    public final void mailToClient(NotEOFMail mail) {
-
     }
 
     @SuppressWarnings("unchecked")
@@ -283,15 +252,15 @@ public abstract class BaseService extends BaseClientOrService implements Service
     public List<EventType> getObservedEvents() {
         if (null == eventTypes) {
             eventTypes = new ArrayList<EventType>();
-            eventTypes.add(EventType.EVENT_NEW_MSG);
+            eventTypes.add(EventType.EVENT_MAIL);
         }
         return eventTypes;
     }
 
-    protected void addObservedEventType(EventType type) {
+    protected final void addObservedEventType(EventType type) {
         if (null == eventTypes) {
             eventTypes = new ArrayList<EventType>();
-            eventTypes.add(EventType.EVENT_NEW_MSG);
+            eventTypes.add(EventType.EVENT_MAIL);
         }
         eventTypes.add(type);
     }
@@ -307,6 +276,15 @@ public abstract class BaseService extends BaseClientOrService implements Service
         }
         // return null;
         throw new ActionFailedException(151L, "Validierung der Empfangenen Nachricht: " + msg);
+    }
+
+    // TODO implementieren: mail generieren aus den daten vom client (aufgerufen
+    // von processMsg).
+    public void processMail() {
+        NotEOFMail mail = new NotEOFMail();
+
+        server.postMail(mail, this);
+
     }
 
     protected void finalize() {

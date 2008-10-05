@@ -1,4 +1,4 @@
-package de.notEOF.core.mail;
+package de.notEOF.mail;
 
 import java.util.Date;
 
@@ -10,12 +10,12 @@ import de.notIOC.util.Util;
 public class NotEOFMail {
     private String bodyText;
     private DataObject bodyData;
+    private Service fromService;
+    private String toClientNetId;
     private String header;
-    private String requestMailId;
-    private String fromServiceId;
+    private String mailId;
     private String destination;
     private Date generated;
-    private String responseMailId;
 
     /**
      * @param bodyText
@@ -60,10 +60,10 @@ public class NotEOFMail {
             throw new ActionFailedException(1100L, "destination ist NULL.");
 
         this.setHeader(header);
-        this.fromServiceId = fromService.getServiceId();
+        this.fromService = fromService;
         this.destination = destination;
         this.generated = new Date();
-        this.requestMailId = String.valueOf(new Date().getTime()) + fromServiceId;
+        this.mailId = String.valueOf(new Date().getTime()) + fromService.getServiceId();
         this.generated = new Date();
     }
 
@@ -105,12 +105,26 @@ public class NotEOFMail {
         this.bodyText = bodyText;
     }
 
-    public String getFromServiceId() {
-        return fromServiceId;
+    public Service getFromService() {
+        return fromService;
     }
 
-    public void setFromServiceId(String fromServiceId) {
-        this.fromServiceId = fromServiceId;
+    public void setFromService(Service fromService) {
+        this.fromService = fromService;
+    }
+
+    public String getToClientNetId() {
+        return toClientNetId;
+    }
+
+    /**
+     * If clientNetId is known it can be set here to make it safer that the
+     * client gets the post.
+     * 
+     * @param toClientNetId
+     */
+    public void setToClientNetId(String toClientNetId) {
+        this.toClientNetId = toClientNetId;
     }
 
     public String getDestination() {
@@ -135,22 +149,11 @@ public class NotEOFMail {
         this.generated = generated;
     }
 
-    public String getRequestMailId() {
-        return this.requestMailId;
+    public String getMailId() {
+        return this.mailId;
     }
 
-    /**
-     * @param responseMailId
-     *            the responseMailId to set
-     */
-    public void setResponseMailId(String responseMailId) {
-        this.responseMailId = responseMailId;
-    }
-
-    /**
-     * @return the responseMailId
-     */
-    public String getResponseMailId() {
-        return responseMailId;
+    public void setMailId(String mailId) {
+        this.mailId = mailId;
     }
 }

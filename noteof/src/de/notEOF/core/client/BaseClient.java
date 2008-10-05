@@ -25,6 +25,7 @@ import de.notEOF.core.util.Util;
 public abstract class BaseClient extends BaseClientOrService {
 
     private boolean linkedToService = false;
+    private String clientNetId;
     private String[] args;
 
     /**
@@ -130,6 +131,15 @@ public abstract class BaseClient extends BaseClientOrService {
     }
 
     /**
+     * Returns the netwide unique identifier of this client.
+     * 
+     * @return Id.
+     */
+    public String getClientNetId() {
+        return this.clientNetId;
+    }
+
+    /**
      * Tells if the client is connected with a service at server side.
      * 
      * @return true or false...
@@ -181,6 +191,7 @@ public abstract class BaseClient extends BaseClientOrService {
      */
     private final void registerAtServer(TalkLine talkLine, TimeOut timeout, String... args) throws ActionFailedException {
         ServerRegistration registration = new ServerRegistration(getServiceClassName(), talkLine, timeout.getMillisConnection(), args);
+        clientNetId = registration.getClientNetId();
         linkedToService = registration.isLinkedToService();
         setServiceId(registration.getServiceId());
     }

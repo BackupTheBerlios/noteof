@@ -12,6 +12,9 @@ public enum BaseCommTag {
     REQ_SERVICE_ID(),
     RESP_SERVICE_ID(),
 
+    REQ_CLIENT_ID(),
+    RESP_CLIENT_ID(),
+
     REQ_SERVICE(),
     RESP_SERVICE(),
 
