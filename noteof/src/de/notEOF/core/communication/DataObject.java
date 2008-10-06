@@ -18,7 +18,8 @@ import de.notEOF.core.util.Util;
 /**
  * Object to receive or send more complex Data.
  * <p>
- * The method getDataType() tells what kind of data the object stores. <br>
+ * The DataObject is build to only transfer one type of data. The method
+ * getDataType() tells what kind of data the object stores. <br>
  * Depend to the dataType the matching function must be called. <br>
  * E.g. if dataType = 0 use the method getShort().
  * 
@@ -170,10 +171,25 @@ public class DataObject {
     }
 
     public void setCharArray(String characterString) {
-        charArrayValue = new char[characterString.length()];
-        for (int i = 0; i < characterString.length(); i++) {
-            charArrayValue[i] = characterString.charAt(i);
-        }
+        setDataType(DataObjectDataTypes.CHAR_ARRAY);
+        charArrayValue = characterString.toCharArray();
+        // charArrayValue = new char[characterString.length()];
+        // for (int i = 0; i < characterString.length(); i++) {
+        // charArrayValue[i] = characterString.charAt(i);
+        // }
+    }
+
+    public String getLongText() {
+        if (!Util.isEmpty(charArrayValue))
+            return String.valueOf(charArrayValue);
+        return "";
+    }
+
+    public void setLongText(String longText) {
+        setDataType(DataObjectDataTypes.LONGTEXT);
+        if (Util.isEmpty(longText))
+            return;
+        charArrayValue = longText.toCharArray();
     }
 
     public String getLine() {
@@ -287,6 +303,7 @@ public class DataObject {
      * 10 = Date <br>
      * 11 = Map<String, String> <br>
      * 12 = List<?> <br>
+     * 13 = Long Text <br>
      */
     public DataObjectDataTypes getDataType() {
         return dataType;

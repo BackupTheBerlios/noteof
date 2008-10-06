@@ -7,6 +7,8 @@ import de.notEOF.core.communication.TalkLine;
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.interfaces.TimeOut;
 import de.notEOF.core.util.Util;
+import de.notEOF.mail.NotEOFMail;
+import de.notEOF.mail.enumeration.MailTag;
 
 /**
  * From this class every other client must be extended. <br>
@@ -139,6 +141,17 @@ public abstract class BaseClient extends BaseClientOrService {
      */
     public String getClientNetId() {
         return this.clientNetId;
+    }
+
+    /**
+     * Sends mail to any service.
+     * 
+     * @param mail
+     * @throws ActionFailedException
+     */
+    public void sendMail(NotEOFMail mail) throws ActionFailedException {
+        writeMsg(MailTag.REQ_READY_FOR_MAIL);
+        getTalkLine().sendMail(mail);
     }
 
     /**

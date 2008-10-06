@@ -21,6 +21,7 @@ import de.notEOF.core.logging.LocalLog;
 import de.notEOF.core.server.Server;
 import de.notEOF.core.util.Util;
 import de.notEOF.mail.NotEOFMail;
+import de.notEOF.mail.enumeration.MailTag;
 
 /**
  * Basic class for every !EOF Service.
@@ -169,15 +170,22 @@ public abstract class BaseService extends BaseClientOrService implements Service
 
                 if (!Util.isEmpty(msg)) {
 
-                    // client/service specific messages are processed in the
-                    // method processMsg() which must be implemented
-                    // individual in every service.
-                    Class<Enum> tagEnumClass = (Class<Enum>) getCommunicationTagClass();
-                    try {
-                        processClientMsg(validateEnum(tagEnumClass, msg));
-                    } catch (ActionFailedException afx) {
-                        LocalLog.error("Mapping der Nachricht auf Enum.", afx);
-                        stopped = true;
+                    if (msg.equals(MailTag.REQ_READY_FOR_MAIL.name())) {
+                        // Mails from client are processed directly here in the
+                        // base class
+                        processMail();
+                    } else {
+
+                        // client/service specific messages are processed in the
+                        // method processMsg() which must be implemented
+                        // individual in every service.
+                        Class<Enum> tagEnumClass = (Class<Enum>) getCommunicationTagClass();
+                        try {
+                            processClientMsg(validateEnum(tagEnumClass, msg));
+                        } catch (ActionFailedException afx) {
+                            LocalLog.error("Mapping der Nachricht auf Enum.", afx);
+                            stopped = true;
+                        }
                     }
 
                 } else {
@@ -257,11 +265,9 @@ public abstract class BaseService extends BaseClientOrService implements Service
 
     // TODO implementieren: mail generieren aus den daten vom client (aufgerufen
     // von processMsg).
-    public void processMail() {
-        NotEOFMail mail = new NotEOFMail();
-
+    public void processMail() throws ActionFailedException {
+        NotEOFMail mail = getTalkLine().receiveMail();
         server.postMail(mail, this);
-
     }
 
     protected void finalize() {

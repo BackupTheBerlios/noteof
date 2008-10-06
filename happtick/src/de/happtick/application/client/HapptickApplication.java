@@ -1,5 +1,7 @@
 package de.happtick.application.client;
 
+import com.sun.org.apache.bcel.internal.generic.GETSTATIC;
+
 import de.happtick.core.application.client.ApplicationClient;
 import de.happtick.core.exception.HapptickException;
 import de.happtick.core.interfaces.AlarmEvent;
@@ -9,6 +11,8 @@ import de.happtick.core.interfaces.EventEvent;
 import de.happtick.core.interfaces.LogEvent;
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.util.Util;
+import de.notEOF.mail.client.MailEventClient;
+import de.notEOF.mail.interfaces.MailEventRecipient;
 
 /**
  * This class is the connector between the application and an application
@@ -28,6 +32,7 @@ public class HapptickApplication {
     private boolean isWorkAllowed = false;
     private ApplicationClient applicationClient;
     private String[] args;
+    private MailEventClient mailEventClient;
 
     /**
      * If this constructor is used at a later time point the serverAddress and
@@ -301,4 +306,20 @@ public class HapptickApplication {
             throw new HapptickException(50L, "Client ist nicht initialisiert. Vermutlich wurde kein connect durchgeführt.");
     }
 
+    /**
+     * Enables the application to receive mails and events from the server or
+     * other services.
+     * 
+     * @param mailEventRecipient
+     *            The application must implement this interface. To use the
+     *            function call it by putting in the class itself as parameter
+     *            (e.g. this).
+     * @throws ActionFailedException
+     *             Is raised when the connection with service could not be
+     *             established or other problems occured.
+     */
+    public void acceptMailsAndEvents(MailEventRecipient mailEventRecipient) throws ActionFailedException {
+        this.mailEventClient = new MailEventClient(serverAddress, serverPort, null);
+        mailEventClient.awaitMailEvent(mailEventRecipient);
+    }
 }

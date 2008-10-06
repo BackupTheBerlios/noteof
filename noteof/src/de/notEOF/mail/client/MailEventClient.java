@@ -1,71 +1,77 @@
 package de.notEOF.mail.client;
 
-import java.util.Date;
-import java.util.Map;
+import java.net.Socket;
 
 import de.notEOF.core.client.BaseClient;
-import de.notEOF.core.communication.DataObject;
 import de.notEOF.core.enumeration.BaseCommTag;
 import de.notEOF.core.exception.ActionFailedException;
-import de.notEOF.core.util.Util;
+import de.notEOF.core.interfaces.TimeOut;
 import de.notEOF.mail.NotEOFMail;
 import de.notEOF.mail.enumeration.MailTag;
 import de.notEOF.mail.interfaces.MailEventRecipient;
+import de.notEOF.mail.service.MailEventService;
 
 public class MailEventClient extends BaseClient {
 
-    private boolean stopped = false;
+    private MailEventAcceptor acceptor;
+    private MailEventRecipient recipient;
+
+    public MailEventClient(Socket socketToServer, TimeOut timeout, String[] args) throws ActionFailedException {
+        super(socketToServer, timeout, args);
+    }
+
+    public MailEventClient(String ip, int port, TimeOut timeout, String... args) throws ActionFailedException {
+        super(ip, port, timeout, args);
+    }
 
     @Override
     public Class<?> serviceForClientByClass() {
-        // TODO Auto-generated method stub
-        return null;
+        return MailEventService.class;
     }
 
     @Override
     public String serviceForClientByName() {
-        return "de.notEOF.mail.service.MailEventService";
+        return null;
     }
 
     /**
      * This method is called by the basic class when close() is called.
      */
     public void implementationLastSteps() {
-        stopped = true;
+        acceptor.stop();
     }
 
     public void awaitMailEvent(MailEventRecipient recipient) throws ActionFailedException {
-        while (!stopped) {
-            // wake up!
-            awaitRequestAnswerImmediate(MailTag.REQ_READY_FOR_MAIL, MailTag.RESP_READY_FOR_MAIL, BaseCommTag.VAL_OK.name());
+        this.recipient = recipient;
 
-            NotEOFMail mail = new NotEOFMail();
-            if (BaseCommTag.VAL_TRUE.name().equals(requestTo(MailTag.REQ_MAIL_ENVELOPE, MailTag.RESP_MAIL_ENVELOPE))) {
-                DataObject envelopeObject = receiveDataObject();
-                Map<String, String> envelope = envelopeObject.getMap();
+        acceptor = new MailEventAcceptor();
+        Thread acceptorThread = new Thread(acceptor);
+        acceptorThread.start();
+    }
 
-                mail.setToClientNetId(envelope.get("toClientNetId"));
-                mail.setHeader(envelope.get("header"));
-                mail.setMailId(envelope.get("mailId"));
-                mail.setDestination(envelope.get("destination"));
+    private class MailEventAcceptor implements Runnable {
+        private boolean stopped = false;
 
-                Date generated = new Date();
-                Long dateAsLong = Util.parseLong(envelope.get("generated"), 0);
-                generated.setTime(dateAsLong);
-                mail.setGenerated(generated);
+        public boolean stopped() {
+            return stopped;
+        }
+
+        public void stop() {
+            stopped = true;
+        }
+
+        public void run() {
+            try {
+                while (!stopped) {
+                    // wake up!
+                    awaitRequestAnswerImmediate(MailTag.REQ_READY_FOR_MAIL, MailTag.RESP_READY_FOR_MAIL, BaseCommTag.VAL_OK.name());
+                    NotEOFMail mail = getTalkLine().receiveMail();
+                    recipient.processMail(mail);
+                }
+            } catch (Exception e) {
+
             }
-
-            // body text
-            String bodyText = requestTo(MailTag.REQ_BODY_TEXT, MailTag.RESP_BODY_TEXT);
-            mail.setBodyText(bodyText);
-
-            // body data
-            if (BaseCommTag.VAL_TRUE.name().equals(requestTo(MailTag.REQ_BODY_DATA_EXISTS, MailTag.RESP_BODY_DATA_EXISTS))) {
-                DataObject bodyData = receiveDataObject();
-                mail.setBodyData(bodyData);
-            }
-
-            recipient.processMail(mail);
         }
     }
+
 }

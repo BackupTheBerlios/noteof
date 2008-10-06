@@ -1,9 +1,5 @@
 package de.notEOF.mail.service;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import de.notEOF.core.communication.DataObject;
 import de.notEOF.core.enumeration.BaseCommTag;
 import de.notEOF.core.enumeration.EventType;
 import de.notEOF.core.event.NewMailEvent;
@@ -76,32 +72,7 @@ public abstract class MailEventService extends BaseService {
     // TODO implementieren senden der nachricht an den client
     public final void mailToClient(NotEOFMail mail) throws ActionFailedException {
         if (BaseCommTag.VAL_OK.name().equals(requestTo(MailTag.REQ_READY_FOR_MAIL, MailTag.RESP_READY_FOR_MAIL))) {
-
-            // send message informations
-            Map<String, String> envelope = new HashMap<String, String>();
-            envelope.put("toClientNetId", mail.getToClientNetId());
-            envelope.put("header", mail.getHeader());
-            envelope.put("mailId", mail.getMailId());
-            envelope.put("destination", mail.getDestination());
-            envelope.put("generated", String.valueOf(mail.getGenerated().getTime()));
-
-            DataObject envelopeObject = new DataObject();
-            envelopeObject.setMap(envelope);
-            awaitRequestAnswerImmediate(MailTag.REQ_MAIL_ENVELOPE, MailTag.RESP_MAIL_ENVELOPE, BaseCommTag.VAL_TRUE.name());
-            sendDataObject(envelopeObject);
-
-            // body text
-            awaitRequestAnswerImmediate(MailTag.REQ_BODY_TEXT, MailTag.RESP_BODY_TEXT, mail.getBodyText());
-
-            // body data
-            if (null == mail.getBodyData()) {
-                // no object to send
-                awaitRequestAnswerImmediate(MailTag.REQ_BODY_DATA_EXISTS, MailTag.RESP_BODY_DATA_EXISTS, BaseCommTag.VAL_FALSE.name());
-            } else {
-                // there is a body data object to transmit
-                awaitRequestAnswerImmediate(MailTag.REQ_BODY_DATA_EXISTS, MailTag.RESP_BODY_DATA_EXISTS, BaseCommTag.VAL_TRUE.name());
-                sendDataObject(mail.getBodyData());
-            }
+            getTalkLine().sendMail(mail);
         }
     }
 

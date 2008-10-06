@@ -30,7 +30,9 @@ public enum DataObjectDataTypes {
     /** 11 = Map < String, String > */
     MAP_STRING_STRING(11),
     /** 12 = List < ? > */
-    LIST(12);
+    LIST(12),
+    /** 13 = very long text **/
+    LONGTEXT(13);
 
     private int typeValue = -1;
 

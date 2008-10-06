@@ -2,10 +2,17 @@ package de.notEOF.core.communication;
 
 import java.net.ConnectException;
 import java.net.Socket;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
 
+import de.notEOF.core.enumeration.BaseCommTag;
 import de.notEOF.core.exception.ActionFailedException;
+import de.notEOF.core.util.Util;
+import de.notEOF.mail.NotEOFMail;
+import de.notEOF.mail.enumeration.MailTag;
 
 /**
  * Class for Communication of !EOF processes. Here are implemented some methods
@@ -298,5 +305,55 @@ public class TalkLine implements Observer {
 
     public void update(Observable arg0, Object arg1) {
         socketLayer.close();
+    }
+
+    public NotEOFMail receiveMail() throws ActionFailedException {
+        NotEOFMail mail = new NotEOFMail();
+        DataObject contentObject = receiveDataObject();
+        Map<String, String> content = contentObject.getMap();
+
+        mail.setToClientNetId(content.get("toClientNetId"));
+        mail.setHeader(content.get("header"));
+        mail.setMailId(content.get("mailId"));
+        mail.setDestination(content.get("destination"));
+
+        Date generated = new Date();
+        Long dateAsLong = Util.parseLong(content.get("generated"), 0);
+        generated.setTime(dateAsLong);
+        mail.setGenerated(generated);
+
+        mail.setBodyText(content.get("bodyText"));
+
+        String isDataObjectSet = readMsg();
+        if ("TRUE".equals(isDataObjectSet)) {
+            DataObject bodyData = receiveDataObject();
+            mail.setBodyData(bodyData);
+        }
+        return mail;
+    }
+
+    public void sendMail(NotEOFMail mail) throws ActionFailedException {
+        // send message informations
+        Map<String, String> envelope = new HashMap<String, String>();
+        envelope.put("toClientNetId", mail.getToClientNetId());
+        envelope.put("header", mail.getHeader());
+        envelope.put("mailId", mail.getMailId());
+        envelope.put("destination", mail.getDestination());
+        envelope.put("generated", String.valueOf(mail.getGenerated().getTime()));
+        envelope.put("bodyText", mail.getBodyText());
+
+        DataObject envelopeObject = new DataObject();
+        envelopeObject.setMap(envelope);
+        awaitRequestAnswerImmediate(MailTag.REQ_MAIL_ENVELOPE, MailTag.RESP_MAIL_ENVELOPE, BaseCommTag.VAL_TRUE.name());
+        sendDataObject(envelopeObject);
+
+        // body data
+        if (null == mail.getBodyData()) {
+            writeMsg("FALSE");
+        } else {
+            // there is a body data object to transmit
+            writeMsg("TRUE");
+            sendDataObject(mail.getBodyData());
+        }
     }
 }

@@ -338,6 +338,13 @@ public class SocketLayer {
                 }
                 break;
 
+            case LONGTEXT:
+                receiveDataObjectCharArray(dataObject, inputStream);
+                break;
+
+            default:
+                break;
+
             }
 
         } catch (SocketTimeoutException ex) {
@@ -463,6 +470,14 @@ public class SocketLayer {
                 }
                 break;
 
+            case LONGTEXT:
+                // then send fileData
+                sendDataObjectCharArray(dataObject, outputStream);
+                break;
+
+            default:
+                break;
+
             }
         } catch (SocketTimeoutException ex) {
             throw new ActionFailedException(26L, ex);
@@ -503,7 +518,7 @@ public class SocketLayer {
     private void sendDataObjectCharArray(DataObject dataObject, DataOutputStream outputStream) throws IOException {
         // char array
         int arrayLength = dataObject.getCharArray().length;
-        int sizeBlock1 = 255;
+        int sizeBlock1 = 500;
         int countBlock1 = arrayLength / sizeBlock1;
         int sizeBlock2 = arrayLength % sizeBlock1;
         int countBlock2 = 1;
