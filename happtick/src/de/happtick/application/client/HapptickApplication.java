@@ -1,7 +1,5 @@
 package de.happtick.application.client;
 
-import com.sun.org.apache.bcel.internal.generic.GETSTATIC;
-
 import de.happtick.core.application.client.ApplicationClient;
 import de.happtick.core.exception.HapptickException;
 import de.happtick.core.interfaces.AlarmEvent;
