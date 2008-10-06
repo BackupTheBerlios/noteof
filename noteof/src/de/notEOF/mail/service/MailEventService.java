@@ -95,8 +95,10 @@ public abstract class MailEventService extends BaseService {
 
             // body data
             if (null == mail.getBodyData()) {
+                // no object to send
                 awaitRequestAnswerImmediate(MailTag.REQ_BODY_DATA_EXISTS, MailTag.RESP_BODY_DATA_EXISTS, BaseCommTag.VAL_FALSE.name());
             } else {
+                // there is a body data object to transmit
                 awaitRequestAnswerImmediate(MailTag.REQ_BODY_DATA_EXISTS, MailTag.RESP_BODY_DATA_EXISTS, BaseCommTag.VAL_TRUE.name());
                 sendDataObject(mail.getBodyData());
             }

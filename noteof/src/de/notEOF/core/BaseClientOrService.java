@@ -62,7 +62,32 @@ public abstract class BaseClientOrService {
      * @throws ActionFailedException
      */
     public void close() throws ActionFailedException {
+        implementationLastSteps();
         talkLine.close();
+    }
+
+    /**
+     * This method can be overwritten by service or client implementations. <br>
+     * It is called directly after the connection with the partner is
+     * established. <br>
+     * 
+     * @throws ActionFailedException
+     *             Depends to the Service or Client implementation.
+     */
+    public void implementationFirstSteps() throws ActionFailedException {
+    }
+
+    /**
+     * This method can be overwritten by service or client implementations. <br>
+     * It is called as last step when close() method is called. <br>
+     * There is no guarantee that this function is called because of when the
+     * comm partner closed the socket at first it is not sure that the close()
+     * method is called. When the close() is not called this function isn't
+     * called too.
+     * 
+     * @throws ActionFailedException
+     */
+    public void implementationLastSteps() throws ActionFailedException {
     }
 
     /**
@@ -137,6 +162,7 @@ public abstract class BaseClientOrService {
      * @param value
      *            The value which the communication partner is waiting for
      * @throws ActionFailedException
+     *             Is thrown by communication problems.
      */
     public void awaitRequestAnswerImmediate(Enum<?> expectedRequestHeader, Enum<?> responseHeader, String value) throws ActionFailedException {
         talkLine.awaitRequestAnswerImmediate(expectedRequestHeader, responseHeader, value);

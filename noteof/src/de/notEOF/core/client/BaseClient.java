@@ -84,6 +84,7 @@ public abstract class BaseClient extends BaseClientOrService {
         }
         setTalkLine(new TalkLine(ip, port, timeout.getMillisCommunication()));
         registerAtServer(getTalkLine(), timeout, this.args);
+        implementationFirstSteps();
     }
 
     public void connect(Socket socketToServer, TimeOut timeout) throws ActionFailedException {
@@ -95,6 +96,7 @@ public abstract class BaseClient extends BaseClientOrService {
         }
         setTalkLine(new TalkLine(socketToServer, timeout.getMillisCommunication()));
         registerAtServer(getTalkLine(), timeout, this.args);
+        implementationFirstSteps();
     }
 
     /**

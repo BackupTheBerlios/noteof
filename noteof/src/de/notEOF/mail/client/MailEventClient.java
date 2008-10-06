@@ -14,6 +14,8 @@ import de.notEOF.mail.interfaces.MailEventRecipient;
 
 public class MailEventClient extends BaseClient {
 
+    private boolean stopped = false;
+
     @Override
     public Class<?> serviceForClientByClass() {
         // TODO Auto-generated method stub
@@ -25,36 +27,45 @@ public class MailEventClient extends BaseClient {
         return "de.notEOF.mail.service.MailEventService";
     }
 
+    /**
+     * This method is called by the basic class when close() is called.
+     */
+    public void implementationLastSteps() {
+        stopped = true;
+    }
+
     public void awaitMailEvent(MailEventRecipient recipient) throws ActionFailedException {
-        // wake up!
-        awaitRequestAnswerImmediate(MailTag.REQ_READY_FOR_MAIL, MailTag.RESP_READY_FOR_MAIL, BaseCommTag.VAL_OK.name());
+        while (!stopped) {
+            // wake up!
+            awaitRequestAnswerImmediate(MailTag.REQ_READY_FOR_MAIL, MailTag.RESP_READY_FOR_MAIL, BaseCommTag.VAL_OK.name());
 
-        NotEOFMail mail = new NotEOFMail();
-        if (BaseCommTag.VAL_TRUE.name().equals(requestTo(MailTag.REQ_MAIL_ENVELOPE, MailTag.RESP_MAIL_ENVELOPE))) {
-            DataObject envelopeObject = receiveDataObject();
-            Map<String, String> envelope = envelopeObject.getMap();
+            NotEOFMail mail = new NotEOFMail();
+            if (BaseCommTag.VAL_TRUE.name().equals(requestTo(MailTag.REQ_MAIL_ENVELOPE, MailTag.RESP_MAIL_ENVELOPE))) {
+                DataObject envelopeObject = receiveDataObject();
+                Map<String, String> envelope = envelopeObject.getMap();
 
-            mail.setToClientNetId(envelope.get("toClientNetId"));
-            mail.setHeader(envelope.get("header"));
-            mail.setMailId(envelope.get("mailId"));
-            mail.setDestination(envelope.get("destination"));
+                mail.setToClientNetId(envelope.get("toClientNetId"));
+                mail.setHeader(envelope.get("header"));
+                mail.setMailId(envelope.get("mailId"));
+                mail.setDestination(envelope.get("destination"));
 
-            Date generated = new Date();
-            Long dateAsLong = Util.parseLong(envelope.get("generated"), 0);
-            generated.setTime(dateAsLong);
-            mail.setGenerated(generated);
+                Date generated = new Date();
+                Long dateAsLong = Util.parseLong(envelope.get("generated"), 0);
+                generated.setTime(dateAsLong);
+                mail.setGenerated(generated);
+            }
+
+            // body text
+            String bodyText = requestTo(MailTag.REQ_BODY_TEXT, MailTag.RESP_BODY_TEXT);
+            mail.setBodyText(bodyText);
+
+            // body data
+            if (BaseCommTag.VAL_TRUE.name().equals(requestTo(MailTag.REQ_BODY_DATA_EXISTS, MailTag.RESP_BODY_DATA_EXISTS))) {
+                DataObject bodyData = receiveDataObject();
+                mail.setBodyData(bodyData);
+            }
+
+            recipient.processMail(mail);
         }
-
-        // body text
-        String bodyText = requestTo(MailTag.REQ_BODY_TEXT, MailTag.RESP_BODY_TEXT);
-        mail.setBodyText(bodyText);
-
-        // body data
-        if (BaseCommTag.VAL_TRUE.name().equals(requestTo(MailTag.REQ_BODY_DATA_EXISTS, MailTag.RESP_BODY_DATA_EXISTS))) {
-            DataObject bodyData = receiveDataObject();
-            mail.setBodyData(bodyData);
-        }
-
-        recipient.processMail(mail);
     }
 }

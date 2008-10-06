@@ -51,29 +51,6 @@ public abstract class BaseService extends BaseClientOrService implements Service
     }
 
     /**
-     * This method can be overwritten by service implementations. <br>
-     * It is called directly after the connection with the client is
-     * established. <br>
-     * E.g. this could be the place to activate the lifesign system.
-     * 
-     * @throws ActionFailedException
-     *             Depends to the Service implementation.
-     */
-    public void implementationFirstSteps() throws ActionFailedException {
-    }
-
-    /**
-     * This method can be overwritten by service implementations. <br>
-     * It is called as last step when the run-method is at end. <br>
-     * When this method runs the client connection maybe is closed! That means
-     * it is not sure that the communication to the client works.
-     * 
-     * @throws ActionFailedException
-     */
-    public void implementationLastSteps() throws ActionFailedException {
-    }
-
-    /**
      * By now the service begins his life helpful service because the client can
      * talk with him.
      * 
@@ -177,7 +154,7 @@ public abstract class BaseService extends BaseClientOrService implements Service
     public void run() {
         while (!stopped) {
             try {
-                String msg = getTalkLine().readMsgTimedOut(NotEOFConstants.LIFE_TIME_INTERVAL_SERVICE);
+                String msg = readMsgTimedOut(NotEOFConstants.LIFE_TIME_INTERVAL_SERVICE);
 
                 // Check if the lifetime hasn't send longer than allowed
                 // or if any other messages came within the max. allowed time.
@@ -227,7 +204,7 @@ public abstract class BaseService extends BaseClientOrService implements Service
 
         // close socket to client
         try {
-            getTalkLine().close();
+            close();
         } catch (Exception ex) {
             LocalLog.warn("Verbindung zum Client konnte nicht geschlossen werden. Evtl. bestand zu diesem Zeitpunkt keien Verbindung (mehr).", ex);
         }
