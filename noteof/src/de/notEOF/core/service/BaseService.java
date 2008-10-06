@@ -263,8 +263,15 @@ public abstract class BaseService extends BaseClientOrService implements Service
         throw new ActionFailedException(151L, "Validierung der Empfangenen Nachricht: " + msg);
     }
 
-    // TODO implementieren: mail generieren aus den daten vom client (aufgerufen
-    // von processMsg).
+    /**
+     * When client sends a {@link NotEOFMail} this method is called by this base
+     * class itself.
+     * <p>
+     * The service forwards the mail to the server which informs all observers
+     * about the incoming message.
+     * 
+     * @throws ActionFailedException
+     */
     public void processMail() throws ActionFailedException {
         NotEOFMail mail = getTalkLine().receiveMail();
         server.postMail(mail, this);

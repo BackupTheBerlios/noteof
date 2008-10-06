@@ -18,6 +18,8 @@ public class NotEOFMail {
     private Date generated;
 
     /**
+     * @param header
+     *            The header of the mail.
      * @param bodyText
      *            The content of the message as simple String.
      * @param fromServiceId
@@ -35,6 +37,25 @@ public class NotEOFMail {
     }
 
     /**
+     * @param header
+     *            The header of the mail.
+     * @param bodyText
+     *            The content of the message as simple String.
+     * @param destination
+     *            The 'address' of the recipient. May not be NULL. The services
+     *            by themselve check the destination information if they are
+     *            interested in this mail.
+     */
+    public NotEOFMail(String header, String bodyText, String destination) throws ActionFailedException {
+        if (Util.isEmpty(bodyText))
+            throw new ActionFailedException(1100L, "Body Text ist leer.");
+        this.bodyText = bodyText;
+        initMail(header, null, destination);
+    }
+
+    /**
+     * @param header
+     *            The header of the mail.
      * @param bodyData
      *            The content of the message as complex DataObject.
      * @param fromServiceId
@@ -54,10 +75,10 @@ public class NotEOFMail {
     }
 
     private void initMail(String header, Service fromService, String destination) throws ActionFailedException {
-        if (null == fromService)
-            throw new ActionFailedException(1100L, "fromService ist NULL.");
-        if (Util.isEmpty(destination))
-            throw new ActionFailedException(1100L, "destination ist NULL.");
+        // if (null == fromService)
+        // throw new ActionFailedException(1100L, "fromService ist NULL.");
+        // if (Util.isEmpty(destination))
+        // throw new ActionFailedException(1100L, "destination ist NULL.");
 
         this.setHeader(header);
         this.fromService = fromService;
@@ -79,6 +100,8 @@ public class NotEOFMail {
      * @return the header
      */
     public String getHeader() {
+        if (null == header)
+            return "";
         return header;
     }
 
@@ -98,6 +121,8 @@ public class NotEOFMail {
     }
 
     public String getBodyText() {
+        if (null == bodyText)
+            return "";
         return bodyText;
     }
 
@@ -114,6 +139,8 @@ public class NotEOFMail {
     }
 
     public String getToClientNetId() {
+        if (null == toClientNetId)
+            return "";
         return toClientNetId;
     }
 
@@ -128,6 +155,8 @@ public class NotEOFMail {
     }
 
     public String getDestination() {
+        if (null == destination)
+            return "";
         return destination;
     }
 
@@ -145,6 +174,11 @@ public class NotEOFMail {
         return generated;
     }
 
+    /**
+     * Shouldn't be used outside of the framework!
+     * 
+     * @param generated
+     */
     public void setGenerated(Date generated) {
         this.generated = generated;
     }

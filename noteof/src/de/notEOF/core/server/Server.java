@@ -329,7 +329,7 @@ public class Server implements EventObservable, Runnable {
         // Recipient is not yet known at this time point.
         mails.put(mail.getMailId(), mail);
         // Send Observers the event that a new msg has arrived
-        updateObservers(fromService, new NewMailEvent(mail.getMailId(), mail.getToClientNetId(), mail.getDestination(), mail.getHeader()));
+        updateObservers(fromService, new NewMailEvent(mail));
     }
 
     /**

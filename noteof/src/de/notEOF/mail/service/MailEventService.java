@@ -56,20 +56,28 @@ public abstract class MailEventService extends BaseService {
     public void update(Service service, NotEOFEvent event) {
         if (EventType.EVENT_MAIL.equals(event.getEventType())) {
             // check if interesting for this service
-            if (((NewMailEvent) event).getToClientNetId().equals(getClientNetId()) || //
-                    interestedInMail(((NewMailEvent) event).getDestination(), ((NewMailEvent) event).getHeader())) {
+            if (((NewMailEvent) event).getMail().getToClientNetId().equals(getClientNetId()) || //
+                    interestedInMail(((NewMailEvent) event).getMail().getDestination(), ((NewMailEvent) event).getMail().getHeader())) {
                 try {
-                    NotEOFMail mail = super.getServer().getMail(((NewMailEvent) event).getMailId());
+                    NotEOFMail mail = super.getServer().getMail(((NewMailEvent) event).getMail().getMailId());
                     mailToClient(mail);
                 } catch (Exception e) {
-                    LocalLog.warn("Mehrere Services versuchen auf eine Nachricht zuzugreifen. Header: " + ((NewMailEvent) event).getHeader()
-                            + "; Destination: " + ((NewMailEvent) event).getDestination());
+                    LocalLog.warn("Mehrere Services versuchen auf eine Nachricht zuzugreifen. Header: " + ((NewMailEvent) event).getMail().getHeader()
+                            + "; Destination: " + ((NewMailEvent) event).getMail().getDestination());
                 }
             }
         }
     }
 
-    // TODO implementieren senden der nachricht an den client
+    /**
+     * Sends a mail to the client.
+     * <p>
+     * The client must be a special client of type MailEventClient.
+     * 
+     * @param mail
+     *            The mail to send.
+     * @throws ActionFailedException
+     */
     public final void mailToClient(NotEOFMail mail) throws ActionFailedException {
         if (BaseCommTag.VAL_OK.name().equals(requestTo(MailTag.REQ_READY_FOR_MAIL, MailTag.RESP_READY_FOR_MAIL))) {
             getTalkLine().sendMail(mail);

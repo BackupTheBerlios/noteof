@@ -11,6 +11,7 @@ import de.happtick.core.interfaces.EventEvent;
 import de.happtick.core.interfaces.LogEvent;
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.util.Util;
+import de.notEOF.mail.NotEOFMail;
 import de.notEOF.mail.client.MailEventClient;
 import de.notEOF.mail.interfaces.MailEventRecipient;
 
@@ -321,5 +322,22 @@ public class HapptickApplication {
     public void acceptMailsAndEvents(MailEventRecipient mailEventRecipient) throws ActionFailedException {
         this.mailEventClient = new MailEventClient(serverAddress, serverPort, null);
         mailEventClient.awaitMailEvent(mailEventRecipient);
+    }
+
+    /**
+     * Sends a {@link NotEOFMail} to the server.
+     * <p>
+     * The idea is to send mails with a special header or destination (which can
+     * be e.g. a applicationId). So one or more clients which are interested in
+     * such a mail receive the mail. <br>
+     * Furthermore at the mail the attribute toClientNetId can be set if known.
+     * Then the mail reaches only one client.
+     * 
+     * @param mail
+     *            The mail.
+     * @throws ActionFailedException
+     */
+    public void sendMail(NotEOFMail mail) throws ActionFailedException {
+        applicationClient.sendMail(mail);
     }
 }

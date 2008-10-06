@@ -33,6 +33,5 @@ public class MailRecipient implements MailEventRecipient {
                 break;
             }
         }
-
     }
 }
