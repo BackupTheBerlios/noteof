@@ -8,11 +8,9 @@ import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
 
-import de.notEOF.core.enumeration.BaseCommTag;
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.util.Util;
 import de.notEOF.mail.NotEOFMail;
-import de.notEOF.mail.enumeration.MailTag;
 
 /**
  * Class for Communication of !EOF processes. Here are implemented some methods
@@ -132,6 +130,7 @@ public class TalkLine implements Observer {
      * @throws ActionFailedException
      */
     public void sendDataObject(DataObject dataObject) throws ActionFailedException {
+        System.out.println("DATA OBJECT... " + dataObject);
         socketLayer.sendDataObject(dataObject);
     }
 
@@ -308,10 +307,12 @@ public class TalkLine implements Observer {
     }
 
     public NotEOFMail receiveMail() throws ActionFailedException {
-        NotEOFMail mail = new NotEOFMail();
+        System.out.println("Vor contentObject");
         DataObject contentObject = receiveDataObject();
+        System.out.println("contentObject ");
         Map<String, String> content = contentObject.getMap();
 
+        NotEOFMail mail = new NotEOFMail();
         mail.setToClientNetId(content.get("toClientNetId"));
         mail.setHeader(content.get("header"));
         mail.setMailId(content.get("mailId"));
@@ -326,9 +327,12 @@ public class TalkLine implements Observer {
 
         String isDataObjectSet = readMsg();
         if ("TRUE".equals(isDataObjectSet)) {
+            System.out.println("TRUE");
             DataObject bodyData = receiveDataObject();
+            System.out.println("bodyData ");
             mail.setBodyData(bodyData);
         }
+        System.out.println("return mail");
         return mail;
     }
 
@@ -344,7 +348,6 @@ public class TalkLine implements Observer {
 
         DataObject envelopeObject = new DataObject();
         envelopeObject.setMap(envelope);
-        awaitRequestAnswerImmediate(MailTag.REQ_MAIL_ENVELOPE, MailTag.RESP_MAIL_ENVELOPE, BaseCommTag.VAL_TRUE.name());
         sendDataObject(envelopeObject);
 
         // body data

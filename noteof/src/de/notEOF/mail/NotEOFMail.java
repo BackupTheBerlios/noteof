@@ -1,6 +1,7 @@
 package de.notEOF.mail;
 
 import java.util.Date;
+import java.util.Random;
 
 import de.notEOF.core.communication.DataObject;
 import de.notEOF.core.exception.ActionFailedException;
@@ -29,7 +30,7 @@ public class NotEOFMail {
      *            by themselve check the destination information if they are
      *            interested in this mail.
      */
-    public NotEOFMail(String header, String bodyText, Service fromService, String destination) throws ActionFailedException {
+    public NotEOFMail(String header, String destination, String bodyText, Service fromService) throws ActionFailedException {
         if (Util.isEmpty(bodyText))
             throw new ActionFailedException(1100L, "Body Text ist leer.");
         this.bodyText = bodyText;
@@ -46,7 +47,7 @@ public class NotEOFMail {
      *            by themselve check the destination information if they are
      *            interested in this mail.
      */
-    public NotEOFMail(String header, String bodyText, String destination) throws ActionFailedException {
+    public NotEOFMail(String header, String destination, String bodyText) throws ActionFailedException {
         if (Util.isEmpty(bodyText))
             throw new ActionFailedException(1100L, "Body Text ist leer.");
         this.bodyText = bodyText;
@@ -80,11 +81,14 @@ public class NotEOFMail {
         // if (Util.isEmpty(destination))
         // throw new ActionFailedException(1100L, "destination ist NULL.");
 
+        Random rd = new Random();
+        rd.nextInt();
+
         this.setHeader(header);
         this.fromService = fromService;
         this.destination = destination;
         this.generated = new Date();
-        this.mailId = String.valueOf(new Date().getTime()) + fromService.getServiceId();
+        this.mailId = String.valueOf(new Date().getTime()) + Math.abs(new Random().nextInt());
         this.generated = new Date();
     }
 

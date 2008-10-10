@@ -34,14 +34,14 @@ public enum DataObjectDataTypes {
     /** 13 = very long text **/
     LONGTEXT(13);
 
-    private int typeValue = -1;
+    // private int typeValue = -1;
 
     private DataObjectDataTypes(int typeValue) {
-        this.typeValue = typeValue;
+        // this.typeValue = typeValue;
     }
 
-    public int getTypeValue() {
-        return this.typeValue;
-    }
+    // public int getTypeValue() {
+    // return this.typeValue;
+    // }
 
 }

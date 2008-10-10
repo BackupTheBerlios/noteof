@@ -1,7 +1,8 @@
 package de.happtick.test;
 
 import de.happtick.application.client.HapptickApplication;
-import de.notEOF.core.exception.ActionFailedException;
+import de.happtick.core.exception.HapptickException;
+import de.notEOF.mail.MailDestinations;
 import de.notEOF.mail.NotEOFMail;
 import de.notEOF.mail.interfaces.MailEventRecipient;
 
@@ -9,9 +10,12 @@ public class MailRecipient implements MailEventRecipient {
 
     private HapptickApplication appl;
 
-    public MailRecipient(String... args) throws ActionFailedException {
+    public MailRecipient(String... args) throws HapptickException {
         appl = new HapptickApplication(0, "localhost", 3000, args);
-        appl.acceptMailsAndEvents(this);
+        appl.acceptMailsAndEvents(this, null, null, null);
+        MailDestinations destinations = new MailDestinations();
+        destinations.add("Begriff");
+        appl.addInterestingMailExpressions(destinations);
     }
 
     public void processMail(NotEOFMail mail) {
@@ -22,7 +26,7 @@ public class MailRecipient implements MailEventRecipient {
         System.out.println("ClientNetId: " + mail.getToClientNetId());
     }
 
-    public static void main(String... args) throws ActionFailedException {
+    public static void main(String... args) throws HapptickException {
 
         new MailRecipient(args);
 

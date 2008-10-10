@@ -169,7 +169,7 @@ public abstract class BaseService extends BaseClientOrService implements Service
                 }
 
                 if (!Util.isEmpty(msg)) {
-
+                    System.out.println("................." + msg + "...................");
                     if (msg.equals(MailTag.REQ_READY_FOR_MAIL.name())) {
                         // Mails from client are processed directly here in the
                         // base class
@@ -235,29 +235,32 @@ public abstract class BaseService extends BaseClientOrService implements Service
      * the relevant types.
      */
     public List<EventType> getObservedEvents() {
-        if (null == eventTypes) {
-            eventTypes = new ArrayList<EventType>();
-            eventTypes.add(EventType.EVENT_MAIL);
-        }
+        // if (null == eventTypes) {
+        // eventTypes = new ArrayList<EventType>();
+        // eventTypes.add(EventType.EVENT_MAIL);
+        // }
         return eventTypes;
     }
 
     protected final void addObservedEventType(EventType type) {
         if (null == eventTypes) {
             eventTypes = new ArrayList<EventType>();
-            eventTypes.add(EventType.EVENT_MAIL);
+            // eventTypes.add(EventType.EVENT_MAIL);
         }
         eventTypes.add(type);
     }
 
     @SuppressWarnings("unchecked")
     private Enum validateEnum(Class<Enum> tagEnumClass, String msg) throws ActionFailedException {
-        // try {
-        Enum[] y = tagEnumClass.getEnumConstants();
-        for (int i = 0; i < y.length; i++) {
-            if (y[i].name().equals(msg)) {
-                return y[i];
+        try {
+            Enum[] y = tagEnumClass.getEnumConstants();
+            for (int i = 0; i < y.length; i++) {
+                if (y[i].name().equals(msg)) {
+                    return y[i];
+                }
             }
+        } catch (Exception e) {
+            throw new ActionFailedException(151L, "Validierung der Empfangenen Nachricht. EnumClass: " + tagEnumClass + "; Message: " + msg);
         }
         // return null;
         throw new ActionFailedException(151L, "Validierung der Empfangenen Nachricht: " + msg);

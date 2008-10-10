@@ -216,6 +216,9 @@ public class SocketLayer {
         }
         if (Util.isEmpty(msg))
             msg = "";
+        // throw new ActionFailedException(23L,
+        // "Leere Nachricht empfangen. Nachrichten ohne Inhalt sind nicht zulaessig."
+        // );
 
         // show lifetimer that the connection is ok
         lifeTimer.lifeSignReceived();
@@ -245,7 +248,9 @@ public class SocketLayer {
         try {
             DataInputStream inputStream = new DataInputStream(socketToPartner.getInputStream());
             // den Datentyp ermitteln
+            System.out.println("Vor lesen dataTypeInt...");
             int dataTypeInt = readInt();
+            System.out.println("dataTypeInt: " + dataTypeInt);
             DataObjectDataTypes dataType = DataObjectDataTypes.values()[dataTypeInt];
 
             switch (dataType) {
@@ -299,27 +304,34 @@ public class SocketLayer {
                 break;
 
             case MAP_STRING_STRING:
+                System.out.println("VERARBEITUNG MAP");
                 int mapSize = readInt();
                 if (0 != mapSize) {
+                    System.out.println("mapSize: " + mapSize);
                     Map<String, String> map = new HashMap<String, String>();
                     for (int i = 0; i < mapSize; i++) {
                         String key = readMsg();
                         String value = readMsg();
                         map.put(key, value);
                     }
+                    System.out.println("fertig mit empfangen...");
                     dataObject.setMap(map);
                 }
                 break;
 
             case LIST:
                 int listSize = readInt();
+                System.out.println("listSize = " + listSize);
                 int listTypeInt = readInt();
+                System.out.println("listType = " + listTypeInt);
                 DataObjectListTypes listType = DataObjectListTypes.values()[listTypeInt];
 
                 List list = new ArrayList();
                 if (0 != listSize) {
                     for (int i = 0; i < listSize; i++) {
+                        System.out.println("Vor readMsg!");
                         String line = readMsg();
+                        System.out.println("Nach readMsg!");
                         switch (listType) {
                         case INTEGER:
                             list.add(Integer.valueOf(line));
@@ -330,6 +342,7 @@ public class SocketLayer {
                             break;
 
                         case STRING:
+                            System.out.println("STRING");
                             list.add(line);
                             break;
                         }
@@ -372,11 +385,15 @@ public class SocketLayer {
         // 12 = List<?>
 
         try {
+            lifeTimer.updateNextLifeSign();
             DataOutputStream outputStream = new DataOutputStream(socketToPartner.getOutputStream());
             // den Datentyp ermitteln
             DataObjectDataTypes dataType = dataObject.getDataType();
+            System.out.println("dataType = " + dataType);
+            // System.out.println("dataType int = " + dataType.ordinal());
+            System.out.println("Vor WRITE...........");
             writeInt(dataType.ordinal());
-            outputStream.flush();
+            System.out.println("Nach WRITE...........");
 
             switch (dataType) {
             case SHORT:
@@ -400,6 +417,7 @@ public class SocketLayer {
                 break;
 
             case CHAR:
+                lifeTimer.updateNextLifeSign();
                 outputStream.writeChar(dataObject.getChar());
                 break;
 
@@ -429,9 +447,11 @@ public class SocketLayer {
                 break;
 
             case MAP_STRING_STRING:
+                System.out.println("VERARBEITUNG MAP");
                 if (null != dataObject.getMap()) {
                     Map<String, String> map = dataObject.getMap();
                     Set<Map.Entry<String, String>> mapSet = map.entrySet();
+                    System.out.println("mapSize: " + mapSet.size());
                     writeInt(mapSet.size());
                     for (Map.Entry<String, String> mapEntry : mapSet) {
                         // send key
@@ -439,6 +459,7 @@ public class SocketLayer {
                         // send value
                         writeMsg(mapEntry.getValue());
                     }
+                    System.out.println("fertig mit senden...");
                 } else {
                     // send size of map is 0
                     writeInt(0);
@@ -446,9 +467,12 @@ public class SocketLayer {
                 break;
 
             case LIST:
+                System.out.println("Verarbeitung LIST");
                 if (null != dataObject.getList()) {
+                    System.out.println("List != NULL");
                     List<?> list = dataObject.getList();
 
+                    System.out.println("ListSize: " + list.size());
                     writeInt(list.size());
                     String value = "";
                     writeInt(dataObject.getListObjectType().ordinal());
@@ -459,10 +483,14 @@ public class SocketLayer {
                             value = String.valueOf(obj);
                             break;
                         case STRING:
+                            System.out.println("STRING");
                             value = (String) obj;
                             break;
+
                         }
+                        System.out.println("Vor writeMsg!");
                         writeMsg(value);
+                        System.out.println("Nach writeMsg!");
                     }
                 } else {
                     // send that size of list is 0
@@ -523,6 +551,7 @@ public class SocketLayer {
         int sizeBlock2 = arrayLength % sizeBlock1;
         int countBlock2 = 1;
 
+        lifeTimer.updateNextLifeSign();
         outputStream.writeInt(sizeBlock1);
         outputStream.writeInt(countBlock1);
         outputStream.writeInt(sizeBlock2);
@@ -531,10 +560,12 @@ public class SocketLayer {
         PrintWriter printWriterChar = new PrintWriter(new OutputStreamWriter(socketToPartner.getOutputStream()));
         int pos = 0;
         for (int i = 0; i < countBlock1; i++) {
+            lifeTimer.updateNextLifeSign();
             printWriterChar.write(dataObject.getCharArray(), pos, sizeBlock1);
             pos += sizeBlock1;
         }
         for (int i = 0; i < countBlock2; i++) {
+            lifeTimer.updateNextLifeSign();
             printWriterChar.write(dataObject.getCharArray(), pos, sizeBlock2);
             pos += sizeBlock2;
 

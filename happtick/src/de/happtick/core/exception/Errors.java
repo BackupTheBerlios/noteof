@@ -41,10 +41,10 @@ public class Errors {
         errorList.put(1L, "Nicht erwarteter Fehler.");
 
         // Initializing the happtick client
-        errorList.put(50L, "Unvollständige Initialisierung des Happtick Client.");
+        errorList.put(50L, "UnvollstÃ¤ndige Initialisierung des Happtick Client.");
 
         // Initializing the happtick service
-        errorList.put(60L, "Unvollstï¿½ndige Initialisierung des Happtick Service.");
+        errorList.put(60L, "UnvollstÃ¤ndige Initialisierung des Happtick Service.");
 
         // Establishing the connection to service
         errorList.put(100L, "Verbindungsaufbau zum Service fehlgeschlagen.");
@@ -63,11 +63,18 @@ public class Errors {
         errorList.put(300L, "");
 
         // MasterTable errors / Configuration
-        errorList.put(400L, "Hinzufügen eines Service ist fehlgeschlagen. Falscher Service-Typ.");
+        errorList.put(400L, "HinzufÃ¼gen eines Service ist fehlgeschlagen. Falscher Service-Typ.");
         errorList.put(401L, "Fehler bei Lesen der Client-Konfiguration.");
 
         // Scheduler faults
         errorList.put(500L, "Ermitteln des Startservice zur Anwendung ist fehlgeschlagen.");
+
+        // Mail and Event errors
+        errorList.put(600L, "Senden einer Mail ist fehlgeschlagen.");
+        errorList.put(601L, "Empfangen einer Mail oder eines Events ist fehlgeschlagen.");
+        errorList.put(602L, "Begriffe fuer akzeptierte mails konnten nicht festgelegt werden.");
+        errorList.put(603L, "Klassen fuer akzeptierte events konnten nicht festgelegt werden.");
+
     }
 
     /*

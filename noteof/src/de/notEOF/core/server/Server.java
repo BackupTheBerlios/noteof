@@ -51,7 +51,6 @@ public class Server implements EventObservable, Runnable {
     private static String notEof_Home;
     private static int lastServiceId = 0;
     private List<EventObserver> eventObservers;
-    private Map<String, NotEOFMail> mails;
     private static Map<String, Map<String, Service>> allServiceMaps;
 
     public static Server getInstance() {
@@ -278,6 +277,13 @@ public class Server implements EventObservable, Runnable {
      *            The event itself.
      */
     public void updateObservers(Service service, NotEOFEvent event) {
+        System.out.println("eventObservers: ");
+        for (EventObserver observer : eventObservers) {
+            System.out.println("----------------------------------");
+            System.out.println("observer: " + observer.getClass().getName());
+            System.out.println("observer: " + observer.getObservedEvents());
+        }
+
         Util.updateAllObserver(eventObservers, service, event);
     }
 
@@ -302,17 +308,17 @@ public class Server implements EventObservable, Runnable {
         return allServiceMaps;
     }
 
-    /**
-     * Delivers a mail by the mailId.
-     * 
-     * @param mailId
-     * @return A mail or NULL if not found by the mailId.
-     */
-    public NotEOFMail getMail(String mailId) {
-        if (null == mails)
-            return null;
-        return mails.get(mailId);
-    }
+    // /**
+    // * Delivers a mail by the mailId.
+    // *
+    // * @param mailId
+    // * @return A mail or NULL if not found by the mailId.
+    // */
+    // public NotEOFMail getMail(String mailId) {
+    // if (null == mails)
+    // return null;
+    // return mails.get(mailId);
+    // }
 
     /**
      * Server can be used as post office.
@@ -323,11 +329,12 @@ public class Server implements EventObservable, Runnable {
      * send it to their clients. <br>
      */
     public void postMail(NotEOFMail mail, Service fromService) {
-        if (mails == null)
-            mails = new HashMap<String, NotEOFMail>();
-
-        // Recipient is not yet known at this time point.
-        mails.put(mail.getMailId(), mail);
+        // if (mails == null)
+        // mails = new HashMap<String, NotEOFMail>();
+        //
+        // // Recipient is not yet known at this time point.
+        // mails.put(mail.getMailId(), mail);
+        // System.out.println("Server.postMail...");
         // Send Observers the event that a new msg has arrived
         updateObservers(fromService, new NewMailEvent(mail));
     }

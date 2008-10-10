@@ -1,5 +1,5 @@
 @echo off
-echo ============================== Server ==============================
+echo ========================== Mail Recipient ==============================
 
 set NOTEOF_HOME=C:\Projekte\workspace\noteof
 set CLASSPATH=%CLASSPATH%;%NOTEOF_HOME%\lib\noteof.jar
@@ -8,8 +8,12 @@ set CLASSPATH=%CLASSPATH%;%LIB_PATH%\notioc.jar
 set CLASSPATH=%CLASSPATH%;%LIB_PATH%\jdom.jar
 set CLASSPATH=%CLASSPATH%;c:\Projekte\workspace\happtick\lib\happtick.jar
 
-@echo on
-java de.notEOF.core.server.Server --port=3000 --homeVar=NOTEOF_HOME
 
-echo ============================== Server ==============================
+echo %CLASSPATH%
+java de.happtick.test.MailRecipient
+
 pause
+
+echo ========================== Mail Recipient ==============================
+@echo on
+

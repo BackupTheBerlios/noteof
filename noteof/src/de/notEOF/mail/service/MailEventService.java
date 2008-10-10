@@ -1,5 +1,9 @@
 package de.notEOF.mail.service;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import de.notEOF.core.communication.DataObject;
 import de.notEOF.core.enumeration.BaseCommTag;
 import de.notEOF.core.enumeration.EventType;
 import de.notEOF.core.event.NewMailEvent;
@@ -8,6 +12,8 @@ import de.notEOF.core.interfaces.NotEOFEvent;
 import de.notEOF.core.interfaces.Service;
 import de.notEOF.core.logging.LocalLog;
 import de.notEOF.core.service.BaseService;
+import de.notEOF.mail.MailDestinations;
+import de.notEOF.mail.MailHeaders;
 import de.notEOF.mail.NotEOFMail;
 import de.notEOF.mail.enumeration.MailTag;
 
@@ -20,19 +26,18 @@ import de.notEOF.mail.enumeration.MailTag;
  */
 public abstract class MailEventService extends BaseService {
 
+    private MailDestinations mailDestinations;
+    private MailHeaders mailHeaders;
+    private List<String> eventNames;
+
     @Override
     public Class<?> getCommunicationTagClass() {
-        // TODO Auto-generated method stub
-        return null;
+        return MailTag.class;
     }
 
     @Override
     public boolean isLifeSignSystemActive() {
         return false;
-    }
-
-    @Override
-    public void processClientMsg(Enum<?> incomingMsgEnum) throws ActionFailedException {
     }
 
     /**
@@ -41,6 +46,43 @@ public abstract class MailEventService extends BaseService {
     public void implementationFirstSteps() {
         addObservedEventType(EventType.EVENT_MAIL);
         addObservedEventType(EventType.EVENT_EVENT);
+        getServer().registerForEvents(this);
+    }
+
+    protected void addInterestingDestination(String destination) {
+        if (null == mailDestinations)
+            mailDestinations = new MailDestinations();
+        mailDestinations.add(destination);
+    }
+
+    protected void addInterestingDestinations(List<String> destinations) {
+        if (null == mailDestinations)
+            mailDestinations = new MailDestinations();
+        mailDestinations.addAll(destinations);
+    }
+
+    protected void addInterestingHeader(String header) {
+        if (null == mailHeaders)
+            mailHeaders = new MailHeaders();
+        mailHeaders.add(header);
+    }
+
+    protected void addInterestingHeaders(List<String> headers) {
+        if (null == mailHeaders)
+            mailHeaders = new MailHeaders();
+        mailHeaders.addAll(headers);
+    }
+
+    protected void addInterestingEventNames(List<String> eventNames) {
+        if (null == this.eventNames)
+            this.eventNames = new ArrayList<String>();
+        eventNames.addAll(eventNames);
+    }
+
+    protected void addInterestingEventName(String eventName) {
+        if (null == this.eventNames)
+            this.eventNames = new ArrayList<String>();
+        this.eventNames.add(eventName);
     }
 
     /**
@@ -59,8 +101,7 @@ public abstract class MailEventService extends BaseService {
             if (((NewMailEvent) event).getMail().getToClientNetId().equals(getClientNetId()) || //
                     interestedInMail(((NewMailEvent) event).getMail().getDestination(), ((NewMailEvent) event).getMail().getHeader())) {
                 try {
-                    NotEOFMail mail = super.getServer().getMail(((NewMailEvent) event).getMail().getMailId());
-                    mailToClient(mail);
+                    mailToClient(((NewMailEvent) event).getMail());
                 } catch (Exception e) {
                     LocalLog.warn("Mehrere Services versuchen auf eine Nachricht zuzugreifen. Header: " + ((NewMailEvent) event).getMail().getHeader()
                             + "; Destination: " + ((NewMailEvent) event).getMail().getDestination());
@@ -99,4 +140,39 @@ public abstract class MailEventService extends BaseService {
      *         FALSE if not.
      */
     protected abstract boolean interestedInMail(String destination, String header);
+
+    public void processClientMsg(Enum<?> incomingMsgEnum) throws ActionFailedException {
+        if (incomingMsgEnum.equals(MailTag.REQ_READY_FOR_EXPRESSIONS)) {
+            processNewExpressions();
+        }
+        if (incomingMsgEnum.equals(MailTag.REQ_READY_FOR_EVENTS)) {
+            processNewEvents();
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private void processNewExpressions() throws ActionFailedException {
+        responseTo(MailTag.RESP_READY_FOR_EXPRESSIONS, BaseCommTag.VAL_OK.name());
+        System.out.println(this.getClass().getName() + ": Vor requestTo...");
+        String type = requestTo(MailTag.REQ_EXPRESSION_TYPE, MailTag.RESP_EXPRESSION_TYPE);
+        System.out.println(this.getClass().getName() + ": Nach requestTo...");
+        DataObject dataObject = receiveDataObject();
+        if (null != dataObject && null != dataObject.getList() && dataObject.getList().size() > 0) {
+            if (MailDestinations.class.getName().equals(type)) {
+                addInterestingDestinations((List<String>) dataObject.getList());
+            } else if (MailHeaders.class.getName().equals(type)) {
+                addInterestingHeaders((List<String>) dataObject.getList());
+            }
+        }
+        System.out.println("Nach Empfang interestingHeaders.");
+    }
+
+    @SuppressWarnings("unchecked")
+    private void processNewEvents() throws ActionFailedException {
+        responseTo(MailTag.RESP_READY_FOR_EVENTS, BaseCommTag.VAL_OK.name());
+        DataObject dataObject = receiveDataObject();
+        if (null != dataObject && null != dataObject.getList() && dataObject.getList().size() > 0) {
+            addInterestingEventNames((List<String>) dataObject.getList());
+        }
+    }
 }

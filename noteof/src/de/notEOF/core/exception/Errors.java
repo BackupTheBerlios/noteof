@@ -44,11 +44,11 @@ public class Errors {
 
         // Communication connection and transport problems
         errorList.put(10L, "Basiskommunikation konnte nicht initialisiert werden.");
-        errorList.put(11L, "Timeout der Kommunikation konnte nicht verändert werden.");
+        errorList.put(11L, "Timeout der Kommunikation konnte nicht verÃ¤ndert werden.");
         errorList.put(12L, "Timeout der Kommunikation konnte nicht gelesen werden.");
         errorList.put(13L, "Wert des DataObject konnte nicht korrekt belegt werden.");
         errorList.put(14L, "Wert des DataObject konnte nicht korrekt gelesen werden.");
-        errorList.put(15L, "Datei des DataObject existiert bereits im System und darf nicht überschrieben werden.");
+        errorList.put(15L, "Datei des DataObject existiert bereits im System und darf nicht Ã¼berschrieben werden.");
 
         // Communication problems between client and server
         errorList.put(20L, "Request an Partner ohne Erfolg. Nicht erwartete Response.");
@@ -59,14 +59,17 @@ public class Errors {
         errorList.put(25L, "Schreiben auf Socketebene fehlgeschlagen.");
         errorList.put(26L, "Timeout bei Schreiben auf Socketebene.");
 
+        // Missunderstoods between Client and Service
+        errorList.put(27L, "Client nutzt nicht unterstÃ¼tzte Service-Funktion.");
+
         // Configuration
         errorList.put(30L, "Konfigurationseintrag konnte nicht gespeichert werden.");
-        errorList.put(31L, "Konfigurationseintrag konnte nicht hinzugefügt werden.");
+        errorList.put(31L, "Konfigurationseintrag konnte nicht hinzugefÃ¼gt werden.");
         errorList.put(32L, "Element konnte nicht ermittelt werden.");
-        errorList.put(33L, "Konfigurationswert konnte nicht entschlüsselt werden.");
+        errorList.put(33L, "Konfigurationswert konnte nicht entschlÃ¼sselt werden.");
         errorList.put(34L, "Konfigurationswert ist leer oder existiert nicht.");
         errorList.put(35L, "Sichtbarkeit des Konfigurationswertes konnte nicht ermittelt werden.");
-        errorList.put(36L, "Fehler bei Hinzufügen einer Konfigurationsdatei.");
+        errorList.put(36L, "Fehler bei HinzufÃ¼gen einer Konfigurationsdatei.");
 
         // Central !EOF server
         errorList.put(100L, "Initialisierung des zentralen Servers ist fehlgeschlagen.");
@@ -82,17 +85,17 @@ public class Errors {
 
         // Special client/service messages up from 1000L
         // Dispatching
-        errorList.put(1000L, "Dispatch Service steht auf angefragtem Server nicht zur Verfügung.");
+        errorList.put(1000L, "Dispatch Service steht auf angefragtem Server nicht zur VerfÃ¼gung.");
         errorList.put(1001L, "Dispatch Service konnte gesuchten Service nicht finden.");
         errorList.put(1002L, "Dispatch Service konnte keinen freien Service finden (max. Anzahl Clients erreicht).");
         errorList.put(1003L, "Dispatch Client konnte nicht auf mitgeteilte IP-Adresse und/oder Port zugreifen.");
         errorList.put(1004L, "Dispatch Client konnte Socket auf IP und/oder Port nicht initialisieren.");
-        errorList.put(1005L, "Dispatch Client konnte Client Klasse nicht auflösen.");
+        errorList.put(1005L, "Dispatch Client konnte Client Klasse nicht auflÃ¶sen.");
         errorList.put(1006L, "Dispatch Service konnte Konfiguration der Services nicht lesen.");
         errorList.put(1007L, "Dispatch Service konnte Konfiguration der Server nicht lesen.");
 
         // Mail functions
-        errorList.put(1100L, "Unvollständige Mail.");
+        errorList.put(1100L, "UnvollstÃ¤ndige Mail.");
         errorList.put(1101L, "Problem bei Zuordnung einer Mail zu einem Service.");
 
     }
