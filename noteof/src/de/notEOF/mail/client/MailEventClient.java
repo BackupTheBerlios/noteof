@@ -4,18 +4,18 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.sun.org.apache.xpath.internal.Expression;
-
 import de.notEOF.core.client.BaseClient;
 import de.notEOF.core.communication.DataObject;
 import de.notEOF.core.enumeration.BaseCommTag;
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.interfaces.NotEOFEvent;
 import de.notEOF.core.interfaces.TimeOut;
+import de.notEOF.mail.MailExpressions;
 import de.notEOF.mail.NotEOFMail;
 import de.notEOF.mail.enumeration.MailTag;
 import de.notEOF.mail.interfaces.MailEventRecipient;
 import de.notEOF.mail.interfaces.MailMatchExpressions;
+import de.notIOC.logging.LocalLog;
 
 public abstract class MailEventClient extends BaseClient {
 
@@ -39,7 +39,10 @@ public abstract class MailEventClient extends BaseClient {
 
     public void awaitMailEvent(MailEventRecipient recipient) throws ActionFailedException {
         this.recipient = recipient;
+        activateAccepting();
+    }
 
+    private void activateAccepting() throws ActionFailedException {
         acceptor = new MailEventAcceptor();
         Thread acceptorThread = new Thread(acceptor);
         acceptorThread.start();
@@ -47,9 +50,14 @@ public abstract class MailEventClient extends BaseClient {
 
     private class MailEventAcceptor implements Runnable {
         private boolean stopped = false;
+        private boolean active = false;
 
-        public boolean stopped() {
+        public boolean isStopped() {
             return stopped;
+        }
+
+        public boolean isActive() {
+            return active;
         }
 
         public void stop() {
@@ -57,20 +65,31 @@ public abstract class MailEventClient extends BaseClient {
         }
 
         public void run() {
+            active = true;
             try {
                 while (!stopped) {
                     // wake up!
+                    System.out.println("MailEventClient wartet ab jetzt auf eine mail");
                     awaitRequestAnswerImmediate(MailTag.REQ_READY_FOR_MAIL, MailTag.RESP_READY_FOR_MAIL, BaseCommTag.VAL_OK.name());
+                    System.out.println("MailEventClient wartet jetzt nicht mehr auf eine mail");
                     NotEOFMail mail = getTalkLine().receiveMail();
+                    System.out.println("MailEventClient vor receive mail");
                     recipient.processMail(mail);
                 }
+                close();
             } catch (Exception e) {
-
+                System.out.println("MailEventClient Empfang unterbrochen.......");
+                if (!stopped)
+                    LocalLog.error("Fehler bei Warten auf Mails.", e);
             }
+            active = false;
         }
     }
 
     public void addInterestingEvents(List<NotEOFEvent> events) throws ActionFailedException {
+        if (acceptor.isActive()) {
+            acceptor.stop();
+        }
         if (BaseCommTag.VAL_OK.name().equals(requestTo(MailTag.REQ_READY_FOR_EVENTS, MailTag.RESP_READY_FOR_EVENTS))) {
             DataObject dataObject = new DataObject();
 
@@ -82,6 +101,7 @@ public abstract class MailEventClient extends BaseClient {
             dataObject.setList(eventClassNames);
             sendDataObject(dataObject);
         }
+        activateAccepting();
     }
 
     /**
@@ -98,14 +118,18 @@ public abstract class MailEventClient extends BaseClient {
      *             If the list couldn't be transmitted to the service.
      */
     public void addInterestingMailExpressions(MailMatchExpressions expressions) throws ActionFailedException {
+        if (acceptor.isActive()) {
+            acceptor.stop();
+        }
         if (BaseCommTag.VAL_OK.name().equals(requestTo(MailTag.REQ_READY_FOR_EXPRESSIONS, MailTag.RESP_READY_FOR_EXPRESSIONS))) {
             System.out.println(this.getClass().getName() + ": vor awaitRequest...");
-            awaitRequestAnswerImmediate(MailTag.REQ_EXPRESSION_TYPE, MailTag.RESP_EXPRESSION_TYPE, Expression.class.getName());
+            awaitRequestAnswerImmediate(MailTag.REQ_EXPRESSION_TYPE, MailTag.RESP_EXPRESSION_TYPE, MailExpressions.class.getName());
             System.out.println(this.getClass().getName() + ": nach awaitRequest...");
             DataObject dataObject = new DataObject();
             dataObject.setList(expressions.getExpressions());
             sendDataObject(dataObject);
             System.out.println("Nach sendDataObject");
         }
+        activateAccepting();
     }
 }

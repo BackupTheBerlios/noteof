@@ -51,6 +51,7 @@ public class SocketLayer {
     protected synchronized String requestToPartner(String requestString, String expectedRespHeader) throws ActionFailedException {
         expectedRespHeader += "=";
         writeMsg(requestString);
+        System.out.println("Nach writeMsg");
         String clientMsg = readMsg();
         if (clientMsg.length() < expectedRespHeader.length() || //
                 !expectedRespHeader.equalsIgnoreCase(clientMsg.substring(0, expectedRespHeader.length()))) {
@@ -61,6 +62,7 @@ public class SocketLayer {
 
     protected synchronized void awaitPartnerRequest(String expectedRequest) throws ActionFailedException {
         String msg = readMsg();
+        System.out.println("Nach readMsg");
         if (!msg.equalsIgnoreCase(expectedRequest)) {
             throw new ActionFailedException(21, "Erwartet: " + expectedRequest + "; Empfangen: " + msg);
         }
@@ -111,9 +113,34 @@ public class SocketLayer {
         }
     }
 
+    protected synchronized void writeMsg(String msg) throws ActionFailedException {
+        // avoid that the lifetimer sends a signal during awaiting a response
+        // from partner
+        System.out.println("Vor updateNextLifeSign");
+        lifeTimer.updateNextLifeSign();
+        System.out.println("Nach updateNextLifeSign");
+
+        if (null == msg)
+            msg = "";
+        msg = "#" + msg;
+        try {
+            System.out.println("Schreibe msg: " + msg);
+            System.out.println("Vor Anlegen printWriter...");
+            PrintWriter printWriter = new PrintWriter(new OutputStreamWriter(socketToPartner.getOutputStream()));
+            System.out.println("Nach Anlegen printWriter...");
+            printWriter.println(msg);
+            System.out.println("Vor flush...");
+            printWriter.flush();
+            System.out.println("Nach flush...");
+        } catch (IOException ex) {
+            throw new ActionFailedException(25L, ex);
+        }
+    }
+
     protected void writeInt(int value) throws ActionFailedException {
         try {
             String msg = String.valueOf(value);
+            System.out.println("String.valueOf: " + msg);
             writeMsg(msg);
         } catch (Exception e) {
             throw new ActionFailedException(201, "Int Value: " + value, e);
@@ -164,6 +191,7 @@ public class SocketLayer {
     protected String readMsg(boolean lifeSign) throws ActionFailedException {
         String respLifeSign = BaseCommTag.RESP_LIFE_SIGN.name() + "=" + BaseCommTag.VAL_OK.name();
         String msg = readUnqualifiedMsg();
+        System.out.println("Unqualified msg = " + msg);
         while (!lifeSign && //
                 (BaseCommTag.REQ_LIFE_SIGN.name().equals(msg) || //
                 respLifeSign.equals(msg))) {
@@ -581,23 +609,6 @@ public class SocketLayer {
 
     protected synchronized boolean lifeSignSucceeded() {
         return lifeTimer.lifeSignSucceeded();
-    }
-
-    protected synchronized void writeMsg(String msg) throws ActionFailedException {
-        // avoid that the lifetimer sends a signal during awaiting a response
-        // from partner
-        lifeTimer.updateNextLifeSign();
-
-        if (null == msg)
-            msg = "";
-        msg = "#" + msg;
-        try {
-            PrintWriter printWriter = new PrintWriter(new OutputStreamWriter(socketToPartner.getOutputStream()));
-            printWriter.println(msg);
-            printWriter.flush();
-        } catch (IOException ex) {
-            throw new ActionFailedException(25L, ex);
-        }
     }
 
     protected void close() {

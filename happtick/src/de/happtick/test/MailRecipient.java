@@ -12,10 +12,11 @@ public class MailRecipient implements MailEventRecipient {
 
     public MailRecipient(String... args) throws HapptickException {
         appl = new HapptickApplication(0, "localhost", 3000, args);
-        appl.acceptMailsAndEvents(this, null, null, null);
+        appl.useMailsAndEvents(this);
         MailDestinations destinations = new MailDestinations();
         destinations.add("Begriff");
         appl.addInterestingMailExpressions(destinations);
+        appl.startAcceptingMailsEvents();
     }
 
     public void processMail(NotEOFMail mail) {

@@ -36,6 +36,7 @@ public class HapptickApplication {
     private ApplicationClient applicationClient;
     private String[] args;
     private MailEventClient mailEventClient;
+    private MailEventRecipient mailEventRecipient;
 
     /**
      * If this constructor is used at a later time point the serverAddress and the port to the happtick scheduler must be set. Maybe it is a
@@ -284,12 +285,31 @@ public class HapptickApplication {
 
     private void initMailEventClient(MailEventRecipient mailEventRecipient) throws HapptickException {
         if (null == this.mailEventClient) {
+            this.mailEventRecipient = mailEventRecipient;
             try {
                 this.mailEventClient = new HapptickMailEventClient(serverAddress, serverPort, null, null);
-                mailEventClient.awaitMailEvent(mailEventRecipient);
+                // mailEventClient.awaitMailEvent(mailEventRecipient);
             } catch (ActionFailedException e) {
                 throw new HapptickException(601L, e);
             }
+        }
+    }
+
+    /**
+     * 
+     * This steps are recommended to receive Mails and Events: <br>
+     * 1. Call useMailsAndEvents() for initializing the mail system. <br>
+     * 2. Call addInterestingMailExpressions() and / or addInterestingEvents() to tell the server which mails and events the client is
+     * interested in. <br>
+     * 3. Call startAcceptingMailsEvents() for receiving mails and events.
+     * <p>
+     * For sending mails or events this steps are NOT required.
+     */
+    public void startAcceptingMailsEvents() throws HapptickException {
+        try {
+            mailEventClient.awaitMailEvent(this.mailEventRecipient);
+        } catch (ActionFailedException e) {
+            throw new HapptickException(601L, e);
         }
     }
 
@@ -298,6 +318,7 @@ public class HapptickApplication {
      * <p>
      * If a mail reaches the central server the services are informed about this. <br>
      * To get a mail it is important to set destinations or headers which the client waits for.
+     * <p>
      * 
      * @param mailEventRecipient
      *            The application which uses this method and wants to be informed about mails or events must implement this interface. To
@@ -319,7 +340,7 @@ public class HapptickApplication {
      * @throws HapptickException
      *             Is raised when the connection with service could not be established or other problems occured.
      */
-    public void acceptMailsAndEvents(MailEventRecipient mailEventRecipient, MailExpressions expressions0, MailExpressions expressions1, List<NotEOFEvent> events)
+    public void useMailsAndEvents(MailEventRecipient mailEventRecipient, MailExpressions expressions0, MailExpressions expressions1, List<NotEOFEvent> events)
             throws HapptickException {
         initMailEventClient(mailEventRecipient);
         addInterestingMailExpressions(expressions0);
@@ -332,6 +353,14 @@ public class HapptickApplication {
      * <p>
      * If a mail reaches the central server the services are informed about this. <br>
      * To get a mail it is important to set destinations or headers which the client waits for.
+     * <p>
+     * This steps are recommended to receive Mails and Events: <br>
+     * 1. Call useMailsAndEvents() for initializing the mail system. <br>
+     * 2. Call addInterestingMailExpressions() and / or addInterestingEvents() to tell the server which mails and events the client is
+     * interested in. <br>
+     * 3. Call startAcceptingMailsEvents() for receiving mails and events.
+     * <p>
+     * For sending mails or events this steps are NOT required.
      * 
      * @param mailEventRecipient
      *            The application which uses this method and wants to be informed about mails or events must implement this interface. To
@@ -339,13 +368,20 @@ public class HapptickApplication {
      * @throws HapptickException
      *             Is raised when the connection with service could not be established or other problems occured.
      */
-    public void acceptMailsAndEvents(MailEventRecipient mailEventRecipient) throws HapptickException {
+    public void useMailsAndEvents(MailEventRecipient mailEventRecipient) throws HapptickException {
         initMailEventClient(mailEventRecipient);
     }
 
     /**
      * Add expressions which this client is interested in.
      * <p>
+     * This steps are recommended to receive Mails and Events: <br>
+     * 1. Call useMailsAndEvents() for initializing the mail system. <br>
+     * 2. Call addInterestingMailExpressions() and / or addInterestingEvents() to tell the server which mails and events the client is
+     * interested in. <br>
+     * 3. Call startAcceptingMailsEvents() for receiving mails and events.
+     * <p>
+     * For sending mails or events this steps are NOT required.
      * 
      * @param expressions
      *            To get a mail it is important to set destinations and/or headers which the client waits for. Object which implements the
@@ -356,6 +392,8 @@ public class HapptickApplication {
      *             If the list couldn't be transmitted to the service.
      */
     public void addInterestingMailExpressions(MailMatchExpressions expressions) throws HapptickException {
+        if (null == mailEventClient)
+            throw new HapptickException(604L, "Empfang von Mails oder Events ist noch nicht aktiviert.");
         if (null != expressions) {
             try {
                 mailEventClient.addInterestingMailExpressions(expressions);
@@ -367,12 +405,22 @@ public class HapptickApplication {
 
     /**
      * Add events which the application that uses this class is interested in.
+     * <p>
+     * This steps are recommended to receive Mails and Events: <br>
+     * 1. Call useMailsAndEvents() for initializing the mail system. <br>
+     * 2. Call addInterestingMailExpressions() and / or addInterestingEvents() to tell the server which mails and events the client is
+     * interested in. <br>
+     * 3. Call startAcceptingMailsEvents() for receiving mails and events.
+     * <p>
+     * For sending mails or events this steps are NOT required.
      * 
      * @param events
      *            A list with objects which implement the interface {@link NotEOFEvent}.
      * @throws HapptickException
      */
     public void addInterestingEvents(List<NotEOFEvent> events) throws HapptickException {
+        if (null == mailEventClient)
+            throw new HapptickException(604L, "Empfang von Mails oder Events ist noch nicht aktiviert.");
         if (null != events) {
             try {
                 mailEventClient.addInterestingEvents(events);

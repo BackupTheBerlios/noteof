@@ -36,8 +36,7 @@ public class ApplicationService extends BaseService {
     private int exitCode = 0;
 
     /**
-     * This method is called by BaseService directly when the connection with
-     * client is established.
+     * This method is called by BaseService directly when the connection with client is established.
      */
     public void implementationFirstSteps() {
         MasterTable.addService(this);
@@ -70,12 +69,11 @@ public class ApplicationService extends BaseService {
     }
 
     /**
-     * Indicates whether the LifeSignSystem is active for this service and its
-     * clients.
+     * Indicates whether the LifeSignSystem is active for this service and its clients.
      */
     @Override
     public boolean isLifeSignSystemActive() {
-        return true;
+        return false;
     }
 
     /**
@@ -126,8 +124,7 @@ public class ApplicationService extends BaseService {
     }
 
     /**
-     * Here service part of the communication acts between an application client
-     * and an application service is implemented.
+     * Here service part of the communication acts between an application client and an application service is implemented.
      */
     @Override
     public void processClientMsg(Enum<?> incomingMsgEnum) throws ActionFailedException {

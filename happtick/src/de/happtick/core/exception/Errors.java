@@ -74,6 +74,7 @@ public class Errors {
         errorList.put(601L, "Empfangen einer Mail oder eines Events ist fehlgeschlagen.");
         errorList.put(602L, "Begriffe fuer akzeptierte mails konnten nicht festgelegt werden.");
         errorList.put(603L, "Klassen fuer akzeptierte events konnten nicht festgelegt werden.");
+        errorList.put(604L, "Empfang von Mails oder Events ist noch nicht aktiviert.");
 
     }
 
