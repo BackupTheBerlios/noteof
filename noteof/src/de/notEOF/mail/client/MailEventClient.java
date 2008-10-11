@@ -50,22 +50,23 @@ public abstract class MailEventClient extends BaseClient {
 
     private class MailEventAcceptor implements Runnable {
         private boolean stopped = false;
-        private boolean active = false;
+
+        // private boolean active = false;
 
         public boolean isStopped() {
             return stopped;
         }
 
-        public boolean isActive() {
-            return active;
-        }
-
+        // public boolean isActive() {
+        // return active;
+        // }
+        //
         public void stop() {
             stopped = true;
         }
 
         public void run() {
-            active = true;
+            // active = true;
             try {
                 while (!stopped) {
                     // wake up!
@@ -82,14 +83,14 @@ public abstract class MailEventClient extends BaseClient {
                 if (!stopped)
                     LocalLog.error("Fehler bei Warten auf Mails.", e);
             }
-            active = false;
+            // active = false;
         }
     }
 
     public void addInterestingEvents(List<NotEOFEvent> events) throws ActionFailedException {
-        if (acceptor.isActive()) {
-            acceptor.stop();
-        }
+        // if (acceptor.isActive()) {
+        // acceptor.stop();
+        // }
         if (BaseCommTag.VAL_OK.name().equals(requestTo(MailTag.REQ_READY_FOR_EVENTS, MailTag.RESP_READY_FOR_EVENTS))) {
             DataObject dataObject = new DataObject();
 
@@ -101,7 +102,7 @@ public abstract class MailEventClient extends BaseClient {
             dataObject.setList(eventClassNames);
             sendDataObject(dataObject);
         }
-        activateAccepting();
+        // activateAccepting();
     }
 
     /**
@@ -118,9 +119,9 @@ public abstract class MailEventClient extends BaseClient {
      *             If the list couldn't be transmitted to the service.
      */
     public void addInterestingMailExpressions(MailMatchExpressions expressions) throws ActionFailedException {
-        if (acceptor.isActive()) {
-            acceptor.stop();
-        }
+        // if (acceptor.isActive()) {
+        // acceptor.stop();
+        // }
         if (BaseCommTag.VAL_OK.name().equals(requestTo(MailTag.REQ_READY_FOR_EXPRESSIONS, MailTag.RESP_READY_FOR_EXPRESSIONS))) {
             System.out.println(this.getClass().getName() + ": vor awaitRequest...");
             awaitRequestAnswerImmediate(MailTag.REQ_EXPRESSION_TYPE, MailTag.RESP_EXPRESSION_TYPE, MailExpressions.class.getName());
@@ -130,6 +131,6 @@ public abstract class MailEventClient extends BaseClient {
             sendDataObject(dataObject);
             System.out.println("Nach sendDataObject");
         }
-        activateAccepting();
+        // activateAccepting();
     }
 }

@@ -50,24 +50,28 @@ public abstract class MailEventService extends BaseService {
     }
 
     protected void addInterestingDestination(String destination) {
+        System.out.println("Interesting Destination: " + destination);
         if (null == mailDestinations)
             mailDestinations = new MailDestinations();
         mailDestinations.add(destination);
     }
 
     protected void addInterestingDestinations(List<String> destinations) {
+        System.out.println("Interesting Destinations: " + destinations);
         if (null == mailDestinations)
             mailDestinations = new MailDestinations();
         mailDestinations.addAll(destinations);
     }
 
     protected void addInterestingHeader(String header) {
+        System.out.println("Interesting Header: " + header);
         if (null == mailHeaders)
             mailHeaders = new MailHeaders();
         mailHeaders.add(header);
     }
 
     protected void addInterestingHeaders(List<String> headers) {
+        System.out.println("Interesting Headers: " + headers);
         if (null == mailHeaders)
             mailHeaders = new MailHeaders();
         mailHeaders.addAll(headers);
@@ -139,7 +143,23 @@ public abstract class MailEventService extends BaseService {
      * @return TRUE if the service wants to deliver the message to its client,
      *         FALSE if not.
      */
-    protected abstract boolean interestedInMail(String destination, String header);
+    protected boolean interestedInMail(String destination, String header) {
+        if (null != mailDestinations) {
+            System.out.println("mailDestinations: " + mailDestinations.getExpressions());
+            for (String expression : mailDestinations.getExpressions()) {
+                if (expression.equals(destination))
+                    return true;
+            }
+        }
+        if (null != mailHeaders) {
+            System.out.println("mailHeaders: " + mailHeaders.getExpressions());
+            for (String expression : mailHeaders.getExpressions()) {
+                if (expression.equals(header))
+                    return true;
+            }
+        }
+        return false;
+    }
 
     public void processClientMsg(Enum<?> incomingMsgEnum) throws ActionFailedException {
         if (incomingMsgEnum.equals(MailTag.REQ_READY_FOR_EXPRESSIONS)) {

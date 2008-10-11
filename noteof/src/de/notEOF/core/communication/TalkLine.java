@@ -307,9 +307,7 @@ public class TalkLine implements Observer {
     }
 
     public NotEOFMail receiveMail() throws ActionFailedException {
-        System.out.println("Vor contentObject");
         DataObject contentObject = receiveDataObject();
-        System.out.println("contentObject ");
         Map<String, String> content = contentObject.getMap();
 
         NotEOFMail mail = new NotEOFMail();
@@ -327,12 +325,9 @@ public class TalkLine implements Observer {
 
         String isDataObjectSet = readMsg();
         if ("TRUE".equals(isDataObjectSet)) {
-            System.out.println("TRUE");
             DataObject bodyData = receiveDataObject();
-            System.out.println("bodyData ");
             mail.setBodyData(bodyData);
         }
-        System.out.println("return mail");
         return mail;
     }
 

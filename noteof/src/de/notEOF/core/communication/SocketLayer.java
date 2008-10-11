@@ -51,7 +51,6 @@ public class SocketLayer {
     protected synchronized String requestToPartner(String requestString, String expectedRespHeader) throws ActionFailedException {
         expectedRespHeader += "=";
         writeMsg(requestString);
-        System.out.println("Nach writeMsg");
         String clientMsg = readMsg();
         if (clientMsg.length() < expectedRespHeader.length() || //
                 !expectedRespHeader.equalsIgnoreCase(clientMsg.substring(0, expectedRespHeader.length()))) {
@@ -62,7 +61,6 @@ public class SocketLayer {
 
     protected synchronized void awaitPartnerRequest(String expectedRequest) throws ActionFailedException {
         String msg = readMsg();
-        System.out.println("Nach readMsg");
         if (!msg.equalsIgnoreCase(expectedRequest)) {
             throw new ActionFailedException(21, "Erwartet: " + expectedRequest + "; Empfangen: " + msg);
         }
@@ -116,22 +114,15 @@ public class SocketLayer {
     protected synchronized void writeMsg(String msg) throws ActionFailedException {
         // avoid that the lifetimer sends a signal during awaiting a response
         // from partner
-        System.out.println("Vor updateNextLifeSign");
         lifeTimer.updateNextLifeSign();
-        System.out.println("Nach updateNextLifeSign");
 
         if (null == msg)
             msg = "";
         msg = "#" + msg;
         try {
-            System.out.println("Schreibe msg: " + msg);
-            System.out.println("Vor Anlegen printWriter...");
             PrintWriter printWriter = new PrintWriter(new OutputStreamWriter(socketToPartner.getOutputStream()));
-            System.out.println("Nach Anlegen printWriter...");
             printWriter.println(msg);
-            System.out.println("Vor flush...");
             printWriter.flush();
-            System.out.println("Nach flush...");
         } catch (IOException ex) {
             throw new ActionFailedException(25L, ex);
         }
@@ -140,7 +131,6 @@ public class SocketLayer {
     protected void writeInt(int value) throws ActionFailedException {
         try {
             String msg = String.valueOf(value);
-            System.out.println("String.valueOf: " + msg);
             writeMsg(msg);
         } catch (Exception e) {
             throw new ActionFailedException(201, "Int Value: " + value, e);
@@ -191,7 +181,6 @@ public class SocketLayer {
     protected String readMsg(boolean lifeSign) throws ActionFailedException {
         String respLifeSign = BaseCommTag.RESP_LIFE_SIGN.name() + "=" + BaseCommTag.VAL_OK.name();
         String msg = readUnqualifiedMsg();
-        System.out.println("Unqualified msg = " + msg);
         while (!lifeSign && //
                 (BaseCommTag.REQ_LIFE_SIGN.name().equals(msg) || //
                 respLifeSign.equals(msg))) {
@@ -276,9 +265,7 @@ public class SocketLayer {
         try {
             DataInputStream inputStream = new DataInputStream(socketToPartner.getInputStream());
             // den Datentyp ermitteln
-            System.out.println("Vor lesen dataTypeInt...");
             int dataTypeInt = readInt();
-            System.out.println("dataTypeInt: " + dataTypeInt);
             DataObjectDataTypes dataType = DataObjectDataTypes.values()[dataTypeInt];
 
             switch (dataType) {
@@ -332,34 +319,27 @@ public class SocketLayer {
                 break;
 
             case MAP_STRING_STRING:
-                System.out.println("VERARBEITUNG MAP");
                 int mapSize = readInt();
                 if (0 != mapSize) {
-                    System.out.println("mapSize: " + mapSize);
                     Map<String, String> map = new HashMap<String, String>();
                     for (int i = 0; i < mapSize; i++) {
                         String key = readMsg();
                         String value = readMsg();
                         map.put(key, value);
                     }
-                    System.out.println("fertig mit empfangen...");
                     dataObject.setMap(map);
                 }
                 break;
 
             case LIST:
                 int listSize = readInt();
-                System.out.println("listSize = " + listSize);
                 int listTypeInt = readInt();
-                System.out.println("listType = " + listTypeInt);
                 DataObjectListTypes listType = DataObjectListTypes.values()[listTypeInt];
 
                 List list = new ArrayList();
                 if (0 != listSize) {
                     for (int i = 0; i < listSize; i++) {
-                        System.out.println("Vor readMsg!");
                         String line = readMsg();
-                        System.out.println("Nach readMsg!");
                         switch (listType) {
                         case INTEGER:
                             list.add(Integer.valueOf(line));
@@ -370,7 +350,6 @@ public class SocketLayer {
                             break;
 
                         case STRING:
-                            System.out.println("STRING");
                             list.add(line);
                             break;
                         }
@@ -417,11 +396,8 @@ public class SocketLayer {
             DataOutputStream outputStream = new DataOutputStream(socketToPartner.getOutputStream());
             // den Datentyp ermitteln
             DataObjectDataTypes dataType = dataObject.getDataType();
-            System.out.println("dataType = " + dataType);
             // System.out.println("dataType int = " + dataType.ordinal());
-            System.out.println("Vor WRITE...........");
             writeInt(dataType.ordinal());
-            System.out.println("Nach WRITE...........");
 
             switch (dataType) {
             case SHORT:
@@ -475,11 +451,9 @@ public class SocketLayer {
                 break;
 
             case MAP_STRING_STRING:
-                System.out.println("VERARBEITUNG MAP");
                 if (null != dataObject.getMap()) {
                     Map<String, String> map = dataObject.getMap();
                     Set<Map.Entry<String, String>> mapSet = map.entrySet();
-                    System.out.println("mapSize: " + mapSet.size());
                     writeInt(mapSet.size());
                     for (Map.Entry<String, String> mapEntry : mapSet) {
                         // send key
@@ -487,7 +461,6 @@ public class SocketLayer {
                         // send value
                         writeMsg(mapEntry.getValue());
                     }
-                    System.out.println("fertig mit senden...");
                 } else {
                     // send size of map is 0
                     writeInt(0);
@@ -495,12 +468,9 @@ public class SocketLayer {
                 break;
 
             case LIST:
-                System.out.println("Verarbeitung LIST");
                 if (null != dataObject.getList()) {
-                    System.out.println("List != NULL");
                     List<?> list = dataObject.getList();
 
-                    System.out.println("ListSize: " + list.size());
                     writeInt(list.size());
                     String value = "";
                     writeInt(dataObject.getListObjectType().ordinal());
@@ -511,14 +481,11 @@ public class SocketLayer {
                             value = String.valueOf(obj);
                             break;
                         case STRING:
-                            System.out.println("STRING");
                             value = (String) obj;
                             break;
 
                         }
-                        System.out.println("Vor writeMsg!");
                         writeMsg(value);
-                        System.out.println("Nach writeMsg!");
                     }
                 } else {
                     // send that size of list is 0
