@@ -12,7 +12,7 @@ public class MailSender {
         HapptickApplication appl = new HapptickApplication(2, "localhost", 3000, args);
         NotEOFMail mail;
         try {
-            mail = new NotEOFMail("Kopf", "Begriff", "Wichtiger Inhalt");
+            mail = new NotEOFMail("Kopf", "xBegriff", "Wichtiger Inhalt");
         } catch (ActionFailedException e) {
             throw new HapptickException(600L, "Anlegen einer Mail.", e);
         }

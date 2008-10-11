@@ -130,7 +130,6 @@ public class TalkLine implements Observer {
      * @throws ActionFailedException
      */
     public void sendDataObject(DataObject dataObject) throws ActionFailedException {
-        System.out.println("DATA OBJECT... " + dataObject);
         socketLayer.sendDataObject(dataObject);
     }
 

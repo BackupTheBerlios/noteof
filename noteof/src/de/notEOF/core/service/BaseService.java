@@ -7,6 +7,7 @@ import java.util.List;
 import de.notEOF.core.BaseClientOrService;
 import de.notEOF.core.communication.TalkLine;
 import de.notEOF.core.constant.NotEOFConstants;
+import de.notEOF.core.enumeration.BaseCommTag;
 import de.notEOF.core.enumeration.EventType;
 import de.notEOF.core.event.ServiceStartEvent;
 import de.notEOF.core.event.ServiceStopEvent;
@@ -148,7 +149,27 @@ public abstract class BaseService extends BaseClientOrService implements Service
      *            The incoming event that the client has fired or which was
      *            detected by the service.
      */
-    public void update(Service service, NotEOFEvent event) {
+    public final void update(Service service, NotEOFEvent event) {
+        EventProcessor processor = new EventProcessor(service, event);
+        Thread processThread = new Thread(processor);
+        processThread.start();
+    }
+
+    public void processEvent(Service service, NotEOFEvent event) {
+    }
+
+    private final class EventProcessor implements Runnable {
+        private Service updateService;
+        private NotEOFEvent notEOFEvent;
+
+        private EventProcessor(Service service, NotEOFEvent event) {
+            this.updateService = service;
+            this.notEOFEvent = event;
+        }
+
+        public void run() {
+            processEvent(updateService, notEOFEvent);
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -160,8 +181,6 @@ public abstract class BaseService extends BaseClientOrService implements Service
                 // Check if the lifetime hasn't send longer than allowed
                 // or if any other messages came within the max. allowed time.
                 if (getTalkLine().lifeSignSucceeded()) {
-                    // if (Util.isEmpty(msg) && nextLifeSign <
-                    // System.currentTimeMillis()) {
                     // no message within the lifetime interval
                     // stop service
                     stopped = true;
@@ -169,13 +188,12 @@ public abstract class BaseService extends BaseClientOrService implements Service
                 }
 
                 if (!Util.isEmpty(msg)) {
-                    System.out.println("................." + msg + "...................");
                     if (msg.equals(MailTag.REQ_READY_FOR_MAIL.name())) {
+                        writeMsg(BaseCommTag.VAL_OK);
                         // Mails from client are processed directly here in the
                         // base class
                         processMail();
                     } else {
-
                         // client/service specific messages are processed in the
                         // method processMsg() which must be implemented
                         // individual in every service.
@@ -235,17 +253,12 @@ public abstract class BaseService extends BaseClientOrService implements Service
      * the relevant types.
      */
     public List<EventType> getObservedEvents() {
-        // if (null == eventTypes) {
-        // eventTypes = new ArrayList<EventType>();
-        // eventTypes.add(EventType.EVENT_MAIL);
-        // }
         return eventTypes;
     }
 
     protected final void addObservedEventType(EventType type) {
         if (null == eventTypes) {
             eventTypes = new ArrayList<EventType>();
-            // eventTypes.add(EventType.EVENT_MAIL);
         }
         eventTypes.add(type);
     }
@@ -253,10 +266,9 @@ public abstract class BaseService extends BaseClientOrService implements Service
     @SuppressWarnings("unchecked")
     private Enum validateEnum(Class<Enum> tagEnumClass, String msg) throws ActionFailedException {
         try {
-            Enum[] y = tagEnumClass.getEnumConstants();
-            for (int i = 0; i < y.length; i++) {
-                if (y[i].name().equals(msg)) {
-                    return y[i];
+            for (Enum enume : tagEnumClass.getEnumConstants()) {
+                if (enume.name().equals(msg)) {
+                    return enume;
                 }
             }
         } catch (Exception e) {

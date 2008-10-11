@@ -66,10 +66,6 @@ public class Server implements EventObservable, Runnable {
      * @throws ActionFailedException
      */
     public static void start(int port, String homeVar) throws ActionFailedException {
-        // notEof_Home = ConfigurationManager.getApplicationHome();
-
-        // look for NOTEOF_HOME as VM environment variable (-DCFGROOT)
-        // and - if not found - as SYSTEM environment variable $NOTEOF_HOME
         notEof_Home = System.getProperty(homeVar);
         if (Util.isEmpty(notEof_Home))
             notEof_Home = System.getenv(homeVar);
@@ -308,18 +304,6 @@ public class Server implements EventObservable, Runnable {
         return allServiceMaps;
     }
 
-    // /**
-    // * Delivers a mail by the mailId.
-    // *
-    // * @param mailId
-    // * @return A mail or NULL if not found by the mailId.
-    // */
-    // public NotEOFMail getMail(String mailId) {
-    // if (null == mails)
-    // return null;
-    // return mails.get(mailId);
-    // }
-
     /**
      * Server can be used as post office.
      * <p>
@@ -329,13 +313,6 @@ public class Server implements EventObservable, Runnable {
      * send it to their clients. <br>
      */
     public void postMail(NotEOFMail mail, Service fromService) {
-        // if (mails == null)
-        // mails = new HashMap<String, NotEOFMail>();
-        //
-        // // Recipient is not yet known at this time point.
-        // mails.put(mail.getMailId(), mail);
-        // System.out.println("Server.postMail...");
-        // Send Observers the event that a new msg has arrived
         updateObservers(fromService, new NewMailEvent(mail));
     }
 

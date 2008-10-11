@@ -6,16 +6,13 @@ import java.util.List;
 
 import de.notEOF.core.client.BaseClient;
 import de.notEOF.core.communication.DataObject;
-import de.notEOF.core.enumeration.BaseCommTag;
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.interfaces.NotEOFEvent;
 import de.notEOF.core.interfaces.TimeOut;
-import de.notEOF.mail.MailExpressions;
 import de.notEOF.mail.NotEOFMail;
 import de.notEOF.mail.enumeration.MailTag;
 import de.notEOF.mail.interfaces.MailEventRecipient;
 import de.notEOF.mail.interfaces.MailMatchExpressions;
-import de.notIOC.logging.LocalLog;
 
 public abstract class MailEventClient extends BaseClient {
 
@@ -51,47 +48,31 @@ public abstract class MailEventClient extends BaseClient {
     private class MailEventAcceptor implements Runnable {
         private boolean stopped = false;
 
-        // private boolean active = false;
-
         public boolean isStopped() {
             return stopped;
         }
 
-        // public boolean isActive() {
-        // return active;
-        // }
-        //
         public void stop() {
             stopped = true;
         }
 
         public void run() {
-            // active = true;
             try {
                 while (!stopped) {
-                    // wake up!
-                    System.out.println("MailEventClient wartet ab jetzt auf eine mail");
-                    awaitRequestAnswerImmediate(MailTag.REQ_READY_FOR_MAIL, MailTag.RESP_READY_FOR_MAIL, BaseCommTag.VAL_OK.name());
-                    System.out.println("MailEventClient wartet jetzt nicht mehr auf eine mail");
+                    awaitRequest(MailTag.REQ_AWAITING_MAIL);
                     NotEOFMail mail = getTalkLine().receiveMail();
-                    System.out.println("MailEventClient vor receive mail");
                     recipient.processMail(mail);
                 }
                 close();
             } catch (Exception e) {
-                System.out.println("MailEventClient Empfang unterbrochen.......");
                 if (!stopped)
-                    LocalLog.error("Fehler bei Warten auf Mails.", e);
+                    recipient.processMailException(e);
             }
-            // active = false;
         }
     }
 
     public void addInterestingEvents(List<NotEOFEvent> events) throws ActionFailedException {
-        // if (acceptor.isActive()) {
-        // acceptor.stop();
-        // }
-        if (BaseCommTag.VAL_OK.name().equals(requestTo(MailTag.REQ_READY_FOR_EVENTS, MailTag.RESP_READY_FOR_EVENTS))) {
+        if (MailTag.VAL_OK.name().equals(requestTo(MailTag.REQ_READY_FOR_EVENTS, MailTag.RESP_READY_FOR_EVENTS))) {
             DataObject dataObject = new DataObject();
 
             List<String> eventClassNames = new ArrayList<String>();
@@ -102,35 +83,31 @@ public abstract class MailEventClient extends BaseClient {
             dataObject.setList(eventClassNames);
             sendDataObject(dataObject);
         }
-        // activateAccepting();
     }
 
     /**
-     * Add words (destinations) which this client is interested for.
+     * Add terms which this client is interested for.
      * <p>
      * If a mail reaches the central server the services are informed about
      * this. <br>
      * To get a mail it is important to set destinations or headers which the
      * client waits for.
      * 
-     * @param destinations
-     *            A list with words.
+     * @param expressions
+     *            MailMatchExpressions is an interface which must be implemented
+     *            by expressions. This Object must contain a list with terms as
+     *            Strings. The terms can be headers or other (combined) words.
      * @throws ActionFailedException
      *             If the list couldn't be transmitted to the service.
      */
     public void addInterestingMailExpressions(MailMatchExpressions expressions) throws ActionFailedException {
-        // if (acceptor.isActive()) {
-        // acceptor.stop();
-        // }
-        if (BaseCommTag.VAL_OK.name().equals(requestTo(MailTag.REQ_READY_FOR_EXPRESSIONS, MailTag.RESP_READY_FOR_EXPRESSIONS))) {
-            System.out.println(this.getClass().getName() + ": vor awaitRequest...");
-            awaitRequestAnswerImmediate(MailTag.REQ_EXPRESSION_TYPE, MailTag.RESP_EXPRESSION_TYPE, MailExpressions.class.getName());
-            System.out.println(this.getClass().getName() + ": nach awaitRequest...");
+        if (null == expressions || null == expressions.getExpressions() || 0 == expressions.getExpressions().size())
+            throw new ActionFailedException(1102L, "Liste der erwarteten Ausdruecke ist leer.");
+        if (MailTag.VAL_OK.name().equals(requestTo(MailTag.REQ_READY_FOR_EXPRESSIONS, MailTag.RESP_READY_FOR_EXPRESSIONS))) {
+            awaitRequestAnswerImmediate(MailTag.REQ_EXPRESSION_TYPE, MailTag.RESP_EXPRESSION_TYPE, expressions.getClass().getName());
             DataObject dataObject = new DataObject();
             dataObject.setList(expressions.getExpressions());
             sendDataObject(dataObject);
-            System.out.println("Nach sendDataObject");
         }
-        // activateAccepting();
     }
 }

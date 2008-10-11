@@ -51,7 +51,9 @@ public class SocketLayer {
     protected synchronized String requestToPartner(String requestString, String expectedRespHeader) throws ActionFailedException {
         expectedRespHeader += "=";
         writeMsg(requestString);
-        String clientMsg = readMsg();
+        String clientMsg = "";
+        clientMsg = readMsg();
+
         if (clientMsg.length() < expectedRespHeader.length() || //
                 !expectedRespHeader.equalsIgnoreCase(clientMsg.substring(0, expectedRespHeader.length()))) {
             throw new ActionFailedException(20L, "Erwartet: " + expectedRespHeader + "; Empfangen: " + clientMsg);
@@ -233,9 +235,6 @@ public class SocketLayer {
         }
         if (Util.isEmpty(msg))
             msg = "";
-        // throw new ActionFailedException(23L,
-        // "Leere Nachricht empfangen. Nachrichten ohne Inhalt sind nicht zulaessig."
-        // );
 
         // show lifetimer that the connection is ok
         lifeTimer.lifeSignReceived();
@@ -396,7 +395,6 @@ public class SocketLayer {
             DataOutputStream outputStream = new DataOutputStream(socketToPartner.getOutputStream());
             // den Datentyp ermitteln
             DataObjectDataTypes dataType = dataObject.getDataType();
-            // System.out.println("dataType int = " + dataType.ordinal());
             writeInt(dataType.ordinal());
 
             switch (dataType) {
@@ -642,5 +640,4 @@ public class SocketLayer {
     protected Socket getSocketToPartner() {
         return socketToPartner;
     }
-
 }

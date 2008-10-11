@@ -14,8 +14,8 @@ public class MailExpressions implements MailMatchExpressions {
     }
 
     public void addAll(List<String> expressions) {
-        if (null == expressions) {
-            expressions = new ArrayList<String>();
+        if (null == this.expressions) {
+            this.expressions = new ArrayList<String>();
         }
         this.expressions.addAll(expressions);
     }
@@ -25,10 +25,10 @@ public class MailExpressions implements MailMatchExpressions {
     }
 
     public void add(String expression) {
-        if (null == expressions) {
-            expressions = new ArrayList<String>();
+        if (null == this.expressions) {
+            this.expressions = new ArrayList<String>();
         }
-        expressions.add(expression);
+        this.expressions.add(expression);
     }
 
 }

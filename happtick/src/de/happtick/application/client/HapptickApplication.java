@@ -288,7 +288,6 @@ public class HapptickApplication {
             this.mailEventRecipient = mailEventRecipient;
             try {
                 this.mailEventClient = new HapptickMailEventClient(serverAddress, serverPort, null, null);
-                // mailEventClient.awaitMailEvent(mailEventRecipient);
             } catch (ActionFailedException e) {
                 throw new HapptickException(601L, e);
             }

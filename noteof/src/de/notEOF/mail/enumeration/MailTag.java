@@ -6,6 +6,9 @@ public enum MailTag {
     REQ_READY_FOR_MAIL, //
     RESP_READY_FOR_MAIL, //
 
+    REQ_AWAITING_MAIL,
+    RESP_AWAITING_MAIL,
+
     REQ_READY_FOR_EXPRESSIONS,
     RESP_READY_FOR_EXPRESSIONS,
 
@@ -28,5 +31,8 @@ public enum MailTag {
     RESP_BODY_DATA_EXISTS,
 
     REQ_BODY_DATA,
-    RESP_BODY_DATA;
+    RESP_BODY_DATA,
+
+    VAL_OK,
+    VAL_FAULT;
 }

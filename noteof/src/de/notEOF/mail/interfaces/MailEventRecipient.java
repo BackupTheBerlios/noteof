@@ -6,4 +6,6 @@ public interface MailEventRecipient {
 
     public void processMail(NotEOFMail mail);
 
+    public void processMailException(Exception e);
+
 }

@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import de.notEOF.core.communication.DataObject;
-import de.notEOF.core.enumeration.BaseCommTag;
 import de.notEOF.core.enumeration.EventType;
 import de.notEOF.core.event.NewMailEvent;
 import de.notEOF.core.exception.ActionFailedException;
@@ -50,28 +49,24 @@ public abstract class MailEventService extends BaseService {
     }
 
     protected void addInterestingDestination(String destination) {
-        System.out.println("Interesting Destination: " + destination);
         if (null == mailDestinations)
             mailDestinations = new MailDestinations();
         mailDestinations.add(destination);
     }
 
     protected void addInterestingDestinations(List<String> destinations) {
-        System.out.println("Interesting Destinations: " + destinations);
         if (null == mailDestinations)
             mailDestinations = new MailDestinations();
         mailDestinations.addAll(destinations);
     }
 
     protected void addInterestingHeader(String header) {
-        System.out.println("Interesting Header: " + header);
         if (null == mailHeaders)
             mailHeaders = new MailHeaders();
         mailHeaders.add(header);
     }
 
     protected void addInterestingHeaders(List<String> headers) {
-        System.out.println("Interesting Headers: " + headers);
         if (null == mailHeaders)
             mailHeaders = new MailHeaders();
         mailHeaders.addAll(headers);
@@ -90,7 +85,7 @@ public abstract class MailEventService extends BaseService {
     }
 
     /**
-     * Callback method to be informed about incoming events.
+     * Callback method to process incoming events.
      * <p>
      * 
      * @param service
@@ -99,7 +94,9 @@ public abstract class MailEventService extends BaseService {
      *            The incoming event that the client has fired or which was
      *            detected by the service.
      */
-    public void update(Service service, NotEOFEvent event) {
+    public void processEvent(Service service, NotEOFEvent event) {
+        System.out.println("MailEventService im processEvent!!!");
+
         if (EventType.EVENT_MAIL.equals(event.getEventType())) {
             // check if interesting for this service
             if (((NewMailEvent) event).getMail().getToClientNetId().equals(getClientNetId()) || //
@@ -124,9 +121,8 @@ public abstract class MailEventService extends BaseService {
      * @throws ActionFailedException
      */
     public final void mailToClient(NotEOFMail mail) throws ActionFailedException {
-        if (BaseCommTag.VAL_OK.name().equals(requestTo(MailTag.REQ_READY_FOR_MAIL, MailTag.RESP_READY_FOR_MAIL))) {
-            getTalkLine().sendMail(mail);
-        }
+        writeMsg(MailTag.REQ_AWAITING_MAIL);
+        getTalkLine().sendMail(mail);
     }
 
     /**
@@ -145,14 +141,12 @@ public abstract class MailEventService extends BaseService {
      */
     protected boolean interestedInMail(String destination, String header) {
         if (null != mailDestinations) {
-            System.out.println("mailDestinations: " + mailDestinations.getExpressions());
             for (String expression : mailDestinations.getExpressions()) {
                 if (expression.equals(destination))
                     return true;
             }
         }
         if (null != mailHeaders) {
-            System.out.println("mailHeaders: " + mailHeaders.getExpressions());
             for (String expression : mailHeaders.getExpressions()) {
                 if (expression.equals(header))
                     return true;
@@ -172,10 +166,8 @@ public abstract class MailEventService extends BaseService {
 
     @SuppressWarnings("unchecked")
     private void processNewExpressions() throws ActionFailedException {
-        responseTo(MailTag.RESP_READY_FOR_EXPRESSIONS, BaseCommTag.VAL_OK.name());
-        System.out.println(this.getClass().getName() + ": Vor requestTo...");
+        responseTo(MailTag.RESP_READY_FOR_EXPRESSIONS, MailTag.VAL_OK.name());
         String type = requestTo(MailTag.REQ_EXPRESSION_TYPE, MailTag.RESP_EXPRESSION_TYPE);
-        System.out.println(this.getClass().getName() + ": Nach requestTo...");
         DataObject dataObject = receiveDataObject();
         if (null != dataObject && null != dataObject.getList() && dataObject.getList().size() > 0) {
             if (MailDestinations.class.getName().equals(type)) {
@@ -184,12 +176,11 @@ public abstract class MailEventService extends BaseService {
                 addInterestingHeaders((List<String>) dataObject.getList());
             }
         }
-        System.out.println("Nach Empfang interestingHeaders.");
     }
 
     @SuppressWarnings("unchecked")
     private void processNewEvents() throws ActionFailedException {
-        responseTo(MailTag.RESP_READY_FOR_EVENTS, BaseCommTag.VAL_OK.name());
+        responseTo(MailTag.RESP_READY_FOR_EVENTS, MailTag.VAL_OK.name());
         DataObject dataObject = receiveDataObject();
         if (null != dataObject && null != dataObject.getList() && dataObject.getList().size() > 0) {
             addInterestingEventNames((List<String>) dataObject.getList());
