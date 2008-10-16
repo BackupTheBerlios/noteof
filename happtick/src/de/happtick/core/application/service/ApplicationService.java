@@ -5,16 +5,12 @@ import java.util.List;
 
 import de.happtick.core.MasterTable;
 import de.happtick.core.enumeration.ApplicationTag;
-import de.happtick.core.events.ApplicationAlarmEvent;
-import de.happtick.core.events.ApplicationErrorEvent;
-import de.happtick.core.events.ApplicationEventEvent;
-import de.happtick.core.events.ApplicationLogEvent;
-import de.happtick.core.events.ApplicationStartEvent;
-import de.happtick.core.events.ApplicationStopEvent;
-import de.happtick.core.interfaces.AlarmEvent;
-import de.happtick.core.interfaces.ErrorEvent;
-import de.happtick.core.interfaces.EventEvent;
-import de.happtick.core.interfaces.LogEvent;
+import de.happtick.core.events.ActionEvent;
+import de.happtick.core.events.AlarmEvent;
+import de.happtick.core.events.ErrorEvent;
+import de.happtick.core.events.LogEvent;
+import de.happtick.core.events.StartEvent;
+import de.happtick.core.events.StopEvent;
 import de.notEOF.core.enumeration.EventType;
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.interfaces.NotEOFEvent;
@@ -28,15 +24,16 @@ public class ApplicationService extends BaseService {
     private String startId;
     private AlarmEvent lastAlarmEvent;
     private ErrorEvent lastErrorEvent;
-    private EventEvent lastEventEvent;
+    private ActionEvent lastActionEvent;
     private LogEvent lastLogEvent;
-    private ApplicationStopEvent stopEvent;
-    private ApplicationStartEvent startEvent;
+    private StopEvent stopEvent;
+    private StartEvent startEvent;
 
     private int exitCode = 0;
 
     /**
-     * This method is called by BaseService directly when the connection with client is established.
+     * This method is called by BaseService directly when the connection with
+     * client is established.
      */
     public void implementationFirstSteps() {
         MasterTable.addService(this);
@@ -69,7 +66,8 @@ public class ApplicationService extends BaseService {
     }
 
     /**
-     * Indicates whether the LifeSignSystem is active for this service and its clients.
+     * Indicates whether the LifeSignSystem is active for this service and its
+     * clients.
      */
     @Override
     public boolean isLifeSignSystemActive() {
@@ -88,7 +86,7 @@ public class ApplicationService extends BaseService {
         if (eventType.equals(EventType.EVENT_ERROR))
             return lastErrorEvent;
         if (eventType.equals(EventType.EVENT_EVENT))
-            return lastEventEvent;
+            return lastActionEvent;
         if (eventType.equals(EventType.EVENT_LOG))
             return lastLogEvent;
         if (eventType.equals(EventType.EVENT_START))
@@ -108,23 +106,24 @@ public class ApplicationService extends BaseService {
         if (event.getClass().equals(ErrorEvent.class)) {
             lastErrorEvent = (ErrorEvent) event;
         }
-        if (event.getClass().equals(EventEvent.class)) {
-            lastEventEvent = (EventEvent) event;
+        if (event.getClass().equals(ActionEvent.class)) {
+            lastActionEvent = (ActionEvent) event;
         }
         if (event.getClass().equals(LogEvent.class)) {
             lastLogEvent = (LogEvent) event;
         }
-        if (event.getClass().equals(ApplicationStopEvent.class)) {
-            stopEvent = (ApplicationStopEvent) event;
+        if (event.getClass().equals(StopEvent.class)) {
+            stopEvent = (StopEvent) event;
         }
-        if (event.getClass().equals(ApplicationStartEvent.class)) {
-            startEvent = (ApplicationStartEvent) event;
+        if (event.getClass().equals(StartEvent.class)) {
+            startEvent = (StartEvent) event;
         }
         Server.getInstance().updateObservers(this, event);
     }
 
     /**
-     * Here service part of the communication acts between an application client and an application service is implemented.
+     * Here service part of the communication acts between an application client
+     * and an application service is implemented.
      */
     @Override
     public void processClientMsg(Enum<?> incomingMsgEnum) throws ActionFailedException {
@@ -143,40 +142,64 @@ public class ApplicationService extends BaseService {
         // LOG event
         if (incomingMsgEnum.equals(ApplicationTag.PROCESS_NEW_LOG)) {
             String text = requestTo(ApplicationTag.REQ_LOG_TEXT, ApplicationTag.RESP_LOG_TEXT);
-            updateEvent(new ApplicationLogEvent(text));
+            NotEOFEvent event = new LogEvent();
+            event.addAttribute("information", text);
+            updateEvent(event);
         }
 
         // ERROR event
         if (incomingMsgEnum.equals(ApplicationTag.PROCESS_NEW_ERROR)) {
-            Long id = Util.parseLong(requestTo(ApplicationTag.REQ_ERROR_ID, ApplicationTag.RESP_ERROR_ID), -1);
-            int level = Util.parseInt(requestTo(ApplicationTag.REQ_ERROR_LEVEL, ApplicationTag.RESP_ERROR_LEVEL), -1);
+            String id = requestTo(ApplicationTag.REQ_ERROR_ID, ApplicationTag.RESP_ERROR_ID);
+            String level = requestTo(ApplicationTag.REQ_ERROR_LEVEL, ApplicationTag.RESP_ERROR_LEVEL);
             String description = requestTo(ApplicationTag.REQ_ERROR_TEXT, ApplicationTag.RESP_ERROR_TEXT);
-            updateEvent(new ApplicationErrorEvent(id, level, description));
+            NotEOFEvent event = new ErrorEvent();
+            event.addAttribute("description", description);
+            event.addAttribute("errorId", id);
+            event.addAttribute("level", level);
+            updateEvent(event);
         }
 
         // ALARM event
         if (incomingMsgEnum.equals(ApplicationTag.PROCESS_NEW_ALARM)) {
-            int type = Util.parseInt(requestTo(ApplicationTag.REQ_ALARM_TYPE, ApplicationTag.RESP_ALARM_TYPE), -1);
-            int level = Util.parseInt(requestTo(ApplicationTag.REQ_ALARM_LEVEL, ApplicationTag.RESP_ALARM_LEVEL), -1);
+            String type = requestTo(ApplicationTag.REQ_ALARM_TYPE, ApplicationTag.RESP_ALARM_TYPE);
+            String level = requestTo(ApplicationTag.REQ_ALARM_LEVEL, ApplicationTag.RESP_ALARM_LEVEL);
             String text = requestTo(ApplicationTag.REQ_ALARM_TEXT, ApplicationTag.RESP_ALARM_TEXT);
-            updateEvent(new ApplicationAlarmEvent(type, level, text));
+            NotEOFEvent event = new AlarmEvent();
+            event.addAttribute("description", text);
+            event.addAttribute("level", level);
+            event.addAttribute("type", type);
+            updateEvent(event);
         }
 
-        // EVENT event
+        // ACTION event
         if (incomingMsgEnum.equals(ApplicationTag.PROCESS_NEW_EVENT)) {
-            Long id = Util.parseLong(requestTo(ApplicationTag.REQ_EVENT_ID, ApplicationTag.RESP_EVENT_ID), -1);
+            String id = requestTo(ApplicationTag.REQ_EVENT_ID, ApplicationTag.RESP_EVENT_ID);
             String information = requestTo(ApplicationTag.REQ_EVENT_TEXT, ApplicationTag.RESP_EVENT_TEXT);
-            updateEvent(new ApplicationEventEvent(id, information));
+            NotEOFEvent event = new ActionEvent();
+            event.addAttribute("information", information);
+            event.addAttribute("eventId", id);
+            updateEvent(event);
         }
 
+        // STOP event
         if (incomingMsgEnum.equals(ApplicationTag.PROCESS_STOP_EVENT)) {
             this.exitCode = Util.parseInt(requestTo(ApplicationTag.REQ_EXIT_CODE, ApplicationTag.RESP_EXIT_CODE), -1);
-            updateEvent(new ApplicationStopEvent(this.getServiceId(), this.getApplicationId(), exitCode));
+            NotEOFEvent event = new StopEvent();
+            event.addAttribute("applicationId", String.valueOf(this.applicationId));
+            event.addAttribute("clientNetId", String.valueOf(super.getClientNetId()));
+            event.addAttribute("startId", this.startId);
+            event.addAttribute("exitCode", String.valueOf(exitCode));
+            updateEvent(event);
             writeMsg(ApplicationTag.INFO_TRUE);
         }
 
+        // START event
         if (incomingMsgEnum.equals(ApplicationTag.PROCESS_START_WORK_EVENT)) {
-            updateEvent(new ApplicationStartEvent(this.getServiceId(), this.getApplicationId()));
+            NotEOFEvent event = new StartEvent();
+            event.addAttribute("applicationId", String.valueOf(this.applicationId));
+            event.addAttribute("clientNetId", String.valueOf(super.getClientNetId()));
+            event.addAttribute("startId", this.startId);
+            updateEvent(event);
         }
 
         // Request for start allowance
@@ -187,7 +210,7 @@ public class ApplicationService extends BaseService {
 
     public List<EventType> getObservedEvents() {
         List<EventType> observedTypes = new ArrayList<EventType>();
-        observedTypes.add(EventType.EVENT_ALL_TYPES);
+        observedTypes.add(EventType.EVENT_ANY_TYPE);
         return observedTypes;
     }
 

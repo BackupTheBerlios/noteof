@@ -1,33 +1,17 @@
 package de.notEOF.core.event;
 
-import java.util.Date;
-
 import de.notEOF.core.enumeration.EventType;
-import de.notEOF.core.interfaces.StartEvent;
+import de.notEOF.core.interfaces.NotEOFEvent;
 
-public class ServiceStartEvent implements StartEvent {
-
-    private Date startDate = new Date();
-    private String serviceId;
-
-    public ServiceStartEvent(String serviceId) {
-        this.serviceId = serviceId;
-    }
+public class ServiceStartEvent extends NotEOFEventBase implements NotEOFEvent {
 
     public EventType getEventType() {
         return EventType.EVENT_START;
     }
 
-    public Date getStartDate() {
-        return this.startDate;
-    }
-
-    public void setServiceId(String serviceId) {
-        this.serviceId = serviceId;
-    }
-
-    public String getServiceId() {
-        return this.serviceId;
+    protected void initDescriptions() {
+        descriptions.put("startDate", "[Type: Date] Date when the service started. Milliseconds of Java.Date.");
+        descriptions.put("serviceId", "[Type: String] Is the service id of the service which has started.");
     }
 
 }

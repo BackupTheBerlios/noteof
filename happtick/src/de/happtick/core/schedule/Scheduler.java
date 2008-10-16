@@ -10,12 +10,11 @@ import de.happtick.core.MasterTable;
 import de.happtick.core.application.service.ApplicationService;
 import de.happtick.core.enumeration.HapptickAlarmLevel;
 import de.happtick.core.enumeration.HapptickAlarmType;
-import de.happtick.core.events.ApplicationAlarmEvent;
-import de.happtick.core.events.ApplicationStopEvent;
+import de.happtick.core.events.AlarmEvent;
+import de.happtick.core.events.StopEvent;
 import de.happtick.core.start.service.StartService;
 import de.notEOF.configuration.LocalConfiguration;
 import de.notEOF.core.enumeration.EventType;
-import de.notEOF.core.event.ServiceStopEvent;
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.interfaces.EventObservable;
 import de.notEOF.core.interfaces.EventObserver;
@@ -234,9 +233,13 @@ public class Scheduler {
                                             + applicationConfiguration.getApplicationId());
                             stopped = true;
                             // send to all observer an alarm event
-                            updateAllObserver(eventObservers, null, new ApplicationAlarmEvent(HapptickAlarmType.INTERNAL_CHAIN_ALARM.ordinal(),
-                                    HapptickAlarmLevel.ALARM_LEVEL_SIGNIFICANT.ordinal(), "Anwendung als Teil einer Kette wurde evtl. nicht gestartet. Id: "
-                                            + applicationConfiguration.getApplicationId()));
+                            NotEOFEvent event = new AlarmEvent();
+                            event.addAttribute("type", String.valueOf(HapptickAlarmType.INTERNAL_CHAIN_ALARM.ordinal()));
+                            event.addAttribute("level", String.valueOf(HapptickAlarmLevel.ALARM_LEVEL_SIGNIFICANT.ordinal()));
+
+                            event.addAttribute("description", "Anwendung als Teil einer Kette wurde evtl. nicht gestartet. Id: "
+                                    + applicationConfiguration.getApplicationId());
+                            updateAllObserver(eventObservers, null, event);
                             // stop working
                             break;
                         }
@@ -252,8 +255,13 @@ public class Scheduler {
 
                         // Fire event to all observer
                         // probably a chain runner is waiting...
-                        updateAllObserver(eventObservers, null, new ApplicationStopEvent(startService.getServiceId(), applicationConfiguration
-                                .getApplicationId(), applicationService.getExitCode()));
+                        NotEOFEvent event = new StopEvent();
+                        event.addAttribute("applicationId", String.valueOf(applicationConfiguration.getApplicationId()));
+                        event.addAttribute("startId", startService.getStartId());
+                        event.addAttribute("clientNetId", startService.getClientNetId());
+                        event.addAttribute("serviceId", startService.getServiceId());
+                        event.addAttribute("exitCode", String.valueOf(applicationService.getExitCode()));
+                        updateAllObserver(eventObservers, null, event);
 
                         // start dependent applications
                         for (Long applId : applicationConfiguration.getApplicationsStartAfter()) {
@@ -279,7 +287,7 @@ public class Scheduler {
                     }
 
                 }
-            } catch (InterruptedException e) {
+            } catch (Exception e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             }
@@ -318,16 +326,20 @@ public class Scheduler {
         private boolean stopped = false;
 
         protected void stop() {
+            ChainStarter bla = new ChainStarter();
+            bla.getObservedEvents();
             stopped = true;
         }
 
-        private void blabla() {
-            // StartService from MasterTable by clientIp
-            ApplicationConfiguration applConf = MasterTable.getApplicationConfiguration(new Long(100));
-            String clientIp = applConf.getClientIp();
-            StartService startService = MasterTable.getStartServiceByIp(clientIp);
-
-        }
+        // private void blabla() {
+        // // StartService from MasterTable by clientIp
+        // ApplicationConfiguration applConf =
+        // MasterTable.getApplicationConfiguration(new Long(100));
+        // String clientIp = applConf.getClientIp();
+        // StartService startService =
+        // MasterTable.getStartServiceByIp(clientIp);
+        //
+        // }
 
         public void run() {
             boolean breaked = false;
@@ -357,6 +369,7 @@ public class Scheduler {
         // List of application id's decides the order of application starts
         private boolean stopped = false;
         private boolean loopChain;
+
         private String stoppedServiceId;
 
         public ChainStarter() {
@@ -368,6 +381,10 @@ public class Scheduler {
             }
         }
 
+        public String getStoppedServiceId() {
+            return stoppedServiceId;
+        }
+
         // TODO chain startet runner. runner nicht vergessen in die runnerliste
         // einzutragen, da sonst der Müllmann nicht aufräumen kann.
 
@@ -376,6 +393,7 @@ public class Scheduler {
                 // TODO Noch offen...
                 do {
                     for (ChainConfiguration chainConf : MasterTable.getChainConfigurationsAsList()) {
+                        System.out.println(chainConf.getChainId());
                     }
                 } while (!stopped && loopChain);
             } catch (ActionFailedException afx) {
@@ -396,7 +414,9 @@ public class Scheduler {
         public void update(Service service, NotEOFEvent event) {
             if (!event.getEventType().equals(EventType.EVENT_STOP))
                 return;
-            stoppedServiceId = ((ServiceStopEvent) event).getServiceId();
+            stoppedServiceId = event.getAttribute("serviceId");
+            String stopDate = event.getAttribute("stopDate");
+            System.out.println(stopDate);
         }
 
     }

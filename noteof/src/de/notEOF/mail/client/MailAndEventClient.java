@@ -11,19 +11,19 @@ import de.notEOF.core.interfaces.NotEOFEvent;
 import de.notEOF.core.interfaces.TimeOut;
 import de.notEOF.mail.NotEOFMail;
 import de.notEOF.mail.enumeration.MailTag;
-import de.notEOF.mail.interfaces.MailEventRecipient;
+import de.notEOF.mail.interfaces.MailAndEventRecipient;
 import de.notEOF.mail.interfaces.MailMatchExpressions;
 
-public abstract class MailEventClient extends BaseClient {
+public abstract class MailAndEventClient extends BaseClient {
 
-    private MailEventAcceptor acceptor;
-    private MailEventRecipient recipient;
+    private MailAndEventAcceptor acceptor;
+    private MailAndEventRecipient recipient;
 
-    public MailEventClient(Socket socketToServer, TimeOut timeout, String[] args) throws ActionFailedException {
+    public MailAndEventClient(Socket socketToServer, TimeOut timeout, String[] args) throws ActionFailedException {
         super(socketToServer, timeout, args);
     }
 
-    public MailEventClient(String ip, int port, TimeOut timeout, String... args) throws ActionFailedException {
+    public MailAndEventClient(String ip, int port, TimeOut timeout, String... args) throws ActionFailedException {
         super(ip, port, timeout, args);
     }
 
@@ -34,18 +34,18 @@ public abstract class MailEventClient extends BaseClient {
         acceptor.stop();
     }
 
-    public void awaitMailEvent(MailEventRecipient recipient) throws ActionFailedException {
+    public void awaitMailOrEvent(MailAndEventRecipient recipient) throws ActionFailedException {
         this.recipient = recipient;
         activateAccepting();
     }
 
     private void activateAccepting() throws ActionFailedException {
-        acceptor = new MailEventAcceptor();
+        acceptor = new MailAndEventAcceptor();
         Thread acceptorThread = new Thread(acceptor);
         acceptorThread.start();
     }
 
-    private class MailEventAcceptor implements Runnable {
+    private class MailAndEventAcceptor implements Runnable {
         private boolean stopped = false;
 
         public boolean isStopped() {
@@ -59,9 +59,15 @@ public abstract class MailEventClient extends BaseClient {
         public void run() {
             try {
                 while (!stopped) {
-                    awaitRequest(MailTag.REQ_AWAITING_MAIL);
-                    NotEOFMail mail = getTalkLine().receiveMail();
-                    recipient.processMail(mail);
+                    awaitRequest(MailTag.REQ_READY_FOR_ACTION);
+                    if (MailTag.VAL_ACTION_MAIL.equals(readMsg())) {
+                        NotEOFMail mail = getTalkLine().receiveMail();
+                        recipient.processMail(mail);
+                    }
+                    if (MailTag.VAL_ACTION_EVENT.equals(readMsg())) {
+                        NotEOFEvent event = getTalkLine().receiveEvent();
+                        recipient.processEvent(event);
+                    }
                 }
                 close();
             } catch (Exception e) {
@@ -74,7 +80,6 @@ public abstract class MailEventClient extends BaseClient {
     public void addInterestingEvents(List<NotEOFEvent> events) throws ActionFailedException {
         if (MailTag.VAL_OK.name().equals(requestTo(MailTag.REQ_READY_FOR_EVENTS, MailTag.RESP_READY_FOR_EVENTS))) {
             DataObject dataObject = new DataObject();
-
             List<String> eventClassNames = new ArrayList<String>();
             for (NotEOFEvent event : events) {
                 String className = event.getClass().getName();

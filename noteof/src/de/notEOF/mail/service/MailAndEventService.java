@@ -23,7 +23,7 @@ import de.notEOF.mail.enumeration.MailTag;
  * 
  * @author Dirk
  */
-public abstract class MailEventService extends BaseService {
+public abstract class MailAndEventService extends BaseService {
 
     private MailDestinations mailDestinations;
     private MailHeaders mailHeaders;

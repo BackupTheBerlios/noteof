@@ -11,16 +11,15 @@ import de.happtick.configuration.ApplicationConfiguration;
 import de.happtick.configuration.ChainConfiguration;
 import de.happtick.configuration.EventConfiguration;
 import de.happtick.core.application.service.ApplicationService;
-import de.happtick.core.events.ApplicationStopEvent;
+import de.happtick.core.events.StopEvent;
 import de.happtick.core.exception.HapptickException;
 import de.happtick.core.start.service.StartService;
 import de.notEOF.configuration.LocalConfiguration;
 import de.notEOF.core.enumeration.EventType;
-import de.notEOF.core.event.ServiceStopEvent;
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.interfaces.NotEOFConfiguration;
+import de.notEOF.core.interfaces.NotEOFEvent;
 import de.notEOF.core.interfaces.Service;
-import de.notEOF.core.interfaces.StopEvent;
 import de.notEOF.core.logging.LocalLog;
 import de.notEOF.core.server.Server;
 import de.notEOF.core.util.Util;
@@ -342,7 +341,7 @@ public class MasterTable {
      * @param serviceId
      *            Is the key of the service what must be removed.
      */
-    public synchronized static void removeService(Service service) {
+    public synchronized static void removeService(Service service) throws HapptickException {
         while (inAction)
             try {
                 Thread.sleep(100);
@@ -351,22 +350,37 @@ public class MasterTable {
             }
         inAction = true;
 
-        // try for ApplicationServices
-        if (service.getClass().isAssignableFrom(ApplicationService.class)) {
-            Long applicationId = ((ApplicationService) service).getApplicationId();
-            StopEvent stopEvent = (ApplicationStopEvent) ((ApplicationService) service).getLastEvent(EventType.EVENT_STOP);
-            if (null == stopEvent) {
-                stopEvent = new ApplicationStopEvent(service.getServiceId(), applicationId, 0);
+        try {
+            // try for ApplicationServices
+            if (service.getClass().isAssignableFrom(ApplicationService.class)) {
+                Long applicationId = ((ApplicationService) service).getApplicationId();
+                String clientNetId = ((ApplicationService) service).getClientNetId();
+                String startId = ((ApplicationService) service).getStartId();
+                NotEOFEvent stopEvent = (StopEvent) ((ApplicationService) service).getLastEvent(EventType.EVENT_STOP);
+                if (null == stopEvent) {
+                    stopEvent = new StopEvent();
+                    stopEvent.addAttribute("applicationId", String.valueOf(applicationId));
+                    stopEvent.addAttribute("clientNetId", clientNetId);
+                    stopEvent.addAttribute("startId", startId);
+                    stopEvent.addAttribute("exitCode", "0");
+                }
+                applicationServices.remove(service.getServiceId());
+                server.updateObservers(null, stopEvent);
             }
-            applicationServices.remove(service.getServiceId());
-            server.updateObservers(null, stopEvent);
-        }
 
-        // try all StartServices
-        if (service.getClass().isAssignableFrom(StartService.class)) {
-            StopEvent stopEvent = new ServiceStopEvent(service.getServiceId());
-            startServices.remove(service.getServiceId());
-            server.updateObservers(null, stopEvent);
+            // try all StartServices
+            if (service.getClass().isAssignableFrom(StartService.class)) {
+                String clientNetId = service.getClientNetId();
+                StopEvent stopEvent = new StopEvent();
+                stopEvent.addAttribute("applicationId", "");
+                stopEvent.addAttribute("startId", "");
+                stopEvent.addAttribute("clientNetId", clientNetId);
+                stopEvent.addAttribute("exitCode", "0");
+                startServices.remove(service.getServiceId());
+                server.updateObservers(null, stopEvent);
+            }
+        } catch (ActionFailedException e) {
+            throw new HapptickException(402L, e);
         }
 
         inAction = false;

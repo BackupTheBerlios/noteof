@@ -2,17 +2,18 @@ package de.happtick.test;
 
 import de.happtick.application.client.HapptickApplication;
 import de.happtick.core.exception.HapptickException;
+import de.notEOF.core.interfaces.NotEOFEvent;
 import de.notEOF.core.logging.LocalLog;
 import de.notEOF.mail.MailDestinations;
 import de.notEOF.mail.MailHeaders;
 import de.notEOF.mail.NotEOFMail;
-import de.notEOF.mail.interfaces.MailEventRecipient;
+import de.notEOF.mail.interfaces.MailAndEventRecipient;
 
-public class MailRecipient implements MailEventRecipient {
+public class HapptickMailRecipient implements MailAndEventRecipient {
 
     private HapptickApplication appl;
 
-    public MailRecipient(String... args) throws HapptickException {
+    public HapptickMailRecipient(String... args) throws HapptickException {
         appl = new HapptickApplication(0, "localhost", 3000, args);
         appl.useMailsAndEvents(this);
         MailDestinations destinations = new MailDestinations();
@@ -43,7 +44,7 @@ public class MailRecipient implements MailEventRecipient {
 
     public static void main(String... args) throws HapptickException {
 
-        new MailRecipient(args);
+        new HapptickMailRecipient(args);
 
         while (true) {
             try {
@@ -52,5 +53,17 @@ public class MailRecipient implements MailEventRecipient {
                 break;
             }
         }
+    }
+
+    @Override
+    public void processEvent(NotEOFEvent event) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void processEventException(Exception e) {
+        // TODO Auto-generated method stub
+
     }
 }

@@ -4,9 +4,11 @@ import java.util.List;
 
 import de.happtick.configuration.ApplicationConfiguration;
 import de.happtick.core.MasterTable;
+import de.happtick.core.exception.HapptickException;
 import de.notEOF.core.enumeration.EventType;
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.service.BaseService;
+import de.notIOC.logging.LocalLog;
 
 public class StartService extends BaseService {
 
@@ -24,7 +26,11 @@ public class StartService extends BaseService {
 
     public void implementationLastSteps() {
         // deregister from master tables
-        MasterTable.removeService(this);
+        try {
+            MasterTable.removeService(this);
+        } catch (HapptickException e) {
+            LocalLog.error("Fehler bei Beenden des StartService. ServiceId: " + this.serviceId + "; ClientIp: " + clientIp + "; Client StartId: " + startId);
+        }
     }
 
     public String getClientIp() {

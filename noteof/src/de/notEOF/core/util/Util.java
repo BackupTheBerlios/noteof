@@ -362,7 +362,7 @@ public class Util {
                 // but only inform observer, when event in his list
                 if (null != eventObserver.getObservedEvents()) {
                     for (EventType type : eventObserver.getObservedEvents()) {
-                        if (type.equals(EventType.EVENT_ALL_TYPES) || type.equals(event.getEventType())) {
+                        if (type.equals(EventType.EVENT_ANY_TYPE) || type.equals(event.getEventType())) {
                             eventObserver.update(service, event);
                             // break for inner loop
                             break;

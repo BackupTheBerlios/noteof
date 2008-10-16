@@ -9,6 +9,8 @@ public interface Service {
 
     public String getServiceId();
 
+    public String getClientNetId();
+
     public Thread getThread();
 
     public void setThread(Thread serviceThread);

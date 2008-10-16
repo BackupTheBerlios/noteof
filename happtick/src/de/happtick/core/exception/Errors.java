@@ -63,8 +63,9 @@ public class Errors {
         errorList.put(300L, "");
 
         // MasterTable errors / Configuration
-        errorList.put(400L, "HinzufÃ¼gen eines Service ist fehlgeschlagen. Falscher Service-Typ.");
+        errorList.put(400L, "Fehler bei Hinzufügen eines Service. Falscher Service-Typ.");
         errorList.put(401L, "Fehler bei Lesen der Client-Konfiguration.");
+        errorList.put(402L, "Fehler bei Entfernen eines Service.");
 
         // Scheduler faults
         errorList.put(500L, "Ermitteln des Startservice zur Anwendung ist fehlgeschlagen.");

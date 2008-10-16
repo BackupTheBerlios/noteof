@@ -2,12 +2,12 @@ package de.happtick.core.application.client;
 
 import de.happtick.core.application.service.ApplicationService;
 import de.happtick.core.enumeration.ApplicationTag;
+import de.happtick.core.events.ActionEvent;
+import de.happtick.core.events.AlarmEvent;
+import de.happtick.core.events.ErrorEvent;
+import de.happtick.core.events.LogEvent;
 import de.happtick.core.exception.HapptickException;
-import de.happtick.core.interfaces.AlarmEvent;
 import de.happtick.core.interfaces.ClientObserver;
-import de.happtick.core.interfaces.ErrorEvent;
-import de.happtick.core.interfaces.EventEvent;
-import de.happtick.core.interfaces.LogEvent;
 import de.notEOF.core.client.BaseClient;
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.util.ArgsParser;
@@ -173,9 +173,9 @@ public class ApplicationClient extends BaseClient {
         // inform service that a new error will follow
         try {
             writeMsg(ApplicationTag.PROCESS_NEW_ERROR);
-            awaitRequestAnswerImmediate(ApplicationTag.REQ_ERROR_ID, ApplicationTag.RESP_ERROR_ID, String.valueOf(event.getId()));
-            awaitRequestAnswerImmediate(ApplicationTag.REQ_ERROR_LEVEL, ApplicationTag.RESP_ERROR_LEVEL, String.valueOf(event.getLevel()));
-            awaitRequestAnswerImmediate(ApplicationTag.REQ_ERROR_TEXT, ApplicationTag.RESP_ERROR_TEXT, event.getDescription());
+            awaitRequestAnswerImmediate(ApplicationTag.REQ_ERROR_ID, ApplicationTag.RESP_ERROR_ID, event.getAttribute("errorId"));
+            awaitRequestAnswerImmediate(ApplicationTag.REQ_ERROR_LEVEL, ApplicationTag.RESP_ERROR_LEVEL, event.getAttribute("level"));
+            awaitRequestAnswerImmediate(ApplicationTag.REQ_ERROR_TEXT, ApplicationTag.RESP_ERROR_TEXT, event.getAttribute("description"));
         } catch (ActionFailedException e) {
             throw new HapptickException(202L, e);
         }
@@ -191,12 +191,12 @@ public class ApplicationClient extends BaseClient {
      *            Object of Type EventEvent
      * @throws HapptickException
      */
-    public void sendEvent(EventEvent event) throws HapptickException {
+    public void sendEvent(ActionEvent event) throws HapptickException {
         // inform service that a new event will follow
         try {
             writeMsg(ApplicationTag.PROCESS_NEW_EVENT);
-            awaitRequestAnswerImmediate(ApplicationTag.REQ_EVENT_ID, ApplicationTag.RESP_EVENT_ID, String.valueOf(event.getId()));
-            awaitRequestAnswerImmediate(ApplicationTag.REQ_EVENT_TEXT, ApplicationTag.RESP_EVENT_TEXT, event.getInformation());
+            awaitRequestAnswerImmediate(ApplicationTag.REQ_EVENT_ID, ApplicationTag.RESP_EVENT_ID, event.getAttribute("information"));
+            awaitRequestAnswerImmediate(ApplicationTag.REQ_EVENT_TEXT, ApplicationTag.RESP_EVENT_TEXT, event.getAttribute("eventId"));
         } catch (ActionFailedException e) {
             throw new HapptickException(203L, e);
         }
@@ -215,9 +215,9 @@ public class ApplicationClient extends BaseClient {
         // inform service that a new alarm will follow
         try {
             writeMsg(ApplicationTag.PROCESS_NEW_ALARM);
-            awaitRequestAnswerImmediate(ApplicationTag.REQ_ALARM_TYPE, ApplicationTag.RESP_ALARM_TYPE, String.valueOf(alarm.getType()));
-            awaitRequestAnswerImmediate(ApplicationTag.REQ_ALARM_LEVEL, ApplicationTag.RESP_ALARM_LEVEL, String.valueOf(alarm.getLevel()));
-            awaitRequestAnswerImmediate(ApplicationTag.REQ_ALARM_TEXT, ApplicationTag.RESP_ALARM_TEXT, alarm.getDescription());
+            awaitRequestAnswerImmediate(ApplicationTag.REQ_ALARM_TYPE, ApplicationTag.RESP_ALARM_TYPE, alarm.getAttribute("type"));
+            awaitRequestAnswerImmediate(ApplicationTag.REQ_ALARM_LEVEL, ApplicationTag.RESP_ALARM_LEVEL, alarm.getAttribute("level"));
+            awaitRequestAnswerImmediate(ApplicationTag.REQ_ALARM_TEXT, ApplicationTag.RESP_ALARM_TEXT, alarm.getAttribute("description"));
         } catch (ActionFailedException e) {
             throw new HapptickException(204L, e);
         }
@@ -235,7 +235,7 @@ public class ApplicationClient extends BaseClient {
         // inform service that a new alarm will follow
         try {
             writeMsg(ApplicationTag.PROCESS_NEW_LOG);
-            awaitRequestAnswerImmediate(ApplicationTag.REQ_LOG_TEXT, ApplicationTag.RESP_LOG_TEXT, log.getText());
+            awaitRequestAnswerImmediate(ApplicationTag.REQ_LOG_TEXT, ApplicationTag.RESP_LOG_TEXT, log.getAttribute("information"));
         } catch (ActionFailedException e) {
             throw new HapptickException(205L, e);
         }

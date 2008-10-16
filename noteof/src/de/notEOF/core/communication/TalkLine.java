@@ -9,6 +9,7 @@ import java.util.Observable;
 import java.util.Observer;
 
 import de.notEOF.core.exception.ActionFailedException;
+import de.notEOF.core.interfaces.NotEOFEvent;
 import de.notEOF.core.util.Util;
 import de.notEOF.mail.NotEOFMail;
 
@@ -303,6 +304,31 @@ public class TalkLine implements Observer {
 
     public void update(Observable arg0, Object arg1) {
         socketLayer.close();
+    }
+
+    public NotEOFEvent receiveEvent() throws ActionFailedException {
+        DataObject contentObject = receiveDataObject();
+        Map<String, String> content = contentObject.getMap();
+
+        NotEOFMail mail = new NotEOFMail();
+        mail.setToClientNetId(content.get("toClientNetId"));
+        mail.setHeader(content.get("header"));
+        mail.setMailId(content.get("mailId"));
+        mail.setDestination(content.get("destination"));
+
+        Date generated = new Date();
+        Long dateAsLong = Util.parseLong(content.get("generated"), 0);
+        generated.setTime(dateAsLong);
+        mail.setGenerated(generated);
+
+        mail.setBodyText(content.get("bodyText"));
+
+        String isDataObjectSet = readMsg();
+        if ("TRUE".equals(isDataObjectSet)) {
+            DataObject bodyData = receiveDataObject();
+            mail.setBodyData(bodyData);
+        }
+        return null;
     }
 
     public NotEOFMail receiveMail() throws ActionFailedException {

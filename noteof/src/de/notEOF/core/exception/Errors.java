@@ -98,6 +98,9 @@ public class Errors {
         errorList.put(1100L, "Unvollständige Mail.");
         errorList.put(1101L, "Problem bei Zuordnung einer Mail zu einem Service.");
         errorList.put(1102L, "Problem bei Zuordnung erwarteter Mails an Client.");
+
+        // Events
+        errorList.put(1150L, "Unbekannter Schluessel bei Hinzufuegen eines Wertes. Schluessel: ");
     }
 
     /*

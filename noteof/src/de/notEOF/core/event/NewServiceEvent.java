@@ -1,23 +1,13 @@
 package de.notEOF.core.event;
 
 import de.notEOF.core.enumeration.EventType;
-import de.notEOF.core.interfaces.Service;
-import de.notEOF.core.interfaces.ServiceChangeEvent;
+import de.notEOF.core.interfaces.NotEOFEvent;
 
-public class NewServiceEvent implements ServiceChangeEvent {
+public class NewServiceEvent extends NotEOFEventBase implements NotEOFEvent {
 
-    private Service service;
-
-    public NewServiceEvent(Service service) {
-        this.service = service;
-    }
-
-    public Service getService() {
-        return this.service;
-    }
-
-    public void setService(Service service) {
-        this.service = service;
+    @Override
+    protected void initDescriptions() {
+        descriptions.put("serviceId", "[Type: String] Is the service id of the service which was created.");
     }
 
     public EventType getEventType() {

@@ -9,14 +9,10 @@ import de.notEOF.core.communication.TalkLine;
 import de.notEOF.core.constant.NotEOFConstants;
 import de.notEOF.core.enumeration.BaseCommTag;
 import de.notEOF.core.enumeration.EventType;
-import de.notEOF.core.event.ServiceStartEvent;
-import de.notEOF.core.event.ServiceStopEvent;
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.interfaces.EventObserver;
 import de.notEOF.core.interfaces.NotEOFEvent;
 import de.notEOF.core.interfaces.Service;
-import de.notEOF.core.interfaces.StartEvent;
-import de.notEOF.core.interfaces.StopEvent;
 import de.notEOF.core.interfaces.TimeOut;
 import de.notEOF.core.logging.LocalLog;
 import de.notEOF.core.server.Server;
@@ -44,8 +40,6 @@ public abstract class BaseService extends BaseClientOrService implements Service
     private Thread serviceThread;
     private Server server;
     List<EventType> eventTypes;
-    protected StartEvent startEvent;
-    protected StopEvent stopEvent;
     protected String clientNetId;
 
     public boolean isRunning() {
@@ -66,7 +60,6 @@ public abstract class BaseService extends BaseClientOrService implements Service
         setTalkLine(new TalkLine(socketToClient, timeOut.getMillisCommunication()));
         if (isLifeSignSystemActive())
             getTalkLine().activateLifeSignSystem(false);
-        this.startEvent = new ServiceStartEvent(serviceId);
     }
 
     public boolean isConnectedWithClient() {
@@ -234,8 +227,6 @@ public abstract class BaseService extends BaseClientOrService implements Service
         } catch (Exception ex) {
             LocalLog.warn("Verbindung zum Client konnte nicht geschlossen werden. Evtl. bestand zu diesem Zeitpunkt keien Verbindung (mehr).", ex);
         }
-        this.stopEvent = new ServiceStopEvent(this.serviceId);
-        update(this, this.stopEvent);
         try {
             implementationLastSteps();
         } catch (ActionFailedException e) {

@@ -27,7 +27,7 @@ import de.notEOF.core.service.ServiceFinder;
 import de.notEOF.core.util.ArgsParser;
 import de.notEOF.core.util.Util;
 import de.notEOF.mail.NotEOFMail;
-import de.notEOF.mail.service.MailEventService;
+import de.notEOF.mail.service.MailAndEventService;
 import de.notIOC.configuration.ConfigurationManager;
 
 /**
@@ -147,7 +147,9 @@ public class Server implements EventObservable, Runnable {
             serviceThread.start();
 
             // Fire event to all observers which are interested in
-            Util.updateAllObserver(eventObservers, null, new NewServiceEvent(service));
+            NewServiceEvent event = new NewServiceEvent();
+            event.addAttribute("serviceId", service.getServiceId());
+            Util.updateAllObserver(eventObservers, null, event);
         } else {
             // service couldn't be created or found in list by type name
             throw new ActionFailedException(150L, "Service Typ unbekannt.");
@@ -324,7 +326,7 @@ public class Server implements EventObservable, Runnable {
      * @param mail
      *            The message.
      */
-    public void mailToService(NotEOFMail mail, MailEventService service) throws ActionFailedException {
+    public void mailToService(NotEOFMail mail, MailAndEventService service) throws ActionFailedException {
         service.mailToClient(mail);
     }
 
