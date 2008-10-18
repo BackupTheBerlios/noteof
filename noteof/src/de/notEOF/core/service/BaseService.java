@@ -186,6 +186,9 @@ public abstract class BaseService extends BaseClientOrService implements Service
                         // Mails from client are processed directly here in the
                         // base class
                         processMail();
+                    } else if (msg.equals(MailTag.REQ_READY_FOR_EVENT.name())) {
+                        writeMsg(BaseCommTag.VAL_OK);
+                        processEvent();
                     } else {
                         // client/service specific messages are processed in the
                         // method processMsg() which must be implemented
@@ -281,6 +284,20 @@ public abstract class BaseService extends BaseClientOrService implements Service
     public void processMail() throws ActionFailedException {
         NotEOFMail mail = getTalkLine().receiveMail();
         server.postMail(mail, this);
+    }
+
+    /**
+     * When client sends a {@link NotEOFEvent} this method is called by this
+     * base class itself.
+     * <p>
+     * The service forwards the event to the server which informs all observers
+     * about the incoming event.
+     * 
+     * @throws ActionFailedException
+     */
+    public void processEvent() throws ActionFailedException {
+        NotEOFEvent event = getTalkLine().receiveBaseEvent();
+        server.postEvent(event, this);
     }
 
     protected void finalize() {

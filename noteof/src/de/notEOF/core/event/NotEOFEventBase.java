@@ -9,7 +9,7 @@ import de.notEOF.core.interfaces.NotEOFEvent;
 
 public abstract class NotEOFEventBase implements NotEOFEvent {
 
-    private Map<String, String> attributes;
+    protected Map<String, String> attributes;
     protected Map<String, String> descriptions = new HashMap<String, String>();
 
     // forces the derived class to initialize the internal list of descriptions.

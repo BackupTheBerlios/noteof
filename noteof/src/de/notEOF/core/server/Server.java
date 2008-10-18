@@ -319,6 +319,18 @@ public class Server implements EventObservable, Runnable {
     }
 
     /**
+     * Server can be used as post office.
+     * <p>
+     * The server stores incoming messages and informs services by sending an
+     * event. <br>
+     * The services by themself proove if the message is for them. Then they
+     * send it to their clients. <br>
+     */
+    public void postEvent(NotEOFEvent event, Service fromService) {
+        updateObservers(fromService, event);
+    }
+
+    /**
      * Send message directly to a service.
      * 
      * @param service

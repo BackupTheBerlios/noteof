@@ -101,6 +101,7 @@ public class Errors {
 
         // Events
         errorList.put(1150L, "Unbekannter Schluessel bei Hinzufuegen eines Wertes. Schluessel: ");
+        errorList.put(1151L, "Fehler bei Transport eines Events.");
     }
 
     /*

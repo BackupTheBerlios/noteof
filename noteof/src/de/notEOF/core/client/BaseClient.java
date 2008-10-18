@@ -4,7 +4,9 @@ import java.net.Socket;
 
 import de.notEOF.core.BaseClientOrService;
 import de.notEOF.core.communication.TalkLine;
+import de.notEOF.core.enumeration.BaseCommTag;
 import de.notEOF.core.exception.ActionFailedException;
+import de.notEOF.core.interfaces.NotEOFEvent;
 import de.notEOF.core.interfaces.TimeOut;
 import de.notEOF.core.util.Util;
 import de.notEOF.mail.NotEOFMail;
@@ -152,6 +154,10 @@ public abstract class BaseClient extends BaseClientOrService {
     public void sendMail(NotEOFMail mail) throws ActionFailedException {
         writeMsg(MailTag.REQ_READY_FOR_MAIL);
         getTalkLine().sendMail(mail);
+    }
+
+    public void sendEvent(NotEOFEvent event) throws ActionFailedException {
+        writeMsg(MailTag.REQ_READY_FOR_EVENT);
     }
 
     /**

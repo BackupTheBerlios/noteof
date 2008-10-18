@@ -8,6 +8,8 @@ import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
 
+import de.notEOF.core.enumeration.EventType;
+import de.notEOF.core.event.TransportEvent;
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.interfaces.NotEOFEvent;
 import de.notEOF.core.util.Util;
@@ -306,29 +308,23 @@ public class TalkLine implements Observer {
         socketLayer.close();
     }
 
-    public NotEOFEvent receiveEvent() throws ActionFailedException {
-        DataObject contentObject = receiveDataObject();
-        Map<String, String> content = contentObject.getMap();
+    public NotEOFEvent receiveBaseEvent() throws ActionFailedException {
+        try {
+            // receive event type
+            String eventTypeString = readMsg();
+            EventType eventType = EventType.valueOf(eventTypeString);
+            // receive attributes
+            DataObject mapData = receiveDataObject();
+            Map<String, String> attributes = mapData.getMap();
+            // receive descriptions
+            mapData = receiveDataObject();
+            Map<String, String> descriptions = mapData.getMap();
 
-        NotEOFMail mail = new NotEOFMail();
-        mail.setToClientNetId(content.get("toClientNetId"));
-        mail.setHeader(content.get("header"));
-        mail.setMailId(content.get("mailId"));
-        mail.setDestination(content.get("destination"));
-
-        Date generated = new Date();
-        Long dateAsLong = Util.parseLong(content.get("generated"), 0);
-        generated.setTime(dateAsLong);
-        mail.setGenerated(generated);
-
-        mail.setBodyText(content.get("bodyText"));
-
-        String isDataObjectSet = readMsg();
-        if ("TRUE".equals(isDataObjectSet)) {
-            DataObject bodyData = receiveDataObject();
-            mail.setBodyData(bodyData);
+            NotEOFEvent event = new TransportEvent(eventType, attributes, descriptions);
+            return event;
+        } catch (Exception e) {
+            throw new ActionFailedException(1151L, "Generieren des TransportEvents", e);
         }
-        return null;
     }
 
     public NotEOFMail receiveMail() throws ActionFailedException {
@@ -378,5 +374,29 @@ public class TalkLine implements Observer {
             writeMsg("TRUE");
             sendDataObject(mail.getBodyData());
         }
+    }
+
+    /**
+     * Sends an event.
+     * <p>
+     * This method is only able to send basically event datas. The Event must
+     * extended from {@link NotEOFEvent}. Additional members or functionalities
+     * are not supported by this method.
+     * 
+     * @param event
+     *            The event to send.
+     * @throws ActionFailedException
+     */
+    public void sendBaseEvent(NotEOFEvent event) throws ActionFailedException {
+        // send ordinal value of event type
+        writeMsg(String.valueOf(event.getEventType().ordinal()));
+        // send attributes
+        DataObject mapData = new DataObject();
+        mapData.setMap(event.getAttributes());
+        sendDataObject(mapData);
+        // send descriptions
+        mapData = new DataObject();
+        mapData.setMap(event.getAttributeDescriptions());
+        sendDataObject(mapData);
     }
 }

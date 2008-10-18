@@ -65,7 +65,7 @@ public abstract class MailAndEventClient extends BaseClient {
                         recipient.processMail(mail);
                     }
                     if (MailTag.VAL_ACTION_EVENT.equals(readMsg())) {
-                        NotEOFEvent event = getTalkLine().receiveEvent();
+                        NotEOFEvent event = getTalkLine().receiveBaseEvent();
                         recipient.processEvent(event);
                     }
                 }
