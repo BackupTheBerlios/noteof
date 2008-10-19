@@ -24,7 +24,7 @@ import de.notIOC.util.Util;
  */
 public class ConfigurationManager {
 
-    private static String notEOFHome = null;
+    private static String applicationHome = null;
     private static String homeVarName = "NOT_EOF_HOME";
     private static String configFile = "noteof_master.xml";
     private static String configPath = "conf";
@@ -125,38 +125,38 @@ public class ConfigurationManager {
      */
     public static String getApplicationHome() {
         boolean showInfo = false;
-        if (null == notEOFHome) {
+        if (null == applicationHome) {
             showInfo = true;
         }
 
         // Configuration Root depends to Tomcat variable
-        if (notEOFHome == null) {
+        if (applicationHome == null) {
             try {
-                notEOFHome = (String) new InitialContext().lookup("java:comp/env/" + homeVarName);
-                if (notEOFHome != null)
-                    LocalLog.info("Home '" + homeVarName + "' found as initial context: " + notEOFHome);
+                applicationHome = (String) new InitialContext().lookup("java:comp/env/" + homeVarName);
+                if (applicationHome != null)
+                    LocalLog.info("Home '" + homeVarName + "' found as initial context: " + applicationHome);
             } catch (NamingException e) {
             }
         }
         // CFGROOT as VM-environment variable (-DCFGROOT)
-        if (notEOFHome == null) {
-            notEOFHome = System.getProperty(homeVarName);
-            if (notEOFHome != null)
-                LocalLog.info("Home '" + homeVarName + "' found in VM variable: " + notEOFHome);
+        if (applicationHome == null) {
+            applicationHome = System.getProperty(homeVarName);
+            if (applicationHome != null)
+                LocalLog.info("Home '" + homeVarName + "' found in VM variable: " + applicationHome);
         }
         // NOTEOF_HOME as system variable
-        if (notEOFHome == null) {
-            notEOFHome = System.getenv(homeVarName);
-            if (notEOFHome != null)
-                LocalLog.info("Home '" + homeVarName + "' found in system variable: " + notEOFHome);
+        if (applicationHome == null) {
+            applicationHome = System.getenv(homeVarName);
+            if (applicationHome != null)
+                LocalLog.info("Home '" + homeVarName + "' found in system variable: " + applicationHome);
         }
-        if (notEOFHome == null) {
+        if (applicationHome == null) {
             throw new RuntimeException("Could not determine home variable: " + homeVarName);
         }
 
         if (showInfo)
-            System.out.println("Project environment home variable: '" + homeVarName + "'; Value: " + notEOFHome);
-        return notEOFHome;
+            System.out.println("Project environment home variable: '" + homeVarName + "'; Value: " + applicationHome);
+        return applicationHome;
     }
 
     /**
