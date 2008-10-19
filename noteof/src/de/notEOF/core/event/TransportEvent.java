@@ -24,5 +24,4 @@ public class TransportEvent extends NotEOFEventBase implements NotEOFEvent {
     protected void initDescriptions() {
         // nothing to do for this implementation
     }
-
 }

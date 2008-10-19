@@ -11,11 +11,13 @@ public abstract class NotEOFEventBase implements NotEOFEvent {
 
     protected Map<String, String> attributes;
     protected Map<String, String> descriptions = new HashMap<String, String>();
+    protected EventType eventType;
 
     // forces the derived class to initialize the internal list of descriptions.
     protected abstract void initDescriptions();
 
     public void addAttribute(String key, String value) throws ActionFailedException {
+        initDescriptions();
         if (null == attributes)
             attributes = new HashMap<String, String>();
 
@@ -42,5 +44,17 @@ public abstract class NotEOFEventBase implements NotEOFEvent {
 
     public Map<String, String> getAttributeDescriptions() {
         return descriptions;
+    }
+
+    public final void setAttributes(Map<String, String> attributes) {
+        this.attributes = attributes;
+    }
+
+    public final void setDescriptions(Map<String, String> descriptions) {
+        this.descriptions = descriptions;
+    }
+
+    public final void setEventType(EventType eventType) {
+        this.eventType = eventType;
     }
 }

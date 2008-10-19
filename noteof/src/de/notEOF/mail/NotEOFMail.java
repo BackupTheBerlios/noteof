@@ -13,6 +13,7 @@ public class NotEOFMail {
     private DataObject bodyData;
     private Service fromService;
     private String toClientNetId;
+    private String fromClientNetId;
     private String header;
     private String mailId;
     private String destination;
@@ -156,6 +157,16 @@ public class NotEOFMail {
      */
     public void setToClientNetId(String toClientNetId) {
         this.toClientNetId = toClientNetId;
+    }
+
+    public String getFromClientNetId() {
+        if (null == fromClientNetId)
+            return "";
+        return fromClientNetId;
+    }
+
+    public void setFromClientNetId(String fromClientNetId) {
+        this.fromClientNetId = fromClientNetId;
     }
 
     public String getDestination() {

@@ -97,6 +97,13 @@ public abstract class MailAndEventService extends BaseService {
     public void processEvent(Service service, NotEOFEvent event) {
         System.out.println("MailEventService im processEvent!!!");
 
+        try {
+            System.out.println("------------- Service 1 -------------------");
+            writeMsg(MailTag.REQ_READY_FOR_ACTION);
+            System.out.println("------------- Service 2 -------------------");
+        } catch (Exception ex) {
+            LocalLog.warn("Nachricht an MailAndEventClient konnte nicht verschick werden. " + ex);
+        }
         if (EventType.EVENT_MAIL.equals(event.getEventType())) {
             // check if interesting for this service
             if (((NewMailEvent) event).getMail().getToClientNetId().equals(getClientNetId()) || //
@@ -121,7 +128,9 @@ public abstract class MailAndEventService extends BaseService {
      * @throws ActionFailedException
      */
     public final void mailToClient(NotEOFMail mail) throws ActionFailedException {
-        writeMsg(MailTag.REQ_AWAITING_MAIL);
+        System.out.println("------------- Service 3 -------------------");
+        writeMsg(MailTag.VAL_ACTION_MAIL);
+        System.out.println("------------- Service 4 -------------------");
         getTalkLine().sendMail(mail);
     }
 
@@ -157,15 +166,15 @@ public abstract class MailAndEventService extends BaseService {
 
     public void processClientMsg(Enum<?> incomingMsgEnum) throws ActionFailedException {
         if (incomingMsgEnum.equals(MailTag.REQ_READY_FOR_EXPRESSIONS)) {
-            processNewExpressions();
+            addExpressions();
         }
-        if (incomingMsgEnum.equals(MailTag.REQ_READY_FOR_EVENTS)) {
-            processNewEvents();
+        if (incomingMsgEnum.equals(MailTag.REQ_READY_FOR_EVENT)) {
+            addEvents();
         }
     }
 
     @SuppressWarnings("unchecked")
-    private void processNewExpressions() throws ActionFailedException {
+    private void addExpressions() throws ActionFailedException {
         responseTo(MailTag.RESP_READY_FOR_EXPRESSIONS, MailTag.VAL_OK.name());
         String type = requestTo(MailTag.REQ_EXPRESSION_TYPE, MailTag.RESP_EXPRESSION_TYPE);
         DataObject dataObject = receiveDataObject();
@@ -179,8 +188,8 @@ public abstract class MailAndEventService extends BaseService {
     }
 
     @SuppressWarnings("unchecked")
-    private void processNewEvents() throws ActionFailedException {
-        responseTo(MailTag.RESP_READY_FOR_EVENTS, MailTag.VAL_OK.name());
+    private void addEvents() throws ActionFailedException {
+        responseTo(MailTag.RESP_READY_FOR_EVENT, MailTag.VAL_OK.name());
         DataObject dataObject = receiveDataObject();
         if (null != dataObject && null != dataObject.getList() && dataObject.getList().size() > 0) {
             addInterestingEventNames((List<String>) dataObject.getList());

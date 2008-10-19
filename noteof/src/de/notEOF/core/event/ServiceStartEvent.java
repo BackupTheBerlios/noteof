@@ -13,5 +13,4 @@ public class ServiceStartEvent extends NotEOFEventBase implements NotEOFEvent {
         descriptions.put("startDate", "[Type: Date] Date when the service started. Milliseconds of Java.Date.");
         descriptions.put("serviceId", "[Type: String] Is the service id of the service which has started.");
     }
-
 }

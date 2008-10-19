@@ -78,4 +78,10 @@ public interface NotEOFEvent {
      *             ActionFailedException too.
      */
     public void addAttribute(String key, String value) throws ActionFailedException;
+
+    public void setAttributes(Map<String, String> attributes);
+
+    public void setDescriptions(Map<String, String> descriptions);
+
+    public void setEventType(EventType eventType);
 }

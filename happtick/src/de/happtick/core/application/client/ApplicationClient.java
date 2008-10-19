@@ -5,11 +5,11 @@ import de.happtick.core.enumeration.ApplicationTag;
 import de.happtick.core.events.ActionEvent;
 import de.happtick.core.events.AlarmEvent;
 import de.happtick.core.events.ErrorEvent;
-import de.happtick.core.events.LogEvent;
 import de.happtick.core.exception.HapptickException;
 import de.happtick.core.interfaces.ClientObserver;
 import de.notEOF.core.client.BaseClient;
 import de.notEOF.core.exception.ActionFailedException;
+import de.notEOF.core.interfaces.NotEOFEvent;
 import de.notEOF.core.util.ArgsParser;
 import de.notEOF.core.util.Util;
 
@@ -159,26 +159,26 @@ public class ApplicationClient extends BaseClient {
      * Errors can be shown within the happtick monitoring tool or written to
      * logfiles.
      * <p>
-     * Errors don't release events.
      * 
-     * @param id
-     *            The error identifier
+     * @param errorId
+     *            Unique identifier of the error.
+     * @param description
+     *            Error text.
      * @param level
-     *            Error level.
-     * @param errorDescription
-     *            Additional information for solving the problem.
+     *            Kind of error (info, warning, error or anything else). Depends
+     *            to the application.
      * @throws HapptickException
      */
-    public void sendError(ErrorEvent event) throws HapptickException {
-        // inform service that a new error will follow
+    public void sendError(String errorId, String description, String level) throws HapptickException {
+        ErrorEvent event = new ErrorEvent();
         try {
-            writeMsg(ApplicationTag.PROCESS_NEW_ERROR);
-            awaitRequestAnswerImmediate(ApplicationTag.REQ_ERROR_ID, ApplicationTag.RESP_ERROR_ID, event.getAttribute("errorId"));
-            awaitRequestAnswerImmediate(ApplicationTag.REQ_ERROR_LEVEL, ApplicationTag.RESP_ERROR_LEVEL, event.getAttribute("level"));
-            awaitRequestAnswerImmediate(ApplicationTag.REQ_ERROR_TEXT, ApplicationTag.RESP_ERROR_TEXT, event.getAttribute("description"));
+            event.addAttribute("errorId", errorId);
+            event.addAttribute("description", description);
+            event.addAttribute("level", level);
         } catch (ActionFailedException e) {
-            throw new HapptickException(202L, e);
+            throw new HapptickException(202L, "Event: " + event.getClass().getSimpleName(), e);
         }
+        sendEvent(event);
     }
 
     /**
@@ -187,18 +187,38 @@ public class ApplicationClient extends BaseClient {
      * Supplemental events and actions can be configured for single
      * applications.
      * 
-     * @param event
-     *            Object of Type EventEvent
+     * @param eventId
+     *            Id which is used in the configuration.
+     * @param information
+     *            Additional information related to the action.
      * @throws HapptickException
      */
-    public void sendEvent(ActionEvent event) throws HapptickException {
-        // inform service that a new event will follow
+    public void sendActionEvent(String eventId, String information) throws HapptickException {
+        ActionEvent event = new ActionEvent();
         try {
-            writeMsg(ApplicationTag.PROCESS_NEW_EVENT);
-            awaitRequestAnswerImmediate(ApplicationTag.REQ_EVENT_ID, ApplicationTag.RESP_EVENT_ID, event.getAttribute("information"));
-            awaitRequestAnswerImmediate(ApplicationTag.REQ_EVENT_TEXT, ApplicationTag.RESP_EVENT_TEXT, event.getAttribute("eventId"));
+            event.addAttribute("eventId", eventId);
+            event.addAttribute("information", information);
         } catch (ActionFailedException e) {
-            throw new HapptickException(203L, e);
+            throw new HapptickException(202L, "Event: " + event.getClass().getSimpleName(), e);
+        }
+        sendEvent(event);
+    }
+
+    /**
+     * Send any event to the service.
+     * 
+     * @param event
+     *            The implementation of NotEOFEvent should not use additional
+     *            data because only standard values are supported here. If there
+     *            are more members in the event class they will not be
+     *            transported to the service.
+     * @throws HapptickException
+     */
+    public void sendEvent(NotEOFEvent event) throws HapptickException {
+        try {
+            super.sendBaseEvent(event);
+        } catch (ActionFailedException e) {
+            throw new HapptickException(202L, "Event: " + event.getClass().getSimpleName(), e);
         }
     }
 
@@ -207,38 +227,42 @@ public class ApplicationClient extends BaseClient {
      * Like errors alarms can have a level. The controlling alarm system of
      * happtick decides what to do depending to the alarm level.
      * 
-     * @param alarm
-     *            The fired event of type AlarmEvent.
+     * @param description
+     *            Alarm text. What happened exactly.
+     * @param level
+     *            Meaning of alarm (info, warning or anything else). Depends to
+     *            the application.
+     * 
      * @throws HapptickException
      */
-    public void sendAlarm(AlarmEvent alarm) throws HapptickException {
-        // inform service that a new alarm will follow
+    public void sendAlarm(String type, String description, String level) throws HapptickException {
+        AlarmEvent event = new AlarmEvent();
         try {
-            writeMsg(ApplicationTag.PROCESS_NEW_ALARM);
-            awaitRequestAnswerImmediate(ApplicationTag.REQ_ALARM_TYPE, ApplicationTag.RESP_ALARM_TYPE, alarm.getAttribute("type"));
-            awaitRequestAnswerImmediate(ApplicationTag.REQ_ALARM_LEVEL, ApplicationTag.RESP_ALARM_LEVEL, alarm.getAttribute("level"));
-            awaitRequestAnswerImmediate(ApplicationTag.REQ_ALARM_TEXT, ApplicationTag.RESP_ALARM_TEXT, alarm.getAttribute("description"));
+            event.addAttribute("type", type);
+            event.addAttribute("description", description);
+            event.addAttribute("level", level);
         } catch (ActionFailedException e) {
-            throw new HapptickException(204L, e);
+            throw new HapptickException(202L, "Event: " + event.getClass().getSimpleName(), e);
         }
+        sendEvent(event);
     }
 
     /**
      * Log informations can be visualized within the happtick monitoring tool or
      * written to log files on the server.
      * 
-     * @param log
-     *            Implementation of LogEvent.
+     * @param information
+     *            Detailed Text.
      * @throws HapptickException
      */
-    public void sendLog(LogEvent log) throws HapptickException {
-        // inform service that a new alarm will follow
+    public void sendLog(String information) throws HapptickException {
+        AlarmEvent event = new AlarmEvent();
         try {
-            writeMsg(ApplicationTag.PROCESS_NEW_LOG);
-            awaitRequestAnswerImmediate(ApplicationTag.REQ_LOG_TEXT, ApplicationTag.RESP_LOG_TEXT, log.getAttribute("information"));
+            event.addAttribute("information", information);
         } catch (ActionFailedException e) {
-            throw new HapptickException(205L, e);
+            throw new HapptickException(202L, "Event: " + event.getClass().getSimpleName(), e);
         }
+        sendEvent(event);
     }
 
     /**

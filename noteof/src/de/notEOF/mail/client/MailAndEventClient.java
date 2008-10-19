@@ -13,6 +13,7 @@ import de.notEOF.mail.NotEOFMail;
 import de.notEOF.mail.enumeration.MailTag;
 import de.notEOF.mail.interfaces.MailAndEventRecipient;
 import de.notEOF.mail.interfaces.MailMatchExpressions;
+import de.notIOC.configuration.ConfigurationManager;
 
 public abstract class MailAndEventClient extends BaseClient {
 
@@ -35,18 +36,23 @@ public abstract class MailAndEventClient extends BaseClient {
     }
 
     public void awaitMailOrEvent(MailAndEventRecipient recipient) throws ActionFailedException {
-        this.recipient = recipient;
+        if (null == this.recipient)
+            this.recipient = recipient;
         activateAccepting();
     }
 
     private void activateAccepting() throws ActionFailedException {
-        acceptor = new MailAndEventAcceptor();
-        Thread acceptorThread = new Thread(acceptor);
-        acceptorThread.start();
+        // beware of multiple start!
+        if (null == acceptor || acceptor.isStopped()) {
+            acceptor = new MailAndEventAcceptor();
+            Thread acceptorThread = new Thread(acceptor);
+            acceptorThread.start();
+        } else
+            throw new ActionFailedException(1090L, "Recipient: " + this.recipient.getClass().getCanonicalName());
     }
 
     private class MailAndEventAcceptor implements Runnable {
-        private boolean stopped = false;
+        private boolean stopped = true;
 
         public boolean isStopped() {
             return stopped;
@@ -57,28 +63,50 @@ public abstract class MailAndEventClient extends BaseClient {
         }
 
         public void run() {
+            boolean isEvent = false;
+            stopped = false;
             try {
+                System.out.println("THREAD STARTED");
                 while (!stopped) {
+                    System.out.println("------------- Client 1 -------------------");
                     awaitRequest(MailTag.REQ_READY_FOR_ACTION);
-                    if (MailTag.VAL_ACTION_MAIL.equals(readMsg())) {
+                    System.out.println("------------- Client 2 -------------------");
+                    String action = readMsg();
+                    System.out.println("ACTION = " + action);
+                    if (MailTag.VAL_ACTION_MAIL.name().equals(action)) {
+                        System.out.println("------------- Client 3 -------------------");
                         NotEOFMail mail = getTalkLine().receiveMail();
+                        System.out.println("------------- Client 4 -------------------");
                         recipient.processMail(mail);
+                        System.out.println("------------- Client 5 -------------------");
                     }
-                    if (MailTag.VAL_ACTION_EVENT.equals(readMsg())) {
-                        NotEOFEvent event = getTalkLine().receiveBaseEvent();
+                    if (MailTag.VAL_ACTION_EVENT.name().equals(action)) {
+                        isEvent = true;
+                        NotEOFEvent event = getTalkLine().receiveBaseEvent(ConfigurationManager.getApplicationHome());
                         recipient.processEvent(event);
                     }
                 }
                 close();
             } catch (Exception e) {
                 if (!stopped)
-                    recipient.processMailException(e);
+                    if (!isEvent) {
+                        recipient.processMailException(e);
+                    } else {
+                        recipient.processEventException(e);
+                    }
             }
         }
     }
 
+    /**
+     * Add events which the client is interested in.
+     * 
+     * @param events
+     *            The list that contains events.
+     * @throws ActionFailedException
+     */
     public void addInterestingEvents(List<NotEOFEvent> events) throws ActionFailedException {
-        if (MailTag.VAL_OK.name().equals(requestTo(MailTag.REQ_READY_FOR_EVENTS, MailTag.RESP_READY_FOR_EVENTS))) {
+        if (MailTag.VAL_OK.name().equals(requestTo(MailTag.REQ_READY_FOR_EVENT, MailTag.RESP_READY_FOR_EVENT))) {
             DataObject dataObject = new DataObject();
             List<String> eventClassNames = new ArrayList<String>();
             for (NotEOFEvent event : events) {
@@ -91,7 +119,7 @@ public abstract class MailAndEventClient extends BaseClient {
     }
 
     /**
-     * Add terms which this client is interested for.
+     * Add terms which this client is interested in.
      * <p>
      * If a mail reaches the central server the services are informed about
      * this. <br>

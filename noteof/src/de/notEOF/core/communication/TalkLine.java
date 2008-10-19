@@ -9,6 +9,7 @@ import java.util.Observable;
 import java.util.Observer;
 
 import de.notEOF.core.enumeration.EventType;
+import de.notEOF.core.event.EventFinder;
 import de.notEOF.core.event.TransportEvent;
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.interfaces.NotEOFEvent;
@@ -308,8 +309,10 @@ public class TalkLine implements Observer {
         socketLayer.close();
     }
 
-    public NotEOFEvent receiveBaseEvent() throws ActionFailedException {
+    public NotEOFEvent receiveBaseEvent(String applicationHome) throws ActionFailedException {
         try {
+            // receive class name
+            String canonicalName = readMsg();
             // receive event type
             String eventTypeString = readMsg();
             EventType eventType = EventType.valueOf(eventTypeString);
@@ -320,7 +323,18 @@ public class TalkLine implements Observer {
             mapData = receiveDataObject();
             Map<String, String> descriptions = mapData.getMap();
 
-            NotEOFEvent event = new TransportEvent(eventType, attributes, descriptions);
+            NotEOFEvent event = null;
+            try {
+                // try to load the same event class as was sent from other side
+                // of line.
+                event = EventFinder.getNotEOFEvent(applicationHome, canonicalName);
+                event.setAttributes(attributes);
+                event.setDescriptions(descriptions);
+                event.setEventType(eventType);
+            } catch (Exception e) {
+                // class couldn't be loaded. So use default one.
+                event = new TransportEvent(eventType, attributes, descriptions);
+            }
             return event;
         } catch (Exception e) {
             throw new ActionFailedException(1151L, "Generieren des TransportEvents", e);
@@ -333,6 +347,7 @@ public class TalkLine implements Observer {
 
         NotEOFMail mail = new NotEOFMail();
         mail.setToClientNetId(content.get("toClientNetId"));
+        mail.setFromClientNetId(content.get("fromClientNetId"));
         mail.setHeader(content.get("header"));
         mail.setMailId(content.get("mailId"));
         mail.setDestination(content.get("destination"));
@@ -356,6 +371,7 @@ public class TalkLine implements Observer {
         // send message informations
         Map<String, String> envelope = new HashMap<String, String>();
         envelope.put("toClientNetId", mail.getToClientNetId());
+        envelope.put("fromClientNetId", mail.getFromClientNetId());
         envelope.put("header", mail.getHeader());
         envelope.put("mailId", mail.getMailId());
         envelope.put("destination", mail.getDestination());
@@ -388,6 +404,8 @@ public class TalkLine implements Observer {
      * @throws ActionFailedException
      */
     public void sendBaseEvent(NotEOFEvent event) throws ActionFailedException {
+        // send className
+        writeMsg(event.getClass().getCanonicalName());
         // send ordinal value of event type
         writeMsg(String.valueOf(event.getEventType().ordinal()));
         // send attributes

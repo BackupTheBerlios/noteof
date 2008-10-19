@@ -94,6 +94,9 @@ public class Errors {
         errorList.put(1006L, "Dispatch Service konnte Konfiguration der Services nicht lesen.");
         errorList.put(1007L, "Dispatch Service konnte Konfiguration der Server nicht lesen.");
 
+        // Mail and Events
+        errorList.put(1090L, "Mehrfacher Versuch, Client zum Empfang von Mails und Events zu aktivieren.");
+
         // Mail functions
         errorList.put(1100L, "Unvollständige Mail.");
         errorList.put(1101L, "Problem bei Zuordnung einer Mail zu einem Service.");
@@ -102,6 +105,8 @@ public class Errors {
         // Events
         errorList.put(1150L, "Unbekannter Schluessel bei Hinzufuegen eines Wertes. Schluessel: ");
         errorList.put(1151L, "Fehler bei Transport eines Events.");
+        errorList.put(1152L, "Event konnte nicht dynamisch geladen werden.");
+        errorList.put(1153L, "Event Klasse wurde nicht gefunden. Event muss mittels CLASSPATH auffindbar sein.");
     }
 
     /*

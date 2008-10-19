@@ -4,7 +4,6 @@ import java.net.Socket;
 
 import de.notEOF.core.BaseClientOrService;
 import de.notEOF.core.communication.TalkLine;
-import de.notEOF.core.enumeration.BaseCommTag;
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.interfaces.NotEOFEvent;
 import de.notEOF.core.interfaces.TimeOut;
@@ -152,12 +151,26 @@ public abstract class BaseClient extends BaseClientOrService {
      * @throws ActionFailedException
      */
     public void sendMail(NotEOFMail mail) throws ActionFailedException {
-        writeMsg(MailTag.REQ_READY_FOR_MAIL);
+        if (Util.isEmpty(mail.getFromClientNetId()))
+            mail.setFromClientNetId(clientNetId);
+        writeMsg(MailTag.REQ_READY_FOR_MAIL.name());
         getTalkLine().sendMail(mail);
     }
 
-    public void sendEvent(NotEOFEvent event) throws ActionFailedException {
-        writeMsg(MailTag.REQ_READY_FOR_EVENT);
+    /**
+     * Sends events to a service.
+     * <p>
+     * Only the data are sent which match to the interface (EventType, Map
+     * attributes, Map descriptions). Special data of an event implementation
+     * are not supported.
+     * 
+     * @param event
+     *            The event with EventType, Map attributes and Map descriptions.
+     * @throws ActionFailedException
+     */
+    public void sendBaseEvent(NotEOFEvent event) throws ActionFailedException {
+        writeMsg(MailTag.REQ_READY_FOR_EVENT.name());
+        getTalkLine().sendBaseEvent(event);
     }
 
     /**

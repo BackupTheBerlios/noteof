@@ -9,17 +9,16 @@ import de.notEOF.mail.MailHeaders;
 import de.notEOF.mail.NotEOFMail;
 import de.notEOF.mail.interfaces.MailAndEventRecipient;
 
-public class HapptickMailRecipient implements MailAndEventRecipient {
+public class MailRecipient implements MailAndEventRecipient {
 
     private HapptickApplication appl;
 
-    public HapptickMailRecipient(String... args) throws HapptickException {
+    public MailRecipient(String... args) throws HapptickException {
         appl = new HapptickApplication(0, "localhost", 3000, args);
         appl.useMailsAndEvents(this);
         MailDestinations destinations = new MailDestinations();
         destinations.add("Begriff");
         appl.addInterestingMailExpressions(destinations);
-        appl.startAcceptingMailsEvents();
 
         MailHeaders headers = new MailHeaders();
         headers.add("Kopf");
@@ -44,7 +43,7 @@ public class HapptickMailRecipient implements MailAndEventRecipient {
 
     public static void main(String... args) throws HapptickException {
 
-        new HapptickMailRecipient(args);
+        new MailRecipient(args);
 
         while (true) {
             try {

@@ -3,10 +3,6 @@ package de.happtick.application.client;
 import java.util.List;
 
 import de.happtick.core.application.client.ApplicationClient;
-import de.happtick.core.events.ActionEvent;
-import de.happtick.core.events.AlarmEvent;
-import de.happtick.core.events.ErrorEvent;
-import de.happtick.core.events.LogEvent;
 import de.happtick.core.exception.HapptickException;
 import de.happtick.core.interfaces.ClientObserver;
 import de.happtick.mail.client.HapptickMailEventClient;
@@ -194,22 +190,38 @@ public class HapptickApplication {
     }
 
     /**
+     * Send any event to the service.
+     * 
+     * @param event
+     *            The implementation of NotEOFEvent should not use additional
+     *            data because only standard values are supported here. If there
+     *            are more members in the event class they will not be
+     *            transported to the service.
+     * @see NotEOFEvent
+     * @throws HapptickException
+     */
+    public void sendEvent(NotEOFEvent event) throws HapptickException {
+        checkApplicationClientInitialized();
+        applicationClient.sendEvent(event);
+    }
+
+    /**
      * Errors can be shown within the happtick monitoring tool or written to
      * logfiles.
      * <p>
      * Errors don't release events.
      * 
-     * @param id
+     * @param errorId
      *            The error identifier.
      * @param level
      *            Error level.
-     * @param errorDescription
+     * @param Description
      *            Additional information for solving the problem.
      * @throws HapptickException
      */
-    public void sendError(ErrorEvent event) throws HapptickException {
+    public void sendError(String errorId, String description, String level) throws HapptickException {
         checkApplicationClientInitialized();
-        applicationClient.sendError(event);
+        applicationClient.sendError(errorId, description, level);
     }
 
     /**
@@ -218,14 +230,15 @@ public class HapptickApplication {
      * Supplemental events and actions can be configured for single
      * applications.
      * 
-     * @see ActionEvent
-     * @param event
-     *            Implementation of EventEvent
+     * @param eventId
+     *            Id which is used in the configuration.
+     * @param information
+     *            Additional information related to the action.
      * @throws HapptickException
      */
-    public void sendEvent(ActionEvent event) throws HapptickException {
+    public void sendActionEvent(String eventId, String information) throws HapptickException {
         checkApplicationClientInitialized();
-        applicationClient.sendEvent(event);
+        applicationClient.sendActionEvent(eventId, information);
     }
 
     /**
@@ -233,28 +246,29 @@ public class HapptickApplication {
      * Like errors alarms can have a level. The controlling alarm system of
      * happtick decides what to do depending to the alarm level.
      * 
-     * @see AlarmEvent
-     * @param alarm
-     *            Object which implements type AlarmEvent.
+     * @param description
+     *            Alarm text. What happened exactly.
+     * @param level
+     *            Meaning of alarm (info, warning or anything else). Depends to
+     *            the application.
      * @throws HapptickException
      */
-    public void sendAlarm(AlarmEvent alarm) throws HapptickException {
+    public void sendAlarm(String type, String description, String level) throws HapptickException {
         checkApplicationClientInitialized();
-        applicationClient.sendAlarm(alarm);
+        applicationClient.sendAlarm(type, description, level);
     }
 
     /**
      * Log informations can be visualized within the happtick monitoring tool or
      * written to log files on the server.
      * 
-     * @see LogEvent
-     * @param log
-     *            Object which implements type LogEvent.
+     * @param information
+     *            Detailed Text. Object which implements type LogEvent.
      * @throws HapptickException
      */
-    public void sendLog(LogEvent log) throws HapptickException {
+    public void sendLog(String information) throws HapptickException {
         checkApplicationClientInitialized();
-        applicationClient.sendLog(log);
+        applicationClient.sendLog(information);
     }
 
     /**
