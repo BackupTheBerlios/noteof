@@ -311,11 +311,15 @@ public class TalkLine implements Observer {
 
     public NotEOFEvent receiveBaseEvent(String applicationHome) throws ActionFailedException {
         try {
-            // receive class name
-            String canonicalName = readMsg();
-            // receive event type
-            String eventTypeString = readMsg();
-            EventType eventType = EventType.valueOf(eventTypeString);
+            // class name and eventType
+            DataObject eventInfo = receiveDataObject();
+            String canonicalName = eventInfo.getMap().get("canonicalName");
+            String eventTypeOrdinal = eventInfo.getMap().get("eventTypeOrdinal");
+            EventType eventType = EventType.values()[Integer.valueOf(eventTypeOrdinal)];
+
+            System.out.println("TalkLine - receiveBaseEvent: canonicalName = " + canonicalName);
+            System.out.println("TalkLine - receiveBaseEvent: eventTypeString = " + eventTypeOrdinal);
+            System.out.println("TalkLine - receiveBaseEvent: eventType = " + eventType.name());
             // receive attributes
             DataObject mapData = receiveDataObject();
             Map<String, String> attributes = mapData.getMap();
@@ -335,6 +339,7 @@ public class TalkLine implements Observer {
                 // class couldn't be loaded. So use default one.
                 event = new TransportEvent(eventType, attributes, descriptions);
             }
+            System.out.println("Event ist jetzt: " + event.getClass().getCanonicalName());
             return event;
         } catch (Exception e) {
             throw new ActionFailedException(1151L, "Generieren des TransportEvents", e);
@@ -404,10 +409,13 @@ public class TalkLine implements Observer {
      * @throws ActionFailedException
      */
     public void sendBaseEvent(NotEOFEvent event) throws ActionFailedException {
-        // send className
-        writeMsg(event.getClass().getCanonicalName());
-        // send ordinal value of event type
-        writeMsg(String.valueOf(event.getEventType().ordinal()));
+        // send className and eventType as ordinal value
+        DataObject eventInfo = new DataObject();
+        Map<String, String> infos = new HashMap<String, String>();
+        infos.put("canonicalName", event.getClass().getCanonicalName());
+        infos.put("eventTypeOrdinal", String.valueOf(event.getEventType().ordinal()));
+        eventInfo.setMap(infos);
+        sendDataObject(eventInfo);
         // send attributes
         DataObject mapData = new DataObject();
         mapData.setMap(event.getAttributes());

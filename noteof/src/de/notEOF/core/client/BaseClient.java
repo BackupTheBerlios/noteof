@@ -169,8 +169,11 @@ public abstract class BaseClient extends BaseClientOrService {
      * @throws ActionFailedException
      */
     public void sendBaseEvent(NotEOFEvent event) throws ActionFailedException {
+        System.out.println("VOR ...");
         writeMsg(MailTag.REQ_READY_FOR_EVENT.name());
+        System.out.println("VOR getTalkLine().sendBaseEvent()...");
         getTalkLine().sendBaseEvent(event);
+        System.out.println("Nach getTalkLine().sendBaseEvent()...");
     }
 
     /**

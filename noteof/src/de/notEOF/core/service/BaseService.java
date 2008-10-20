@@ -184,12 +184,19 @@ public abstract class BaseService extends BaseClientOrService implements Service
                         // writeMsg(BaseCommTag.VAL_OK);
                         // Mails from client are processed directly here in the
                         // base class
-                        System.out.println("BaseService hat eine mail empfangen");
-                        processMail();
-                        System.out.println("BaseService nach mail verarbeitung");
+                        try {
+                            processMail();
+                        } catch (Exception e) {
+                            LocalLog.warn("Problem bei Verarbeitung einer Mail-Nachricht.", e);
+                        }
                     } else if (msg.equals(MailTag.REQ_READY_FOR_EVENT.name())) {
                         // writeMsg(BaseCommTag.VAL_OK);
-                        processEvent();
+                        System.out.println("BaseService - run: event ist eingetrudelt.");
+                        try {
+                            processEvent();
+                        } catch (Exception e) {
+                            LocalLog.warn("Problem bei Verarbeitung einer Event-Nachricht.", e);
+                        }
                     } else {
                         // client/service specific messages are processed in the
                         // method processMsg() which must be implemented
@@ -282,7 +289,7 @@ public abstract class BaseService extends BaseClientOrService implements Service
      * 
      * @throws ActionFailedException
      */
-    public void processMail() throws ActionFailedException {
+    public synchronized void processMail() throws ActionFailedException {
         NotEOFMail mail = getTalkLine().receiveMail();
         server.postMail(mail, this);
     }
@@ -296,7 +303,7 @@ public abstract class BaseService extends BaseClientOrService implements Service
      * 
      * @throws ActionFailedException
      */
-    public void processEvent() throws ActionFailedException {
+    public synchronized void processEvent() throws ActionFailedException {
         NotEOFEvent event = getTalkLine().receiveBaseEvent(Server.getApplicationHome());
         server.postEvent(event, this);
     }

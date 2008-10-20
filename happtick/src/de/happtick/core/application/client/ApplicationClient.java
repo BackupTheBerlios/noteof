@@ -216,6 +216,7 @@ public class ApplicationClient extends BaseClient {
      */
     public void sendEvent(NotEOFEvent event) throws HapptickException {
         try {
+            System.out.println("ApplicationClient - sendEvent: super.sendBaseEvent()");
             super.sendBaseEvent(event);
         } catch (ActionFailedException e) {
             throw new HapptickException(202L, "Event: " + event.getClass().getSimpleName(), e);

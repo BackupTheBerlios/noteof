@@ -68,17 +68,11 @@ public abstract class MailAndEventClient extends BaseClient {
             try {
                 System.out.println("THREAD STARTED");
                 while (!stopped) {
-                    System.out.println("------------- Client 1 -------------------");
                     awaitRequest(MailTag.REQ_READY_FOR_ACTION);
-                    System.out.println("------------- Client 2 -------------------");
                     String action = readMsg();
-                    System.out.println("ACTION = " + action);
                     if (MailTag.VAL_ACTION_MAIL.name().equals(action)) {
-                        System.out.println("------------- Client 3 -------------------");
                         NotEOFMail mail = getTalkLine().receiveMail();
-                        System.out.println("------------- Client 4 -------------------");
                         recipient.processMail(mail);
-                        System.out.println("------------- Client 5 -------------------");
                     }
                     if (MailTag.VAL_ACTION_EVENT.name().equals(action)) {
                         isEvent = true;
@@ -106,7 +100,7 @@ public abstract class MailAndEventClient extends BaseClient {
      * @throws ActionFailedException
      */
     public void addInterestingEvents(List<NotEOFEvent> events) throws ActionFailedException {
-        if (MailTag.VAL_OK.name().equals(requestTo(MailTag.REQ_READY_FOR_EVENT, MailTag.RESP_READY_FOR_EVENT))) {
+        if (MailTag.VAL_OK.name().equals(requestTo(MailTag.REQ_READY_FOR_EVENTLIST, MailTag.RESP_READY_FOR_EVENTLIST))) {
             DataObject dataObject = new DataObject();
             List<String> eventClassNames = new ArrayList<String>();
             for (NotEOFEvent event : events) {

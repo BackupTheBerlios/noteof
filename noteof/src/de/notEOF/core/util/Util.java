@@ -362,7 +362,10 @@ public class Util {
                 // but only inform observer, when event in his list
                 if (null != eventObserver.getObservedEvents()) {
                     for (EventType type : eventObserver.getObservedEvents()) {
+                        System.out.println("Util... observed event = " + type.name());
+                        System.out.println("Util... eingetroffenes event = " + event.getEventType().name());
                         if (type.equals(EventType.EVENT_ANY_TYPE) || type.equals(event.getEventType())) {
+                            System.out.println("Util - updateAllObserver - eventObserver.update()");
                             eventObserver.update(service, event);
                             // break for inner loop
                             break;

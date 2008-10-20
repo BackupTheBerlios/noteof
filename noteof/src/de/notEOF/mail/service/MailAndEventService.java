@@ -11,7 +11,7 @@ import de.notEOF.core.interfaces.NotEOFEvent;
 import de.notEOF.core.interfaces.Service;
 import de.notEOF.core.logging.LocalLog;
 import de.notEOF.core.service.BaseService;
-import de.notEOF.mail.MailDestinations;
+import de.notEOF.mail.MailToken;
 import de.notEOF.mail.MailHeaders;
 import de.notEOF.mail.NotEOFMail;
 import de.notEOF.mail.enumeration.MailTag;
@@ -25,7 +25,7 @@ import de.notEOF.mail.enumeration.MailTag;
  */
 public abstract class MailAndEventService extends BaseService {
 
-    private MailDestinations mailDestinations;
+    private MailToken mailDestinations;
     private MailHeaders mailHeaders;
     private List<String> eventNames;
 
@@ -44,19 +44,19 @@ public abstract class MailAndEventService extends BaseService {
      */
     public void implementationFirstSteps() {
         addObservedEventType(EventType.EVENT_MAIL);
-        addObservedEventType(EventType.EVENT_EVENT);
+        addObservedEventType(EventType.EVENT_ANY_TYPE);
         getServer().registerForEvents(this);
     }
 
     protected void addInterestingDestination(String destination) {
         if (null == mailDestinations)
-            mailDestinations = new MailDestinations();
+            mailDestinations = new MailToken();
         mailDestinations.add(destination);
     }
 
     protected void addInterestingDestinations(List<String> destinations) {
         if (null == mailDestinations)
-            mailDestinations = new MailDestinations();
+            mailDestinations = new MailToken();
         mailDestinations.addAll(destinations);
     }
 
@@ -67,15 +67,15 @@ public abstract class MailAndEventService extends BaseService {
     }
 
     protected void addInterestingHeaders(List<String> headers) {
-        if (null == mailHeaders)
-            mailHeaders = new MailHeaders();
-        mailHeaders.addAll(headers);
+        if (null == this.mailHeaders)
+            this.mailHeaders = new MailHeaders();
+        this.mailHeaders.addAll(headers);
     }
 
     protected void addInterestingEventNames(List<String> eventNames) {
         if (null == this.eventNames)
             this.eventNames = new ArrayList<String>();
-        eventNames.addAll(eventNames);
+        this.eventNames.addAll(eventNames);
     }
 
     protected void addInterestingEventName(String eventName) {
@@ -95,12 +95,9 @@ public abstract class MailAndEventService extends BaseService {
      *            detected by the service.
      */
     public void processEvent(Service service, NotEOFEvent event) {
-        System.out.println("MailEventService im processEvent!!!");
-
+        System.out.println("MailAndEventService.processEvent...");
         try {
-            System.out.println("------------- Service 1 -------------------");
             writeMsg(MailTag.REQ_READY_FOR_ACTION);
-            System.out.println("------------- Service 2 -------------------");
         } catch (Exception ex) {
             LocalLog.warn("Nachricht an MailAndEventClient konnte nicht verschick werden. " + ex);
         }
@@ -113,6 +110,14 @@ public abstract class MailAndEventService extends BaseService {
                 } catch (Exception e) {
                     LocalLog.warn("Mehrere Services versuchen auf eine Nachricht zuzugreifen. Header: " + ((NewMailEvent) event).getMail().getHeader()
                             + "; Destination: " + ((NewMailEvent) event).getMail().getDestination());
+                }
+            }
+        } else {
+            if (interestedInEvent(event)) {
+                try {
+                    eventToClient(event);
+                } catch (Exception e) {
+                    LocalLog.error("Fehler bei Verarbeitung eines Events.", e);
                 }
             }
         }
@@ -128,10 +133,13 @@ public abstract class MailAndEventService extends BaseService {
      * @throws ActionFailedException
      */
     public final void mailToClient(NotEOFMail mail) throws ActionFailedException {
-        System.out.println("------------- Service 3 -------------------");
         writeMsg(MailTag.VAL_ACTION_MAIL);
-        System.out.println("------------- Service 4 -------------------");
         getTalkLine().sendMail(mail);
+    }
+
+    public final void eventToClient(NotEOFEvent event) throws ActionFailedException {
+        writeMsg(MailTag.VAL_ACTION_EVENT);
+        getTalkLine().sendBaseEvent(event);
     }
 
     /**
@@ -164,11 +172,22 @@ public abstract class MailAndEventService extends BaseService {
         return false;
     }
 
+    protected boolean interestedInEvent(NotEOFEvent event) {
+        if (null != eventNames) {
+            for (String eventName : eventNames) {
+                if (eventName.equals(event.getClass().getName())) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     public void processClientMsg(Enum<?> incomingMsgEnum) throws ActionFailedException {
         if (incomingMsgEnum.equals(MailTag.REQ_READY_FOR_EXPRESSIONS)) {
             addExpressions();
         }
-        if (incomingMsgEnum.equals(MailTag.REQ_READY_FOR_EVENT)) {
+        if (incomingMsgEnum.equals(MailTag.REQ_READY_FOR_EVENTLIST)) {
             addEvents();
         }
     }
@@ -179,7 +198,7 @@ public abstract class MailAndEventService extends BaseService {
         String type = requestTo(MailTag.REQ_EXPRESSION_TYPE, MailTag.RESP_EXPRESSION_TYPE);
         DataObject dataObject = receiveDataObject();
         if (null != dataObject && null != dataObject.getList() && dataObject.getList().size() > 0) {
-            if (MailDestinations.class.getName().equals(type)) {
+            if (MailToken.class.getName().equals(type)) {
                 addInterestingDestinations((List<String>) dataObject.getList());
             } else if (MailHeaders.class.getName().equals(type)) {
                 addInterestingHeaders((List<String>) dataObject.getList());
@@ -189,7 +208,7 @@ public abstract class MailAndEventService extends BaseService {
 
     @SuppressWarnings("unchecked")
     private void addEvents() throws ActionFailedException {
-        responseTo(MailTag.RESP_READY_FOR_EVENT, MailTag.VAL_OK.name());
+        responseTo(MailTag.RESP_READY_FOR_EVENTLIST, MailTag.VAL_OK.name());
         DataObject dataObject = receiveDataObject();
         if (null != dataObject && null != dataObject.getList() && dataObject.getList().size() > 0) {
             addInterestingEventNames((List<String>) dataObject.getList());
