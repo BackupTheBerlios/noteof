@@ -276,12 +276,12 @@ public class Server implements EventObservable, Runnable {
      */
     public void updateObservers(Service service, NotEOFEvent event) {
         // only test code...
-        System.out.println("eventObservers: ");
-        for (EventObserver observer : eventObservers) {
-            System.out.println("----------------------------------");
-            System.out.println("observer: " + observer.getClass().getName());
-            System.out.println("observer: " + observer.getObservedEvents());
-        }
+        // System.out.println("eventObservers: ");
+        // for (EventObserver observer : eventObservers) {
+        // System.out.println("----------------------------------");
+        // System.out.println("observer: " + observer.getClass().getName());
+        // System.out.println("observer: " + observer.getObservedEvents());
+        // }
 
         Util.updateAllObserver(eventObservers, service, event);
     }

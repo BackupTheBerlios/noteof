@@ -2,7 +2,11 @@ package de.notEOF.core.service;
 
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import de.notEOF.core.BaseClientOrService;
 import de.notEOF.core.communication.TalkLine;
@@ -40,6 +44,8 @@ public abstract class BaseService extends BaseClientOrService implements Service
     private Server server;
     List<EventType> eventTypes;
     protected String clientNetId;
+    private EventProcessor processor;
+    private Map<Long, UpdateAction> actionMap;
 
     public boolean isRunning() {
         return isRunning;
@@ -142,25 +148,85 @@ public abstract class BaseService extends BaseClientOrService implements Service
      *            detected by the service.
      */
     public final void update(Service service, NotEOFEvent event) {
-        EventProcessor processor = new EventProcessor(service, event);
-        Thread processThread = new Thread(processor);
-        processThread.start();
+        // Durch Verwendung einer map koennen die Eintraege (hoffentlich)
+        // gleichzeitig in die Liste geschrieben und ueber die keys daraus
+        // geloescht werden. Das ist der Versuch Synchronisationsprobleme der
+        // Liste in den Griff zu bekommen.
+        if (null == actionMap)
+            actionMap = new HashMap<Long, UpdateAction>();
+
+        // key fuer die map (billig...)
+        Date now = new Date();
+        actionMap.put(now.getTime(), new UpdateAction(service, event));
+
+        // Der Prozessor, der die events abarbeitet darf nicht parallel laufen.
+        // Die events sollen nacheinander abgearbeitet werden.
+        if (null == processor || !processor.isRunning()) {
+            processor = new EventProcessor();
+            Thread processThread = new Thread(processor);
+            processThread.start();
+        }
     }
 
-    public void processEvent(Service service, NotEOFEvent event) {
+    public synchronized void processEvent(Service service, NotEOFEvent event) {
     }
 
+    // EventProcessor entkoppelt den Observable (meistens Server) von den
+    // Observern.
+    // Ansonsten wuerde der Observable warten muessen, bis der Observer die
+    // Verarbeitung abgeschlossen hat.
     private final class EventProcessor implements Runnable {
-        private Service updateService;
-        private NotEOFEvent notEOFEvent;
+        private boolean running = false;
 
-        private EventProcessor(Service service, NotEOFEvent event) {
-            this.updateService = service;
-            this.notEOFEvent = event;
+        private boolean isRunning() {
+            return running;
+        }
+
+        private EventProcessor() {
         }
 
         public void run() {
-            processEvent(updateService, notEOFEvent);
+            running = true;
+
+            // Die actionMap kann theoretisch waehrend der Verarbeitung hier
+            // gleichzeitig durch Aufruf der update-Methode ergaenzt werden. Die
+            // run-Methode hier soll solange arbeiten, solange ein event
+            // vorliegt.
+            while (!actionMap.isEmpty()) {
+                Set<Long> actionSet = actionMap.keySet();
+                if (null != actionSet && actionSet.size() > 0) {
+                    Object[] blubb = actionSet.toArray();
+                    for (int i = 0; i < blubb.length; i++) {
+                        Long x = (Long) blubb[i];
+                        System.out.println("VERARBEITE actionMap Nr. " + x);
+                        UpdateAction action = actionMap.get(x);
+                        processEvent(action.getService(), action.getEvent());
+                        actionMap.remove(x);
+                    }
+
+                }
+            }
+            running = false;
+        }
+    }
+
+    // lokale helper klasse die fuer das Zwischenspeichern der events benoetigt
+    // wird (s.o.)
+    private final class UpdateAction {
+        private Service service;
+        private NotEOFEvent event;
+
+        private UpdateAction(Service service, NotEOFEvent event) {
+            this.service = service;
+            this.event = event;
+        }
+
+        private Service getService() {
+            return this.service;
+        }
+
+        private NotEOFEvent getEvent() {
+            return this.event;
         }
     }
 

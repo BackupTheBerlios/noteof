@@ -21,6 +21,7 @@ public class MailRecipient implements MailAndEventRecipient {
 
     private HapptickApplication appl;
     private int counter = 0;
+    private int complete = 0;
     private Date lastStamp;
     private long stampDiff = 0;
 
@@ -51,8 +52,8 @@ public class MailRecipient implements MailAndEventRecipient {
         appl.startAcceptingMailsEvents();
 
         System.out.println("Jetzt gilts!");
-        // processMail(null);
-        processEvent(null);
+        processMail(null);
+        // processEvent(null);
     }
 
     public void processMail(NotEOFMail mail) {
@@ -63,6 +64,7 @@ public class MailRecipient implements MailAndEventRecipient {
             stampDiff += (newStamp.getTime() - lastStamp.getTime());
             lastStamp = new Date();
             if (500 <= counter++) {
+                System.out.println("COUNTER: " + (complete += counter));
                 System.out.println("COUNTER: " + counter);
 
                 long millis = stampDiff / 500;
@@ -85,6 +87,7 @@ public class MailRecipient implements MailAndEventRecipient {
         }
 
         try {
+            Thread.sleep(5);
             NotEOFMail newMail;
             newMail = new NotEOFMail("Kopf", "xBegriff", "Wichtiger Inhalt");
             appl.sendMail(newMail);

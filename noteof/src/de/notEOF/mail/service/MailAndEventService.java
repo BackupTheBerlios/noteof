@@ -95,31 +95,30 @@ public abstract class MailAndEventService extends BaseService {
      *            detected by the service.
      */
     public void processEvent(Service service, NotEOFEvent event) {
-        System.out.println("MailAndEventService.processEvent...");
+        System.out.println("MailAndEventService.processEvent..." + event.getEventType().name());
         try {
-            writeMsg(MailTag.REQ_READY_FOR_ACTION);
-        } catch (Exception ex) {
-            LocalLog.warn("Nachricht an MailAndEventClient konnte nicht verschick werden. " + ex);
-        }
-        if (EventType.EVENT_MAIL.equals(event.getEventType())) {
-            // check if interesting for this service
-            if (((NewMailEvent) event).getMail().getToClientNetId().equals(getClientNetId()) || //
-                    interestedInMail(((NewMailEvent) event).getMail().getDestination(), ((NewMailEvent) event).getMail().getHeader())) {
-                try {
-                    mailToClient(((NewMailEvent) event).getMail());
-                } catch (Exception e) {
-                    LocalLog.warn("Mehrere Services versuchen auf eine Nachricht zuzugreifen. Header: " + ((NewMailEvent) event).getMail().getHeader()
-                            + "; Destination: " + ((NewMailEvent) event).getMail().getDestination());
+            if (EventType.EVENT_MAIL.equals(event.getEventType())) {
+                writeMsg(MailTag.REQ_READY_FOR_ACTION);
+                // check if interesting for this service
+                if (((NewMailEvent) event).getMail().getToClientNetId().equals(getClientNetId()) || //
+                        interestedInMail(((NewMailEvent) event).getMail().getDestination(), ((NewMailEvent) event).getMail().getHeader())) {
+                    try {
+                        mailToClient(((NewMailEvent) event).getMail());
+                    } catch (Exception e) {
+                        LocalLog.warn("Mehrere Services versuchen auf eine Nachricht zuzugreifen. Header: " + ((NewMailEvent) event).getMail().getHeader()
+                                + "; Destination: " + ((NewMailEvent) event).getMail().getDestination());
+                    }
                 }
-            }
-        } else {
-            if (interestedInEvent(event)) {
+            } else if (interestedInEvent(event)) {
+                writeMsg(MailTag.REQ_READY_FOR_ACTION);
                 try {
                     eventToClient(event);
                 } catch (Exception e) {
                     LocalLog.error("Fehler bei Verarbeitung eines Events.", e);
                 }
             }
+        } catch (Exception ex) {
+            LocalLog.warn("Nachricht an MailAndEventClient konnte nicht verschickt werden. " + ex);
         }
     }
 
