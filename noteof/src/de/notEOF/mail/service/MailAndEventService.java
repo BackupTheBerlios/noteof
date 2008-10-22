@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import de.notEOF.core.communication.DataObject;
+import de.notEOF.core.communication.TalkLine;
 import de.notEOF.core.enumeration.EventType;
 import de.notEOF.core.event.NewMailEvent;
 import de.notEOF.core.exception.ActionFailedException;
@@ -94,31 +95,48 @@ public abstract class MailAndEventService extends BaseService {
      *            The incoming event that the client has fired or which was
      *            detected by the service.
      */
-    public void processEvent(Service service, NotEOFEvent event) {
+    public void processEvent(Service service, NotEOFEvent event) throws ActionFailedException {
+        if (null == event) {
+            throw new ActionFailedException(1154L, "Event ist NULL");
+        }
+
         System.out.println("MailAndEventService.processEvent..." + event.getEventType().name());
         try {
+            System.out.println(" !!!!!!!!!!!!!!!!!!!!!!!!   vor 1 !!!!!!!!!!!!!!!!!!");
             if (EventType.EVENT_MAIL.equals(event.getEventType())) {
+                System.out.println(" !!!!!!!!!!!!!!!!!!!!!!!!   nach 1 !!!!!!!!!!!!!!!!!!");
                 writeMsg(MailTag.REQ_READY_FOR_ACTION);
                 // check if interesting for this service
+                System.out.println(" !!!!!!!!!!!!!!!!!!!!!!!!   vor 2 !!!!!!!!!!!!!!!!!!");
                 if (((NewMailEvent) event).getMail().getToClientNetId().equals(getClientNetId()) || //
                         interestedInMail(((NewMailEvent) event).getMail().getDestination(), ((NewMailEvent) event).getMail().getHeader())) {
                     try {
+                        System.out.println(" !!!!!!!!!!!!!!!!!!!!!!!!   vor 3 !!!!!!!!!!!!!!!!!!");
                         mailToClient(((NewMailEvent) event).getMail());
+                        System.out.println(" !!!!!!!!!!!!!!!!!!!!!!!!   nach 3 !!!!!!!!!!!!!!!!!!");
                     } catch (Exception e) {
                         LocalLog.warn("Mehrere Services versuchen auf eine Nachricht zuzugreifen. Header: " + ((NewMailEvent) event).getMail().getHeader()
                                 + "; Destination: " + ((NewMailEvent) event).getMail().getDestination());
                     }
                 }
             } else if (interestedInEvent(event)) {
+                System.out.println(" !!!!!!!!!!!!!!!!!!!!!!!!   vor 4 !!!!!!!!!!!!!!!!!!");
                 writeMsg(MailTag.REQ_READY_FOR_ACTION);
+                System.out.println(" !!!!!!!!!!!!!!!!!!!!!!!!   nach 4 !!!!!!!!!!!!!!!!!!");
                 try {
+                    System.out.println(" !!!!!!!!!!!!!!!!!!!!!!!!   vor 5 !!!!!!!!!!!!!!!!!!");
                     eventToClient(event);
+                    System.out.println(" !!!!!!!!!!!!!!!!!!!!!!!!   nach 5 !!!!!!!!!!!!!!!!!!");
                 } catch (Exception e) {
                     LocalLog.error("Fehler bei Verarbeitung eines Events.", e);
                 }
             }
         } catch (Exception ex) {
-            LocalLog.warn("Nachricht an MailAndEventClient konnte nicht verschickt werden. " + ex);
+            throw new RuntimeException(ex);
+            // LocalLog.warn(
+            // "MailAndEventService.processEvent(). Nachricht an MailAndEventClient konnte nicht verschickt werden. "
+            // + ex);
+            // System.out.println("TalkLine: " + getTalkLine());
         }
     }
 

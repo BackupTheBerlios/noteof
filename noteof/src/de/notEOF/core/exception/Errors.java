@@ -107,6 +107,7 @@ public class Errors {
         errorList.put(1151L, "Fehler bei Transport eines Events.");
         errorList.put(1152L, "Event konnte nicht dynamisch geladen werden.");
         errorList.put(1153L, "Event Klasse wurde nicht gefunden. Event muss mittels CLASSPATH auffindbar sein.");
+        errorList.put(1154L, "Event Verarbeitung und Versand an Client nicht moeglich.");
     }
 
     /*

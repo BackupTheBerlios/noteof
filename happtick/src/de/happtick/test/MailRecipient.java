@@ -52,8 +52,20 @@ public class MailRecipient implements MailAndEventRecipient {
         appl.startAcceptingMailsEvents();
 
         System.out.println("Jetzt gilts!");
-        processMail(null);
+        testMail();
         // processEvent(null);
+    }
+
+    private void testMail() {
+        try {
+            // Thread.sleep(500);
+            NotEOFMail newMail;
+            newMail = new NotEOFMail("Kopf", "xBegriff", "Wichtiger Inhalt");
+            appl.sendMail(newMail);
+        } catch (Exception e) {
+            LocalLog.error("Fehler bei Anlegen oder Versand der Mail.", e);
+        }
+
     }
 
     public void processMail(NotEOFMail mail) {
@@ -63,6 +75,7 @@ public class MailRecipient implements MailAndEventRecipient {
             Date newStamp = new Date();
             stampDiff += (newStamp.getTime() - lastStamp.getTime());
             lastStamp = new Date();
+            System.out.println("COUNTER: " + counter);
             if (500 <= counter++) {
                 System.out.println("COUNTER: " + (complete += counter));
                 System.out.println("COUNTER: " + counter);
@@ -73,28 +86,22 @@ public class MailRecipient implements MailAndEventRecipient {
                 counter = 0;
             }
 
-            // System.out.println(
-            // "================================================");
-            // System.out.println("Mail ist angekommen...");
-            // System.out.println(
-            // "________________________________________________");
-            // System.out.println("Header: " + mail.getHeader());
-            // System.out.println("Body Text: " + mail.getBodyText());
-            // System.out.println("Destination: " + mail.getDestination());
-            // System.out.println("ClientNetId: " + mail.getToClientNetId());
-            // System.out.println(
-            // "================================================");
         }
+        //System.out.println("================================================")
+        // ;
+        // System.out.println("Mail ist angekommen...");
+        //System.out.println("________________________________________________")
+        // ;
+        // System.out.println("Header: " + mail.getHeader());
+        // System.out.println("Body Text: " + mail.getBodyText());
+        // System.out.println("Destination: " + mail.getDestination());
+        // System.out.println("ClientNetId: " + mail.getToClientNetId());
+        //System.out.println("================================================")
+        // ;
 
-        try {
-            Thread.sleep(5);
-            NotEOFMail newMail;
-            newMail = new NotEOFMail("Kopf", "xBegriff", "Wichtiger Inhalt");
-            appl.sendMail(newMail);
-        } catch (Exception e) {
-            LocalLog.error("Fehler bei Anlegen oder Versand der Mail.", e);
-        }
-
+        if (5000 < complete)
+            System.exit(0);
+        testMail();
     }
 
     public void processMailException(Exception e) {

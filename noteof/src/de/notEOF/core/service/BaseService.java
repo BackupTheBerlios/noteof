@@ -2,6 +2,7 @@ package de.notEOF.core.service;
 
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -147,7 +148,7 @@ public abstract class BaseService extends BaseClientOrService implements Service
      *            The incoming event that the client has fired or which was
      *            detected by the service.
      */
-    public final void update(Service service, NotEOFEvent event) {
+    public final synchronized void update(Service service, NotEOFEvent event) {
         // Durch Verwendung einer map koennen die Eintraege (hoffentlich)
         // gleichzeitig in die Liste geschrieben und ueber die keys daraus
         // geloescht werden. Das ist der Versuch Synchronisationsprobleme der
@@ -159,16 +160,16 @@ public abstract class BaseService extends BaseClientOrService implements Service
         Date now = new Date();
         actionMap.put(now.getTime(), new UpdateAction(service, event));
 
-        // Der Prozessor, der die events abarbeitet darf nicht parallel laufen.
+        // Der Prozessor, der die events abarbeitet, darf nicht parallel laufen.
         // Die events sollen nacheinander abgearbeitet werden.
-        if (null == processor || !processor.isRunning()) {
+        if (null == processor) {
             processor = new EventProcessor();
             Thread processThread = new Thread(processor);
             processThread.start();
         }
     }
 
-    public synchronized void processEvent(Service service, NotEOFEvent event) {
+    public synchronized void processEvent(Service service, NotEOFEvent event) throws ActionFailedException {
     }
 
     // EventProcessor entkoppelt den Observable (meistens Server) von den
@@ -176,37 +177,55 @@ public abstract class BaseService extends BaseClientOrService implements Service
     // Ansonsten wuerde der Observable warten muessen, bis der Observer die
     // Verarbeitung abgeschlossen hat.
     private final class EventProcessor implements Runnable {
-        private boolean running = false;
+        // private boolean running = false;
 
-        private boolean isRunning() {
-            return running;
-        }
+        // private boolean isRunning() {
+        // return running;
+        // }
 
         private EventProcessor() {
         }
 
         public void run() {
-            running = true;
+            // running = true;
+            try {
+                while (true) {
 
-            // Die actionMap kann theoretisch waehrend der Verarbeitung hier
-            // gleichzeitig durch Aufruf der update-Methode ergaenzt werden. Die
-            // run-Methode hier soll solange arbeiten, solange ein event
-            // vorliegt.
-            while (!actionMap.isEmpty()) {
-                Set<Long> actionSet = actionMap.keySet();
-                if (null != actionSet && actionSet.size() > 0) {
-                    Object[] blubb = actionSet.toArray();
-                    for (int i = 0; i < blubb.length; i++) {
-                        Long x = (Long) blubb[i];
-                        System.out.println("VERARBEITE actionMap Nr. " + x);
-                        UpdateAction action = actionMap.get(x);
-                        processEvent(action.getService(), action.getEvent());
-                        actionMap.remove(x);
+                    // Die actionMap kann theoretisch waehrend der Verarbeitung
+                    // hier
+                    // gleichzeitig durch Aufruf der update-Methode ergaenzt
+                    // werden. Die
+                    // run-Methode hier soll solange arbeiten, solange ein event
+                    // vorliegt.
+                    while (!actionMap.isEmpty()) {
+                        Set<Long> actionSet = actionMap.keySet();
+
+                        Collection<Long> keyCopy = new ArrayList<Long>();
+                        keyCopy.addAll(actionSet);
+
+                        if (null != actionSet && actionSet.size() > 0) {
+                            Object[] blubb = actionSet.toArray();
+                            for (int i = 0; i < blubb.length; i++) {
+                                Long x = (Long) blubb[i];
+                                System.out.println("VERARBEITE actionMap Nr. " + x);
+                                UpdateAction action = actionMap.get(x);
+                                processEvent(action.getService(), action.getEvent());
+                            }
+                        }
+
+                        if (!keyCopy.isEmpty()) {
+                            for (Long l : keyCopy) {
+                                actionMap.remove(l);
+                            }
+                        }
                     }
-
+                    Thread.sleep(100);
                 }
+            } catch (Exception e) {
+                LocalLog.error("Fehler bei Abarbeiten der MessageQueue im EventProcessor des BaseService." + e);
+                e.printStackTrace();
             }
-            running = false;
+            // running = false;
         }
     }
 
