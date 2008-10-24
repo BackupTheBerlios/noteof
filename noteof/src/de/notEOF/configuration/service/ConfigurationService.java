@@ -23,6 +23,10 @@ public class ConfigurationService extends BaseService {
         return ConfigurationTag.class;
     }
 
+    public String getName() {
+        return "Class: " + this.getClass().getName() + "; ServiceId: " + getServiceId() + "; ClientNetId: " + getClientNetId();
+    }
+
     @Override
     public void processClientMsg(Enum<?> incomingMsgEnum) throws ActionFailedException {
         NotEOFConfiguration conf = new LocalConfiguration();

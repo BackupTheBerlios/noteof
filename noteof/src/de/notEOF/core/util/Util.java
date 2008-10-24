@@ -4,11 +4,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import de.notEOF.core.enumeration.EventType;
 import de.notEOF.core.interfaces.EventObserver;
 import de.notEOF.core.interfaces.NotEOFEvent;
 import de.notEOF.core.interfaces.Service;
+import de.notIOC.logging.LocalLog;
 
 /**
  * When used several times in one file use this: import static
@@ -337,6 +340,25 @@ public class Util {
         return simpleName;
     }
 
+    public static void registerForEvents(Map<String, EventObserver> eventObservers, EventObserver eventObserver) {
+        // if (null == eventObservers)
+        // eventObservers = new HashMap<String, EventObserver>();
+        System.out.println("REGISTER: " + eventObserver.getName());
+        eventObservers.put(eventObserver.getName(), eventObserver);
+        System.out.println("EVENTLISTE NULL?" + eventObservers);
+    }
+
+    public static void unregisterFromEvents(Map<String, EventObserver> eventObservers, EventObserver eventObserver) {
+        if (null != eventObservers && null != eventObserver) {
+            try {
+                System.out.println("UNREGISTER: " + eventObserver.getName());
+                eventObservers.remove(eventObserver.getName());
+            } catch (Exception e) {
+                LocalLog.warn("EventObserver konnte nicht entfernt werden: " + eventObserver.getName(), e);
+            }
+        }
+    }
+
     /**
      * Fires an event to all registered Observer.
      * <p>
@@ -350,30 +372,42 @@ public class Util {
      * @param event
      *            Implementation of Type ClientEvent.
      */
-    public synchronized static void updateAllObserver(List<EventObserver> eventObservers, Service service, NotEOFEvent event) {
+    public synchronized static void updateAllObserver(Map<String, EventObserver> eventObservers, Service service, NotEOFEvent event) {
         if (null == event)
             return;
         if (null == eventObservers)
             return;
 
+        boolean retry = true;
+
+        System.out.println("AAAAAAAAAAABBBBBBBBBBBBEEEEEEEEEEEEEEERRRRRRRRRRRRRRRr HIER");
         // all observer
         if (eventObservers.size() > 0) {
-            for (EventObserver eventObserver : eventObservers) {
-                // but only inform observer, when event in his list
-                if (null != eventObserver.getObservedEvents()) {
-                    for (EventType type : eventObserver.getObservedEvents()) {
-                        System.out.println("Util... observed event = " + type.name());
-                        System.out.println("Util... eingetroffenes event = " + event.getEventType().name());
-                        if (type.equals(EventType.EVENT_ANY_TYPE) || type.equals(event.getEventType())) {
-                            System.out.println("Util - updateAllObserver - eventObserver.update()");
-                            eventObserver.update(service, event);
-                            // break for inner loop
-                            break;
+            while (retry) {
+                retry = false;
+                Set<String> set = eventObservers.keySet();
+                for (String observerName : set) {
+                    System.out.println("UPDATE KEY IM SET: " + observerName);
+                    // but only inform observer, when event in his list
+                    EventObserver eventObserver = eventObservers.get(observerName);
+                    if (null != eventObserver && null != eventObserver.getObservedEvents()) {
+                        for (EventType type : eventObserver.getObservedEvents()) {
+                            if (type.equals(EventType.EVENT_ANY_TYPE) || type.equals(event.getEventType())) {
+                                try {
+                                    eventObserver.update(service, event);
+                                } catch (Exception e) {
+                                    eventObservers.remove(observerName);
+                                    LocalLog
+                                            .error("Fehler bei Weiterleitung eines Events an einen Observer. Registrierung des Observer wurde aufgehoben. Observer: "
+                                                    + eventObserver.getName());
+                                }
+                                // break for inner loop
+                                break;
+                            }
                         }
                     }
                 }
             }
         }
     }
-
 }

@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import de.notEOF.core.communication.DataObject;
-import de.notEOF.core.communication.TalkLine;
 import de.notEOF.core.enumeration.EventType;
 import de.notEOF.core.event.NewMailEvent;
 import de.notEOF.core.exception.ActionFailedException;
@@ -12,8 +11,8 @@ import de.notEOF.core.interfaces.NotEOFEvent;
 import de.notEOF.core.interfaces.Service;
 import de.notEOF.core.logging.LocalLog;
 import de.notEOF.core.service.BaseService;
-import de.notEOF.mail.MailToken;
 import de.notEOF.mail.MailHeaders;
+import de.notEOF.mail.MailToken;
 import de.notEOF.mail.NotEOFMail;
 import de.notEOF.mail.enumeration.MailTag;
 
@@ -44,9 +43,9 @@ public abstract class MailAndEventService extends BaseService {
      * This service is interested in Mails and Events.
      */
     public void implementationFirstSteps() {
-        addObservedEventType(EventType.EVENT_MAIL);
-        addObservedEventType(EventType.EVENT_ANY_TYPE);
-        getServer().registerForEvents(this);
+        // addObservedEventType(EventType.EVENT_MAIL);
+        // addObservedEventType(EventType.EVENT_ANY_TYPE);
+        // getServer().registerForEvents(this);
     }
 
     protected void addInterestingDestination(String destination) {
@@ -100,43 +99,30 @@ public abstract class MailAndEventService extends BaseService {
             throw new ActionFailedException(1154L, "Event ist NULL");
         }
 
-        System.out.println("MailAndEventService.processEvent..." + event.getEventType().name());
         try {
-            System.out.println(" !!!!!!!!!!!!!!!!!!!!!!!!   vor 1 !!!!!!!!!!!!!!!!!!");
             if (EventType.EVENT_MAIL.equals(event.getEventType())) {
-                System.out.println(" !!!!!!!!!!!!!!!!!!!!!!!!   nach 1 !!!!!!!!!!!!!!!!!!");
                 writeMsg(MailTag.REQ_READY_FOR_ACTION);
                 // check if interesting for this service
-                System.out.println(" !!!!!!!!!!!!!!!!!!!!!!!!   vor 2 !!!!!!!!!!!!!!!!!!");
                 if (((NewMailEvent) event).getMail().getToClientNetId().equals(getClientNetId()) || //
                         interestedInMail(((NewMailEvent) event).getMail().getDestination(), ((NewMailEvent) event).getMail().getHeader())) {
                     try {
-                        System.out.println(" !!!!!!!!!!!!!!!!!!!!!!!!   vor 3 !!!!!!!!!!!!!!!!!!");
                         mailToClient(((NewMailEvent) event).getMail());
-                        System.out.println(" !!!!!!!!!!!!!!!!!!!!!!!!   nach 3 !!!!!!!!!!!!!!!!!!");
                     } catch (Exception e) {
-                        LocalLog.warn("Mehrere Services versuchen auf eine Nachricht zuzugreifen. Header: " + ((NewMailEvent) event).getMail().getHeader()
-                                + "; Destination: " + ((NewMailEvent) event).getMail().getDestination());
+                        LocalLog.warn("Fehler bei Verarbeitung einer Mail. Header: " + ((NewMailEvent) event).getMail().getHeader() + "; Destination: "
+                                + ((NewMailEvent) event).getMail().getDestination());
                     }
                 }
             } else if (interestedInEvent(event)) {
-                System.out.println(" !!!!!!!!!!!!!!!!!!!!!!!!   vor 4 !!!!!!!!!!!!!!!!!!");
                 writeMsg(MailTag.REQ_READY_FOR_ACTION);
-                System.out.println(" !!!!!!!!!!!!!!!!!!!!!!!!   nach 4 !!!!!!!!!!!!!!!!!!");
                 try {
-                    System.out.println(" !!!!!!!!!!!!!!!!!!!!!!!!   vor 5 !!!!!!!!!!!!!!!!!!");
                     eventToClient(event);
-                    System.out.println(" !!!!!!!!!!!!!!!!!!!!!!!!   nach 5 !!!!!!!!!!!!!!!!!!");
                 } catch (Exception e) {
                     LocalLog.error("Fehler bei Verarbeitung eines Events.", e);
                 }
             }
         } catch (Exception ex) {
-            throw new RuntimeException(ex);
-            // LocalLog.warn(
-            // "MailAndEventService.processEvent(). Nachricht an MailAndEventClient konnte nicht verschickt werden. "
-            // + ex);
-            // System.out.println("TalkLine: " + getTalkLine());
+            LocalLog.warn("MailAndEventService.processEvent(). Nachricht an MailAndEventClient konnte nicht verschickt werden. " + ex.getStackTrace());
+            throw new ActionFailedException(1154L, "Client ist vermutlich nicht mehr erreichbar.");
         }
     }
 
@@ -200,12 +186,28 @@ public abstract class MailAndEventService extends BaseService {
         return false;
     }
 
+    /**
+     * Here the messages of a MailAndEventClient are interpreted and processed.
+     */
     public void processClientMsg(Enum<?> incomingMsgEnum) throws ActionFailedException {
         if (incomingMsgEnum.equals(MailTag.REQ_READY_FOR_EXPRESSIONS)) {
             addExpressions();
         }
         if (incomingMsgEnum.equals(MailTag.REQ_READY_FOR_EVENTLIST)) {
             addEvents();
+        }
+        // the client tells that he is ready with initializing. now he is able
+        // to process mails and events. If the registration at the server is
+        // done to early, the service would send events or mails to the client
+        // during the client is still initializing. So they both would get in an
+        // inconsistant state.
+        if (incomingMsgEnum.equals(MailTag.INFO_READY_FOR_EVENTS)) {
+            // responseTo(MailTag.VAL_OK, MailTag.VAL_OK.name());
+            System.out.println("Vor dem letzten Schritt.");
+            responseTo(MailTag.VAL_OK, MailTag.VAL_OK.name());
+            addObservedEventType(EventType.EVENT_MAIL);
+            addObservedEventType(EventType.EVENT_ANY_TYPE);
+            getServer().registerForEvents(this);
         }
     }
 

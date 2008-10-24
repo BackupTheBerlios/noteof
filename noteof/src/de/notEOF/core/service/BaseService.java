@@ -149,23 +149,31 @@ public abstract class BaseService extends BaseClientOrService implements Service
      *            detected by the service.
      */
     public final synchronized void update(Service service, NotEOFEvent event) {
-        // Durch Verwendung einer map koennen die Eintraege (hoffentlich)
-        // gleichzeitig in die Liste geschrieben und ueber die keys daraus
-        // geloescht werden. Das ist der Versuch Synchronisationsprobleme der
-        // Liste in den Griff zu bekommen.
-        if (null == actionMap)
-            actionMap = new HashMap<Long, UpdateAction>();
+        try {
+            // Durch Verwendung einer map koennen die Eintraege (hoffentlich)
+            // gleichzeitig in die Liste geschrieben und ueber die keys daraus
+            // geloescht werden. Das ist der Versuch Synchronisationsprobleme
+            // der
+            // Liste in den Griff zu bekommen.
+            if (null == actionMap)
+                actionMap = new HashMap<Long, UpdateAction>();
 
-        // key fuer die map (billig...)
-        Date now = new Date();
-        actionMap.put(now.getTime(), new UpdateAction(service, event));
+            // key fuer die map (billig...)
+            System.out.println("Anzahl Actions: " + (actionMap.size() + 1));
+            Date now = new Date();
+            actionMap.put(now.getTime(), new UpdateAction(service, event));
 
-        // Der Prozessor, der die events abarbeitet, darf nicht parallel laufen.
-        // Die events sollen nacheinander abgearbeitet werden.
-        if (null == processor) {
-            processor = new EventProcessor();
-            Thread processThread = new Thread(processor);
-            processThread.start();
+            // Der Prozessor, der die events abarbeitet, darf nicht parallel
+            // laufen.
+            // Die events sollen nacheinander abgearbeitet werden.
+            if (null == processor) {
+                processor = new EventProcessor(this);
+                Thread processThread = new Thread(processor);
+                processThread.start();
+            }
+        } catch (Exception e) {
+            System.out.println("im Update abgefangen, weil sonst der Server kaputt geht...");
+            e.printStackTrace();
         }
     }
 
@@ -177,20 +185,16 @@ public abstract class BaseService extends BaseClientOrService implements Service
     // Ansonsten wuerde der Observable warten muessen, bis der Observer die
     // Verarbeitung abgeschlossen hat.
     private final class EventProcessor implements Runnable {
-        // private boolean running = false;
+        private BaseService mainClass;
 
-        // private boolean isRunning() {
-        // return running;
-        // }
-
-        private EventProcessor() {
+        private EventProcessor(BaseService mainClass) {
+            this.mainClass = mainClass;
         }
 
         public void run() {
-            // running = true;
             try {
+                System.out.println("Komme ich hier rein?");
                 while (true) {
-
                     // Die actionMap kann theoretisch waehrend der Verarbeitung
                     // hier
                     // gleichzeitig durch Aufruf der update-Methode ergaenzt
@@ -199,7 +203,6 @@ public abstract class BaseService extends BaseClientOrService implements Service
                     // vorliegt.
                     while (!actionMap.isEmpty()) {
                         Set<Long> actionSet = actionMap.keySet();
-
                         Collection<Long> keyCopy = new ArrayList<Long>();
                         keyCopy.addAll(actionSet);
 
@@ -207,7 +210,6 @@ public abstract class BaseService extends BaseClientOrService implements Service
                             Object[] blubb = actionSet.toArray();
                             for (int i = 0; i < blubb.length; i++) {
                                 Long x = (Long) blubb[i];
-                                System.out.println("VERARBEITE actionMap Nr. " + x);
                                 UpdateAction action = actionMap.get(x);
                                 processEvent(action.getService(), action.getEvent());
                             }
@@ -219,13 +221,20 @@ public abstract class BaseService extends BaseClientOrService implements Service
                             }
                         }
                     }
-                    Thread.sleep(100);
+                    try {
+                        Thread.sleep(30);
+                    } catch (InterruptedException i) {
+                        System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! NOTIFIED !!!!!!!!!!!!!!!!!!!!!!!!");
+                        // weiter geht's
+                    }
                 }
             } catch (Exception e) {
-                LocalLog.error("Fehler bei Abarbeiten der MessageQueue im EventProcessor des BaseService." + e);
-                e.printStackTrace();
+                LocalLog
+                        .error("Fehler bei Abarbeiten der MessageQueue im EventProcessor des BaseService. Der Service wird aus der Event-Benachrichtigung entfernt!"
+                                + e);
+                server.unregisterFromEvents(mainClass);
+                // e.printStackTrace();
             }
-            // running = false;
         }
     }
 
@@ -276,7 +285,6 @@ public abstract class BaseService extends BaseClientOrService implements Service
                         }
                     } else if (msg.equals(MailTag.REQ_READY_FOR_EVENT.name())) {
                         // writeMsg(BaseCommTag.VAL_OK);
-                        System.out.println("BaseService - run: event ist eingetrudelt.");
                         try {
                             processEvent();
                         } catch (Exception e) {
@@ -327,6 +335,8 @@ public abstract class BaseService extends BaseClientOrService implements Service
             implementationLastSteps();
         } catch (ActionFailedException e) {
         }
+
+        server.unregisterFromEvents(this);
         System.out.println("Service wird beendet: " + this.getClass().getCanonicalName() + "; id: " + getServiceId());
         isRunning = false;
     }
@@ -428,4 +438,9 @@ public abstract class BaseService extends BaseClientOrService implements Service
      * @return Set the return value to true if the LifeSignSystem shall be used.
      */
     public abstract boolean isLifeSignSystemActive();
+
+    public String getName() {
+        return hashCode() + serviceId;
+    }
+
 }

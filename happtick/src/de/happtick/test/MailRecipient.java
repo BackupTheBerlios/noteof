@@ -58,7 +58,7 @@ public class MailRecipient implements MailAndEventRecipient {
 
     private void testMail() {
         try {
-            // Thread.sleep(500);
+            Thread.sleep(50);
             NotEOFMail newMail;
             newMail = new NotEOFMail("Kopf", "xBegriff", "Wichtiger Inhalt");
             appl.sendMail(newMail);
@@ -99,7 +99,7 @@ public class MailRecipient implements MailAndEventRecipient {
         //System.out.println("================================================")
         // ;
 
-        if (5000 < complete)
+        if (1000 < complete)
             System.exit(0);
         testMail();
     }

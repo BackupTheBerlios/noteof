@@ -50,7 +50,7 @@ public class Server implements EventObservable, Runnable {
     private static ServerSocket serverSocket;
     private static String notEof_Home;
     private static int lastServiceId = 0;
-    private List<EventObserver> eventObservers;
+    private Map<String, EventObserver> eventObservers;
     private static Map<String, Map<String, Service>> allServiceMaps;
 
     public static Server getInstance() {
@@ -283,6 +283,7 @@ public class Server implements EventObservable, Runnable {
         // System.out.println("observer: " + observer.getObservedEvents());
         // }
 
+        System.out.println("EVENTLISTE GRÖßE: " + eventObservers.size());
         Util.updateAllObserver(eventObservers, service, event);
     }
 
@@ -296,8 +297,14 @@ public class Server implements EventObservable, Runnable {
      */
     public void registerForEvents(EventObserver eventObserver) {
         if (null == eventObservers)
-            eventObservers = new ArrayList<EventObserver>();
-        eventObservers.add(eventObserver);
+            eventObservers = new HashMap<String, EventObserver>();
+        Util.registerForEvents(eventObservers, eventObserver);
+        System.out.println("EVENTLISTE NULL?" + eventObservers);
+        System.out.println("EVENTLISTE GRÖßE: " + eventObservers.size());
+    }
+
+    public void unregisterFromEvents(EventObserver eventObserver) {
+        Util.unregisterFromEvents(eventObservers, eventObserver);
     }
 
     /*

@@ -42,6 +42,8 @@ public enum MailTag {
     REQ_BODY_DATA,
     RESP_BODY_DATA,
 
+    INFO_READY_FOR_EVENTS,
+
     VAL_OK,
     VAL_FAULT,
 

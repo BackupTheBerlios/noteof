@@ -242,7 +242,6 @@ public abstract class BaseClientOrService {
      * @throws ActionFailedException
      */
     public void writeMsg(Enum<?> requestHeader) throws ActionFailedException {
-        System.out.println("BIN im BASEClientOrSERVICE");
         talkLine.writeMsg(requestHeader.name());
     }
 

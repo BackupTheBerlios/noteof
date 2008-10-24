@@ -2,7 +2,9 @@ package de.happtick.core.schedule;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import de.happtick.configuration.ApplicationConfiguration;
 import de.happtick.configuration.ChainConfiguration;
@@ -170,7 +172,7 @@ public class Scheduler {
         private boolean chainMode = false;
         private ApplicationConfiguration applicationConfiguration;
         private StartService startService;
-        private List<EventObserver> eventObservers;
+        private Map<String, EventObserver> eventObservers;
 
         protected ApplicationScheduler(ApplicationConfiguration applicationConfiguration, StartService startService, boolean chainMode) {
             this.applicationConfiguration = applicationConfiguration;
@@ -304,9 +306,12 @@ public class Scheduler {
 
         public void registerForEvents(EventObserver observer) {
             if (null == eventObservers)
-                eventObservers = new ArrayList<EventObserver>();
-            eventObservers.add(observer);
+                eventObservers = new HashMap<String, EventObserver>();
+            Util.registerForEvents(eventObservers, observer);
+        }
 
+        public void unregisterFromEvents(EventObserver observer) {
+            Util.unregisterFromEvents(eventObservers, observer);
         }
 
         public void update(Service service, NotEOFEvent event) {
@@ -316,9 +321,14 @@ public class Scheduler {
                 appServiceStopped = true;
         }
 
-        public void updateAllObserver(List<EventObserver> eventObserver, Service service, NotEOFEvent event) {
-            Util.updateAllObserver(eventObserver, service, event);
+        public void updateAllObserver(Map<String, EventObserver> eventObservers, Service service, NotEOFEvent event) {
+            Util.updateAllObserver(eventObservers, service, event);
         }
+
+        public String getName() {
+            return "Class: " + this.getClass().getName() + "; This is part of the central Scheduler class.";
+        }
+
     }
 
     private class SchedulerGarbage implements Runnable {
@@ -419,6 +429,13 @@ public class Scheduler {
             System.out.println(stopDate);
         }
 
+        public String getName() {
+            return "Class: " + this.getClass().getName() + "; This is part of the central Scheduler class.";
+        }
+    }
+
+    public String getName() {
+        return "Class: " + this.getClass().getName() + "; This is one of the central elements of Happtick.";
     }
 
 }

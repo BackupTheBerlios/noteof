@@ -47,6 +47,15 @@ public abstract class MailAndEventClient extends BaseClient {
             acceptor = new MailAndEventAcceptor();
             Thread acceptorThread = new Thread(acceptor);
             acceptorThread.start();
+
+            while (acceptor.isStopped()) {
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+            System.out.println("asdflasdflj");
         } else
             throw new ActionFailedException(1090L, "Recipient: " + this.recipient.getClass().getCanonicalName());
     }
@@ -64,9 +73,15 @@ public abstract class MailAndEventClient extends BaseClient {
 
         public void run() {
             boolean isEvent = false;
-            stopped = false;
             try {
-                System.out.println("THREAD STARTED");
+                // Tell the service that now the client is ready to accept mails
+                // and events
+                System.out.println("Vor dem letzten Schritt.");
+                if (MailTag.VAL_OK.name().equals(requestTo(MailTag.INFO_READY_FOR_EVENTS, MailTag.VAL_OK))) {
+                    System.out.println("stopped = false");
+                    stopped = false;
+                }
+
                 while (!stopped) {
                     awaitRequest(MailTag.REQ_READY_FOR_ACTION);
                     String action = readMsg();

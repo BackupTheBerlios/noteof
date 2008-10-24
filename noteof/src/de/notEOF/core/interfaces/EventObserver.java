@@ -30,4 +30,13 @@ public interface EventObserver {
      * @return A list with the Events which the observer wants to get.
      */
     public List<EventType> getObservedEvents();
+
+    /**
+     * The name of the observer (needed e.g. for error logging).
+     * <p>
+     * Can be the name of a service, it's serviceId or something else.
+     * 
+     * @return A name which is clearly enough to identify the observer.
+     */
+    public String getName();
 }
