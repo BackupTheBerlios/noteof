@@ -101,60 +101,132 @@ public class Server implements EventObservable, Runnable {
         while (!stop) {
             try {
                 Socket clientSocket = serverSocket.accept();
-                acceptClient(clientSocket);
+                ClientAcceptor acceptor = new ClientAcceptor(clientSocket, this);
+                Thread acceptorThread = new Thread(acceptor);
+                acceptorThread.start();
+                // acceptClient(clientSocket);
             } catch (IOException ex) {
                 LocalLog.error("Fehler bei Warten auf Connect durch nï¿½chsten Client", ex);
-            } catch (ActionFailedException afx) {
-                LocalLog.error("Abbruch bei Verbindungsaufbau mit Client.", afx);
             }
         }
     }
 
-    /*
-     * First step: Be kind, shake hands with client.
-     */
-    private void acceptClient(Socket clientSocket) throws ActionFailedException {
-        TalkLine talkLine = new TalkLine(clientSocket, 0);
-        // Client asks for registration
-        talkLine.awaitRequestAnswerImmediate(BaseCommTag.REQ_REGISTRATION, BaseCommTag.RESP_REGISTRATION, BaseCommTag.VAL_OK.name());
+    private class ClientAcceptor implements Runnable {
 
-        // client wants it's own id
-        String clientNetId = talkLine.getHostAddress() + new Date().getTime();
-        talkLine.awaitRequestAnswerImmediate(BaseCommTag.REQ_CLIENT_ID, BaseCommTag.RESP_CLIENT_ID, clientNetId);
+        private Socket clientSocket = null;
+        private Server server = null;
 
-        // server asks for perhaps existing service id
-        String deliveredServiceId = talkLine.requestTo(BaseCommTag.REQ_SERVICE_ID, BaseCommTag.RESP_SERVICE_ID);
-        String serviceTypeName = talkLine.requestTo(BaseCommTag.REQ_TYPE_NAME, BaseCommTag.RESP_TYPE_NAME);
-
-        LocalLog.info("Server acceptClient serviceTypeName = " + serviceTypeName + "; deliveredServiceId = " + deliveredServiceId);
-
-        // Lookup for a service which is assigned to the client. If not found
-        // create a new one
-        Service service = assignServiceToClient(clientSocket, clientNetId, deliveredServiceId, serviceTypeName);
-        // Confirm the serviceId received by client or tell him another one
-        talkLine.awaitRequestAnswerImmediate(BaseCommTag.REQ_SERVICE, BaseCommTag.RESP_SERVICE, service.getServiceId());
-
-        BaseCommTag activateLifeSigns = BaseCommTag.VAL_FALSE;
-        if (service.isLifeSignSystemActive())
-            activateLifeSigns = BaseCommTag.VAL_TRUE;
-        talkLine.awaitRequestAnswerImmediate(BaseCommTag.REQ_LIFE_SIGN_ACTIVATE, BaseCommTag.RESP_LIFE_SIGN_ACTIVATE, activateLifeSigns.name());
-
-        // start service for client
-        // and inform all observer
-        if (null != service) {
-            Thread serviceThread = new Thread((Runnable) service);
-            service.setThread(serviceThread);
-            serviceThread.start();
-
-            // Fire event to all observers which are interested in
-            NewServiceEvent event = new NewServiceEvent();
-            event.addAttribute("serviceId", service.getServiceId());
-            Util.updateAllObserver(eventObservers, null, event);
-        } else {
-            // service couldn't be created or found in list by type name
-            throw new ActionFailedException(150L, "Service Typ unbekannt.");
+        public ClientAcceptor(Socket clientSocket, Server server) {
+            this.clientSocket = clientSocket;
+            this.server = server;
         }
 
+        public void run() {
+            try {
+                acceptClient(clientSocket);
+            } catch (ActionFailedException afx) {
+                LocalLog.error("Abbruch bei Verbindungsaufbau mit Client.", afx);
+            }
+        }
+
+        /*
+         * First step: Be kind, shake hands with client.
+         */
+        private void acceptClient(Socket clientSocket) throws ActionFailedException {
+            TalkLine talkLine = new TalkLine(clientSocket, 0);
+            // Client asks for registration
+            talkLine.awaitRequestAnswerImmediate(BaseCommTag.REQ_REGISTRATION, BaseCommTag.RESP_REGISTRATION, BaseCommTag.VAL_OK.name());
+
+            // client wants it's own id
+            String clientNetId = talkLine.getHostAddress() + new Date().getTime();
+            talkLine.awaitRequestAnswerImmediate(BaseCommTag.REQ_CLIENT_ID, BaseCommTag.RESP_CLIENT_ID, clientNetId);
+
+            // server asks for perhaps existing service id
+            String deliveredServiceId = talkLine.requestTo(BaseCommTag.REQ_SERVICE_ID, BaseCommTag.RESP_SERVICE_ID);
+            String serviceTypeName = talkLine.requestTo(BaseCommTag.REQ_TYPE_NAME, BaseCommTag.RESP_TYPE_NAME);
+
+            LocalLog.info("Server acceptClient serviceTypeName = " + serviceTypeName + "; deliveredServiceId = " + deliveredServiceId);
+
+            // Lookup for a service which is assigned to the client. If not
+            // found
+            // create a new one
+            Service service = assignServiceToClient(clientSocket, clientNetId, deliveredServiceId, serviceTypeName);
+            // Confirm the serviceId received by client or tell him another one
+            talkLine.awaitRequestAnswerImmediate(BaseCommTag.REQ_SERVICE, BaseCommTag.RESP_SERVICE, service.getServiceId());
+
+            BaseCommTag activateLifeSigns = BaseCommTag.VAL_FALSE;
+            if (service.isLifeSignSystemActive())
+                activateLifeSigns = BaseCommTag.VAL_TRUE;
+            talkLine.awaitRequestAnswerImmediate(BaseCommTag.REQ_LIFE_SIGN_ACTIVATE, BaseCommTag.RESP_LIFE_SIGN_ACTIVATE, activateLifeSigns.name());
+
+            // start service for client
+            // and inform all observer
+            if (null != service) {
+                Thread serviceThread = new Thread((Runnable) service);
+                service.setThread(serviceThread);
+                serviceThread.start();
+
+                // Fire event to all observers which are interested in
+                NewServiceEvent event = new NewServiceEvent();
+                event.addAttribute("serviceId", service.getServiceId());
+                Util.updateAllObserver(eventObservers, null, event);
+            } else {
+                // service couldn't be created or found in list by type name
+                throw new ActionFailedException(150L, "Service Typ unbekannt.");
+            }
+
+        }
+
+        /*
+         * Second step: Look for matching service by existing serviceId and
+         * clientTypeName
+         */
+        private Service assignServiceToClient(Socket clientSocket, String clientNetId, String deliveredServiceId, String serviceTypeName)
+                throws ActionFailedException {
+
+            // Initialization of map for storing serviceLists
+            // the typeNames are sent by the clients during the connecting act
+            if (null == allServiceMaps)
+                allServiceMaps = new HashMap<String, Map<String, Service>>();
+
+            // Search for Map which contains the Map of the services with the
+            // same
+            // serviceTypeName
+            // Then search in the service Map for the service which has the same
+            // deliveredServiceId
+            Service service = getService(deliveredServiceId, Util.simpleClassName(serviceTypeName));
+
+            // not found?
+            // create service
+            if (null == service) {
+                service = ServiceFinder.getService(notEof_Home, serviceTypeName);
+
+                if (null != service) {
+                    // generate new serviceId
+                    deliveredServiceId = generateServiceId();
+                    ((BaseService) service).setServer(this.server);
+                    ((BaseService) service).setClientNetId(clientNetId);
+                    ((BaseService) service).initializeConnection(clientSocket, deliveredServiceId);
+                    ((BaseService) service).implementationFirstSteps();
+
+                    // if service type did not exist in general service list
+                    // till
+                    // now create new map for type
+                    Map<String, Service> serviceMap = getServiceMapByTypeName(Util.simpleClassName(serviceTypeName));
+                    if (null == serviceMap) {
+                        serviceMap = new HashMap<String, Service>();
+                        // add new type specific map to general list
+                        allServiceMaps.put(Util.simpleClassName(serviceTypeName), serviceMap);
+                    }
+
+                    // add new service to type specific map
+                    serviceMap.put(deliveredServiceId, service);
+                } else {
+                    throw new ActionFailedException(152L, "Suche des Service: " + serviceTypeName);
+                }
+            }
+            return service;
+        }
     }
 
     public static String getApplicationHome() {
@@ -213,55 +285,6 @@ public class Server implements EventObservable, Runnable {
         return null;
     }
 
-    /*
-     * Second step: Look for matching service by existing serviceId and
-     * clientTypeName
-     */
-    private Service assignServiceToClient(Socket clientSocket, String clientNetId, String deliveredServiceId, String serviceTypeName)
-            throws ActionFailedException {
-
-        // Initialization of map for storing serviceLists
-        // the typeNames are sent by the clients during the connecting act
-        if (null == allServiceMaps)
-            allServiceMaps = new HashMap<String, Map<String, Service>>();
-
-        // Search for Map which contains the Map of the services with the same
-        // serviceTypeName
-        // Then search in the service Map for the service which has the same
-        // deliveredServiceId
-        Service service = getService(deliveredServiceId, Util.simpleClassName(serviceTypeName));
-
-        // not found?
-        // create service
-        if (null == service) {
-            service = ServiceFinder.getService(notEof_Home, serviceTypeName);
-
-            if (null != service) {
-                // generate new serviceId
-                deliveredServiceId = generateServiceId();
-                ((BaseService) service).setServer(this);
-                ((BaseService) service).setClientNetId(clientNetId);
-                ((BaseService) service).initializeConnection(clientSocket, deliveredServiceId);
-                ((BaseService) service).implementationFirstSteps();
-
-                // if service type did not exist in general service list till
-                // now create new map for type
-                Map<String, Service> serviceMap = getServiceMapByTypeName(Util.simpleClassName(serviceTypeName));
-                if (null == serviceMap) {
-                    serviceMap = new HashMap<String, Service>();
-                    // add new type specific map to general list
-                    allServiceMaps.put(Util.simpleClassName(serviceTypeName), serviceMap);
-                }
-
-                // add new service to type specific map
-                serviceMap.put(deliveredServiceId, service);
-            } else {
-                throw new ActionFailedException(152L, "Suche des Service: " + serviceTypeName);
-            }
-        }
-        return service;
-    }
-
     /**
      * Fire an event to all registered observers.
      * <p>
@@ -283,7 +306,7 @@ public class Server implements EventObservable, Runnable {
         // System.out.println("observer: " + observer.getObservedEvents());
         // }
 
-        System.out.println("EVENTLISTE GRÖßE: " + eventObservers.size());
+        System.out.println("EVENTLISTE GRï¿½ï¿½E: " + eventObservers.size());
         Util.updateAllObserver(eventObservers, service, event);
     }
 
@@ -300,7 +323,7 @@ public class Server implements EventObservable, Runnable {
             eventObservers = new HashMap<String, EventObserver>();
         Util.registerForEvents(eventObservers, eventObserver);
         System.out.println("EVENTLISTE NULL?" + eventObservers);
-        System.out.println("EVENTLISTE GRÖßE: " + eventObservers.size());
+        System.out.println("EVENTLISTE GRï¿½ï¿½E: " + eventObservers.size());
     }
 
     public void unregisterFromEvents(EventObserver eventObserver) {

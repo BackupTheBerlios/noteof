@@ -3,6 +3,7 @@ package de.happtick.test;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Random;
 
 import de.happtick.application.client.HapptickApplication;
 import de.happtick.core.events.ActionEvent;
@@ -26,10 +27,13 @@ public class MailRecipient implements MailAndEventRecipient {
     private long stampDiff = 0;
 
     public MailRecipient(String... args) throws HapptickException {
+        System.out.println(" -----------  0  --------------");
         appl = new HapptickApplication(0, "localhost", 3000, args);
+        System.out.println(" -----------  1  --------------");
 
         // Anwendung will selbst mails oder events verarbeiten
         appl.useMailsAndEvents(this);
+        System.out.println(" -----------  2  --------------");
 
         // Hinzufuegen von interessanten Nachrichteninhalten
         MailToken tokens = new MailToken();
@@ -58,9 +62,12 @@ public class MailRecipient implements MailAndEventRecipient {
 
     private void testMail() {
         try {
-            Thread.sleep(50);
+            // Thread.sleep(50);
+            int rd = new Random().nextInt();
+
             NotEOFMail newMail;
-            newMail = new NotEOFMail("Kopf", "xBegriff", "Wichtiger Inhalt");
+            newMail = new NotEOFMail("Kopf", "xBegriff", String.valueOf(rd));
+            System.out.println("VOR appl.sendMail()");
             appl.sendMail(newMail);
         } catch (Exception e) {
             LocalLog.error("Fehler bei Anlegen oder Versand der Mail.", e);
@@ -87,20 +94,21 @@ public class MailRecipient implements MailAndEventRecipient {
             }
 
         }
-        //System.out.println("================================================")
+        // System.out.println("================================================")
         // ;
         // System.out.println("Mail ist angekommen...");
-        //System.out.println("________________________________________________")
+        // System.out.println("________________________________________________")
         // ;
         // System.out.println("Header: " + mail.getHeader());
-        // System.out.println("Body Text: " + mail.getBodyText());
+        System.out.println("Body Text: " + mail.getBodyText());
         // System.out.println("Destination: " + mail.getDestination());
         // System.out.println("ClientNetId: " + mail.getToClientNetId());
-        //System.out.println("================================================")
+        // System.out.println("================================================")
         // ;
 
         if (1000 < complete)
             System.exit(0);
+        System.out.println("VOR testMail Aufruf");
         testMail();
     }
 
@@ -121,7 +129,6 @@ public class MailRecipient implements MailAndEventRecipient {
         }
     }
 
-    @Override
     public void processEvent(NotEOFEvent event) {
         int eventSwitch = 0;
         if (null != event) {
@@ -132,7 +139,7 @@ public class MailRecipient implements MailAndEventRecipient {
 
         try {
             NotEOFEvent newEvent = new LogEvent();
-            newEvent.addAttribute("information", "Holderidudödeldu");
+            newEvent.addAttribute("information", "Holderidudï¿½deldu");
             if (0 == eventSwitch) {
                 System.out.println("?????????????????????");
                 appl.sendEvent(newEvent);
@@ -145,7 +152,6 @@ public class MailRecipient implements MailAndEventRecipient {
         }
     }
 
-    @Override
     public void processEventException(Exception e) {
         LocalLog.error("Event-Empfang wurde mit einem Fehler unterbrochen: ", e);
     }

@@ -27,15 +27,12 @@ public abstract class NotEOFEventBase implements NotEOFEvent {
         attributes.put(key, value);
     }
 
-    @Override
     public Map<String, String> getAttributes() {
         return this.attributes;
     }
 
-    @Override
     public abstract EventType getEventType();
 
-    @Override
     public String getAttribute(String key) {
         if (null != attributes)
             return attributes.get(key);

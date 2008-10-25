@@ -83,9 +83,12 @@ public abstract class MailAndEventClient extends BaseClient {
                 }
 
                 while (!stopped) {
+                    System.out.println("Warte auf REQ_READY_FOR_ACTION");
                     awaitRequest(MailTag.REQ_READY_FOR_ACTION);
                     String action = readMsg();
                     if (MailTag.VAL_ACTION_MAIL.name().equals(action)) {
+                        System.out.println("MAIL jetzt pruefen");
+                        System.out.println("Warte ab jetzt auf die mail...");
                         NotEOFMail mail = getTalkLine().receiveMail();
                         recipient.processMail(mail);
                     }

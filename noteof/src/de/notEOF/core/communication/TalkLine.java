@@ -369,6 +369,8 @@ public class TalkLine implements Observer {
             DataObject bodyData = receiveDataObject();
             mail.setBodyData(bodyData);
         }
+
+        System.out.println("MAIL wurde empfangen!" + mail.getBodyText());
         return mail;
     }
 
@@ -395,6 +397,7 @@ public class TalkLine implements Observer {
             writeMsg("TRUE");
             sendDataObject(mail.getBodyData());
         }
+        System.out.println("MAIL wurde gesendet!" + mail.getBodyText());
     }
 
     /**

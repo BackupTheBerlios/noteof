@@ -85,8 +85,8 @@ public class Util {
     }
 
     /**
-     * Pr�ft ob object NULL, ein Leerstring (getrimmt), ein leeres Array
-     * (length == 0) oder eine leere Collection ist.
+     * Pr�ft ob object NULL, ein Leerstring (getrimmt), ein leeres Array (length
+     * == 0) oder eine leere Collection ist.
      * 
      * @param object
      * @return
@@ -380,14 +380,13 @@ public class Util {
 
         boolean retry = true;
 
-        System.out.println("AAAAAAAAAAABBBBBBBBBBBBEEEEEEEEEEEEEEERRRRRRRRRRRRRRRr HIER");
         // all observer
         if (eventObservers.size() > 0) {
             while (retry) {
                 retry = false;
                 Set<String> set = eventObservers.keySet();
                 for (String observerName : set) {
-                    System.out.println("UPDATE KEY IM SET: " + observerName);
+                    System.out.println("Util... ObserverName IM SET: " + observerName);
                     // but only inform observer, when event in his list
                     EventObserver eventObserver = eventObservers.get(observerName);
                     if (null != eventObserver && null != eventObserver.getObservedEvents()) {

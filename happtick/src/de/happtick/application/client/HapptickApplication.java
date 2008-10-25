@@ -16,11 +16,9 @@ import de.notEOF.mail.interfaces.MailAndEventRecipient;
 import de.notEOF.mail.interfaces.MailMatchExpressions;
 
 /**
- * This class is the connector between the application and an application
- * service which runs on server side.
+ * This class is the connector between the application and an application service which runs on server side.
  * <p>
- * Main mission is to control the start allowance of the application and to
- * inform the server about events on client side.
+ * Main mission is to control the start allowance of the application and to inform the server about events on client side.
  * 
  * @author dirk
  * 
@@ -37,10 +35,8 @@ public class HapptickApplication {
     private MailAndEventRecipient mailEventRecipient;
 
     /**
-     * If this constructor is used at a later time point the serverAddress and
-     * the port to the happtick scheduler must be set. Maybe it is a way to
-     * write ip and port into a configuration file and get them by using the
-     * class LocalConfigurationClient.
+     * If this constructor is used at a later time point the serverAddress and the port to the happtick scheduler must be set. Maybe it is a
+     * way to write ip and port into a configuration file and get them by using the class LocalConfigurationClient.
      */
     public HapptickApplication() {
 
@@ -50,14 +46,12 @@ public class HapptickApplication {
      * Constructor with connection informations.
      * 
      * @param applicationId
-     *            Unique identifier for the configured applications within the
-     *            happtick configuration. This id is used by the scheduler to
+     *            Unique identifier for the configured applications within the happtick configuration. This id is used by the scheduler to
      *            distinguish between the applications.
      * @param serverAddress
      *            The ip to the happtick server where the scheduler is running.
      * @param serverPort
-     *            The port of the happtick server where the scheduler is
-     *            running.
+     *            The port of the happtick server where the scheduler is running.
      */
     public HapptickApplication(long applicationId, String serverAddress, int serverPort, String... args) throws HapptickException {
         this.applicationId = applicationId;
@@ -68,11 +62,9 @@ public class HapptickApplication {
     }
 
     /**
-     * Connect with the happtick server. Exactly this means to connect with an
-     * application service on the happtick server. <br>
+     * Connect with the happtick server. Exactly this means to connect with an application service on the happtick server. <br>
      * The service later decides if the application may run -> startAllowed(). <br>
-     * If you use this method, the connection informations (ip, port of happtick
-     * server) must be set before.
+     * If you use this method, the connection informations (ip, port of happtick server) must be set before.
      * 
      * @throws HapptickException
      */
@@ -81,15 +73,13 @@ public class HapptickApplication {
     }
 
     /**
-     * Connect with the happtick server. Exactly this means to connect with an
-     * application service on the happtick server. <br>
+     * Connect with the happtick server. Exactly this means to connect with an application service on the happtick server. <br>
      * The service later decides if the application may run -> startAllowed().
      * 
      * @param serverAddress
      *            The ip to the happtick server where the scheduler is running.
      * @param serverPort
-     *            The port of the happtick server where the scheduler is
-     *            running.
+     *            The port of the happtick server where the scheduler is running.
      * @throws HapptickException
      */
     public void connect(String serverAddress, int serverPort) throws HapptickException {
@@ -105,9 +95,11 @@ public class HapptickApplication {
         }
 
         try {
+            System.out.println("--------  HapptickApplication connect 0 ----------");
             // connect with service
             applicationClient.connect(serverAddress, serverPort, null);
             // set unique application id
+            System.out.println("--------  HapptickApplication connect 1 ----------");
             applicationClient.setApplicationId(applicationId);
             // use args to set start id if start client has started this and the
             // id was set within the calling parameters
@@ -121,8 +113,7 @@ public class HapptickApplication {
      * Sets the unique application id.
      * 
      * @param applicationId
-     *            Unique identifier for the configured applications within the
-     *            happtick configuration. This id is used by the scheduler to
+     *            Unique identifier for the configured applications within the happtick configuration. This id is used by the scheduler to
      *            distinguish between the applications.
      */
     public void setApplicationId(Long applicationId) {
@@ -131,16 +122,14 @@ public class HapptickApplication {
 
     /**
      * 
-     * @return The hopefully unique application id like which is used in the
-     *         happtick configuration.
+     * @return The hopefully unique application id like which is used in the happtick configuration.
      */
     public Long getApplicationId() {
         return this.applicationId;
     }
 
     /**
-     * Set the connection data for communication with happtick server / happtick
-     * application service
+     * Set the connection data for communication with happtick server / happtick application service
      */
     public void setServerConnectionData(String serverAddress, int serverPort) {
         this.serverAddress = serverAddress;
@@ -150,17 +139,13 @@ public class HapptickApplication {
     /**
      * Ask the application service if the application may do it's job.
      * <p>
-     * Perhaps there is actually another process of the application running and
-     * it is not allowed to have more than one active working processes of this
-     * application kind. Then this instance can wait till the service allows to
-     * start. Or it stops itself and will be started at a later moment by the
-     * scheduler. <br>
-     * The situation that the application isn't allowed to work maybe can arrive
-     * <br>
+     * Perhaps there is actually another process of the application running and it is not allowed to have more than one active working
+     * processes of this application kind. Then this instance can wait till the service allows to start. Or it stops itself and will be
+     * started at a later moment by the scheduler. <br>
+     * The situation that the application isn't allowed to work maybe can arrive <br>
      * - if it is started manually <br>
-     * - if the scheduler makes faults - application or network errors derange
-     * the communication between the application clients and the application
-     * services so that the scheduler starte the application twice or multiple.
+     * - if the scheduler makes faults - application or network errors derange the communication between the application clients and the
+     * application services so that the scheduler starte the application twice or multiple.
      * 
      * @return True if the application can start the work.
      * @throws HapptickException
@@ -175,12 +160,9 @@ public class HapptickApplication {
     }
 
     /**
-     * Alternately to wait for start allowance by calling the method
-     * isWorkAllowed() repeatedly within a loop it is possible to let the
-     * application informed by this method. Condition is that the application
-     * implements the interface Observer and waits for start allowance in the
-     * method update(). When the allowance is given the application client calls
-     * the method observers startAllowanceEvent()<br>
+     * Alternately to wait for start allowance by calling the method isWorkAllowed() repeatedly within a loop it is possible to let the
+     * application informed by this method. Condition is that the application implements the interface Observer and waits for start
+     * allowance in the method update(). When the allowance is given the application client calls the method observers startAllowanceEvent()<br>
      * 
      * @throws HapptickException
      */
@@ -193,10 +175,8 @@ public class HapptickApplication {
      * Send any event to the service.
      * 
      * @param event
-     *            The implementation of NotEOFEvent should not use additional
-     *            data because only standard values are supported here. If there
-     *            are more members in the event class they will not be
-     *            transported to the service.
+     *            The implementation of NotEOFEvent should not use additional data because only standard values are supported here. If there
+     *            are more members in the event class they will not be transported to the service.
      * @see NotEOFEvent
      * @throws HapptickException
      */
@@ -206,8 +186,7 @@ public class HapptickApplication {
     }
 
     /**
-     * Errors can be shown within the happtick monitoring tool or written to
-     * logfiles.
+     * Errors can be shown within the happtick monitoring tool or written to logfiles.
      * <p>
      * Errors don't release events.
      * 
@@ -225,10 +204,8 @@ public class HapptickApplication {
     }
 
     /**
-     * Happtick is able to react to events. There are standard events like start
-     * and stop of application. The relations between them are configurable.
-     * Supplemental events and actions can be configured for single
-     * applications.
+     * Happtick is able to react to events. There are standard events like start and stop of application. The relations between them are
+     * configurable. Supplemental events and actions can be configured for single applications.
      * 
      * @param eventId
      *            Id which is used in the configuration.
@@ -243,14 +220,12 @@ public class HapptickApplication {
 
     /**
      * Releases an alert. <br>
-     * Like errors alarms can have a level. The controlling alarm system of
-     * happtick decides what to do depending to the alarm level.
+     * Like errors alarms can have a level. The controlling alarm system of happtick decides what to do depending to the alarm level.
      * 
      * @param description
      *            Alarm text. What happened exactly.
      * @param level
-     *            Meaning of alarm (info, warning or anything else). Depends to
-     *            the application.
+     *            Meaning of alarm (info, warning or anything else). Depends to the application.
      * @throws HapptickException
      */
     public void sendAlarm(String type, String description, String level) throws HapptickException {
@@ -259,8 +234,7 @@ public class HapptickApplication {
     }
 
     /**
-     * Log informations can be visualized within the happtick monitoring tool or
-     * written to log files on the server.
+     * Log informations can be visualized within the happtick monitoring tool or written to log files on the server.
      * 
      * @param information
      *            Detailed Text. Object which implements type LogEvent.
@@ -275,10 +249,8 @@ public class HapptickApplication {
      * Informs the happtick server that the application has stopped.
      * <p>
      * Very important to call this at end of work! <br>
-     * The connections between happtick clients and happtick services are
-     * controlled by a so called 'LifeSignSystem'. The connection will not be
-     * closed as long as the underlying communication layer hasn't stopped. And
-     * so the java vm stays active.
+     * The connections between happtick clients and happtick services are controlled by a so called 'LifeSignSystem'. The connection will
+     * not be closed as long as the underlying communication layer hasn't stopped. And so the java vm stays active.
      * 
      * @throws HapptickException
      */
@@ -290,10 +262,8 @@ public class HapptickApplication {
      * Informs the happtick server that the application has stopped.
      * <p>
      * Very important to call this at end of work! <br>
-     * The connections between happtick clients and happtick services are
-     * controlled by a so called 'LifeSignSystem'. The connection will not be
-     * closed as long as the underlying communication layer hasn't stopped. And
-     * so the java vm stays active.
+     * The connections between happtick clients and happtick services are controlled by a so called 'LifeSignSystem'. The connection will
+     * not be closed as long as the underlying communication layer hasn't stopped. And so the java vm stays active.
      * 
      * @param exitCode
      *            Result value of the application.
@@ -312,8 +282,7 @@ public class HapptickApplication {
     }
 
     /**
-     * If the using class has started the observing for awaiting the start
-     * allowance this can be stopped here.
+     * If the using class has started the observing for awaiting the start allowance this can be stopped here.
      */
     public void stopObservingForStartAllowance() {
         applicationClient.stopObservingForStartAllowance();
@@ -342,8 +311,8 @@ public class HapptickApplication {
      * 
      * This steps are recommended to receive Mails and Events: <br>
      * 1. Call useMailsAndEvents() for initializing the mail system. <br>
-     * 2. Call addInterestingMailExpressions() and / or addInterestingEvents()
-     * to tell the server which mails and events the client is interested in. <br>
+     * 2. Call addInterestingMailExpressions() and / or addInterestingEvents() to tell the server which mails and events the client is
+     * interested in. <br>
      * 3. Call startAcceptingMailsEvents() for receiving mails and events.
      * <p>
      * For sending mails or events this steps are NOT required.
@@ -357,45 +326,31 @@ public class HapptickApplication {
     }
 
     /**
-     * Enables the application to receive mails and events from the server or
-     * other services.
+     * Enables the application to receive mails and events from the server or other services.
      * <p>
-     * If a mail reaches the central server the services are informed about
-     * this. <br>
-     * To get a mail it is important to set destinations or headers which the
-     * client waits for.
+     * If a mail reaches the central server the services are informed about this. <br>
+     * To get a mail it is important to set destinations or headers which the client waits for.
      * <p>
      * 
      * @param mailEventRecipient
-     *            The application which uses this method and wants to be
-     *            informed about mails or events must implement this interface.
-     *            To use the function call it by putting in the class itself as
-     *            parameter (e.g. this).
+     *            The application which uses this method and wants to be informed about mails or events must implement this interface. To
+     *            use the function call it by putting in the class itself as parameter (e.g. this).
      * @param expressions0
-     *            To get a mail it is important to set destinations and/or
-     *            headers which the client waits for. <br>
-     *            Object which implements the interface MailExpressions. There
-     *            are two implementations of MailExpressions: MailDestinations
-     *            and MailHeaders. One of them is allowed here. NULL is allowed
-     *            also. If this value isn't NULL the other param MailExpression
-     *            expression1 must be of the other type. E.g. if this is of type
-     *            MailDestinations the param expression1 must be NULL or of type
-     *            MailHeaders. And vice versa.
+     *            To get a mail it is important to set destinations and/or headers which the client waits for. <br>
+     *            Object which implements the interface MailExpressions. There are two implementations of MailExpressions: MailDestinations
+     *            and MailHeaders. One of them is allowed here. NULL is allowed also. If this value isn't NULL the other param
+     *            MailExpression expression1 must be of the other type. E.g. if this is of type MailDestinations the param expression1 must
+     *            be NULL or of type MailHeaders. And vice versa.
      * @param expressions1
-     *            To get a mail it is important to set destinations and/or
-     *            headers which the client waits for. <br>
-     *            Object which implements the interface MailExpressions. There
-     *            are two implementations of MailExpressions: MailDestinations
-     *            and MailHeaders. One of them is allowed here. NULL is allowed
-     *            also. If this value isn't NULL the other param MailExpression
-     *            expression0 must be of the other type. E.g. if this is of type
-     *            MailDestinations the param expression0 must be NULL or of type
-     *            MailHeaders. And vice versa.
+     *            To get a mail it is important to set destinations and/or headers which the client waits for. <br>
+     *            Object which implements the interface MailExpressions. There are two implementations of MailExpressions: MailDestinations
+     *            and MailHeaders. One of them is allowed here. NULL is allowed also. If this value isn't NULL the other param
+     *            MailExpression expression0 must be of the other type. E.g. if this is of type MailDestinations the param expression0 must
+     *            be NULL or of type MailHeaders. And vice versa.
      * @param events
      *            List with Events which the client is interested in.
      * @throws HapptickException
-     *             Is raised when the connection with service could not be
-     *             established or other problems occured.
+     *             Is raised when the connection with service could not be established or other problems occured.
      */
     public void useMailsAndEvents(MailAndEventRecipient mailEventRecipient, MailExpressions expressions0, MailExpressions expressions1, List<NotEOFEvent> events)
             throws HapptickException {
@@ -406,30 +361,24 @@ public class HapptickApplication {
     }
 
     /**
-     * Enables the application to receive mails and events from the server or
-     * other services.
+     * Enables the application to receive mails and events from the server or other services.
      * <p>
-     * If a mail reaches the central server the services are informed about
-     * this. <br>
-     * To get a mail it is important to set destinations or headers which the
-     * client waits for.
+     * If a mail reaches the central server the services are informed about this. <br>
+     * To get a mail it is important to set destinations or headers which the client waits for.
      * <p>
      * This steps are recommended to receive Mails and Events: <br>
      * 1. Call useMailsAndEvents() for initializing the mail system. <br>
-     * 2. Call addInterestingMailExpressions() and / or addInterestingEvents()
-     * to tell the server which mails and events the client is interested in. <br>
+     * 2. Call addInterestingMailExpressions() and / or addInterestingEvents() to tell the server which mails and events the client is
+     * interested in. <br>
      * 3. Call startAcceptingMailsEvents() for receiving mails and events.
      * <p>
      * For sending mails or events this steps are NOT required.
      * 
      * @param mailEventRecipient
-     *            The application which uses this method and wants to be
-     *            informed about mails or events must implement this interface.
-     *            To use the function call it by putting in the class itself as
-     *            parameter (e.g. this).
+     *            The application which uses this method and wants to be informed about mails or events must implement this interface. To
+     *            use the function call it by putting in the class itself as parameter (e.g. this).
      * @throws HapptickException
-     *             Is raised when the connection with service could not be
-     *             established or other problems occured.
+     *             Is raised when the connection with service could not be established or other problems occured.
      */
     public void useMailsAndEvents(MailAndEventRecipient mailEventRecipient) throws HapptickException {
         initMailEventClient(mailEventRecipient);
@@ -440,18 +389,16 @@ public class HapptickApplication {
      * <p>
      * This steps are recommended to receive Mails and Events: <br>
      * 1. Call useMailsAndEvents() for initializing the mail system. <br>
-     * 2. Call addInterestingMailExpressions() and / or addInterestingEvents()
-     * to tell the server which mails and events the client is interested in. <br>
+     * 2. Call addInterestingMailExpressions() and / or addInterestingEvents() to tell the server which mails and events the client is
+     * interested in. <br>
      * 3. Call startAcceptingMailsEvents() for receiving mails and events.
      * <p>
      * For sending mails or events this steps are NOT required.
      * 
      * @param expressions
-     *            To get a mail it is important to set destinations and/or
-     *            headers which the client waits for. Object which implements
-     *            the interface MailExpressions. There are two implementations
-     *            of MailExpressions: MailDestinations and MailHeaders. One of
-     *            them is allowed here. NULL is allowed also.
+     *            To get a mail it is important to set destinations and/or headers which the client waits for. Object which implements the
+     *            interface MailExpressions. There are two implementations of MailExpressions: MailDestinations and MailHeaders. One of them
+     *            is allowed here. NULL is allowed also.
      * 
      * @throws ActionFailedException
      *             If the list couldn't be transmitted to the service.
@@ -473,15 +420,14 @@ public class HapptickApplication {
      * <p>
      * This steps are recommended to receive Mails and Events: <br>
      * 1. Call useMailsAndEvents() for initializing the mail system. <br>
-     * 2. Call addInterestingMailExpressions() and / or addInterestingEvents()
-     * to tell the server which mails and events the client is interested in. <br>
+     * 2. Call addInterestingMailExpressions() and / or addInterestingEvents() to tell the server which mails and events the client is
+     * interested in. <br>
      * 3. Call startAcceptingMailsEvents() for receiving mails and events.
      * <p>
      * For sending mails or events this steps are NOT required.
      * 
      * @param events
-     *            A list with objects which implement the interface
-     *            {@link NotEOFEvent}.
+     *            A list with objects which implement the interface {@link NotEOFEvent}.
      * @throws HapptickException
      */
     public void addInterestingEvents(List<NotEOFEvent> events) throws HapptickException {
@@ -499,11 +445,9 @@ public class HapptickApplication {
     /**
      * Sends a {@link NotEOFMail} to the server.
      * <p>
-     * The idea is to send mails with a special header or destination (which can
-     * be e.g. a applicationId). So one or more clients which are interested in
-     * such a mail receive the mail. <br>
-     * Furthermore at the mail the attribute toClientNetId can be set if known.
-     * Then the mail reaches only one client.
+     * The idea is to send mails with a special header or destination (which can be e.g. a applicationId). So one or more clients which are
+     * interested in such a mail receive the mail. <br>
+     * Furthermore at the mail the attribute toClientNetId can be set if known. Then the mail reaches only one client.
      * 
      * @param mail
      *            The mail.

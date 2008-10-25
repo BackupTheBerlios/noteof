@@ -101,12 +101,13 @@ public abstract class MailAndEventService extends BaseService {
 
         try {
             if (EventType.EVENT_MAIL.equals(event.getEventType())) {
-                writeMsg(MailTag.REQ_READY_FOR_ACTION);
                 // check if interesting for this service
                 if (((NewMailEvent) event).getMail().getToClientNetId().equals(getClientNetId()) || //
-                        interestedInMail(((NewMailEvent) event).getMail().getDestination(), ((NewMailEvent) event).getMail().getHeader())) {
+                        interestedInMail(((NewMailEvent) event).getMail())) {
                     try {
+                        writeMsg(MailTag.REQ_READY_FOR_ACTION);
                         mailToClient(((NewMailEvent) event).getMail());
+                        System.out.println("MailAndEventService NACH mailToClient");
                     } catch (Exception e) {
                         LocalLog.warn("Fehler bei Verarbeitung einer Mail. Header: " + ((NewMailEvent) event).getMail().getHeader() + "; Destination: "
                                 + ((NewMailEvent) event).getMail().getDestination());
@@ -135,20 +136,21 @@ public abstract class MailAndEventService extends BaseService {
      *            The mail to send.
      * @throws ActionFailedException
      */
-    public final void mailToClient(NotEOFMail mail) throws ActionFailedException {
+    public final synchronized void mailToClient(NotEOFMail mail) throws ActionFailedException {
         writeMsg(MailTag.VAL_ACTION_MAIL);
         getTalkLine().sendMail(mail);
     }
 
-    public final void eventToClient(NotEOFEvent event) throws ActionFailedException {
+    public final synchronized void eventToClient(NotEOFEvent event) throws ActionFailedException {
         writeMsg(MailTag.VAL_ACTION_EVENT);
         getTalkLine().sendBaseEvent(event);
     }
 
     /**
      * Derived Service must decide if he is interested in the mail by prooving
-     * destination and header. I one of them matches it is enough for returning
-     * true.
+     * destination and header. If one of them matches it is enough for returning
+     * true. But if the fromClientNetId is equal to the own clientNetId the
+     * service is not interested in.
      * 
      * @param destination
      *            Any destination String. Depends to implementation of derived
@@ -159,16 +161,18 @@ public abstract class MailAndEventService extends BaseService {
      * @return TRUE if the service wants to deliver the message to its client,
      *         FALSE if not.
      */
-    protected boolean interestedInMail(String destination, String header) {
+    protected boolean interestedInMail(NotEOFMail mail) {
+        if (getClientNetId().equals(mail.getFromClientNetId()))
+            return false;
         if (null != mailDestinations) {
             for (String expression : mailDestinations.getExpressions()) {
-                if (expression.equals(destination))
+                if (expression.equals(mail.getDestination()))
                     return true;
             }
         }
         if (null != mailHeaders) {
             for (String expression : mailHeaders.getExpressions()) {
-                if (expression.equals(header))
+                if (expression.equals(mail.getHeader()))
                     return true;
             }
         }

@@ -159,9 +159,9 @@ public abstract class BaseService extends BaseClientOrService implements Service
                 actionMap = new HashMap<Long, UpdateAction>();
 
             // key fuer die map (billig...)
-            System.out.println("Anzahl Actions: " + (actionMap.size() + 1));
             Date now = new Date();
             actionMap.put(now.getTime(), new UpdateAction(service, event));
+            System.out.println("Anzahl Actions: " + (actionMap.size()));
 
             // Der Prozessor, der die events abarbeitet, darf nicht parallel
             // laufen.
@@ -202,6 +202,7 @@ public abstract class BaseService extends BaseClientOrService implements Service
                     // run-Methode hier soll solange arbeiten, solange ein event
                     // vorliegt.
                     while (!actionMap.isEmpty()) {
+                        System.out.println(" ACTION MAP SIZE = " + actionMap.size());
                         Set<Long> actionSet = actionMap.keySet();
                         Collection<Long> keyCopy = new ArrayList<Long>();
                         keyCopy.addAll(actionSet);
@@ -224,8 +225,6 @@ public abstract class BaseService extends BaseClientOrService implements Service
                     try {
                         Thread.sleep(30);
                     } catch (InterruptedException i) {
-                        System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! NOTIFIED !!!!!!!!!!!!!!!!!!!!!!!!");
-                        // weiter geht's
                     }
                 }
             } catch (Exception e) {
@@ -263,6 +262,7 @@ public abstract class BaseService extends BaseClientOrService implements Service
         while (!stopped) {
             try {
                 String msg = readMsgTimedOut(NotEOFConstants.LIFE_TIME_INTERVAL_SERVICE);
+                System.out.println("Message ist eingetroffen: " + msg);
 
                 // Check if the lifetime hasn't send longer than allowed
                 // or if any other messages came within the max. allowed time.
