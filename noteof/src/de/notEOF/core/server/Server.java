@@ -27,7 +27,7 @@ import de.notEOF.core.service.ServiceFinder;
 import de.notEOF.core.util.ArgsParser;
 import de.notEOF.core.util.Util;
 import de.notEOF.mail.NotEOFMail;
-import de.notEOF.mail.service.MailAndEventService;
+import de.notEOF.mail.service.MailAndEventReceiveService;
 import de.notIOC.configuration.ConfigurationManager;
 
 /**
@@ -369,7 +369,7 @@ public class Server implements EventObservable, Runnable {
      * @param mail
      *            The message.
      */
-    public void mailToService(NotEOFMail mail, MailAndEventService service) throws ActionFailedException {
+    public void mailToService(NotEOFMail mail, MailAndEventReceiveService service) throws ActionFailedException {
         service.mailToClient(mail);
     }
 

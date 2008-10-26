@@ -23,11 +23,12 @@ import de.notEOF.mail.enumeration.MailTag;
  * 
  * @author Dirk
  */
-public abstract class MailAndEventService extends BaseService {
+public abstract class MailAndEventReceiveService extends BaseService {
 
     private MailToken mailDestinations;
     private MailHeaders mailHeaders;
     private List<String> eventNames;
+    private List<String> ignoredClientNetIds;
 
     @Override
     public Class<?> getCommunicationTagClass() {
@@ -39,13 +40,10 @@ public abstract class MailAndEventService extends BaseService {
         return false;
     }
 
-    /**
-     * This service is interested in Mails and Events.
-     */
-    public void implementationFirstSteps() {
-        // addObservedEventType(EventType.EVENT_MAIL);
-        // addObservedEventType(EventType.EVENT_ANY_TYPE);
-        // getServer().registerForEvents(this);
+    protected void addIgnoredMailsByClientNetId(List<String> clientNetIds) {
+        if (null == ignoredClientNetIds)
+            ignoredClientNetIds = new ArrayList<String>();
+        ignoredClientNetIds.addAll(clientNetIds);
     }
 
     protected void addInterestingDestination(String destination) {
@@ -107,7 +105,6 @@ public abstract class MailAndEventService extends BaseService {
                     try {
                         writeMsg(MailTag.REQ_READY_FOR_ACTION);
                         mailToClient(((NewMailEvent) event).getMail());
-                        System.out.println("MailAndEventService NACH mailToClient");
                     } catch (Exception e) {
                         LocalLog.warn("Fehler bei Verarbeitung einer Mail. Header: " + ((NewMailEvent) event).getMail().getHeader() + "; Destination: "
                                 + ((NewMailEvent) event).getMail().getDestination());
@@ -122,7 +119,7 @@ public abstract class MailAndEventService extends BaseService {
                 }
             }
         } catch (Exception ex) {
-            LocalLog.warn("MailAndEventService.processEvent(). Nachricht an MailAndEventClient konnte nicht verschickt werden. " + ex.getStackTrace());
+            LocalLog.warn("MailAndEventService.processEvent(). Nachricht an MailAndEventClient konnte nicht verschickt werden. " + ex);
             throw new ActionFailedException(1154L, "Client ist vermutlich nicht mehr erreichbar.");
         }
     }
@@ -149,8 +146,9 @@ public abstract class MailAndEventService extends BaseService {
     /**
      * Derived Service must decide if he is interested in the mail by prooving
      * destination and header. If one of them matches it is enough for returning
-     * true. But if the fromClientNetId is equal to the own clientNetId the
-     * service is not interested in.
+     * true. But additional here is the validation to ignored clientNetIds. If
+     * the mail was sent by an ignored client the mail itself of cause is
+     * ignored too.
      * 
      * @param destination
      *            Any destination String. Depends to implementation of derived
@@ -162,8 +160,12 @@ public abstract class MailAndEventService extends BaseService {
      *         FALSE if not.
      */
     protected boolean interestedInMail(NotEOFMail mail) {
-        if (getClientNetId().equals(mail.getFromClientNetId()))
-            return false;
+        if (null != ignoredClientNetIds) {
+            for (String ignoredClientNetId : ignoredClientNetIds) {
+                if (ignoredClientNetId.equals(mail.getFromClientNetId()))
+                    return false;
+            }
+        }
         if (null != mailDestinations) {
             for (String expression : mailDestinations.getExpressions()) {
                 if (expression.equals(mail.getDestination()))
@@ -200,6 +202,9 @@ public abstract class MailAndEventService extends BaseService {
         if (incomingMsgEnum.equals(MailTag.REQ_READY_FOR_EVENTLIST)) {
             addEvents();
         }
+        if (incomingMsgEnum.equals(MailTag.REQ_READY_FOR_IGNORED_CLIENTS)) {
+            addIgnoredMails();
+        }
         // the client tells that he is ready with initializing. now he is able
         // to process mails and events. If the registration at the server is
         // done to early, the service would send events or mails to the client
@@ -207,11 +212,19 @@ public abstract class MailAndEventService extends BaseService {
         // inconsistant state.
         if (incomingMsgEnum.equals(MailTag.INFO_READY_FOR_EVENTS)) {
             // responseTo(MailTag.VAL_OK, MailTag.VAL_OK.name());
-            System.out.println("Vor dem letzten Schritt.");
             responseTo(MailTag.VAL_OK, MailTag.VAL_OK.name());
             addObservedEventType(EventType.EVENT_MAIL);
             addObservedEventType(EventType.EVENT_ANY_TYPE);
             getServer().registerForEvents(this);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private void addIgnoredMails() throws ActionFailedException {
+        responseTo(MailTag.RESP_READY_FOR_IGNORED_CLIENTS, MailTag.VAL_OK.name());
+        DataObject dataObject = receiveDataObject();
+        if (null != dataObject && null != dataObject.getList() && dataObject.getList().size() > 0) {
+            addIgnoredMailsByClientNetId((List<String>) dataObject.getList());
         }
     }
 

@@ -27,13 +27,10 @@ public class MailRecipient implements MailAndEventRecipient {
     private long stampDiff = 0;
 
     public MailRecipient(String... args) throws HapptickException {
-        System.out.println(" -----------  0  --------------");
         appl = new HapptickApplication(0, "localhost", 3000, args);
-        System.out.println(" -----------  1  --------------");
 
         // Anwendung will selbst mails oder events verarbeiten
         appl.useMailsAndEvents(this);
-        System.out.println(" -----------  2  --------------");
 
         // Hinzufuegen von interessanten Nachrichteninhalten
         MailToken tokens = new MailToken();
@@ -94,21 +91,21 @@ public class MailRecipient implements MailAndEventRecipient {
             }
 
         }
-        // System.out.println("================================================")
+        //System.out.println("================================================")
         // ;
         // System.out.println("Mail ist angekommen...");
-        // System.out.println("________________________________________________")
+        //System.out.println("________________________________________________")
         // ;
         // System.out.println("Header: " + mail.getHeader());
         System.out.println("Body Text: " + mail.getBodyText());
         // System.out.println("Destination: " + mail.getDestination());
         // System.out.println("ClientNetId: " + mail.getToClientNetId());
-        // System.out.println("================================================")
+        //System.out.println("================================================")
         // ;
 
-        if (1000 < complete)
-            System.exit(0);
-        System.out.println("VOR testMail Aufruf");
+        // if (1000 < complete)
+        // System.exit(0);
+        // System.out.println("VOR testMail Aufruf");
         testMail();
     }
 

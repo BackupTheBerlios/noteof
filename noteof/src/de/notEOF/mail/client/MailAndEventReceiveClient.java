@@ -15,16 +15,17 @@ import de.notEOF.mail.interfaces.MailAndEventRecipient;
 import de.notEOF.mail.interfaces.MailMatchExpressions;
 import de.notIOC.configuration.ConfigurationManager;
 
-public abstract class MailAndEventClient extends BaseClient {
+public abstract class MailAndEventReceiveClient extends BaseClient {
 
     private MailAndEventAcceptor acceptor;
     private MailAndEventRecipient recipient;
+    private List<String> ignoredClientNetIds = new ArrayList<String>();
 
-    public MailAndEventClient(Socket socketToServer, TimeOut timeout, String[] args) throws ActionFailedException {
+    public MailAndEventReceiveClient(Socket socketToServer, TimeOut timeout, String[] args) throws ActionFailedException {
         super(socketToServer, timeout, args);
     }
 
-    public MailAndEventClient(String ip, int port, TimeOut timeout, String... args) throws ActionFailedException {
+    public MailAndEventReceiveClient(String ip, int port, TimeOut timeout, String... args) throws ActionFailedException {
         super(ip, port, timeout, args);
     }
 
@@ -55,7 +56,6 @@ public abstract class MailAndEventClient extends BaseClient {
                     e.printStackTrace();
                 }
             }
-            System.out.println("asdflasdflj");
         } else
             throw new ActionFailedException(1090L, "Recipient: " + this.recipient.getClass().getCanonicalName());
     }
@@ -76,19 +76,14 @@ public abstract class MailAndEventClient extends BaseClient {
             try {
                 // Tell the service that now the client is ready to accept mails
                 // and events
-                System.out.println("Vor dem letzten Schritt.");
                 if (MailTag.VAL_OK.name().equals(requestTo(MailTag.INFO_READY_FOR_EVENTS, MailTag.VAL_OK))) {
-                    System.out.println("stopped = false");
                     stopped = false;
                 }
 
                 while (!stopped) {
-                    System.out.println("Warte auf REQ_READY_FOR_ACTION");
                     awaitRequest(MailTag.REQ_READY_FOR_ACTION);
                     String action = readMsg();
                     if (MailTag.VAL_ACTION_MAIL.name().equals(action)) {
-                        System.out.println("MAIL jetzt pruefen");
-                        System.out.println("Warte ab jetzt auf die mail...");
                         NotEOFMail mail = getTalkLine().receiveMail();
                         recipient.processMail(mail);
                     }
@@ -155,4 +150,26 @@ public abstract class MailAndEventClient extends BaseClient {
             sendDataObject(dataObject);
         }
     }
+
+    /**
+     * Add client net id to ignore self send mails.
+     * <p>
+     * Normally own mails are not interesting to receive them... perhaps there
+     * are mails of other clients which must be ignored. Ignored netClientId's
+     * are stored in a list. That means that there can be more than one id to be
+     * ignored.
+     * 
+     * @param clientNetId
+     *            One more id to be ignored.
+     * 
+     */
+    public void addIgnoredClientNetId(String clientNetId) throws ActionFailedException {
+        this.ignoredClientNetIds.add(clientNetId);
+        if (MailTag.VAL_OK.name().equals(requestTo(MailTag.REQ_READY_FOR_IGNORED_CLIENTS, MailTag.RESP_READY_FOR_IGNORED_CLIENTS))) {
+            DataObject dataObject = new DataObject();
+            dataObject.setList(ignoredClientNetIds);
+            sendDataObject(dataObject);
+        }
+    }
+
 }

@@ -7,7 +7,7 @@ import de.notEOF.core.enumeration.EventType;
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.interfaces.NotEOFEvent;
 
-public abstract class NotEOFEventBase implements NotEOFEvent {
+public abstract class NotEOFBaseEvent implements NotEOFEvent {
 
     protected Map<String, String> attributes;
     protected Map<String, String> descriptions = new HashMap<String, String>();

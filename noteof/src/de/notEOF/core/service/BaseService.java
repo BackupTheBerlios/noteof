@@ -46,7 +46,7 @@ public abstract class BaseService extends BaseClientOrService implements Service
     List<EventType> eventTypes;
     protected String clientNetId;
     private EventProcessor processor;
-    private Map<Long, UpdateAction> actionMap;
+    private volatile Map<Long, UpdateAction> actionMap;
 
     public boolean isRunning() {
         return isRunning;
@@ -161,7 +161,6 @@ public abstract class BaseService extends BaseClientOrService implements Service
             // key fuer die map (billig...)
             Date now = new Date();
             actionMap.put(now.getTime(), new UpdateAction(service, event));
-            System.out.println("Anzahl Actions: " + (actionMap.size()));
 
             // Der Prozessor, der die events abarbeitet, darf nicht parallel
             // laufen.
@@ -193,7 +192,6 @@ public abstract class BaseService extends BaseClientOrService implements Service
 
         public void run() {
             try {
-                System.out.println("Komme ich hier rein?");
                 while (true) {
                     // Die actionMap kann theoretisch waehrend der Verarbeitung
                     // hier
@@ -202,16 +200,15 @@ public abstract class BaseService extends BaseClientOrService implements Service
                     // run-Methode hier soll solange arbeiten, solange ein event
                     // vorliegt.
                     while (!actionMap.isEmpty()) {
-                        System.out.println(" ACTION MAP SIZE = " + actionMap.size());
                         Set<Long> actionSet = actionMap.keySet();
                         Collection<Long> keyCopy = new ArrayList<Long>();
                         keyCopy.addAll(actionSet);
 
                         if (null != actionSet && actionSet.size() > 0) {
-                            Object[] blubb = actionSet.toArray();
-                            for (int i = 0; i < blubb.length; i++) {
-                                Long x = (Long) blubb[i];
-                                UpdateAction action = actionMap.get(x);
+                            Object[] arrayOfActionKeys = actionSet.toArray();
+                            for (int i = 0; i < arrayOfActionKeys.length; i++) {
+                                Long actionMapIndex = (Long) arrayOfActionKeys[i];
+                                UpdateAction action = actionMap.get(actionMapIndex);
                                 processEvent(action.getService(), action.getEvent());
                             }
                         }
@@ -262,7 +259,6 @@ public abstract class BaseService extends BaseClientOrService implements Service
         while (!stopped) {
             try {
                 String msg = readMsgTimedOut(NotEOFConstants.LIFE_TIME_INTERVAL_SERVICE);
-                System.out.println("Message ist eingetroffen: " + msg);
 
                 // Check if the lifetime hasn't send longer than allowed
                 // or if any other messages came within the max. allowed time.
@@ -442,5 +438,4 @@ public abstract class BaseService extends BaseClientOrService implements Service
     public String getName() {
         return hashCode() + serviceId;
     }
-
 }

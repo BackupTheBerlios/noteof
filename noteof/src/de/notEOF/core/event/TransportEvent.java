@@ -5,7 +5,7 @@ import java.util.Map;
 import de.notEOF.core.enumeration.EventType;
 import de.notEOF.core.interfaces.NotEOFEvent;
 
-public class TransportEvent extends NotEOFEventBase implements NotEOFEvent {
+public class TransportEvent extends NotEOFBaseEvent implements NotEOFEvent {
 
     private EventType eventType;
 

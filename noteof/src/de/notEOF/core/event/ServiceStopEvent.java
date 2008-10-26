@@ -3,7 +3,7 @@ package de.notEOF.core.event;
 import de.notEOF.core.enumeration.EventType;
 import de.notEOF.core.interfaces.NotEOFEvent;
 
-public class ServiceStopEvent extends NotEOFEventBase implements NotEOFEvent {
+public class ServiceStopEvent extends NotEOFBaseEvent implements NotEOFEvent {
 
     public EventType getEventType() {
         return EventType.EVENT_STOP;

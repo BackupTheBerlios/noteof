@@ -4,7 +4,7 @@ import de.notEOF.core.enumeration.EventType;
 import de.notEOF.core.interfaces.NotEOFEvent;
 import de.notEOF.mail.NotEOFMail;
 
-public class NewMailEvent extends NotEOFEventBase implements NotEOFEvent {
+public class NewMailEvent extends NotEOFBaseEvent implements NotEOFEvent {
 
     private NotEOFMail mail;
 

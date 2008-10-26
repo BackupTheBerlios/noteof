@@ -41,20 +41,20 @@ public class Errors {
         errorList.put(1L, "Nicht erwarteter Fehler.");
 
         // Initializing the happtick client
-        errorList.put(50L, "Unvollständige Initialisierung des Happtick Client.");
+        errorList.put(50L, "Unvollstaendige Initialisierung des Happtick Client.");
 
         // Initializing the happtick service
-        errorList.put(60L, "Unvollständige Initialisierung des Happtick Service.");
+        errorList.put(60L, "Unvollstaendige Initialisierung des Happtick Service.");
 
         // Establishing the connection to service
-        errorList.put(100L, "Verbindungsaufbau zum Service fehlgeschlagen.");
+        errorList.put(100L, "Fehler bei Verbindungsaufbau zum Service.");
 
         // Client lifecycle faults
-        errorList.put(200L, "Beenden der Verbindung mit Service ist fehlgeschlagen.");
-        errorList.put(201L, "Anfrage der Start-Erlaubnis beim Service ist fehlgeschlagen.");
-        errorList.put(202L, "Senden eines Events an den Service ist fehlgeschlagen.");
-        errorList.put(206L, "Senden der Client-ID an den Service ist fehlgeschlagen.");
-        errorList.put(207L, "Senden der Beendigung des Clients an den Service ist fehlgeschlagen.");
+        errorList.put(200L, "Fehler bei Beenden der Verbindung mit Service.");
+        errorList.put(201L, "Fehler bei Anfrage der Start-Erlaubnis beim Service.");
+        errorList.put(202L, "Fehelr bei Senden eines Events an den Service.");
+        errorList.put(206L, "Fehler bei Senden der Client-ID an den Service.");
+        errorList.put(207L, "Fehler bei Senden der Beendigung des Clients an den Service.");
 
         // Service lifecycle faults
         errorList.put(300L, "");
@@ -65,15 +65,15 @@ public class Errors {
         errorList.put(402L, "Fehler bei Entfernen eines Service.");
 
         // Scheduler faults
-        errorList.put(500L, "Ermitteln des Startservice zur Anwendung ist fehlgeschlagen.");
+        errorList.put(500L, "Fehler bei Ermitteln des Startservice zur Anwendung.");
 
         // Mail and Event errors
-        errorList.put(600L, "Senden einer Mail ist fehlgeschlagen.");
-        errorList.put(601L, "Empfangen einer Mail oder eines Events ist fehlgeschlagen.");
-        errorList.put(602L, "Begriffe fuer akzeptierte mails konnten nicht festgelegt werden.");
-        errorList.put(603L, "Klassen fuer akzeptierte events konnten nicht festgelegt werden.");
+        errorList.put(600L, "Fehler bei Senden einer Mail.");
+        errorList.put(601L, "Fehler bei Empfangen einer Mail oder eines Events.");
+        errorList.put(602L, "Fehler bei Festlegen der Begriffe fuer akzeptierte Mails.");
+        errorList.put(603L, "Fehler bei Festlegen der Klassen fuer akzeptierte Events.");
         errorList.put(604L, "Empfang von Mails oder Events ist noch nicht aktiviert.");
-
+        errorList.put(605L, "Fehler bei einer vorbereitenden Massnahme fuer den Empfang von Mails.");
     }
 
     /*
