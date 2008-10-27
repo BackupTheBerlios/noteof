@@ -25,6 +25,7 @@ public class MailRecipient implements MailAndEventRecipient {
     private int complete = 0;
     private Date lastStamp;
     private long stampDiff = 0;
+    private boolean ready = false;
 
     public MailRecipient(String... args) throws HapptickException {
         appl = new HapptickApplication(0, "localhost", 3000, args);
@@ -53,18 +54,22 @@ public class MailRecipient implements MailAndEventRecipient {
         appl.startAcceptingMailsEvents();
 
         System.out.println("Jetzt gilts!");
-        testMail();
+        ready = true;
+        // testMail();
         // processEvent(null);
+    }
+
+    public boolean isReady() {
+        return ready;
     }
 
     private void testMail() {
         try {
-            // Thread.sleep(50);
+            // Thread.sleep(300);
             int rd = new Random().nextInt();
 
             NotEOFMail newMail;
             newMail = new NotEOFMail("Kopf", "xBegriff", String.valueOf(rd));
-            System.out.println("VOR appl.sendMail()");
             appl.sendMail(newMail);
         } catch (Exception e) {
             LocalLog.error("Fehler bei Anlegen oder Versand der Mail.", e);
@@ -79,7 +84,7 @@ public class MailRecipient implements MailAndEventRecipient {
             Date newStamp = new Date();
             stampDiff += (newStamp.getTime() - lastStamp.getTime());
             lastStamp = new Date();
-            System.out.println("COUNTER: " + counter);
+            // System.out.println("COUNTER: " + counter);
             if (500 <= counter++) {
                 System.out.println("COUNTER: " + (complete += counter));
                 System.out.println("COUNTER: " + counter);
@@ -106,7 +111,7 @@ public class MailRecipient implements MailAndEventRecipient {
         // if (1000 < complete)
         // System.exit(0);
         // System.out.println("VOR testMail Aufruf");
-        testMail();
+        // testMail();
     }
 
     public void processMailException(Exception e) {
@@ -115,11 +120,13 @@ public class MailRecipient implements MailAndEventRecipient {
 
     public static void main(String... args) throws HapptickException {
 
-        new MailRecipient(args);
+        MailRecipient x = new MailRecipient(args);
 
         while (true) {
             try {
                 Thread.sleep(100);
+                if (x.isReady())
+                    x.testMail();
             } catch (InterruptedException e) {
                 break;
             }

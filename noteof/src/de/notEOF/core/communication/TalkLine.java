@@ -317,9 +317,6 @@ public class TalkLine implements Observer {
             String eventTypeOrdinal = eventInfo.getMap().get("eventTypeOrdinal");
             EventType eventType = EventType.values()[Integer.valueOf(eventTypeOrdinal)];
 
-            System.out.println("TalkLine - receiveBaseEvent: canonicalName = " + canonicalName);
-            System.out.println("TalkLine - receiveBaseEvent: eventTypeString = " + eventTypeOrdinal);
-            System.out.println("TalkLine - receiveBaseEvent: eventType = " + eventType.name());
             // receive attributes
             DataObject mapData = receiveDataObject();
             Map<String, String> attributes = mapData.getMap();
@@ -339,7 +336,6 @@ public class TalkLine implements Observer {
                 // class couldn't be loaded. So use default one.
                 event = new TransportEvent(eventType, attributes, descriptions);
             }
-            System.out.println("Event ist jetzt: " + event.getClass().getCanonicalName());
             return event;
         } catch (Exception e) {
             throw new ActionFailedException(1151L, "Generieren des TransportEvents", e);
@@ -370,7 +366,6 @@ public class TalkLine implements Observer {
             mail.setBodyData(bodyData);
         }
 
-        System.out.println("MAIL wurde empfangen!" + mail.getBodyText());
         return mail;
     }
 
@@ -397,7 +392,6 @@ public class TalkLine implements Observer {
             writeMsg("TRUE");
             sendDataObject(mail.getBodyData());
         }
-        System.out.println("MAIL wurde gesendet!" + mail.getBodyText());
     }
 
     /**

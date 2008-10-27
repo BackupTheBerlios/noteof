@@ -306,7 +306,6 @@ public class Server implements EventObservable, Runnable {
         // System.out.println("observer: " + observer.getObservedEvents());
         // }
 
-        System.out.println("EVENTLISTE GR��E: " + eventObservers.size());
         Util.updateAllObserver(eventObservers, service, event);
     }
 
@@ -322,8 +321,6 @@ public class Server implements EventObservable, Runnable {
         if (null == eventObservers)
             eventObservers = new HashMap<String, EventObserver>();
         Util.registerForEvents(eventObservers, eventObserver);
-        System.out.println("EVENTLISTE NULL?" + eventObservers);
-        System.out.println("EVENTLISTE GR��E: " + eventObservers.size());
     }
 
     public void unregisterFromEvents(EventObserver eventObserver) {

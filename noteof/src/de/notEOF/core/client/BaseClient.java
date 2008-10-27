@@ -153,9 +153,7 @@ public abstract class BaseClient extends BaseClientOrService {
     public void sendMail(NotEOFMail mail) throws ActionFailedException {
         if (Util.isEmpty(mail.getFromClientNetId()))
             mail.setFromClientNetId(clientNetId);
-        System.out.println("VOR writeMsg REQ_READY_FOR_MAIL...");
         writeMsg(MailTag.REQ_READY_FOR_MAIL.name());
-        System.out.println("VOR getTalkLine().sendMail()");
         getTalkLine().sendMail(mail);
     }
 
@@ -171,11 +169,8 @@ public abstract class BaseClient extends BaseClientOrService {
      * @throws ActionFailedException
      */
     public void sendBaseEvent(NotEOFEvent event) throws ActionFailedException {
-        System.out.println("VOR ...");
         writeMsg(MailTag.REQ_READY_FOR_EVENT.name());
-        System.out.println("VOR getTalkLine().sendBaseEvent()...");
         getTalkLine().sendBaseEvent(event);
-        System.out.println("Nach getTalkLine().sendBaseEvent()...");
     }
 
     /**
@@ -229,7 +224,6 @@ public abstract class BaseClient extends BaseClientOrService {
      * this client.
      */
     private final void registerAtServer(TalkLine talkLine, TimeOut timeout, String... args) throws ActionFailedException {
-        System.out.println("BaseClient vor registration...");
         ServerRegistration registration = new ServerRegistration(getServiceClassName(), talkLine, timeout.getMillisConnection(), args);
         clientNetId = registration.getClientNetId();
         linkedToService = registration.isLinkedToService();

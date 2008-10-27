@@ -46,7 +46,8 @@ public abstract class BaseService extends BaseClientOrService implements Service
     List<EventType> eventTypes;
     protected String clientNetId;
     private EventProcessor processor;
-    private volatile Map<Long, UpdateAction> actionMap;
+
+    // private Map<Long, UpdateAction> actionMap;
 
     public boolean isRunning() {
         return isRunning;
@@ -148,19 +149,19 @@ public abstract class BaseService extends BaseClientOrService implements Service
      *            The incoming event that the client has fired or which was
      *            detected by the service.
      */
-    public final synchronized void update(Service service, NotEOFEvent event) {
+    public final void update(Service service, NotEOFEvent event) {
         try {
             // Durch Verwendung einer map koennen die Eintraege (hoffentlich)
             // gleichzeitig in die Liste geschrieben und ueber die keys daraus
             // geloescht werden. Das ist der Versuch Synchronisationsprobleme
             // der
             // Liste in den Griff zu bekommen.
-            if (null == actionMap)
-                actionMap = new HashMap<Long, UpdateAction>();
+            // if (null == actionMap)
+            // actionMap = new HashMap<Long, UpdateAction>();
 
             // key fuer die map (billig...)
-            Date now = new Date();
-            actionMap.put(now.getTime(), new UpdateAction(service, event));
+            // Date now = new Date();
+            // actionMap.put(now.getTime(), new UpdateAction(service, event));
 
             // Der Prozessor, der die events abarbeitet, darf nicht parallel
             // laufen.
@@ -170,12 +171,14 @@ public abstract class BaseService extends BaseClientOrService implements Service
                 Thread processThread = new Thread(processor);
                 processThread.start();
             }
+            processor.addAction(service, event);
         } catch (Exception e) {
             System.out.println("im Update abgefangen, weil sonst der Server kaputt geht...");
             e.printStackTrace();
         }
     }
 
+    // TODO synchronized oder nicht???
     public synchronized void processEvent(Service service, NotEOFEvent event) throws ActionFailedException {
     }
 
@@ -185,9 +188,29 @@ public abstract class BaseService extends BaseClientOrService implements Service
     // Verarbeitung abgeschlossen hat.
     private final class EventProcessor implements Runnable {
         private BaseService mainClass;
+        private Map<Long, UpdateAction> actionMap2 = new HashMap<Long, UpdateAction>();
+        private boolean addingEvent = false;
+        private boolean removingKey = false;
+        private boolean deadlock = false;
 
         private EventProcessor(BaseService mainClass) {
             this.mainClass = mainClass;
+        }
+
+        protected synchronized void addAction(Service service, NotEOFEvent event) {
+            try {
+                while (removingKey) {
+                    if (removingKey && addingEvent)
+                        System.out.println("ALARM - DEADLOCK");
+                    Thread.sleep(5);
+                }
+            } catch (InterruptedException e) {
+            }
+            addingEvent = true;
+            // key fuer die map (billig...)
+            Date now = new Date();
+            actionMap2.put(now.getTime(), new UpdateAction(service, event));
+            addingEvent = false;
         }
 
         public void run() {
@@ -199,8 +222,8 @@ public abstract class BaseService extends BaseClientOrService implements Service
                     // werden. Die
                     // run-Methode hier soll solange arbeiten, solange ein event
                     // vorliegt.
-                    while (!actionMap.isEmpty()) {
-                        Set<Long> actionSet = actionMap.keySet();
+                    while (!actionMap2.isEmpty()) {
+                        Set<Long> actionSet = actionMap2.keySet();
                         Collection<Long> keyCopy = new ArrayList<Long>();
                         keyCopy.addAll(actionSet);
 
@@ -208,17 +231,42 @@ public abstract class BaseService extends BaseClientOrService implements Service
                             Object[] arrayOfActionKeys = actionSet.toArray();
                             for (int i = 0; i < arrayOfActionKeys.length; i++) {
                                 Long actionMapIndex = (Long) arrayOfActionKeys[i];
-                                UpdateAction action = actionMap.get(actionMapIndex);
+                                UpdateAction action = actionMap2.get(actionMapIndex);
                                 processEvent(action.getService(), action.getEvent());
                             }
                         }
 
                         if (!keyCopy.isEmpty()) {
-                            for (Long l : keyCopy) {
-                                actionMap.remove(l);
+                            removingKey = true;
+                            try {
+                                while (addingEvent) {
+                                    if (removingKey && addingEvent) {
+                                        System.out.println("ALARM - DEADLOCK");
+                                        deadlock = true;
+                                        removingKey = false;
+                                        Thread.sleep(15);
+                                        removingKey = true;
+                                    }
+                                    Thread.sleep(15);
+                                }
+                            } catch (InterruptedException i) {
                             }
+
+                            if (deadlock) {
+                                System.out.println("====================== Aus Deadlock befreit ================");
+                                deadlock = false;
+                            }
+
+                            if (removingKey) {
+                                for (Long keyToDelete : keyCopy) {
+                                    actionMap2.remove(keyToDelete);
+                                }
+                            }
+                            removingKey = false;
                         }
                     }
+
+                    // throw old events to garbage
                     try {
                         Thread.sleep(30);
                     } catch (InterruptedException i) {

@@ -18,7 +18,8 @@ import de.notIOC.logging.LocalLog;
  * de.iccs.util.Util.*; And access the Util.*-methods directly.
  */
 public class Util {
-
+    private static long allEventsCounter = 0;
+    private static Date startDate = new Date();
     private static Thread consoleWaitThread;
 
     private Util() {
@@ -85,8 +86,8 @@ public class Util {
     }
 
     /**
-     * Pr�ft ob object NULL, ein Leerstring (getrimmt), ein leeres Array (length
-     * == 0) oder eine leere Collection ist.
+     * Pr�ft ob object NULL, ein Leerstring (getrimmt), ein leeres Array
+     * (length == 0) oder eine leere Collection ist.
      * 
      * @param object
      * @return
@@ -343,15 +344,12 @@ public class Util {
     public static void registerForEvents(Map<String, EventObserver> eventObservers, EventObserver eventObserver) {
         // if (null == eventObservers)
         // eventObservers = new HashMap<String, EventObserver>();
-        System.out.println("REGISTER: " + eventObserver.getName());
         eventObservers.put(eventObserver.getName(), eventObserver);
-        System.out.println("EVENTLISTE NULL?" + eventObservers);
     }
 
     public static void unregisterFromEvents(Map<String, EventObserver> eventObservers, EventObserver eventObserver) {
         if (null != eventObservers && null != eventObserver) {
             try {
-                System.out.println("UNREGISTER: " + eventObserver.getName());
                 eventObservers.remove(eventObserver.getName());
             } catch (Exception e) {
                 LocalLog.warn("EventObserver konnte nicht entfernt werden: " + eventObserver.getName(), e);
@@ -378,6 +376,13 @@ public class Util {
         if (null == eventObservers)
             return;
 
+        if (allEventsCounter++ > 1000) {
+            Date newDate = new Date();
+            long millis = newDate.getTime() - startDate.getTime();
+            long millisPerRec = millis / allEventsCounter;
+            System.out.println("Alle Events bisher: " + allEventsCounter + "; Millis pro Event: " + millisPerRec);
+        }
+
         boolean retry = true;
 
         // all observer
@@ -386,7 +391,6 @@ public class Util {
                 retry = false;
                 Set<String> set = eventObservers.keySet();
                 for (String observerName : set) {
-                    System.out.println("Util... ObserverName IM SET: " + observerName);
                     // but only inform observer, when event in his list
                     EventObserver eventObserver = eventObservers.get(observerName);
                     if (null != eventObserver && null != eventObserver.getObservedEvents()) {
