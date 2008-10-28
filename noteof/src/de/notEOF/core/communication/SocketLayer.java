@@ -33,6 +33,7 @@ import de.notEOF.core.util.Util;
 public class SocketLayer {
 
     private BufferedReader bufferedReader;
+    private PrintWriter printWriter;
     private Socket socketToPartner;
     private LifeTimer lifeTimer;
     private boolean lifeSignSystemActivated = false;
@@ -113,16 +114,26 @@ public class SocketLayer {
         }
     }
 
+    private void initPrintWriter() throws IOException {
+        if (null == printWriter || printWriter.checkError())
+            printWriter = new PrintWriter(new OutputStreamWriter(socketToPartner.getOutputStream()));
+    }
+
     protected synchronized void writeMsg(String msg) throws ActionFailedException {
         // avoid that the lifetimer sends a signal during awaiting a response
         // from partner
         lifeTimer.updateNextLifeSign();
 
-        if (null == msg)
-            msg = "";
-        msg = "#" + msg;
         try {
-            PrintWriter printWriter = new PrintWriter(new OutputStreamWriter(socketToPartner.getOutputStream()));
+            initPrintWriter();
+            if (null == msg || "".equals(msg)) {
+                System.out.println("!!!!!!!!!!!!!!!   MESSAGE IST ZIEMLICH LEER");
+
+                Error err = new Error();
+                err.printStackTrace();
+                msg = "";
+            }
+            msg = "#" + msg;
             printWriter.println(msg);
             printWriter.flush();
         } catch (IOException ex) {
@@ -188,9 +199,15 @@ public class SocketLayer {
                 respLifeSign.equals(msg))) {
 
             if (BaseCommTag.REQ_LIFE_SIGN.name().equals(msg)) {
+                System.out.println("==========================================");
+                System.out.println("          LIFE_SIGN....  1");
+                System.out.println("==========================================");
                 responseToPartner(BaseCommTag.RESP_LIFE_SIGN.name(), BaseCommTag.VAL_OK.name());
             }
             if (respLifeSign.equals(msg)) {
+                System.out.println("==========================================");
+                System.out.println("          LIFE_SIGN....  2");
+                System.out.println("==========================================");
                 lifeTimer.lifeSignReceived();
             }
             msg = readUnqualifiedMsg();
@@ -209,9 +226,9 @@ public class SocketLayer {
     /*
      * Perhaps the reader is yet null.
      */
-    private void initBufferedReader() throws ActionFailedException {
+    private void initBufferedReader(boolean forceInit) throws ActionFailedException {
         try {
-            if (null == bufferedReader)
+            if (null == bufferedReader || forceInit)
                 bufferedReader = new BufferedReader(new InputStreamReader(socketToPartner.getInputStream()));
         } catch (IOException ex) {
             throw new ActionFailedException(23L, ex);
@@ -219,13 +236,27 @@ public class SocketLayer {
     }
 
     private String readUnqualifiedMsg() throws ActionFailedException {
+        int readCounter = 0;
         String msg = "";
-        initBufferedReader();
+        initBufferedReader(false);
         try {
-            msg = bufferedReader.readLine();
+            while (null == msg || "".equals(msg.trim())) {
+                if (10 < readCounter++) {
+                    initBufferedReader(true);
+
+                    // throw new ActionFailedException(16L,
+                    // "Abbruch nach ungültigen Nachrichten: " + readCounter);
+                }
+                msg = bufferedReader.readLine();
+            }
             if (!Util.isEmpty(msg)) {
                 if (msg.startsWith("#")) {
                     msg = msg.substring(1);
+                    if (0 == msg.length()) {
+                        System.out.println(" ==============    msg.length() == 1: " + msg);
+                        Error err = new Error();
+                        err.printStackTrace();
+                    }
                 }
             }
         } catch (SocketTimeoutException ex) {
@@ -259,7 +290,7 @@ public class SocketLayer {
         // 11 = Map <String, String>
         // 12 = List<?>
 
-        initBufferedReader();
+        initBufferedReader(false);
         DataObject dataObject = new DataObject();
         try {
             DataInputStream inputStream = new DataInputStream(socketToPartner.getInputStream());
@@ -324,6 +355,8 @@ public class SocketLayer {
                     for (int i = 0; i < mapSize; i++) {
                         String key = readMsg();
                         String value = readMsg();
+                        if ("#@NULL@#".equals(value))
+                            value = null;
                         map.put(key, value);
                     }
                     dataObject.setMap(map);
@@ -457,7 +490,11 @@ public class SocketLayer {
                         // send key
                         writeMsg(mapEntry.getKey());
                         // send value
-                        writeMsg(mapEntry.getValue());
+                        if (!Util.isEmpty(mapEntry.getValue())) {
+                            writeMsg(mapEntry.getValue());
+                        } else {
+                            writeMsg("#@NULL@#");
+                        }
                     }
                 } else {
                     // send size of map is 0
@@ -502,21 +539,19 @@ public class SocketLayer {
             }
         } catch (SocketTimeoutException ex) {
             throw new ActionFailedException(26L, ex);
-        } catch (IOException ex) {
+        } catch (Exception ex) {
             throw new ActionFailedException(25L, ex);
         }
     }
 
     private void receiveDataObjectCharArray(DataObject dataObject, DataInputStream inputStream) throws ActionFailedException {
-        initBufferedReader();
-
         try {
             // size block 1 and count of blocks for 1
-            int sizeBlock1 = inputStream.readInt();
-            int countBlock1 = inputStream.readInt();
+            int sizeBlock1 = readInt();
+            int countBlock1 = readInt();
             // size block 2 and count of blocks for 2
-            int sizeBlock2 = inputStream.readInt();
-            int countBlock2 = inputStream.readInt();
+            int sizeBlock2 = readInt();
+            int countBlock2 = readInt();
             char[] charArray = new char[(sizeBlock1 * countBlock1) + (sizeBlock2 * countBlock2)];
 
             int pos = 0;
@@ -533,10 +568,9 @@ public class SocketLayer {
         } catch (IOException ex) {
             throw new ActionFailedException(23L, ex);
         }
-
     }
 
-    private void sendDataObjectCharArray(DataObject dataObject, DataOutputStream outputStream) throws IOException {
+    private void sendDataObjectCharArray(DataObject dataObject, DataOutputStream outputStream) throws Exception {
         // char array
         int arrayLength = dataObject.getCharArray().length;
         int sizeBlock1 = 500;
@@ -544,26 +578,28 @@ public class SocketLayer {
         int sizeBlock2 = arrayLength % sizeBlock1;
         int countBlock2 = 1;
 
+        initPrintWriter();
         lifeTimer.updateNextLifeSign();
-        outputStream.writeInt(sizeBlock1);
-        outputStream.writeInt(countBlock1);
-        outputStream.writeInt(sizeBlock2);
-        outputStream.writeInt(1);
+        writeInt(sizeBlock1);
+        writeInt(countBlock1);
+        writeInt(sizeBlock2);
+        writeInt(1);
 
-        PrintWriter printWriterChar = new PrintWriter(new OutputStreamWriter(socketToPartner.getOutputStream()));
+        // PrintWriter printWriterChar = new PrintWriter(new
+        // OutputStreamWriter(socketToPartner.getOutputStream()));
         int pos = 0;
         for (int i = 0; i < countBlock1; i++) {
             lifeTimer.updateNextLifeSign();
-            printWriterChar.write(dataObject.getCharArray(), pos, sizeBlock1);
+            printWriter.write(dataObject.getCharArray(), pos, sizeBlock1);
             pos += sizeBlock1;
         }
         for (int i = 0; i < countBlock2; i++) {
             lifeTimer.updateNextLifeSign();
-            printWriterChar.write(dataObject.getCharArray(), pos, sizeBlock2);
+            printWriter.write(dataObject.getCharArray(), pos, sizeBlock2);
             pos += sizeBlock2;
 
         }
-        printWriterChar.flush();
+        printWriter.flush();
     }
 
     protected synchronized boolean isConnected() {

@@ -376,6 +376,10 @@ public class Util {
         if (null == eventObservers)
             return;
 
+        if (null != service)
+            System.out.println("Auslösender Service: " + service.getClass().getSimpleName());
+        System.out.println("Ausgelöstes Event:   " + event.getEventType());
+
         if (allEventsCounter++ > 1000) {
             Date newDate = new Date();
             long millis = newDate.getTime() - startDate.getTime();

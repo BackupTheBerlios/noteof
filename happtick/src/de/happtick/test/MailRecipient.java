@@ -3,7 +3,6 @@ package de.happtick.test;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Random;
 
 import de.happtick.application.client.HapptickApplication;
 import de.happtick.core.events.ActionEvent;
@@ -63,19 +62,19 @@ public class MailRecipient implements MailAndEventRecipient {
         return ready;
     }
 
-    private void testMail() {
-        try {
-            // Thread.sleep(300);
-            int rd = new Random().nextInt();
-
-            NotEOFMail newMail;
-            newMail = new NotEOFMail("Kopf", "xBegriff", String.valueOf(rd));
-            appl.sendMail(newMail);
-        } catch (Exception e) {
-            LocalLog.error("Fehler bei Anlegen oder Versand der Mail.", e);
-        }
-
-    }
+    // private void testMail() {
+    // try {
+    // // Thread.sleep(300);
+    // int rd = new Random().nextInt();
+    //
+    // NotEOFMail newMail;
+    // newMail = new NotEOFMail("Kopf", "xBegriff", String.valueOf(rd));
+    // appl.sendMail(newMail);
+    // } catch (Exception e) {
+    // LocalLog.error("Fehler bei Anlegen oder Versand der Mail.", e);
+    // }
+    //
+    // }
 
     public void processMail(NotEOFMail mail) {
         if (null == lastStamp)
@@ -120,14 +119,16 @@ public class MailRecipient implements MailAndEventRecipient {
 
     public static void main(String... args) throws HapptickException {
 
-        MailRecipient x = new MailRecipient(args);
+        // MailRecipient x = new MailRecipient(args);
+        new MailRecipient(args);
 
         while (true) {
             try {
-                Thread.sleep(100);
-                if (x.isReady())
-                    x.testMail();
-            } catch (InterruptedException e) {
+                Thread.sleep(10000);
+                // if (x.isReady())
+                // x.testMail();
+                // Thread.sleep(100);
+            } catch (Exception e) {
                 break;
             }
         }

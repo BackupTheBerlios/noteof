@@ -3,6 +3,7 @@ package de.notEOF.core.service;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.ConcurrentModificationException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -259,7 +260,16 @@ public abstract class BaseService extends BaseClientOrService implements Service
 
                             if (removingKey) {
                                 for (Long keyToDelete : keyCopy) {
-                                    actionMap2.remove(keyToDelete);
+                                    int tries = 3;
+                                    while (tries > 0) {
+                                        try {
+                                            actionMap2.remove(keyToDelete);
+                                            tries = 0;
+                                        } catch (ConcurrentModificationException e) {
+                                            tries--;
+                                            Thread.sleep(7);
+                                        }
+                                    }
                                 }
                             }
                             removingKey = false;
@@ -274,10 +284,11 @@ public abstract class BaseService extends BaseClientOrService implements Service
                 }
             } catch (Exception e) {
                 LocalLog
-                        .error("Fehler bei Abarbeiten der MessageQueue im EventProcessor des BaseService. Der Service wird aus der Event-Benachrichtigung entfernt!"
+                        .error("Fehler bei Abarbeiten der MessageQueue im EventProcessor des BaseService. Der Service wird aus der Event-Benachrichtigung entfernt und beendet!"
                                 + e);
                 server.unregisterFromEvents(mainClass);
                 // e.printStackTrace();
+                stopService();
             }
         }
     }

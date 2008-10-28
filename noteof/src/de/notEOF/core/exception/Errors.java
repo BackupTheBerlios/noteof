@@ -49,6 +49,7 @@ public class Errors {
         errorList.put(13L, "Wert des DataObject konnte nicht korrekt belegt werden.");
         errorList.put(14L, "Wert des DataObject konnte nicht korrekt gelesen werden.");
         errorList.put(15L, "Datei des DataObject existiert bereits im System und darf nicht Ã¼berschrieben werden.");
+        errorList.put(16L, "Mehrfacher Empfang eines leeren Zeichens. Inhaltlose Nachrichten sind unter !EOF nicht zulässig.");
 
         // Communication problems between client and server
         errorList.put(20L, "Request an Partner ohne Erfolg. Nicht erwartete Response.");

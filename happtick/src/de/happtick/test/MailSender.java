@@ -12,10 +12,14 @@ public class MailSender {
         HapptickApplication appl = new HapptickApplication(2, "localhost", 3000, args);
         NotEOFMail mail;
         try {
-            mail = new NotEOFMail("Kopf", "xBegriff", "Wichtiger Inhalt");
+            int counter = 0;
+            while (true) {
+
+                mail = new NotEOFMail("Kopf", "Counter: " + counter++, String.valueOf(counter));
+                appl.sendMail(mail);
+            }
         } catch (ActionFailedException e) {
             throw new HapptickException(600L, "Anlegen einer Mail.", e);
         }
-        appl.sendMail(mail);
     }
 }
