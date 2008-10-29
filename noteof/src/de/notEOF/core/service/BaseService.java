@@ -202,15 +202,26 @@ public abstract class BaseService extends BaseClientOrService implements Service
             try {
                 while (removingKey) {
                     if (removingKey && addingEvent)
-                        System.out.println("ALARM - DEADLOCK");
-                    Thread.sleep(5);
+                        Thread.sleep(5);
                 }
             } catch (InterruptedException e) {
             }
             addingEvent = true;
             // key fuer die map (billig...)
             Date now = new Date();
-            actionMap2.put(now.getTime(), new UpdateAction(service, event));
+            int tries = 5;
+            while (tries > 0) {
+                try {
+                    actionMap2.put(now.getTime(), new UpdateAction(service, event));
+                    tries = 0;
+                } catch (ConcurrentModificationException e) {
+                    tries--;
+                    try {
+                        Thread.sleep(5);
+                    } catch (InterruptedException e1) {
+                    }
+                }
+            }
             addingEvent = false;
         }
 
@@ -242,7 +253,7 @@ public abstract class BaseService extends BaseClientOrService implements Service
                             try {
                                 while (addingEvent) {
                                     if (removingKey && addingEvent) {
-                                        System.out.println("ALARM - DEADLOCK");
+                                        LocalLog.warn("====================== ALARM - DEADLOCK ================");
                                         deadlock = true;
                                         removingKey = false;
                                         Thread.sleep(15);
@@ -254,7 +265,7 @@ public abstract class BaseService extends BaseClientOrService implements Service
                             }
 
                             if (deadlock) {
-                                System.out.println("====================== Aus Deadlock befreit ================");
+                                LocalLog.info("====================== Aus Deadlock befreit ================");
                                 deadlock = false;
                             }
 
@@ -287,7 +298,9 @@ public abstract class BaseService extends BaseClientOrService implements Service
                         .error("Fehler bei Abarbeiten der MessageQueue im EventProcessor des BaseService. Der Service wird aus der Event-Benachrichtigung entfernt und beendet!"
                                 + e);
                 server.unregisterFromEvents(mainClass);
-                // e.printStackTrace();
+                System.out.println("=======================================================================");
+                e.printStackTrace();
+                System.out.println("=======================================================================");
                 stopService();
             }
         }

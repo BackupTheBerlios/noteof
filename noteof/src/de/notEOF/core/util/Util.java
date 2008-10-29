@@ -18,8 +18,8 @@ import de.notIOC.logging.LocalLog;
  * de.iccs.util.Util.*; And access the Util.*-methods directly.
  */
 public class Util {
-    private static long allEventsCounter = 0;
-    private static Date startDate = new Date();
+    // private static long allEventsCounter = 0;
+    // private static Date startDate = new Date();
     private static Thread consoleWaitThread;
 
     private Util() {
@@ -376,16 +376,18 @@ public class Util {
         if (null == eventObservers)
             return;
 
-        if (null != service)
-            System.out.println("Auslösender Service: " + service.getClass().getSimpleName());
-        System.out.println("Ausgelöstes Event:   " + event.getEventType());
+        // if (null != service)
+        // System.out.println("Auslösender Service: " +
+        // service.getClass().getSimpleName());
+        // System.out.println("Ausgelöstes Event:   " + event.getEventType());
 
-        if (allEventsCounter++ > 1000) {
-            Date newDate = new Date();
-            long millis = newDate.getTime() - startDate.getTime();
-            long millisPerRec = millis / allEventsCounter;
-            System.out.println("Alle Events bisher: " + allEventsCounter + "; Millis pro Event: " + millisPerRec);
-        }
+        // if (allEventsCounter++ > 1000) {
+        // Date newDate = new Date();
+        // long millis = newDate.getTime() - startDate.getTime();
+        // long millisPerRec = millis / allEventsCounter;
+        // System.out.println("Alle Events bisher: " + allEventsCounter +
+        // "; Millis pro Event: " + millisPerRec);
+        // }
 
         boolean retry = true;
 
@@ -403,10 +405,8 @@ public class Util {
                                 try {
                                     eventObserver.update(service, event);
                                 } catch (Exception e) {
-                                    eventObservers.remove(observerName);
-                                    LocalLog
-                                            .error("Fehler bei Weiterleitung eines Events an einen Observer. Registrierung des Observer wurde aufgehoben. Observer: "
-                                                    + eventObserver.getName());
+                                    // eventObservers.remove(observerName);
+                                    LocalLog.error("Fehler bei Weiterleitung eines Events an einen Observer. Observer: " + eventObserver.getName(), e);
                                 }
                                 // break for inner loop
                                 break;

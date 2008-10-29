@@ -407,10 +407,11 @@ public class TalkLine implements Observer {
      */
     public void sendBaseEvent(NotEOFEvent event) throws ActionFailedException {
         // send className and eventType as ordinal value
-        DataObject eventInfo = new DataObject();
         Map<String, String> infos = new HashMap<String, String>();
         infos.put("canonicalName", event.getClass().getCanonicalName());
         infos.put("eventTypeOrdinal", String.valueOf(event.getEventType().ordinal()));
+
+        DataObject eventInfo = new DataObject();
         eventInfo.setMap(infos);
         sendDataObject(eventInfo);
         // send attributes

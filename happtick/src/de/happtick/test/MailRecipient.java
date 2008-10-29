@@ -2,14 +2,18 @@ package de.happtick.test;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.Map.Entry;
 
 import de.happtick.application.client.HapptickApplication;
 import de.happtick.core.events.ActionEvent;
+import de.happtick.core.events.AlarmEvent;
 import de.happtick.core.events.LogEvent;
 import de.happtick.core.events.StartEvent;
 import de.happtick.core.exception.HapptickException;
-import de.notEOF.core.enumeration.EventType;
 import de.notEOF.core.interfaces.NotEOFEvent;
 import de.notEOF.core.logging.LocalLog;
 import de.notEOF.mail.MailHeaders;
@@ -45,6 +49,7 @@ public class MailRecipient implements MailAndEventRecipient {
         // Hinzufuegen von interessanten Events
         List<NotEOFEvent> events = new ArrayList<NotEOFEvent>();
         events.add(new ActionEvent());
+        events.add(new AlarmEvent());
         events.add(new StartEvent());
         events.add(new LogEvent());
         appl.addInterestingEvents(events);
@@ -61,20 +66,6 @@ public class MailRecipient implements MailAndEventRecipient {
     public boolean isReady() {
         return ready;
     }
-
-    // private void testMail() {
-    // try {
-    // // Thread.sleep(300);
-    // int rd = new Random().nextInt();
-    //
-    // NotEOFMail newMail;
-    // newMail = new NotEOFMail("Kopf", "xBegriff", String.valueOf(rd));
-    // appl.sendMail(newMail);
-    // } catch (Exception e) {
-    // LocalLog.error("Fehler bei Anlegen oder Versand der Mail.", e);
-    // }
-    //
-    // }
 
     public void processMail(NotEOFMail mail) {
         if (null == lastStamp)
@@ -95,26 +86,45 @@ public class MailRecipient implements MailAndEventRecipient {
             }
 
         }
-        //System.out.println("================================================")
-        // ;
-        // System.out.println("Mail ist angekommen...");
-        //System.out.println("________________________________________________")
-        // ;
-        // System.out.println("Header: " + mail.getHeader());
+        System.out.println("================================================");
+        System.out.println("Mail ist angekommen...");
+        System.out.println("________________________________________________");
+        System.out.println("Header: " + mail.getHeader());
         System.out.println("Body Text: " + mail.getBodyText());
-        // System.out.println("Destination: " + mail.getDestination());
-        // System.out.println("ClientNetId: " + mail.getToClientNetId());
-        //System.out.println("================================================")
-        // ;
+        System.out.println("Destination: " + mail.getDestination());
+        System.out.println("ClientNetId: " + mail.getToClientNetId());
+        System.out.println("================================================");
 
-        // if (1000 < complete)
-        // System.exit(0);
-        // System.out.println("VOR testMail Aufruf");
-        // testMail();
     }
 
     public void processMailException(Exception e) {
         LocalLog.error("Mail-Empfang wurde mit einem Fehler unterbrochen: ", e);
+    }
+
+    public void processEvent(NotEOFEvent event) {
+        try {
+            if (null != event) {
+                System.out.println("=====================================");
+                System.out.println("Event ist eingetroffen: " + event.getEventType());
+                Map<String, String> attributeMap = event.getAttributes();
+                Set<Entry<String, String>> bla = attributeMap.entrySet();
+                Iterator<Entry<String, String>> it = bla.iterator();
+                while (it.hasNext()) {
+                    Entry<String, String> entry = it.next();
+                    System.out.println("________________________________");
+                    System.out.println("Attribute: " + entry.getKey());
+                    System.out.println("Value:     " + entry.getValue());
+                    System.out.println("________________________________");
+                }
+                System.out.println("=====================================");
+            }
+        } catch (Exception e) {
+            LocalLog.error("Fehler bei Anlegen oder Versand des Events.", e);
+        }
+    }
+
+    public void processEventException(Exception e) {
+        LocalLog.error("Event-Empfang wurde mit einem Fehler unterbrochen: ", e);
     }
 
     public static void main(String... args) throws HapptickException {
@@ -125,39 +135,14 @@ public class MailRecipient implements MailAndEventRecipient {
         while (true) {
             try {
                 Thread.sleep(10000);
-                // if (x.isReady())
-                // x.testMail();
-                // Thread.sleep(100);
             } catch (Exception e) {
+                System.out.println("HUPS - jetzt bin ich aber am Ende...");
+                System.out.println("HUPS - jetzt bin ich aber am Ende...");
+                System.out.println("HUPS - jetzt bin ich aber am Ende...");
+                e.printStackTrace();
                 break;
             }
         }
     }
 
-    public void processEvent(NotEOFEvent event) {
-        int eventSwitch = 0;
-        if (null != event) {
-            EventType type = event.getEventType();
-            if (type.equals(EventType.EVENT_LOG))
-                eventSwitch = 1;
-        }
-
-        try {
-            NotEOFEvent newEvent = new LogEvent();
-            newEvent.addAttribute("information", "Holderidud�deldu");
-            if (0 == eventSwitch) {
-                System.out.println("?????????????????????");
-                appl.sendEvent(newEvent);
-            } else {
-                System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-                appl.sendActionEvent("965", "Eine tolle Action");
-            }
-        } catch (Exception e) {
-            LocalLog.error("Fehler bei Anlegen oder Versand des Events.", e);
-        }
-    }
-
-    public void processEventException(Exception e) {
-        LocalLog.error("Event-Empfang wurde mit einem Fehler unterbrochen: ", e);
-    }
 }

@@ -25,7 +25,7 @@ import de.notIOC.util.Util;
 public class ConfigurationManager {
 
     private static String applicationHome = null;
-    private static String homeVarName = "NOT_EOF_HOME";
+    private static String homeVarName = "NOTEOF_HOME";
     private static String configFile = "noteof_master.xml";
     private static String configPath = "conf";
 
