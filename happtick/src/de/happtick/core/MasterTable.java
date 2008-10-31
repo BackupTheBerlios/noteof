@@ -11,7 +11,7 @@ import de.happtick.configuration.ApplicationConfiguration;
 import de.happtick.configuration.ChainConfiguration;
 import de.happtick.configuration.EventConfiguration;
 import de.happtick.core.application.service.ApplicationService;
-import de.happtick.core.events.StopEvent;
+import de.happtick.core.events.StoppedEvent;
 import de.happtick.core.exception.HapptickException;
 import de.happtick.core.start.service.StartService;
 import de.notEOF.configuration.LocalConfiguration;
@@ -336,7 +336,8 @@ public class MasterTable {
     }
 
     /**
-     * Remove a service from the list of ApplicationServices .
+     * Remove a service from the internal service lists. There exists two lists:
+     * One for ApplicationServices, one for StartServices.
      * 
      * @param serviceId
      *            Is the key of the service what must be removed.
@@ -356,28 +357,28 @@ public class MasterTable {
                 Long applicationId = ((ApplicationService) service).getApplicationId();
                 String clientNetId = ((ApplicationService) service).getClientNetId();
                 String startId = ((ApplicationService) service).getStartId();
-                NotEOFEvent stopEvent = (StopEvent) ((ApplicationService) service).getLastEvent(EventType.EVENT_STOP);
-                if (null == stopEvent) {
-                    stopEvent = new StopEvent();
-                    stopEvent.addAttribute("applicationId", String.valueOf(applicationId));
-                    stopEvent.addAttribute("clientNetId", clientNetId);
-                    stopEvent.addAttribute("startId", startId);
-                    stopEvent.addAttribute("exitCode", "0");
+                NotEOFEvent stoppedEvent = (StoppedEvent) ((ApplicationService) service).getLastEvent(EventType.EVENT_SERVICE_STOPPED);
+                if (null == stoppedEvent) {
+                    stoppedEvent = new StoppedEvent();
+                    stoppedEvent.addAttribute("applicationId", String.valueOf(applicationId));
+                    stoppedEvent.addAttribute("clientNetId", clientNetId);
+                    stoppedEvent.addAttribute("startId", startId);
+                    stoppedEvent.addAttribute("exitCode", "0");
                 }
                 applicationServices.remove(service.getServiceId());
-                server.updateObservers(null, stopEvent);
+                server.updateObservers(null, stoppedEvent);
             }
 
             // try all StartServices
             if (service.getClass().isAssignableFrom(StartService.class)) {
                 String clientNetId = service.getClientNetId();
-                StopEvent stopEvent = new StopEvent();
-                stopEvent.addAttribute("applicationId", "");
-                stopEvent.addAttribute("startId", "");
-                stopEvent.addAttribute("clientNetId", clientNetId);
-                stopEvent.addAttribute("exitCode", "0");
+                StoppedEvent stoppedEvent = new StoppedEvent();
+                stoppedEvent.addAttribute("applicationId", "");
+                stoppedEvent.addAttribute("clientNetId", clientNetId);
+                stoppedEvent.addAttribute("startId", "");
+                stoppedEvent.addAttribute("exitCode", "0");
                 startServices.remove(service.getServiceId());
-                server.updateObservers(null, stopEvent);
+                server.updateObservers(null, stoppedEvent);
             }
         } catch (ActionFailedException e) {
             throw new HapptickException(402L, e);
@@ -396,7 +397,7 @@ public class MasterTable {
      */
     public synchronized List<EventType> getObservedEvents() {
         List<EventType> observedEvents = new ArrayList<EventType>();
-        observedEvents.add(EventType.EVENT_STOP);
+        observedEvents.add(EventType.EVENT_SERVICE_STOPPED);
         observedEvents.add(EventType.EVENT_SERVICE_CHANGE);
         return observedEvents;
     }

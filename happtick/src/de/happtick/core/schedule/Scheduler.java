@@ -13,7 +13,7 @@ import de.happtick.core.application.service.ApplicationService;
 import de.happtick.core.enumeration.HapptickAlarmLevel;
 import de.happtick.core.enumeration.HapptickAlarmType;
 import de.happtick.core.events.AlarmEvent;
-import de.happtick.core.events.StopEvent;
+import de.happtick.core.events.StoppedEvent;
 import de.happtick.core.start.service.StartService;
 import de.notEOF.configuration.LocalConfiguration;
 import de.notEOF.core.enumeration.EventType;
@@ -257,7 +257,7 @@ public class Scheduler {
 
                         // Fire event to all observer
                         // probably a chain runner is waiting...
-                        NotEOFEvent event = new StopEvent();
+                        NotEOFEvent event = new StoppedEvent();
                         event.addAttribute("applicationId", String.valueOf(applicationConfiguration.getApplicationId()));
                         event.addAttribute("startId", startService.getStartId());
                         event.addAttribute("clientNetId", startService.getClientNetId());
@@ -300,7 +300,7 @@ public class Scheduler {
             List<EventType> list = new ArrayList<EventType>();
             // list.add(EventType.EVENT_ALARM);
             // list.add(EventType.EVENT_START);
-            list.add(EventType.EVENT_STOP);
+            list.add(EventType.EVENT_CLIENT_STOPPED);
             return list;
         }
 
@@ -317,7 +317,7 @@ public class Scheduler {
         public void update(Service service, NotEOFEvent event) {
             // normally here only the stop signal from application service may
             // come in.
-            if (event.getEventType().equals(EventType.EVENT_STOP))
+            if (event.getEventType().equals(EventType.EVENT_CLIENT_STOPPED))
                 appServiceStopped = true;
         }
 
@@ -413,7 +413,7 @@ public class Scheduler {
 
         public List<EventType> getObservedEvents() {
             List<EventType> types = new ArrayList<EventType>();
-            types.add(EventType.EVENT_STOP);
+            types.add(EventType.EVENT_CLIENT_STOPPED);
             return types;
         }
 
@@ -422,7 +422,7 @@ public class Scheduler {
          * ApplicationService.
          */
         public void update(Service service, NotEOFEvent event) {
-            if (!event.getEventType().equals(EventType.EVENT_STOP))
+            if (!event.getEventType().equals(EventType.EVENT_CLIENT_STOPPED))
                 return;
             stoppedServiceId = event.getAttribute("serviceId");
             String stopDate = event.getAttribute("stopDate");

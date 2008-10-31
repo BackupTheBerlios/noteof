@@ -168,7 +168,7 @@ public abstract class BaseClient extends BaseClientOrService {
      *            The event with EventType, Map attributes and Map descriptions.
      * @throws ActionFailedException
      */
-    public void sendBaseEvent(NotEOFEvent event) throws ActionFailedException {
+    public void sendEvent(NotEOFEvent event) throws ActionFailedException {
         writeMsg(MailTag.REQ_READY_FOR_EVENT.name());
         getTalkLine().sendBaseEvent(event);
     }

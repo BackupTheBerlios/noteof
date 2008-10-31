@@ -9,8 +9,8 @@ import de.happtick.core.events.ActionEvent;
 import de.happtick.core.events.AlarmEvent;
 import de.happtick.core.events.ErrorEvent;
 import de.happtick.core.events.LogEvent;
-import de.happtick.core.events.StartEvent;
-import de.happtick.core.events.StopEvent;
+import de.happtick.core.events.StartedEvent;
+import de.happtick.core.events.StoppedEvent;
 import de.notEOF.core.enumeration.EventType;
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.interfaces.NotEOFEvent;
@@ -26,8 +26,8 @@ public class ApplicationService extends BaseService {
     private ErrorEvent lastErrorEvent;
     private ActionEvent lastActionEvent;
     private LogEvent lastLogEvent;
-    private StopEvent stopEvent;
-    private StartEvent startEvent;
+    private StoppedEvent stoppedEvent;
+    private StartedEvent startedEvent;
 
     private int exitCode = 0;
 
@@ -89,10 +89,10 @@ public class ApplicationService extends BaseService {
             return lastActionEvent;
         if (eventType.equals(EventType.EVENT_LOG))
             return lastLogEvent;
-        if (eventType.equals(EventType.EVENT_START))
-            return startEvent;
-        if (eventType.equals(EventType.EVENT_STOP))
-            return stopEvent;
+        if (eventType.equals(EventType.EVENT_CLIENT_STARTED))
+            return startedEvent;
+        if (eventType.equals(EventType.EVENT_CLIENT_STOPPED))
+            return stoppedEvent;
         return null;
     }
 
@@ -112,11 +112,11 @@ public class ApplicationService extends BaseService {
         if (event.getClass().equals(LogEvent.class)) {
             lastLogEvent = (LogEvent) event;
         }
-        if (event.getClass().equals(StopEvent.class)) {
-            stopEvent = (StopEvent) event;
+        if (event.getClass().equals(StoppedEvent.class)) {
+            stoppedEvent = (StoppedEvent) event;
         }
-        if (event.getClass().equals(StartEvent.class)) {
-            startEvent = (StartEvent) event;
+        if (event.getClass().equals(StartedEvent.class)) {
+            startedEvent = (StartedEvent) event;
         }
         Server.getInstance().updateObservers(this, event);
     }
@@ -184,7 +184,7 @@ public class ApplicationService extends BaseService {
         // STOP event
         if (incomingMsgEnum.equals(ApplicationTag.PROCESS_STOP_EVENT)) {
             this.exitCode = Util.parseInt(requestTo(ApplicationTag.REQ_EXIT_CODE, ApplicationTag.RESP_EXIT_CODE), -1);
-            NotEOFEvent event = new StopEvent();
+            NotEOFEvent event = new StoppedEvent();
             event.addAttribute("applicationId", String.valueOf(this.applicationId));
             event.addAttribute("clientNetId", String.valueOf(super.getClientNetId()));
             event.addAttribute("startId", this.startId);
@@ -195,7 +195,7 @@ public class ApplicationService extends BaseService {
 
         // START event
         if (incomingMsgEnum.equals(ApplicationTag.PROCESS_START_WORK_EVENT)) {
-            NotEOFEvent event = new StartEvent();
+            NotEOFEvent event = new StartedEvent();
             event.addAttribute("applicationId", String.valueOf(this.applicationId));
             event.addAttribute("clientNetId", String.valueOf(super.getClientNetId()));
             event.addAttribute("startId", this.startId);

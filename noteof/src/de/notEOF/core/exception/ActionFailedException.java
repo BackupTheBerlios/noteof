@@ -12,15 +12,20 @@ package de.notEOF.core.exception;
 public class ActionFailedException extends Exception {
 
     private static final long serialVersionUID = 1L;
-    private long errNo;
-    private String addInfo;
-    private String message;
+    protected long errNo;
+    protected String addInfo;
+    protected String message;
 
     // public ActionFailedException(String message, String reason) {
     // super(message);
     // this.reason = reason;
     // }
     //
+
+    public ActionFailedException(Exception ex) {
+        super(ex);
+    }
+
     public ActionFailedException(long errNo, String addInfo, Exception ex) {
         super(ex);
         initMembers(errNo, addInfo);
@@ -36,7 +41,7 @@ public class ActionFailedException extends Exception {
         initMembers(errNo, null);
     }
 
-    private void initMembers(long errNo, String addInfo) {
+    protected void initMembers(long errNo, String addInfo) {
         this.errNo = errNo;
         String msg = Errors.getMsg(errNo);
         if (null == msg || msg.trim().length() == 0) {

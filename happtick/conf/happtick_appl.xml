@@ -76,7 +76,7 @@
 				- eventId not yet interesting but should be set with a dummy value
 			    - eventClassName the class name of the fired event
 			-->	    	
-	    	<event1 eventId="1" eventClassName="ApplicationStopEvent">
+	    	<event1 eventId="1" eventClassName="ApplicationStoppedEvent">
 	    		<!-- 
 	    		    List of actions
 				    - actionType what to do with the application/chain - 'start' or 'stop' is possible here
@@ -93,7 +93,7 @@
 	    		<action>action0</action>
 	    		<action0 actionType="stop" applicationType="chain" id="1"></action0>
 	    	</event2>
-	    	<event3 eventId="3" eventClassName="ServiceStartEvent">
+	    	<event3 eventId="3" eventClassName="ServiceStartedEvent">
 	    		<action>action0</action>
 	    		<action0 actionType="start" applicationType="chain" id="2"></action0>
 	    	</event3>

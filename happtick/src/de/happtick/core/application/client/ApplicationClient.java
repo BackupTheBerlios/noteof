@@ -9,6 +9,7 @@ import de.happtick.core.exception.HapptickException;
 import de.happtick.core.interfaces.ClientObserver;
 import de.notEOF.core.client.BaseClient;
 import de.notEOF.core.exception.ActionFailedException;
+import de.notEOF.core.interfaces.NotEOFClient;
 import de.notEOF.core.interfaces.NotEOFEvent;
 import de.notEOF.core.util.ArgsParser;
 import de.notEOF.core.util.Util;
@@ -23,7 +24,7 @@ import de.notEOF.core.util.Util;
  * 
  * @author dirk
  */
-public class ApplicationClient extends BaseClient {
+public class ApplicationClient extends BaseClient implements NotEOFClient {
 
     private boolean isWorkAllowed = false;
     private AllowanceWaiter allowanceWaiter;
@@ -217,7 +218,7 @@ public class ApplicationClient extends BaseClient {
     public void sendEvent(NotEOFEvent event) throws HapptickException {
         try {
             System.out.println("ApplicationClient - sendEvent: super.sendBaseEvent()");
-            super.sendBaseEvent(event);
+            super.sendEvent(event);
         } catch (ActionFailedException e) {
             throw new HapptickException(202L, "Event: " + event.getClass().getSimpleName(), e);
         }
@@ -321,4 +322,5 @@ public class ApplicationClient extends BaseClient {
             }
         }
     }
+
 }

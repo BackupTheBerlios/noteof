@@ -12,7 +12,7 @@ import de.happtick.application.client.HapptickApplication;
 import de.happtick.core.events.ActionEvent;
 import de.happtick.core.events.AlarmEvent;
 import de.happtick.core.events.LogEvent;
-import de.happtick.core.events.StartEvent;
+import de.happtick.core.events.StartedEvent;
 import de.happtick.core.exception.HapptickException;
 import de.notEOF.core.interfaces.NotEOFEvent;
 import de.notEOF.core.logging.LocalLog;
@@ -50,7 +50,7 @@ public class MailRecipient implements MailAndEventRecipient {
         List<NotEOFEvent> events = new ArrayList<NotEOFEvent>();
         events.add(new ActionEvent());
         events.add(new AlarmEvent());
-        events.add(new StartEvent());
+        events.add(new StartedEvent());
         events.add(new LogEvent());
         appl.addInterestingEvents(events);
 

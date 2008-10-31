@@ -1,69 +1,69 @@
 package de.happtick.core.exception;
 
-public class HapptickException extends Exception{
-    
+import de.notEOF.core.exception.ActionFailedException;
 
-private static final long serialVersionUID = 3414816098348131479L;
-private long errNo;
-private String addInfo;
-private String message;
+public class HapptickException extends ActionFailedException {
 
-public HapptickException(Exception ex) {
-    super(ex);
-}
+    private static final long serialVersionUID = 3414816098348131479L;
 
-public HapptickException(long errNo, String addInfo, Exception ex) {
-    super(ex);
-    initMembers(errNo, addInfo);
-}
+    // private long errNo;
+    // private String addInfo;
+    // private String message;
 
-public HapptickException(long errNo, String addInfo) {
-    this.errNo = errNo;
-    initMembers(errNo, addInfo);
-}
-
-public HapptickException(long errNo, Exception ex) {
-    super(ex);
-    initMembers(errNo, null);
-}
-
-private void initMembers(long errNo, String addInfo) {
-    this.errNo = errNo;
-    String msg = Errors.getMsg(errNo);
-    if (null == msg || msg.trim().length() == 0) {
-        msg = "Message not defined in Errors.class. Index of msg in code: " + errNo;
+    public HapptickException(Exception ex) {
+        super(ex);
     }
-    this.message = msg;
-    if (null != addInfo)
-        this.addInfo = addInfo;
-}
 
-/**
- * Message is a description what happened, when the Exception was thrown.
- * 
- * @return The message which is stored in class Errors. Attention - message
- *         can be null.
- */
-public String getMessage() {
-    return message + ": " + addInfo;
-}
+    public HapptickException(long errNo, String addInfo, Exception ex) {
+        super(ex);
+    }
 
-/**
- * Reason tells why something didn't work correctly.
- * 
- * @return
- */
-public String getAddInfo() {
-    return addInfo;
-}
+    public HapptickException(long errNo, String addInfo) {
+        super(errNo, addInfo);
+    }
 
-/**
- * Returns the errNo when this Object was instanciated.
- * 
- * @return A number which should be stored in the class Errors.
- */
-public long getErrNo() {
-    return errNo;
-}
-}
+    public HapptickException(long errNo, Exception ex) {
+        super(errNo, ex);
+    }
 
+    // private void initMembers(long errNo, String addInfo) {
+    // this.errNo = errNo;
+    // String msg = Errors.getMsg(errNo);
+    // if (null == msg || msg.trim().length() == 0) {
+    // msg = "Message not defined in Errors.class. Index of msg in code: " +
+    // errNo;
+    // }
+    // this.message = msg;
+    // if (null != addInfo)
+    // this.addInfo = addInfo;
+    // }
+
+    // /**
+    // * Message is a description what happened, when the Exception was thrown.
+    // *
+    // * @return The message which is stored in class Errors. Attention -
+    // message
+    // * can be null.
+    // */
+    // public String getMessage() {
+    // return message + ": " + addInfo;
+    // }
+    //
+    // /**
+    // * Reason tells why something didn't work correctly.
+    // *
+    // * @return
+    // */
+    // public String getAddInfo() {
+    // return addInfo;
+    // }
+    //
+    // /**
+    // * Returns the errNo when this Object was instanciated.
+    // *
+    // * @return A number which should be stored in the class Errors.
+    // */
+    // public long getErrNo() {
+    // return errNo;
+    // }
+}

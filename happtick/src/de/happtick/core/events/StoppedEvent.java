@@ -6,8 +6,8 @@ import de.notEOF.core.interfaces.NotEOFEvent;
 /**
  * Event used to...
  * <p>
- * ... tell other services (clients) that the client has stopped or is stopping
- * now. <br>
+ * ... tell other services (clients) that the client has been stopped or is
+ * stopping now. <br>
  * This event can be used e.g. for chain execution or if the start of another
  * service depends to the stop of the client which raises the stop event.
  * <p>
@@ -28,7 +28,7 @@ import de.notEOF.core.interfaces.NotEOFEvent;
  * @author Dirk
  * 
  */
-public class StopEvent extends HapptickEvent implements NotEOFEvent {
+public class StoppedEvent extends HapptickEvent implements NotEOFEvent {
 
     protected void initDescriptions() {
         descriptions.put("applicationId", "Unique identifier which is fix given by the happtick configuration.");
@@ -40,6 +40,6 @@ public class StopEvent extends HapptickEvent implements NotEOFEvent {
     }
 
     public EventType getEventType() {
-        return EventType.EVENT_STOP;
+        return EventType.EVENT_CLIENT_STOPPED;
     }
 }

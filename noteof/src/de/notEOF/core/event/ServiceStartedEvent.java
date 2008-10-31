@@ -3,10 +3,10 @@ package de.notEOF.core.event;
 import de.notEOF.core.enumeration.EventType;
 import de.notEOF.core.interfaces.NotEOFEvent;
 
-public class ServiceStartEvent extends NotEOFBaseEvent implements NotEOFEvent {
+public class ServiceStartedEvent extends NotEOFBaseEvent implements NotEOFEvent {
 
     public EventType getEventType() {
-        return EventType.EVENT_START;
+        return EventType.EVENT_SERVICE_STARTED;
     }
 
     protected void initDescriptions() {
