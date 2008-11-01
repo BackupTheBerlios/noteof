@@ -30,6 +30,8 @@ public class Util {
      * 
      * @param simpleString
      *            The textual list.
+     * @param delimiter
+     *            The sign between the values.
      * @return A List with the String elements.
      */
     public static List<String> stringToList(String simpleString, String delimiter) {
@@ -161,18 +163,23 @@ public class Util {
     }
 
     /**
-     * Prueft, ob ein Argument gesetzt wurde. <br>
-     * Die Pruefung ist hier genau, d.h., das Argument muss exakt dem
-     * Suchbegriff entsprechen. <br>
-     * Bsp.: args[0] = argument, argName = argument -> Treffer <br>
-     * args[0] = argument=x, argName = argument -> Kein Treffer <br>
-     * args[0] = --argument, argName = argument -> Kein Treffer
+     * Checks if an calling argument is set.
+     * <p>
+     * This Check is restrictly, the argument must exactly match the prooved
+     * hard coded value.<br>
+     * Samples:
+     * <ul>
+     * <li>Match => Code: args[0] = argument; Call: argument</>
+     * <li>Match => Code: args[0] = argument; Call: argument = value</>
+     * <li>No Match => Code: args[0] = argument=x; Call: argument = value</>
+     * <li>No Match => Code: args[0] = --argument; Call: argName = argument</>
+     * </ul>
      * 
      * @param args
-     *            Array der zu untersuchenden Strings
+     *            Array which must be checked for matching Strings.
      * @param argName
-     *            Der exakt zu matchende Suchbegriff
-     * @return
+     *            The argument which is searched.
+     * @return TRUE if the Argument exactly matches.
      */
     public static boolean isArgSet(String[] args, String argName) {
         for (int i = 0; i < args.length; i++) {

@@ -4,6 +4,7 @@ import java.util.List;
 
 import de.happtick.core.exception.HapptickException;
 import de.happtick.mail.client.HapptickMailEventClient;
+import de.notEOF.core.client.BaseClient;
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.interfaces.NotEOFClient;
 import de.notEOF.core.interfaces.NotEOFEvent;
@@ -14,13 +15,60 @@ import de.notEOF.mail.client.MailAndEventReceiveClient;
 import de.notEOF.mail.interfaces.MailAndEventRecipient;
 import de.notEOF.mail.interfaces.MailMatchExpressions;
 
-public class HapptickBaseClient {
+public abstract class HapptickBaseClient {
     protected String serverAddress;
     protected int serverPort;
     protected String[] args;
     protected NotEOFClient notEofClient;
     private MailAndEventReceiveClient mailEventClient;
     private MailAndEventRecipient mailEventRecipient;
+
+    /*
+     * Internal class for sending mails and events. Used if the
+     * MailEventRecipient has no own client.
+     */
+    private class internalClient extends BaseClient implements NotEOFClient {
+        @Override
+        public Class<?> serviceForClientByClass() {
+            return de.notEOF.core.service.SimpleService.class;
+        }
+
+        @Override
+        public String serviceForClientByName() {
+            return null;
+        }
+    }
+
+    public void useInternalClientForSendMailsAndEvents() {
+        this.notEofClient = new internalClient();
+    }
+
+    /**
+     * This method should be called by the extended classes as soon as
+     * possible...
+     * <p>
+     * It forces the extended classes to do something. Within the implementation
+     * of this abstract function they should call the method init();
+     * 
+     * @param serverAddress
+     * @param serverPort
+     * @param args
+     * @param notEofClient
+     */
+    protected abstract void initHapptickBaseClient(String serverAddress, int serverPort, String[] args, NotEOFClient notEofClient) throws HapptickException;
+
+    protected void init(String serverAddress, int serverPort, String[] args, NotEOFClient notEofClient) throws HapptickException {
+        this.serverAddress = serverAddress;
+        this.serverPort = serverPort;
+        this.args = args;
+
+        if (null != notEofClient) {
+            this.notEofClient = notEofClient;
+        } else {
+            useInternalClientForSendMailsAndEvents();
+        }
+        connect();
+    }
 
     /**
      * Connect with the happtick server. Exactly this means to connect with an
@@ -57,7 +105,8 @@ public class HapptickBaseClient {
 
         try {
             // connect with service
-            notEofClient.connect(serverAddress, serverPort, null);
+            if (!notEofClient.isLinkedToService())
+                notEofClient.connect(serverAddress, serverPort, null);
         } catch (ActionFailedException e) {
             throw new HapptickException(100L, e);
         }
@@ -217,52 +266,6 @@ public class HapptickBaseClient {
      *             established or other problems occured.
      */
     public void useMailsAndEvents(MailAndEventRecipient mailEventRecipient, boolean acceptOwnMails) throws HapptickException {
-        if (Util.isEmpty(this.notEofClient))
-            throw new HapptickException(605, "notEofClient ist leer.");
-
-        initMailEventClient(mailEventRecipient);
-        if (!acceptOwnMails) {
-            try {
-                mailEventClient.addIgnoredClientNetId(this.notEofClient.getClientNetId());
-            } catch (ActionFailedException e) {
-                throw new HapptickException(605L, "Der Empfang eigener Mails konnte nicht unterdrueckt werden", e);
-            }
-        }
-    }
-
-    /**
-     * Enables the application to receive mails and events from the server or
-     * other services.
-     * <p>
-     * If a mail reaches the central server the services are informed about
-     * this. <br>
-     * To get a mail it is important to set destinations or headers which the
-     * client waits for.
-     * <p>
-     * This steps are recommended to receive Mails and Events: <br>
-     * 1. Call useMailsAndEvents() for initializing the mail system. <br>
-     * 2. Call addInterestingMailExpressions() and / or addInterestingEvents()
-     * to tell the server which mails and events the client is interested in. <br>
-     * 3. Call startAcceptingMailsEvents() for receiving mails and events.
-     * <p>
-     * For sending mails or events this steps are NOT required.
-     * <p>
-     * 
-     * @param mailEventRecipient
-     *            The application which uses this method and wants to be
-     *            informed about mails or events must implement this interface.
-     *            To use the function call it by putting in the class itself as
-     *            parameter (e.g. this).
-     * @param acceptOwnMails
-     *            If the value of this argument is set to TRUE the client
-     *            receives it's own sent mails. Normally you should set this
-     *            parameter to FALSE or - easier - use the same named function
-     *            without this argument.
-     * @throws HapptickException
-     *             Is raised when the connection with service could not be
-     *             established or other problems occured.
-     */
-    public void useMailsAndEvents(boolean acceptOwnMails) throws HapptickException {
         if (Util.isEmpty(this.notEofClient))
             throw new HapptickException(605, "notEofClient ist leer.");
 

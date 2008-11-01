@@ -8,30 +8,28 @@ import java.util.List;
  * Diese Klasse dient dem Parsen von Start-Parametern die mit "-" anfangen.
  */
 
+/**
+ * Class to parse arguments.
+ * <p>
+ * Conventions:
+ * <ul>
+ * <li>flags consist of the '-' sign and one other alphabetical sign (-x)</>
+ * <li>arguments with values have the prefix '--', between argument and value
+ * there is the '=' sign. (--param=value)</>
+ * </ul>
+ */
 public class ArgsParser {
 
-    /**
-     * Liste der Argumente, welche keine Parameter sind.<br>
-     * Ein Argument definiere ich so:<br>
-     * Alle Werte, die beim Start übergeben wurden.
-     */
+    /** List of arguments without values. */
     private final List<String> argumentList = new ArrayList<String>();
 
-    /**
-     * Liste der Parameter.<br>
-     * Parameter definiere ich so: Ein Parameter ist ein Argument, welches mit
-     * "-" oder "--" beginnt.<br>
-     * Ein Parameter mit "-" besteht im allgemeinen aus genau einem weiteren
-     * Zeichen. z.B. "-s".<br>
-     * Ein Parameter mit "--" besteht grundsätzlich aus "--", einem Wort, einem
-     * "="-Zeichen und einem Wert. z.B. "--verbose=true".
-     */
+    /** List with arguments and values */
     private final List<String> parameterList = new ArrayList<String>();
 
     private String args[];
 
     /**
-     * @param args
+     * The one and only constructor.
      */
     public ArgsParser(String[] args) {
         this.args = args;
@@ -61,7 +59,6 @@ public class ArgsParser {
                 }
             }
         }
-        // return argList.contains(param);
         return false;
     }
 

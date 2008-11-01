@@ -74,6 +74,8 @@ public class Errors {
         errorList.put(603L, "Fehler bei Festlegen der Klassen fuer akzeptierte Events.");
         errorList.put(604L, "Empfang von Mails oder Events ist noch nicht aktiviert.");
         errorList.put(605L, "Fehler bei einer vorbereitenden Massnahme fuer den Empfang von Mails.");
+
+        // Start Client
     }
 
     /*

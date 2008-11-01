@@ -11,9 +11,8 @@ public interface NotEOFClient {
 
     public String getClientNetId();
 
+    public boolean isLinkedToService();
+
     public void sendMail(NotEOFMail mail) throws ActionFailedException;
 
-    public void stop() throws ActionFailedException;
-
-    public void stop(int exitCode) throws ActionFailedException;
 }

@@ -124,8 +124,8 @@ public class Server implements EventObservable, Runnable {
         public void run() {
             try {
                 acceptClient(clientSocket);
-            } catch (ActionFailedException afx) {
-                LocalLog.error("Abbruch bei Verbindungsaufbau mit Client.", afx);
+            } catch (Exception e) {
+                LocalLog.error("Abbruch bei Verbindungsaufbau mit Client.\n", e);
             }
         }
 

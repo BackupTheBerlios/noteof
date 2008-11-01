@@ -122,8 +122,8 @@ public class ApplicationService extends BaseService {
     }
 
     /**
-     * Here service part of the communication acts between an application client
-     * and an application service is implemented.
+     * Here the service part of the communication acts between an application
+     * client and an application service is implemented.
      */
     @Override
     public void processClientMsg(Enum<?> incomingMsgEnum) throws ActionFailedException {

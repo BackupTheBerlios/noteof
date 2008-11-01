@@ -7,9 +7,19 @@ import de.happtick.core.MasterTable;
 import de.happtick.core.exception.HapptickException;
 import de.notEOF.core.enumeration.EventType;
 import de.notEOF.core.exception.ActionFailedException;
+import de.notEOF.core.interfaces.NotEOFEvent;
+import de.notEOF.core.interfaces.Service;
 import de.notEOF.core.service.BaseService;
 import de.notIOC.logging.LocalLog;
 
+/**
+ * Start einer Anwendung kann evtl. wahlweise entweder ueber startApplication()
+ * oder mit Hilfe des StartEvents und dementsprechend processEvent() ausgeloest
+ * werden.
+ * 
+ * @author Dirk
+ * 
+ */
 public class StartService extends BaseService {
 
     private String clientIp;
@@ -63,6 +73,17 @@ public class StartService extends BaseService {
      */
     public String startApplication(ApplicationConfiguration applicationConfiguration) {
         return null;
+    }
+
+    /**
+     * 
+     */
+    public synchronized void processEvent(Service service, NotEOFEvent event) throws ActionFailedException {
+
+        // 1. StartEvent?
+        // 2. clientIp = ip des eigenen Client
+        // 3. generiere ApplicationConfiguration
+        // 3. rufe startApplication auf
     }
 
     @Override

@@ -88,7 +88,8 @@ public class ApplicationClient extends BaseClient implements NotEOFClient {
      *            configuration for scheduling.
      * @throws HapptickException
      */
-    public void setApplicationId(Long applicationId) throws HapptickException {
+    public void applicationIdToService(Long applicationId) throws HapptickException {
+        System.out.println("applicationId = " + applicationId);
         try {
             writeMsg(ApplicationTag.PROCESS_APPLICATION_ID);
             awaitRequestAnswerImmediate(ApplicationTag.REQ_APPLICATION_ID, ApplicationTag.RESP_APPLICATION_ID, String.valueOf(applicationId));
@@ -104,7 +105,7 @@ public class ApplicationClient extends BaseClient implements NotEOFClient {
      *            Parameterlist. Maybe it contains the param --startId.
      * @throws HapptickException
      */
-    public void setStartId(String... args) throws HapptickException {
+    public void startIdToService(String... args) throws HapptickException {
         if (null != args) {
             String startId = "";
             ArgsParser argsParser = new ArgsParser(args);

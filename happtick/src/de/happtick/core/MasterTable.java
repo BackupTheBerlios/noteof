@@ -315,7 +315,13 @@ public class MasterTable {
     public synchronized static void addService(Service service) {
         // TODO Kommt man so an den Server???
         if (null == server)
-            service.getServer();
+            server = service.getServer();
+
+        try {
+            System.out.println("Server Service" + server.getServiceListByTypeName("ApplicationService"));
+        } catch (ActionFailedException e1) {
+            e1.printStackTrace();
+        }
 
         // TODO pruefen, ob isAssignableFrom() so funktioniert...
         while (inAction)

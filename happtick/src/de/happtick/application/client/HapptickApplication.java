@@ -4,6 +4,7 @@ import de.happtick.core.application.client.ApplicationClient;
 import de.happtick.core.client.HapptickBaseClient;
 import de.happtick.core.exception.HapptickException;
 import de.happtick.core.interfaces.ClientObserver;
+import de.notEOF.core.interfaces.NotEOFClient;
 
 /**
  * This class is the connector between the application and an application
@@ -22,16 +23,6 @@ public class HapptickApplication extends HapptickBaseClient {
     private ApplicationClient applicationClient = new ApplicationClient();
 
     /**
-     * If this constructor is used at a later time point the serverAddress and
-     * the port to the happtick scheduler must be set. Maybe it is a way to
-     * write ip and port into a configuration file and get them by using the
-     * class LocalConfigurationClient.
-     */
-    public HapptickApplication() {
-
-    }
-
-    /**
      * Constructor with connection informations.
      * 
      * @param applicationId
@@ -43,14 +34,15 @@ public class HapptickApplication extends HapptickBaseClient {
      * @param serverPort
      *            The port of the happtick server where the scheduler is
      *            running.
+     * @param args
+     *            A HapptickApplication must be called with the parameter
+     *            --startId=<value>.
      */
     public HapptickApplication(long applicationId, String serverAddress, int serverPort, String... args) throws HapptickException {
+        initHapptickBaseClient(serverAddress, serverPort, args, applicationClient);
         this.applicationId = applicationId;
-        super.serverAddress = serverAddress;
-        super.serverPort = serverPort;
-        super.args = args;
-        super.notEofClient = applicationClient;
-        connect();
+        applicationClient.applicationIdToService(applicationId);
+        applicationClient.startIdToService(args);
     }
 
     /**
@@ -230,4 +222,8 @@ public class HapptickApplication extends HapptickBaseClient {
         applicationClient.stopObservingForStartAllowance();
     }
 
+    @Override
+    protected void initHapptickBaseClient(String serverAddress, int serverPort, String[] args, NotEOFClient notEofClient) throws HapptickException {
+        super.init(serverAddress, serverPort, args, notEofClient);
+    }
 }

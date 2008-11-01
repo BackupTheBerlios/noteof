@@ -1,24 +1,164 @@
 package de.happtick.core.start.client;
 
-import de.notEOF.core.client.BaseClient;
+import java.util.ArrayList;
+import java.util.List;
 
-public class StartClient extends BaseClient {
+import de.happtick.core.client.HapptickBaseClient;
+import de.happtick.core.events.StartEvent;
+import de.happtick.core.exception.HapptickException;
+import de.notEOF.core.enumeration.EventType;
+import de.notEOF.core.interfaces.NotEOFClient;
+import de.notEOF.core.interfaces.NotEOFEvent;
+import de.notEOF.core.util.ArgsParser;
+import de.notEOF.core.util.Util;
+import de.notEOF.mail.NotEOFMail;
+import de.notEOF.mail.interfaces.MailAndEventRecipient;
+import de.notIOC.logging.LocalLog;
+
+/**
+ * This client awaits StartEvents by the StartService. It is needed to start
+ * applications (executables).
+ * <p>
+ * If a StartEvent is raised there are two possibilities: <br>
+ * <ul>
+ * <li>The application is not using the HapptickApplication interface.<br>
+ * This is when the application executable is configured as 'UNKNOWN'.<br>
+ * In such cases the very special HapptickApplication HapptickSimpleApplication
+ * is started with the name of the application as an argument.</>
+ * <li>The application is using the HapptickApplication interface.<br>
+ * This works if the application executable is configured as 'JAVA'.<br>
+ * Then the application is started directly by the StartClient.</>
+ * </ul>
+ * 
+ * @author Dirk
+ */
+public class StartClient extends HapptickBaseClient implements MailAndEventRecipient {
+
+    public StartClient(String serverAddress, int port, String[] args) throws HapptickException {
+        initHapptickBaseClient(serverAddress, port, args, null);
+        connect();
+
+        // Activate EventSystem
+        useMailsAndEvents(this, false);
+
+        // Catching important events is defined here
+        List<NotEOFEvent> events = new ArrayList<NotEOFEvent>();
+        events.add(new StartEvent());
+        addInterestingEvents(events);
+
+        while (true) {
+            try {
+                Thread.sleep(10000);
+            } catch (InterruptedException e) {
+                System.out.println("StartClient wurde beendet.\n" + e);
+            }
+        }
+    }
+
+    private synchronized void startStarter(NotEOFEvent event) {
+        ApplStarter starter = new ApplStarter(event);
+        Thread starterThread = new Thread(starter);
+        starterThread.run();
+    }
 
     /*
-     * suffix will sent by service later. Makes the startId's unique in the
-     * whole system.
+     * Starts applications. If applicationType is 'unknown' the special internal
+     * ApplicationClient is started here.
      */
-    @SuppressWarnings("unused")
-    private String startIdSuffix;
+    private class ApplStarter implements Runnable {
+        private NotEOFEvent event;
 
+        protected ApplStarter(NotEOFEvent event) {
+            this.event = event;
+        }
+
+        @Override
+        public void run() {
+            startApplication(event);
+        }
+
+        private void startApplication(NotEOFEvent event) {
+            String applicationId = event.getAttribute("applicationId");
+            String applicationPath = event.getAttribute("applicationPath");
+            String arguments = event.getAttribute("arguments");
+            String applicationType = event.getAttribute("applicationType");
+
+            LocalLog.info("Starting Application. ApplicationId: " + applicationId + "; ApplicationPath: " + applicationPath + "; Arguments: " + arguments);
+            LocalLog.info("Application started.  ApplicationId: " + applicationId + "; ApplicationPath: " + applicationPath + "; Arguments: " + arguments);
+        }
+
+    }
+
+    /**
+     * This method works on the StartEvent. It is the central point for
+     * scheduling jobs.
+     */
     @Override
-    public Class<?> serviceForClientByClass() {
-        // TODO Auto-generated method stub
-        return null;
+    public void processEvent(NotEOFEvent event) {
+        // process start request
+        if (event.getEventType().equals(EventType.EVENT_APPLICATION_START)) {
+            startStarter(event);
+        }
+    }
+
+    /**
+     * Logging Errors which happen on the Event-Interface.
+     */
+    @Override
+    public void processEventException(Exception e) {
+        LocalLog.error("Fehler wurde durch die Event-Schnittstelle ausgelöst.", e);
+
+    }
+
+    /**
+     * This client doesn't await mails
+     */
+    @Override
+    public void processMail(NotEOFMail mail) {
+    }
+
+    /**
+     * Should not be raised...
+     */
+    @Override
+    public void processMailException(Exception e) {
+        LocalLog.error("Fehler wurde durch die Mail-Schnittstelle ausgelöst.", e);
+
+    }
+
+    /**
+     * This application is used to start other applications.
+     * <p>
+     * 
+     * @param args
+     *            For connect to one of the central server it must be called
+     *            with some arguments:
+     *            <ul>
+     *            <li>--serverIp=address</> <li>--serverPort=port</>
+     *            </ul>
+     */
+    public static void main(String... args) throws Exception {
+        int port = 0;
+        String address = "";
+        ArgsParser parser = new ArgsParser(args);
+        if (parser.containsStartsWith("--serverIp")) {
+            address = parser.getValue("serverIp");
+        }
+        if (parser.containsStartsWith("--serverPort")) {
+            port = Util.parseInt(parser.getValue("serverPort"), 0);
+        }
+
+        if (!Util.isEmpty(address) && 0 != port) {
+            new StartClient(address, port, args);
+        } else {
+            System.out.println("This application must be started as: ");
+            System.out.println(" StartClient --serverIp=ip --serverPort=port");
+            System.out.println("FINISHED.");
+        }
     }
 
     @Override
-    public String serviceForClientByName() {
-        return "de.happtick.core.start.service.StartService";
+    protected void initHapptickBaseClient(String serverAddress, int serverPort, String[] args, NotEOFClient notEofClient) throws HapptickException {
+        super.init(serverAddress, serverPort, args, notEofClient);
     }
 }
