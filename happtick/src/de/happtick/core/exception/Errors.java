@@ -76,6 +76,8 @@ public class Errors {
         errorList.put(605L, "Fehler bei einer vorbereitenden Massnahme fuer den Empfang von Mails.");
 
         // Start Client
+        errorList.put(650L, "Fehler bei Starten einer Anwendung. Fehlender Wert im Start-Event: ");
+        errorList.put(651L, "Fehler bei Starten einer Anwendung.");
     }
 
     /*

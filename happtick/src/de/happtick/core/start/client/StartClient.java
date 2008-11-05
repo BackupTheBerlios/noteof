@@ -1,11 +1,13 @@
 package de.happtick.core.start.client;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import de.happtick.core.client.HapptickBaseClient;
 import de.happtick.core.events.StartEvent;
 import de.happtick.core.exception.HapptickException;
+import de.happtick.core.util.ExternalCalls;
 import de.notEOF.core.enumeration.EventType;
 import de.notEOF.core.interfaces.NotEOFClient;
 import de.notEOF.core.interfaces.NotEOFEvent;
@@ -51,6 +53,7 @@ public class StartClient extends HapptickBaseClient implements MailAndEventRecip
                 Thread.sleep(10000);
             } catch (InterruptedException e) {
                 System.out.println("StartClient wurde beendet.\n" + e);
+                break;
             }
         }
     }
@@ -74,19 +77,45 @@ public class StartClient extends HapptickBaseClient implements MailAndEventRecip
 
         @Override
         public void run() {
-            startApplication(event);
+            try {
+                startApplication(event);
+            } catch (Exception e) {
+                String applId = null;
+                if (!Util.isEmpty(event))
+                    applId = event.getAttribute("applicationId");
+                LocalLog.warn("Start einer Anwendung nicht moeglich. Id: " + applId, e);
+            }
         }
 
-        private void startApplication(NotEOFEvent event) {
+        private void startApplication(NotEOFEvent event) throws HapptickException {
             String applicationId = event.getAttribute("applicationId");
             String applicationPath = event.getAttribute("applicationPath");
             String arguments = event.getAttribute("arguments");
             String applicationType = event.getAttribute("applicationType");
 
+            if (Util.isEmpty(applicationId))
+                throw new HapptickException(650L, "applicationId");
+            if (Util.isEmpty(applicationPath))
+                throw new HapptickException(650L, "applicationPath");
+            if (Util.isEmpty(applicationType))
+                throw new HapptickException(650L, "applicationType");
+
+            String startId = serverAddress + String.valueOf(Thread.currentThread().getId()) + String.valueOf(new Date().getTime());
+
+            // if type is 'java' the application start the application itself
+            // if type is 'unknown' start the special Happtick application which
+            // controls 'foreign' processess
+            if ("JAVA".equalsIgnoreCase(applicationType)) {
+                ExternalCalls.startExternProcess(applicationPath, applicationId, startId, serverAddress, String.valueOf(serverPort), arguments);
+            } else if ("UNKNOWN".equalsIgnoreCase(applicationType)) {
+                ExternalCalls.call(ExternalApplicationStarter.class.getCanonicalName(), applicationPath, applicationId, startId, serverAddress, String
+                        .valueOf(serverPort), arguments);
+            } else
+                throw new HapptickException(1L, "Type: " + applicationType);
+
             LocalLog.info("Starting Application. ApplicationId: " + applicationId + "; ApplicationPath: " + applicationPath + "; Arguments: " + arguments);
             LocalLog.info("Application started.  ApplicationId: " + applicationId + "; ApplicationPath: " + applicationPath + "; Arguments: " + arguments);
         }
-
     }
 
     /**

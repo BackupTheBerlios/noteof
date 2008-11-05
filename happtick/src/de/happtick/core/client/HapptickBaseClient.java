@@ -43,6 +43,14 @@ public abstract class HapptickBaseClient {
         this.notEofClient = new internalClient();
     }
 
+    public int getNotEOFServerPort() {
+        return serverPort;
+    }
+
+    public String getNotEOFServerAddress() {
+        return serverAddress;
+    }
+
     /**
      * This method should be called by the extended classes as soon as
      * possible...

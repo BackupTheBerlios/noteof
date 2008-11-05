@@ -149,8 +149,7 @@ public class TalkLine implements Observer {
      *             Thrown when communication timeout > 0 and the timeout has
      *             been exceeded.
      */
-    @SuppressWarnings("unchecked")
-    public void responseTo(Enum respHeader, String value) throws ActionFailedException {
+    public void responseTo(Enum<?> respHeader, String value) throws ActionFailedException {
         socketLayer.responseToPartner(respHeader.name(), value);
     }
 
@@ -168,8 +167,7 @@ public class TalkLine implements Observer {
      *             or when the communication timeout > 0 and the timeout has
      *             been exceeded.
      */
-    @SuppressWarnings("unchecked")
-    public String requestTo(Enum requestHeader, Enum expectedRespHeader) throws ActionFailedException {
+    public String requestTo(Enum<?> requestHeader, Enum<?> expectedRespHeader) throws ActionFailedException {
         return socketLayer.requestToPartner(requestHeader.name(), expectedRespHeader.name());
     }
 
@@ -185,8 +183,7 @@ public class TalkLine implements Observer {
      *             or when the communication timeout > 0 and the timeout has
      *             been exceeded.
      */
-    @SuppressWarnings("unchecked")
-    public void awaitInfo(Enum expectedInfoHeader) throws ActionFailedException {
+    public void awaitInfo(Enum<?> expectedInfoHeader) throws ActionFailedException {
         awaitRequest(expectedInfoHeader);
     }
 
@@ -202,8 +199,7 @@ public class TalkLine implements Observer {
      *             or when the communication timeout > 0 and the timeout has
      *             been exceeded.
      */
-    @SuppressWarnings("unchecked")
-    public void awaitRequest(Enum expectedRequestHeader) throws ActionFailedException {
+    public void awaitRequest(Enum<?> expectedRequestHeader) throws ActionFailedException {
         socketLayer.awaitPartnerRequest(expectedRequestHeader.name());
     }
 
@@ -221,8 +217,7 @@ public class TalkLine implements Observer {
      *            The value which the communication partner is waiting for
      * @throws ActionFailedException
      */
-    @SuppressWarnings("unchecked")
-    public void awaitRequestAnswerImmediate(Enum expectedRequestHeader, Enum respHeader, String value) throws ActionFailedException {
+    public void awaitRequestAnswerImmediate(Enum<?> expectedRequestHeader, Enum<?> respHeader, String value) throws ActionFailedException {
         awaitRequest(expectedRequestHeader);
         responseTo(respHeader, value);
     }

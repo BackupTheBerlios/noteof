@@ -273,6 +273,7 @@ public class SocketLayer {
         return msg;
     }
 
+    // @SuppressWarnings("unchecked")
     @SuppressWarnings("unchecked")
     protected DataObject receiveDataObject() throws ActionFailedException {
         // dataTypes:

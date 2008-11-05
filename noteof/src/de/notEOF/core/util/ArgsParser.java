@@ -256,9 +256,8 @@ public class ArgsParser {
      * 
      * @return
      */
-    @SuppressWarnings("unchecked")
     public String[] getArgs() {
-        ArrayList args = new ArrayList<String>();
+        ArrayList<String> args = new ArrayList<String>();
         args.addAll(argumentList);
         args.addAll(parameterList);
         return (String[]) args.toArray(new String[0]);

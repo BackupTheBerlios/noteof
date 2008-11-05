@@ -362,7 +362,7 @@ public abstract class BaseService extends BaseClientOrService implements Service
                         // client/service specific messages are processed in the
                         // method processMsg() which must be implemented
                         // individual in every service.
-                        Class<Enum> tagEnumClass = (Class<Enum>) getCommunicationTagClass();
+                        Class<Enum<?>> tagEnumClass = (Class<Enum<?>>) getCommunicationTagClass();
                         try {
                             processClientMsg(validateEnum(tagEnumClass, msg));
                         } catch (ActionFailedException afx) {
@@ -428,10 +428,10 @@ public abstract class BaseService extends BaseClientOrService implements Service
         eventTypes.add(type);
     }
 
-    @SuppressWarnings("unchecked")
-    private Enum validateEnum(Class<Enum> tagEnumClass, String msg) throws ActionFailedException {
+    // @SuppressWarnings("unchecked")
+    private Enum<?> validateEnum(Class<Enum<?>> tagEnumClass, String msg) throws ActionFailedException {
         try {
-            for (Enum enume : tagEnumClass.getEnumConstants()) {
+            for (Enum<?> enume : tagEnumClass.getEnumConstants()) {
                 if (enume.name().equals(msg)) {
                     return enume;
                 }

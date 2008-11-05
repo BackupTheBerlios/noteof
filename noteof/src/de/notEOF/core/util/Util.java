@@ -94,7 +94,6 @@ public class Util {
      * @param object
      * @return
      */
-    @SuppressWarnings("unchecked")
     public static boolean isEmpty(Object object) {
         if (object == null)
             return true;
@@ -103,7 +102,7 @@ public class Util {
         if (object.getClass().isArray())
             return isEmpty((Object[]) object);
         if (object instanceof Collection)
-            return ((Collection) object).isEmpty();
+            return ((Collection<?>) object).isEmpty();
         return false;
     }
 

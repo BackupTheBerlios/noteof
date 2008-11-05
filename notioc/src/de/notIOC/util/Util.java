@@ -3,7 +3,8 @@ package de.notIOC.util;
 import java.util.Collection;
 
 /**
- * When used several times in one file use this: import static de.iccs.util.Util.*; And access the Util.*-methods directly.
+ * When used several times in one file use this: import static
+ * de.iccs.util.Util.*; And access the Util.*-methods directly.
  */
 public class Util {
 
@@ -13,7 +14,8 @@ public class Util {
     }
 
     /**
-     * Liefert bei einem Null-String einen leeren String. Vereinfacht den Vergleich von Strings.
+     * Liefert bei einem Null-String einen leeren String. Vereinfacht den
+     * Vergleich von Strings.
      * 
      * @param theObject
      *            Ein Objekt
@@ -35,12 +37,12 @@ public class Util {
     }
 
     /**
-     * Pr�ft ob object NULL, ein Leerstring (getrimmt), ein leeres Array (length == 0) oder eine leere Collection ist.
+     * Pr�ft ob object NULL, ein Leerstring (getrimmt), ein leeres Array
+     * (length == 0) oder eine leere Collection ist.
      * 
      * @param object
      * @return
      */
-    @SuppressWarnings("unchecked")
     public static boolean isEmpty(Object object) {
         if (object == null)
             return true;
@@ -49,13 +51,14 @@ public class Util {
         if (object.getClass().isArray())
             return isEmpty((Object[]) object);
         if (object instanceof Collection)
-            return ((Collection) object).isEmpty();
+            return ((Collection<?>) object).isEmpty();
         return false;
     }
 
     /**
      * @param array
-     * @return true wenn das array null ist oder keine Elemente hat (length == 0)
+     * @return true wenn das array null ist oder keine Elemente hat (length ==
+     *         0)
      */
     public static boolean isEmpty(Object[] array) {
         return array == null || array.length == 0;
@@ -63,7 +66,8 @@ public class Util {
 
     /**
      * Liefert den Wert des an eine Methode uebergebenen Arguments. <br>
-     * Wird z.B. fuer die Auswertung der Argumente an die main-Methode benoetigt.
+     * Wird z.B. fuer die Auswertung der Argumente an die main-Methode
+     * benoetigt.
      * 
      * @param arg
      *            Ist das String-Array
@@ -79,18 +83,23 @@ public class Util {
     }
 
     /**
-     * Liefert aus den an eine Methode uebergebenen Argumenten zu einem Schluessel/Parameter den Wert. <br>
-     * Wird z.B. fuer die Auswertung der Argumente an die main-Methode benoetigt. <br>
-     * Beispiel: Ein Programm prog wird mit den Argumenten -home hotel aufgerufen: <br>
+     * Liefert aus den an eine Methode uebergebenen Argumenten zu einem
+     * Schluessel/Parameter den Wert. <br>
+     * Wird z.B. fuer die Auswertung der Argumente an die main-Methode
+     * benoetigt. <br>
+     * Beispiel: Ein Programm prog wird mit den Argumenten -home hotel
+     * aufgerufen: <br>
      * prog -home hotel <br>
      * Dann ruft man diese Methode auf mit (arg, "-home")
      * 
      * @param args
-     *            Ist das String array, wie an die Methode (z.B. main) uebergeben wurde
+     *            Ist das String array, wie an die Methode (z.B. main)
+     *            uebergeben wurde
      * @param keyName
      *            Ist der identifizierende Schluessel (z.B. -home)
-     * @return Liefert den Wert aus dem Array, der dem keyNamen folgt oder NULL wenn keyName nicht gefunden werden konnte oder kein
-     *         Parameter folgte.
+     * @return Liefert den Wert aus dem Array, der dem keyNamen folgt oder NULL
+     *         wenn keyName nicht gefunden werden konnte oder kein Parameter
+     *         folgte.
      */
     public static String getArgPerKey(String[] args, String keyName) {
         for (int i = 0; i < args.length; i++) {
@@ -103,7 +112,8 @@ public class Util {
 
     /**
      * Prueft, ob ein Argument gesetzt wurde. <br>
-     * Die Pruefung ist hier genau, d.h., das Argument muss exakt dem Suchbegriff entsprechen. <br>
+     * Die Pruefung ist hier genau, d.h., das Argument muss exakt dem
+     * Suchbegriff entsprechen. <br>
      * Bsp.: args[0] = argument, argName = argument -> Treffer <br>
      * args[0] = argument=x, argName = argument -> Kein Treffer <br>
      * args[0] = --argument, argName = argument -> Kein Treffer
@@ -167,7 +177,8 @@ public class Util {
     }
 
     /**
-     * Parses the input as int. Returns def if the parse process fails (due to null or non-number)
+     * Parses the input as int. Returns def if the parse process fails (due to
+     * null or non-number)
      * 
      * @param input
      * @param def
@@ -194,7 +205,8 @@ public class Util {
     }
 
     /**
-     * Beendet das wilde Rotieren auf der Konsole, das mit startWait eingeleitet wurde.
+     * Beendet das wilde Rotieren auf der Konsole, das mit startWait eingeleitet
+     * wurde.
      */
     public static void stopWait() {
         if (consoleWaitThread != null && consoleWaitThread.isAlive()) {

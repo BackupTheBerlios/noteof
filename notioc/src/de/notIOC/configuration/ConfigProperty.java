@@ -116,11 +116,10 @@ public class ConfigProperty {
      * @return List with all attributes with the attribute name. Values for not
      *         existing attributes are a String with size 0 ("").
      */
-    @SuppressWarnings("unchecked")
     public List<String> getAttributeList(String attributeName) {
         if (null == propertyList)
             return null;
-        List attributeList = new ArrayList<String>();
+        List<String> attributeList = new ArrayList<String>();
         for (Element element : propertyList) {
             String attributeValue = element.getAttributeValue(attributeName);
             if (null == attributeValue)
@@ -136,11 +135,10 @@ public class ConfigProperty {
      * @return List with text for all elements. If an element has no text a
      *         String with size 0 ("") will be inserted.
      */
-    @SuppressWarnings("unchecked")
     public List<String> getTextList() {
         if (null == propertyList)
             return null;
-        List textList = new ArrayList<String>();
+        List<String> textList = new ArrayList<String>();
         for (Element element : propertyList) {
             String textValue = element.getText();
             if (null == textValue)
