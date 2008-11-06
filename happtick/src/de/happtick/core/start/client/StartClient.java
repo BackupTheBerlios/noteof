@@ -106,7 +106,7 @@ public class StartClient extends HapptickBaseClient implements MailAndEventRecip
             // if type is 'unknown' start the special Happtick application which
             // controls 'foreign' processess
             if ("JAVA".equalsIgnoreCase(applicationType)) {
-                ExternalCalls.startExternProcess(applicationPath, applicationId, startId, serverAddress, String.valueOf(serverPort), arguments);
+                ExternalCalls.startHapptickApplication(applicationPath, startId, serverAddress, String.valueOf(serverPort), arguments);
             } else if ("UNKNOWN".equalsIgnoreCase(applicationType)) {
                 ExternalCalls.call(ExternalApplicationStarter.class.getCanonicalName(), applicationPath, applicationId, startId, serverAddress, String
                         .valueOf(serverPort), arguments);

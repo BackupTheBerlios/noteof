@@ -64,12 +64,10 @@ public class ExternalCalls {
      *            Additional calling arguments. Depend to the application.
      * @return The started Process
      */
-    public static Process startExternProcess(String applicationPath, String applicationId, String startId, String serverAddress, String serverPort,
-            String arguments) throws HapptickException {
+    public static Process startHapptickApplication(String applicationPath, String startId, String serverAddress, String serverPort, String arguments)
+            throws HapptickException {
         Process proc = null;
         // nur weitermachen, wenn auch eine Anwendung eingetragen wurde...
-        if (Util.isEmpty(applicationId))
-            throw new HapptickException(650L, "applicationId");
         if (Util.isEmpty(applicationPath))
             throw new HapptickException(650L, "applicationPath");
 
@@ -79,8 +77,8 @@ public class ExternalCalls {
             cmdLine[0] = applicationPath;
 
             // build arguments
-            String args = "--applicationId=" + applicationId.trim();
-            args += " --startId=" + startId.trim();
+            // String args = "--applicationId=" + applicationId.trim();
+            String args = "--startId=" + startId.trim();
             args += " --serverAddress=" + serverAddress.trim();
             args += " --serverPort=" + serverPort.trim();
             args += " " + arguments;
