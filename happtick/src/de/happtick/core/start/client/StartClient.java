@@ -102,18 +102,24 @@ public class StartClient extends HapptickBaseClient implements MailAndEventRecip
 
             String startId = serverAddress + String.valueOf(Thread.currentThread().getId()) + String.valueOf(new Date().getTime());
 
+            String[] applArgs = null;
+            if (!Util.isEmpty(arguments)) {
+                List<String> applArgsList = Util.stringToList(arguments, "");
+                applArgs = (String[]) applArgsList.toArray();
+            }
+
             // if type is 'java' the application start the application itself
             // if type is 'unknown' start the special Happtick application which
             // controls 'foreign' processess
+            LocalLog.info("Starting Application. ApplicationId: " + applicationId + "; ApplicationPath: " + applicationPath + "; Arguments: " + arguments);
             if ("JAVA".equalsIgnoreCase(applicationType)) {
-                ExternalCalls.startHapptickApplication(applicationPath, startId, serverAddress, String.valueOf(serverPort), arguments);
+                ExternalCalls.startHapptickApplication(applicationPath, startId, serverAddress, String.valueOf(serverPort), applArgs);
             } else if ("UNKNOWN".equalsIgnoreCase(applicationType)) {
                 ExternalCalls.call(ExternalApplicationStarter.class.getCanonicalName(), applicationPath, applicationId, startId, serverAddress, String
                         .valueOf(serverPort), arguments);
             } else
                 throw new HapptickException(1L, "Type: " + applicationType);
 
-            LocalLog.info("Starting Application. ApplicationId: " + applicationId + "; ApplicationPath: " + applicationPath + "; Arguments: " + arguments);
             LocalLog.info("Application started.  ApplicationId: " + applicationId + "; ApplicationPath: " + applicationPath + "; Arguments: " + arguments);
         }
     }
@@ -155,6 +161,11 @@ public class StartClient extends HapptickBaseClient implements MailAndEventRecip
 
     }
 
+    @Override
+    protected void initHapptickBaseClient(String serverAddress, int serverPort, String[] args, NotEOFClient notEofClient) throws HapptickException {
+        super.init(serverAddress, serverPort, args, notEofClient);
+    }
+
     /**
      * This application is used to start other applications.
      * <p>
@@ -184,10 +195,5 @@ public class StartClient extends HapptickBaseClient implements MailAndEventRecip
             System.out.println(" StartClient --serverIp=ip --serverPort=port");
             System.out.println("FINISHED.");
         }
-    }
-
-    @Override
-    protected void initHapptickBaseClient(String serverAddress, int serverPort, String[] args, NotEOFClient notEofClient) throws HapptickException {
-        super.init(serverAddress, serverPort, args, notEofClient);
     }
 }

@@ -64,7 +64,7 @@ public class ExternalCalls {
      *            Additional calling arguments. Depend to the application.
      * @return The started Process
      */
-    public static Process startHapptickApplication(String applicationPath, String startId, String serverAddress, String serverPort, String arguments)
+    public static Process startHapptickApplication(String applicationPath, String startId, String serverAddress, String serverPort, String[] arguments)
             throws HapptickException {
         Process proc = null;
         // nur weitermachen, wenn auch eine Anwendung eingetragen wurde...
