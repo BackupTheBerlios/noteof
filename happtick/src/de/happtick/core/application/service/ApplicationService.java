@@ -195,6 +195,7 @@ public class ApplicationService extends BaseService {
 
         // START event
         if (incomingMsgEnum.equals(ApplicationTag.PROCESS_START_WORK_EVENT)) {
+            System.out.println("ApplicationService: incomingMsg = START_...");
             NotEOFEvent event = new StartedEvent();
             event.addAttribute("applicationId", String.valueOf(this.applicationId));
             event.addAttribute("clientNetId", String.valueOf(super.getClientNetId()));
