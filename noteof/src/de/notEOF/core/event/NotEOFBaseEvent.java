@@ -7,6 +7,18 @@ import de.notEOF.core.enumeration.EventType;
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.interfaces.NotEOFEvent;
 
+/**
+ * Basic Event class for send fast messages through the net.
+ * <p>
+ * Any Event class should be extended from this AND should implement the
+ * Interface NotEOFEvent. <br>
+ * For more details of the methods have a look to the interface.
+ * 
+ * @see NotEOFEvent
+ * 
+ * @author Dirk
+ * 
+ */
 public abstract class NotEOFBaseEvent implements NotEOFEvent {
 
     protected Map<String, String> attributes;
@@ -33,9 +45,13 @@ public abstract class NotEOFBaseEvent implements NotEOFEvent {
 
     public abstract EventType getEventType();
 
-    public String getAttribute(String key) {
-        if (null != attributes)
+    public String getAttribute(String key) throws ActionFailedException {
+        if (null != attributes) {
+            String value = attributes.get(key);
+            if (null == value)
+                throw new ActionFailedException(1155L, key);
             return attributes.get(key);
+        }
         return null;
     }
 

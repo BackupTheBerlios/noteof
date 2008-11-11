@@ -82,16 +82,29 @@ public class StartClient extends HapptickBaseClient implements MailAndEventRecip
             } catch (Exception e) {
                 String applId = null;
                 if (!Util.isEmpty(event))
-                    applId = event.getAttribute("applicationId");
+                    try {
+                        applId = event.getAttribute("applicationId");
+                    } catch (Exception ex) {
+                        LocalLog.error("Fehler bei Verarbeitung eines Events.", ex);
+                    }
+
                 LocalLog.warn("Start einer Anwendung nicht moeglich. Id: " + applId, e);
             }
         }
 
         private void startApplication(NotEOFEvent event) throws HapptickException {
-            String applicationId = event.getAttribute("applicationId");
-            String applicationPath = event.getAttribute("applicationPath");
-            String arguments = event.getAttribute("arguments");
-            String applicationType = event.getAttribute("applicationType");
+            String applicationId = null;
+            String applicationPath = null;
+            String arguments = null;
+            String applicationType = null;
+            try {
+                applicationId = event.getAttribute("applicationId");
+                applicationPath = event.getAttribute("applicationPath");
+                arguments = event.getAttribute("arguments");
+                applicationType = event.getAttribute("applicationType");
+            } catch (Exception ex) {
+                LocalLog.error("Fehler bei Verarbeitung eines Events.", ex);
+            }
 
             if (Util.isEmpty(applicationId))
                 throw new HapptickException(650L, "applicationId");

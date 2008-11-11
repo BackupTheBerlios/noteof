@@ -41,7 +41,7 @@ public interface NotEOFEvent {
      * @return The value of the attribute which is specified by the exactly used
      *         key.
      */
-    public String getAttribute(String key);
+    public String getAttribute(String key) throws ActionFailedException;
 
     /**
      * Delivers a map with descriptions for every attribute.

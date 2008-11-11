@@ -93,6 +93,7 @@ public abstract class MailAndEventReceiveService extends BaseService {
      *            detected by the service.
      */
     public void processEvent(Service service, NotEOFEvent event) throws ActionFailedException {
+        System.out.println("MailAndEventReceiveService.processEvent: Event" + event);
         if (null == event) {
             throw new ActionFailedException(1154L, "Event ist NULL");
         }

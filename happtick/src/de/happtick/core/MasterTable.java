@@ -1,7 +1,6 @@
 package de.happtick.core;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -11,16 +10,13 @@ import de.happtick.configuration.ApplicationConfiguration;
 import de.happtick.configuration.ChainConfiguration;
 import de.happtick.configuration.EventConfiguration;
 import de.happtick.core.application.service.ApplicationService;
-import de.happtick.core.events.StoppedEvent;
 import de.happtick.core.exception.HapptickException;
 import de.happtick.core.start.service.StartService;
 import de.notEOF.configuration.LocalConfiguration;
 import de.notEOF.core.enumeration.EventType;
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.interfaces.NotEOFConfiguration;
-import de.notEOF.core.interfaces.NotEOFEvent;
 import de.notEOF.core.interfaces.Service;
-import de.notEOF.core.logging.LocalLog;
 import de.notEOF.core.server.Server;
 import de.notEOF.core.util.Util;
 
@@ -38,8 +34,13 @@ public class MasterTable {
     private static Map<Long, ApplicationConfiguration> applicationConfigurations = new HashMap<Long, ApplicationConfiguration>();
     private static Map<Long, ChainConfiguration> chainConfigurations = new HashMap<Long, ChainConfiguration>();
     private static Map<Long, EventConfiguration> eventConfigurations = new HashMap<Long, EventConfiguration>();
-    private static Map<String, ApplicationService> applicationServices = new HashMap<String, ApplicationService>();
-    private static Map<String, StartService> startServices = new HashMap<String, StartService>();
+    // private static Map<String, ApplicationService> applicationServices = new
+    // HashMap<String, ApplicationService>();
+    // private static Map<String, StartService> startServices = new
+    // HashMap<String, StartService>();
+
+    private static Map<String, Service> services = new HashMap<String, Service>();
+
     // private static List<EventObserver> eventObservers = new
     // ArrayList<EventObserver>();
 
@@ -207,14 +208,20 @@ public class MasterTable {
      * 
      * @return Map with ApplicationServices. Key ist the serviceId.
      */
-    public synchronized static Map<String, ApplicationService> getApplicationServices() {
-        return applicationServices;
+    public synchronized static List<ApplicationService> getApplicationServicesAsList() {
+        List<ApplicationService> applicationList = new ArrayList<ApplicationService>();
+        for (Service service : getServicesAsList()) {
+            if (service.getClass().isAssignableFrom(ApplicationService.class)) {
+                applicationList.add((ApplicationService) service);
+            }
+        }
+        return applicationList;
     }
 
-    public synchronized static List<ApplicationService> getApplicationServicesAsList() throws ActionFailedException {
-        List<ApplicationService> appList = new ArrayList<ApplicationService>();
-        appList.addAll(getApplicationServices().values());
-        return appList;
+    private static List<Service> getServicesAsList() {
+        List<Service> serviceList = new ArrayList<Service>();
+        serviceList.addAll(services.values());
+        return serviceList;
     }
 
     /**
@@ -224,20 +231,20 @@ public class MasterTable {
      * @param applicationId
      *            Id of application like used in configuration and
      *            implementation.
-     * @return A list with found services.
+     * @return A list with found services or NULL.
      */
-    public synchronized static List<ApplicationService> getApplicationServicesById(Long applicationId) {
-        Collection<ApplicationService> services = applicationServices.values();
-        List<ApplicationService> serviceList = null;
-        if (services.size() > 0) {
-            serviceList = new ArrayList<ApplicationService>();
-            for (ApplicationService service : services) {
+    public synchronized static List<ApplicationService> getApplicationServicesByApplicationId(Long applicationId) {
+        List<ApplicationService> completeList = getApplicationServicesAsList();
+        if (completeList.size() > 0) {
+            List<ApplicationService> byIdList = new ArrayList<ApplicationService>();
+            for (ApplicationService service : completeList) {
                 if (service.getApplicationId().longValue() == applicationId.longValue())
-                    serviceList.add(service);
+                    byIdList.add(service);
             }
+            if (byIdList.size() > 0)
+                return byIdList;
         }
-
-        return serviceList;
+        return null;
     }
 
     /**
@@ -248,7 +255,17 @@ public class MasterTable {
      * @return An ApplicationService or null if not found in master tables.
      */
     public synchronized static ApplicationService getApplicationService(String serviceId) {
-        return applicationServices.get(serviceId);
+        return (ApplicationService) services.get(serviceId);
+    }
+
+    /**
+     * Delivers a Base Service by serviceId.
+     * 
+     * @param serviceId
+     * @return
+     */
+    public synchronized static Service getService(String serviceId) {
+        return services.get(serviceId);
     }
 
     /**
@@ -264,9 +281,9 @@ public class MasterTable {
      * @return An ApplicationService or null if not found in master tables.
      */
     public synchronized static ApplicationService getApplicationServiceByStartId(String startId) {
-        Collection<ApplicationService> services = applicationServices.values();
-        if (services.size() > 0) {
-            for (ApplicationService service : services) {
+        List<ApplicationService> completeList = getApplicationServicesAsList();
+        if (completeList.size() > 0) {
+            for (ApplicationService service : completeList) {
                 if (service.getStartId().equals(startId))
                     return service;
             }
@@ -287,24 +304,6 @@ public class MasterTable {
     }
 
     /**
-     * Delivers a StartService by the client ip address.
-     * 
-     * @param clientIp
-     *            The ip of the client host.
-     * @return A StartService or null.
-     */
-    public synchronized static StartService getStartServiceByIp(String clientIp) {
-        List<StartService> services = new ArrayList<StartService>();
-        services.addAll(startServices.values());
-        for (StartService service : services) {
-            if (service.getClientIp().equals(clientIp)) {
-                return service;
-            }
-        }
-        return null;
-    }
-
-    /**
      * Put a service into the list of ApplicationServices OR StartService.
      * 
      * @param service
@@ -313,15 +312,10 @@ public class MasterTable {
      * @throws HapptickException
      */
     public synchronized static void addService(Service service) {
+        System.out.println("MasterTable.addService: Service " + service);
         // TODO Kommt man so an den Server???
         if (null == server)
             server = service.getServer();
-
-        try {
-            System.out.println("Server Service" + server.getServiceListByTypeName("ApplicationService"));
-        } catch (ActionFailedException e1) {
-            e1.printStackTrace();
-        }
 
         // TODO pruefen, ob isAssignableFrom() so funktioniert...
         while (inAction)
@@ -331,13 +325,7 @@ public class MasterTable {
                 break;
             }
         inAction = true;
-        if (service.getClass().isAssignableFrom(ApplicationService.class)) {
-            applicationServices.put(service.getServiceId(), (ApplicationService) service);
-        } else if (service.getClass().isAssignableFrom(StartService.class)) {
-            startServices.put(service.getServiceId(), (StartService) service);
-        } else {
-            LocalLog.warn("Service konnte nicht in die MasterTable eingef�gt werden. Type = " + service.getClass().getName());
-        }
+        services.put(service.getServiceId(), service);
         inAction = false;
     }
 
@@ -348,7 +336,8 @@ public class MasterTable {
      * @param serviceId
      *            Is the key of the service what must be removed.
      */
-    public synchronized static void removeService(Service service) throws HapptickException {
+    public synchronized static void removeService(Service service) {
+        System.out.println("MasterTable.removeService: Service " + service);
         while (inAction)
             try {
                 Thread.sleep(100);
@@ -356,40 +345,7 @@ public class MasterTable {
                 break;
             }
         inAction = true;
-
-        try {
-            // try for ApplicationServices
-            if (service.getClass().isAssignableFrom(ApplicationService.class)) {
-                Long applicationId = ((ApplicationService) service).getApplicationId();
-                String clientNetId = ((ApplicationService) service).getClientNetId();
-                String startId = ((ApplicationService) service).getStartId();
-                NotEOFEvent stoppedEvent = (StoppedEvent) ((ApplicationService) service).getLastEvent(EventType.EVENT_SERVICE_STOPPED);
-                if (null == stoppedEvent) {
-                    stoppedEvent = new StoppedEvent();
-                    stoppedEvent.addAttribute("applicationId", String.valueOf(applicationId));
-                    stoppedEvent.addAttribute("clientNetId", clientNetId);
-                    stoppedEvent.addAttribute("startId", startId);
-                    stoppedEvent.addAttribute("exitCode", "0");
-                }
-                applicationServices.remove(service.getServiceId());
-                server.updateObservers(null, stoppedEvent);
-            }
-
-            // try all StartServices
-            if (service.getClass().isAssignableFrom(StartService.class)) {
-                String clientNetId = service.getClientNetId();
-                StoppedEvent stoppedEvent = new StoppedEvent();
-                stoppedEvent.addAttribute("applicationId", "");
-                stoppedEvent.addAttribute("clientNetId", clientNetId);
-                stoppedEvent.addAttribute("startId", "");
-                stoppedEvent.addAttribute("exitCode", "0");
-                startServices.remove(service.getServiceId());
-                server.updateObservers(null, stoppedEvent);
-            }
-        } catch (ActionFailedException e) {
-            throw new HapptickException(402L, e);
-        }
-
+        services.remove(service.getServiceId());
         inAction = false;
     }
 
@@ -486,7 +442,7 @@ public class MasterTable {
         // iterate over the list of applications to wait for
         for (Long id : applicationConfiguration.getApplicationsWaitFor()) {
             // if list with found services > 0 there exists one or more service
-            if (getApplicationServicesById(id).size() > 0)
+            if (getApplicationServicesByApplicationId(id).size() > 0)
                 return true;
         }
         return false;

@@ -242,7 +242,6 @@ public abstract class BaseClientOrService {
      * @throws ActionFailedException
      */
     public void writeMsg(Enum<?> requestHeader) throws ActionFailedException {
-        System.out.println("talkline == null " + (null == talkLine));
         talkLine.writeMsg(requestHeader.name());
     }
 

@@ -3,14 +3,11 @@ package de.happtick.core.start.service;
 import java.util.List;
 
 import de.happtick.configuration.ApplicationConfiguration;
-import de.happtick.core.MasterTable;
-import de.happtick.core.exception.HapptickException;
+import de.happtick.core.service.HapptickBaseService;
 import de.notEOF.core.enumeration.EventType;
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.interfaces.NotEOFEvent;
 import de.notEOF.core.interfaces.Service;
-import de.notEOF.core.service.BaseService;
-import de.notIOC.logging.LocalLog;
 
 /**
  * Start einer Anwendung kann evtl. wahlweise entweder ueber startApplication()
@@ -20,28 +17,10 @@ import de.notIOC.logging.LocalLog;
  * @author Dirk
  * 
  */
-public class StartService extends BaseService {
+public class StartService extends HapptickBaseService {
 
     private String clientIp;
     private String startId;
-
-    /**
-     * This method is called by BaseService directly when the connection with
-     * client is established.
-     */
-    public void implementationFirstSteps() {
-        // register at master tables
-        MasterTable.addService(this);
-    }
-
-    public void implementationLastSteps() {
-        // deregister from master tables
-        try {
-            MasterTable.removeService(this);
-        } catch (HapptickException e) {
-            LocalLog.error("Fehler bei Beenden des StartService. ServiceId: " + this.serviceId + "; ClientIp: " + clientIp + "; Client StartId: " + startId);
-        }
-    }
 
     public String getClientIp() {
         return this.clientIp;
@@ -79,6 +58,15 @@ public class StartService extends BaseService {
      * 
      */
     public synchronized void processEvent(Service service, NotEOFEvent event) throws ActionFailedException {
+        System.out.println("aha");
+
+        if (event.getEventType().equals(EventType.EVENT_APPLICATION_START)) {
+            System.out.println("StartService.processEvent: event.clientIp: " + event.getAttribute("clientIp"));
+            System.out.println("StartService.processEvent: event.applicationId: " + event.getAttribute("applicationId"));
+            System.out.println("StartService.processEvent: event.applicationPath: " + event.getAttribute("applicationPath"));
+            System.out.println("StartService.processEvent: event.applicationType: " + event.getAttribute("applicationType"));
+            System.out.println("StartService.processEvent: event.arguments: " + event.getAttribute("arguments"));
+        }
 
         // 1. StartEvent?
         // 2. clientIp = ip des eigenen Client

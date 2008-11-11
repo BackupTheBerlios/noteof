@@ -354,6 +354,7 @@ public abstract class BaseService extends BaseClientOrService implements Service
                     } else if (msg.equals(MailTag.REQ_READY_FOR_EVENT.name())) {
                         // writeMsg(BaseCommTag.VAL_OK);
                         try {
+                            System.out.println("BaseService.run: processEvent()");
                             processEvent();
                         } catch (Exception e) {
                             LocalLog.warn("Problem bei Verarbeitung einer Event-Nachricht.", e);
@@ -394,14 +395,11 @@ public abstract class BaseService extends BaseClientOrService implements Service
         }
 
         // close socket to client
+        // the close function also calls the implementationLastSteps() method
         try {
             close();
         } catch (Exception ex) {
             LocalLog.warn("Verbindung zum Client konnte nicht geschlossen werden. Evtl. bestand zu diesem Zeitpunkt keien Verbindung (mehr).", ex);
-        }
-        try {
-            implementationLastSteps();
-        } catch (ActionFailedException e) {
         }
 
         server.unregisterFromEvents(this);

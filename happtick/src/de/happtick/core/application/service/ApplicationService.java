@@ -3,7 +3,6 @@ package de.happtick.core.application.service;
 import java.util.ArrayList;
 import java.util.List;
 
-import de.happtick.core.MasterTable;
 import de.happtick.core.enumeration.ApplicationTag;
 import de.happtick.core.events.ActionEvent;
 import de.happtick.core.events.AlarmEvent;
@@ -11,14 +10,14 @@ import de.happtick.core.events.ErrorEvent;
 import de.happtick.core.events.LogEvent;
 import de.happtick.core.events.StartedEvent;
 import de.happtick.core.events.StoppedEvent;
+import de.happtick.core.service.HapptickBaseService;
 import de.notEOF.core.enumeration.EventType;
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.interfaces.NotEOFEvent;
 import de.notEOF.core.server.Server;
-import de.notEOF.core.service.BaseService;
 import de.notEOF.core.util.Util;
 
-public class ApplicationService extends BaseService {
+public class ApplicationService extends HapptickBaseService {
 
     private Long applicationId = new Long(-1);
     private String startId;
@@ -30,14 +29,6 @@ public class ApplicationService extends BaseService {
     private StartedEvent startedEvent;
 
     private int exitCode = 0;
-
-    /**
-     * This method is called by BaseService directly when the connection with
-     * client is established.
-     */
-    public void implementationFirstSteps() {
-        MasterTable.addService(this);
-    }
 
     /**
      * Delivers the communication tag class which client and service use.

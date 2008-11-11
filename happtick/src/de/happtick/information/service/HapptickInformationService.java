@@ -11,12 +11,12 @@ import de.happtick.configuration.EventConfiguration;
 import de.happtick.configuration.EventConfigurationWrapper;
 import de.happtick.configuration.enumeration.HapptickConfigTag;
 import de.happtick.core.MasterTable;
+import de.happtick.core.service.HapptickBaseService;
 import de.notEOF.core.communication.DataObject;
 import de.notEOF.core.enumeration.EventType;
 import de.notEOF.core.exception.ActionFailedException;
-import de.notEOF.core.service.BaseService;
 
-public class HapptickInformationService extends BaseService {
+public class HapptickInformationService extends HapptickBaseService {
 
     @Override
     public Class<?> getCommunicationTagClass() {

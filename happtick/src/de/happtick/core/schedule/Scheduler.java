@@ -112,7 +112,7 @@ public class Scheduler {
      */
     private ApplicationScheduler startApplicationScheduler(ApplicationConfiguration configuration) {
         ApplicationScheduler appSched;
-        StartService startService = MasterTable.getStartServiceByIp(configuration.getClientIp());
+        StartService startService = null;
         if (null == startService) {
             LocalLog.warn("Nicht aktiver StartService. Id: " + configuration.getApplicationId() + "; clientIp: " + configuration.getClientIp());
             return null;
@@ -424,9 +424,13 @@ public class Scheduler {
         public void update(Service service, NotEOFEvent event) {
             if (!event.getEventType().equals(EventType.EVENT_CLIENT_STOPPED))
                 return;
-            stoppedServiceId = event.getAttribute("serviceId");
-            String stopDate = event.getAttribute("stopDate");
-            System.out.println(stopDate);
+            try {
+                stoppedServiceId = event.getAttribute("serviceId");
+                String stopDate = event.getAttribute("stopDate");
+                System.out.println(stopDate);
+            } catch (Exception ex) {
+                LocalLog.error("Fehler bei Verarbeitung eines Events.", ex);
+            }
         }
 
         public String getName() {
