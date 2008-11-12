@@ -17,6 +17,7 @@ import de.notEOF.core.enumeration.EventType;
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.interfaces.NotEOFConfiguration;
 import de.notEOF.core.interfaces.Service;
+import de.notEOF.core.logging.LocalLog;
 import de.notEOF.core.server.Server;
 import de.notEOF.core.util.Util;
 
@@ -312,7 +313,7 @@ public class MasterTable {
      * @throws HapptickException
      */
     public synchronized static void addService(Service service) {
-        System.out.println("MasterTable.addService: Service " + service);
+        LocalLog.info("MasterTable registering service: " + service.getClass().getCanonicalName() + " (clientNetId = " + service.getClientNetId() + ")");
         // TODO Kommt man so an den Server???
         if (null == server)
             server = service.getServer();
@@ -337,7 +338,7 @@ public class MasterTable {
      *            Is the key of the service what must be removed.
      */
     public synchronized static void removeService(Service service) {
-        System.out.println("MasterTable.removeService: Service " + service);
+        LocalLog.info("MasterTable releasing service: " + service.getClass().getCanonicalName() + " (clientNetId = " + service.getClientNetId() + ")");
         while (inAction)
             try {
                 Thread.sleep(100);

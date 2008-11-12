@@ -138,14 +138,14 @@ public class Server implements EventObservable, Runnable {
             talkLine.awaitRequestAnswerImmediate(BaseCommTag.REQ_REGISTRATION, BaseCommTag.RESP_REGISTRATION, BaseCommTag.VAL_OK.name());
 
             // client wants it's own id
-            String clientNetId = talkLine.getHostAddress() + new Date().getTime();
+            String clientNetId = talkLine.getHostAddress() + "." + new Date().getTime();
             talkLine.awaitRequestAnswerImmediate(BaseCommTag.REQ_CLIENT_ID, BaseCommTag.RESP_CLIENT_ID, clientNetId);
 
             // server asks for perhaps existing service id
             String deliveredServiceId = talkLine.requestTo(BaseCommTag.REQ_SERVICE_ID, BaseCommTag.RESP_SERVICE_ID);
             String serviceTypeName = talkLine.requestTo(BaseCommTag.REQ_TYPE_NAME, BaseCommTag.RESP_TYPE_NAME);
 
-            LocalLog.info("Server acceptClient serviceTypeName = " + serviceTypeName + "; deliveredServiceId = " + deliveredServiceId);
+            LocalLog.info("Server starting service: " + serviceTypeName + " (deliveredServiceId = " + deliveredServiceId + ")");
 
             // Lookup for a service which is assigned to the client. If not
             // found

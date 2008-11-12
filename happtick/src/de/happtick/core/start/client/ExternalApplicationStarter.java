@@ -23,7 +23,7 @@ public class ExternalApplicationStarter extends HapptickApplication {
     public ExternalApplicationStarter(long applicationId, String applicationPath, String serverAddress, int serverPort, String[] applArgs)
             throws HapptickException {
         super(applicationId, serverAddress, serverPort, applArgs);
-        connect();
+        // connect();
 
         ExternalCalls.startHapptickApplication(applicationPath, String.valueOf(applicationId), serverAddress, String.valueOf(serverPort), applArgs);
 

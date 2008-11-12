@@ -381,10 +381,11 @@ public abstract class BaseService extends BaseClientOrService implements Service
                 // errNo 24L is ok - timeout at read action
                 // Socket communication problem
                 if (afx.getErrNo() == 23L) {
-                    LocalLog.info("Kommunikation mit Client ist unterbrochen. Service wird beendet. ServiceType, ServiceId: " + getClass().getSimpleName()
-                            + ", " + getServiceId());
+                    // LocalLog.info(
+                    // "Kommunikation mit Client beendet. ServiceType, ServiceId: "
+                    // + getClass().getSimpleName() + ", " + getServiceId());
 
-                    getTalkLine();
+                    // getTalkLine();
                     stopped = true;
                 }
                 // Problem when setting timeout
@@ -399,11 +400,11 @@ public abstract class BaseService extends BaseClientOrService implements Service
         try {
             close();
         } catch (Exception ex) {
-            LocalLog.warn("Verbindung zum Client konnte nicht geschlossen werden. Evtl. bestand zu diesem Zeitpunkt keien Verbindung (mehr).", ex);
+            LocalLog.warn("Verbindung zum Client konnte nicht geschlossen werden. Evtl. bestand zu diesem Zeitpunkt keine Verbindung (mehr).", ex);
         }
 
         server.unregisterFromEvents(this);
-        System.out.println("Service wird beendet: " + this.getClass().getCanonicalName() + "; id: " + getServiceId());
+        System.out.println("Service stopped: " + this.getClass().getCanonicalName() + "; id: " + getServiceId());
         isRunning = false;
     }
 

@@ -93,7 +93,6 @@ public abstract class MailAndEventReceiveService extends BaseService {
      *            detected by the service.
      */
     public void processEvent(Service service, NotEOFEvent event) throws ActionFailedException {
-        System.out.println("MailAndEventReceiveService.processEvent: Event" + event);
         if (null == event) {
             throw new ActionFailedException(1154L, "Event ist NULL");
         }
@@ -248,6 +247,7 @@ public abstract class MailAndEventReceiveService extends BaseService {
         responseTo(MailTag.RESP_READY_FOR_EVENTLIST, MailTag.VAL_OK.name());
         DataObject dataObject = receiveDataObject();
         if (null != dataObject && null != dataObject.getList() && dataObject.getList().size() > 0) {
+            System.out.println("MailAndEventReceiveService.addEvents: Liste wird ergänzt");
             addInterestingEventNames((List<String>) dataObject.getList());
         }
     }

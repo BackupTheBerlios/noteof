@@ -63,21 +63,22 @@ public abstract class HapptickBaseClient {
      * @param args
      * @param notEofClient
      */
-    protected abstract void initHapptickBaseClient(String serverAddress, int serverPort, String[] args, NotEOFClient notEofClient) throws HapptickException;
-
-    protected void init(String serverAddress, int serverPort, String[] args, NotEOFClient notEofClient) throws HapptickException {
-        this.serverAddress = serverAddress;
-        this.serverPort = serverPort;
-        this.args = args;
-
-        if (null != notEofClient) {
-            this.notEofClient = notEofClient;
-        } else {
-            useInternalClientForSendMailsAndEvents();
-        }
-        connect();
-    }
-
+    // protected abstract void initHapptickBaseClient(String serverAddress, int
+    // serverPort, String[] args, NotEOFClient notEofClient) throws
+    // HapptickException;
+    // protected void init(String serverAddress, int serverPort, String[] args,
+    // NotEOFClient notEofClient) throws HapptickException {
+    // this.serverAddress = serverAddress;
+    // this.serverPort = serverPort;
+    // this.args = args;
+    //
+    // if (null != notEofClient) {
+    // this.notEofClient = notEofClient;
+    // } else {
+    // useInternalClientForSendMailsAndEvents();
+    // }
+    // connect();
+    // }
     /**
      * Connect with the happtick server. Exactly this means to connect with an
      * application service on the happtick server. <br>
@@ -87,7 +88,16 @@ public abstract class HapptickBaseClient {
      * 
      * @throws HapptickException
      */
-    public void connect() throws HapptickException {
+    public void connect(String serverAddress, int serverPort, String[] args, NotEOFClient notEofClient) throws HapptickException {
+        this.serverAddress = serverAddress;
+        this.serverPort = serverPort;
+        this.args = args;
+
+        if (null != notEofClient) {
+            this.notEofClient = notEofClient;
+        } else {
+            useInternalClientForSendMailsAndEvents();
+        }
         connect(serverAddress, serverPort);
     }
 

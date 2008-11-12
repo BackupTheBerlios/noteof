@@ -85,12 +85,18 @@ public abstract class MailAndEventReceiveClient extends BaseClient {
                     String action = readMsg();
                     if (MailTag.VAL_ACTION_MAIL.name().equals(action)) {
                         NotEOFMail mail = getTalkLine().receiveMail();
-                        recipient.processMail(mail);
+                        MailWorker worker = new MailWorker(recipient, mail);
+                        Thread workerThread = new Thread(worker);
+                        workerThread.run();
+                        // recipient.processMail(mail);
                     }
                     if (MailTag.VAL_ACTION_EVENT.name().equals(action)) {
                         isEvent = true;
                         NotEOFEvent event = getTalkLine().receiveBaseEvent(ConfigurationManager.getApplicationHome());
-                        recipient.processEvent(event);
+                        EventWorker worker = new EventWorker(recipient, event);
+                        Thread workerThread = new Thread(worker);
+                        workerThread.run();
+                        // recipient.processEvent(event);
                     }
                 }
                 close();
@@ -102,6 +108,42 @@ public abstract class MailAndEventReceiveClient extends BaseClient {
                         recipient.processEventException(e);
                     }
             }
+        }
+    }
+
+    /*
+     * processing events by little worker - so the events are not lost. better
+     * than a list...
+     */
+    private class EventWorker implements Runnable {
+        protected MailAndEventRecipient recipient;
+        protected NotEOFEvent event;
+
+        protected EventWorker(MailAndEventRecipient recipient, NotEOFEvent event) {
+            this.recipient = recipient;
+            this.event = event;
+        }
+
+        public void run() {
+            recipient.processEvent(event);
+        }
+    }
+
+    /*
+     * processing events by little worker - so the events are not lost. better
+     * than a list...
+     */
+    private class MailWorker implements Runnable {
+        protected MailAndEventRecipient recipient;
+        protected NotEOFMail mail;
+
+        protected MailWorker(MailAndEventRecipient recipient, NotEOFMail mail) {
+            this.recipient = recipient;
+            this.mail = mail;
+        }
+
+        public void run() {
+            recipient.processMail(mail);
         }
     }
 

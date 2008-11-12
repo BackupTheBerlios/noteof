@@ -4,7 +4,6 @@ import de.happtick.core.application.client.ApplicationClient;
 import de.happtick.core.client.HapptickBaseClient;
 import de.happtick.core.exception.HapptickException;
 import de.happtick.core.interfaces.ClientObserver;
-import de.notEOF.core.interfaces.NotEOFClient;
 
 /**
  * This class is the connector between the application and an application
@@ -39,7 +38,9 @@ public class HapptickApplication extends HapptickBaseClient {
      *            --startId=<value>.
      */
     public HapptickApplication(long applicationId, String serverAddress, int serverPort, String... args) throws HapptickException {
-        initHapptickBaseClient(serverAddress, serverPort, args, applicationClient);
+        connect(serverAddress, serverPort, args, applicationClient);
+        // initHapptickBaseClient(serverAddress, serverPort, args,
+        // applicationClient);
         this.applicationId = applicationId;
         applicationClient.applicationIdToService(applicationId);
         applicationClient.startIdToService(args);
@@ -222,8 +223,10 @@ public class HapptickApplication extends HapptickBaseClient {
         applicationClient.stopObservingForStartAllowance();
     }
 
-    @Override
-    protected void initHapptickBaseClient(String serverAddress, int serverPort, String[] args, NotEOFClient notEofClient) throws HapptickException {
-        super.init(serverAddress, serverPort, args, notEofClient);
-    }
+    // @Override
+    // protected void initHapptickBaseClient(String serverAddress, int
+    // serverPort, String[] args, NotEOFClient notEofClient) throws
+    // HapptickException {
+    // super.init(serverAddress, serverPort, args, notEofClient);
+    // }
 }

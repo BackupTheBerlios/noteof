@@ -9,7 +9,6 @@ import de.happtick.core.events.StartEvent;
 import de.happtick.core.exception.HapptickException;
 import de.happtick.core.util.ExternalCalls;
 import de.notEOF.core.enumeration.EventType;
-import de.notEOF.core.interfaces.NotEOFClient;
 import de.notEOF.core.interfaces.NotEOFEvent;
 import de.notEOF.core.util.ArgsParser;
 import de.notEOF.core.util.Util;
@@ -37,8 +36,8 @@ import de.notIOC.logging.LocalLog;
 public class StartClient extends HapptickBaseClient implements MailAndEventRecipient {
 
     public StartClient(String serverAddress, int port, String[] args) throws HapptickException {
-        initHapptickBaseClient(serverAddress, port, args, null);
-        connect();
+        // initHapptickBaseClient(serverAddress, port, args, null);
+        connect(serverAddress, port, args, null);
 
         // Activate EventSystem
         useMailsAndEvents(this, false);
@@ -47,6 +46,7 @@ public class StartClient extends HapptickBaseClient implements MailAndEventRecip
         List<NotEOFEvent> events = new ArrayList<NotEOFEvent>();
         events.add(new StartEvent());
         addInterestingEvents(events);
+        startAcceptingMailsEvents();
 
         while (true) {
             try {
@@ -142,7 +142,7 @@ public class StartClient extends HapptickBaseClient implements MailAndEventRecip
      * scheduling jobs.
      */
     @Override
-    public void processEvent(NotEOFEvent event) {
+    public synchronized void processEvent(NotEOFEvent event) {
         // process start request
         if (event.getEventType().equals(EventType.EVENT_APPLICATION_START)) {
             startStarter(event);
@@ -162,7 +162,7 @@ public class StartClient extends HapptickBaseClient implements MailAndEventRecip
      * This client doesn't await mails
      */
     @Override
-    public void processMail(NotEOFMail mail) {
+    public synchronized void processMail(NotEOFMail mail) {
     }
 
     /**
@@ -174,10 +174,12 @@ public class StartClient extends HapptickBaseClient implements MailAndEventRecip
 
     }
 
-    @Override
-    protected void initHapptickBaseClient(String serverAddress, int serverPort, String[] args, NotEOFClient notEofClient) throws HapptickException {
-        super.init(serverAddress, serverPort, args, notEofClient);
-    }
+    // @Override
+    // protected void initHapptickBaseClient(String serverAddress, int
+    // serverPort, String[] args, NotEOFClient notEofClient) throws
+    // HapptickException {
+    // super.init(serverAddress, serverPort, args, notEofClient);
+    // }
 
     /**
      * This application is used to start other applications.
