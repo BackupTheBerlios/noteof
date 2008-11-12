@@ -85,7 +85,7 @@ public class StartClient extends HapptickBaseClient implements MailAndEventRecip
                     try {
                         applId = event.getAttribute("applicationId");
                     } catch (Exception ex) {
-                        LocalLog.error("Fehler bei Verarbeitung eines Events.", ex);
+                        LocalLog.error("Fehler bei Verarbeitung eines StartEvents. Das Event ist nicht korrekt initialisiert.", ex);
                     }
 
                 LocalLog.warn("Start einer Anwendung nicht moeglich. Id: " + applId, e);
@@ -114,19 +114,14 @@ public class StartClient extends HapptickBaseClient implements MailAndEventRecip
                 throw new HapptickException(650L, "applicationType");
 
             String startId = serverAddress + String.valueOf(Thread.currentThread().getId()) + String.valueOf(new Date().getTime());
-
-            String[] applArgs = null;
-            if (!Util.isEmpty(arguments)) {
-                List<String> applArgsList = Util.stringToList(arguments, "");
-                applArgs = (String[]) applArgsList.toArray();
-            }
+            // String[] applArgs = Util.stringToArray(arguments, "");
 
             // if type is 'java' the application start the application itself
             // if type is 'unknown' start the special Happtick application which
             // controls 'foreign' processess
             LocalLog.info("Starting Application. ApplicationId: " + applicationId + "; ApplicationPath: " + applicationPath + "; Arguments: " + arguments);
             if ("JAVA".equalsIgnoreCase(applicationType)) {
-                ExternalCalls.startHapptickApplication(applicationPath, startId, serverAddress, String.valueOf(serverPort), applArgs);
+                ExternalCalls.startHapptickApplication(applicationPath, startId, serverAddress, String.valueOf(serverPort), arguments);
             } else if ("UNKNOWN".equalsIgnoreCase(applicationType)) {
                 ExternalCalls.call(ExternalApplicationStarter.class.getCanonicalName(), applicationPath, applicationId, startId, serverAddress, String
                         .valueOf(serverPort), arguments);

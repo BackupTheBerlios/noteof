@@ -32,6 +32,27 @@ public class Util {
      *            The textual list.
      * @param delimiter
      *            The sign between the values.
+     * @return An String array with the elements.
+     */
+    public static String[] stringToArray(String simpleString, String delimiter) {
+        List<String> list = stringToList(simpleString, delimiter);
+        if (!isEmpty(list)) {
+            String[] array = new String[list.size()];
+            for (int i = 0; i < list.size(); i++) {
+                array[i] = list.get(i);
+            }
+            return array;
+        }
+        return null;
+    }
+
+    /**
+     * Parses elements of the string which are delimited by the delimiter.
+     * 
+     * @param simpleString
+     *            The textual list.
+     * @param delimiter
+     *            The sign between the values.
      * @return A List with the String elements.
      */
     public static List<String> stringToList(String simpleString, String delimiter) {

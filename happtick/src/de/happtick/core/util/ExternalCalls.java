@@ -47,6 +47,31 @@ public class ExternalCalls {
     }
 
     /**
+     * Starts an Application.
+     * <p>
+     * This can be a Happtick Java Application or an Application of type UNKNOWN
+     * (not developed by using Happtick framework).
+     * 
+     * @param applicationPath
+     * @param arguments
+     * @return
+     * @throws HapptickException
+     */
+    public static Process startApplication(String applicationPath, String arguments) throws HapptickException {
+        Process proc = null;
+        Runtime runtime = Runtime.getRuntime();
+        try {
+            String[] cmdLine = new String[2];
+            cmdLine[0] = applicationPath.trim();
+            cmdLine[1] = arguments.trim();
+            proc = runtime.exec(cmdLine);
+        } catch (IOException ioEx) {
+            throw new HapptickException(651L, "Application: " + applicationPath);
+        }
+        return proc;
+    }
+
+    /**
      * Starts an external application
      * <p>
      * 
@@ -64,29 +89,17 @@ public class ExternalCalls {
      *            Additional calling arguments. Depend to the application.
      * @return The started Process
      */
-    public static Process startHapptickApplication(String applicationPath, String startId, String serverAddress, String serverPort, String[] arguments)
+    public static Process startHapptickApplication(String applicationPath, String startId, String serverAddress, String serverPort, String arguments)
             throws HapptickException {
-        Process proc = null;
         // nur weitermachen, wenn auch eine Anwendung eingetragen wurde...
         if (Util.isEmpty(applicationPath))
             throw new HapptickException(650L, "applicationPath");
 
-        Runtime runtime = Runtime.getRuntime();
-        try {
-            String[] cmdLine = new String[2];
-            cmdLine[0] = applicationPath;
-
-            // build arguments
-            // String args = "--applicationId=" + applicationId.trim();
-            String args = "--startId=" + startId.trim();
-            args += " --serverAddress=" + serverAddress.trim();
-            args += " --serverPort=" + serverPort.trim();
-            args += " " + arguments;
-            cmdLine[1] = args.trim();
-            proc = runtime.exec(cmdLine);
-        } catch (IOException ioEx) {
-            throw new HapptickException(651L, "Application: " + applicationPath);
-        }
-        return proc;
+        // special Happtick parameter for own Java applications
+        String args = "--startId=" + startId.trim();
+        args += " --serverAddress=" + serverAddress.trim();
+        args += " --serverPort=" + serverPort.trim();
+        args += " " + arguments;
+        return startApplication(applicationPath, arguments);
     }
 }
