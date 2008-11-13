@@ -30,8 +30,8 @@
 	     -->
 	    <chains>
 		    <!-- The list of chains.
-		    	Chains can be chained to...
-		    	Here also the order within the list is the order how the scheduler starts chains.
+		    	 Chains can be chained to...
+		    	 Here also the order within the list is the order how the scheduler starts chains.
 		     -->
 	    	<chain>chain1</chain>
 	    	<chain>chain2</chain>
@@ -43,8 +43,8 @@
 		    	<link>link1</link>
 		    	
 		    	<!-- The applications and chains to start
-		    	     Note that id's here are named id for applications and for chains.
-		    	     skip is optional, default is false.
+		    	      Note that id's here are named id for applications and for chains.
+		    	      skip is optional, default is false.
 		    	-->
 				<link0 applicationType="application" id="1" conditionEventId="1" preventEventId="2" skip="false"></link0>
 				<link1 applicationType="application" id="2"></link1>
@@ -60,11 +60,11 @@
 	    </chains>
 	    
 	    <!-- Events
-	    	Events are raised by ApplicationClients and identified by the eventId or eventClassName.
-	    	The actions after an event can differ for every client.
-	    	If the event is essential for every client, the key 'firedByApplicationId' can be omitted
-	    	or the value of 'firedByApplicationId' must be empty.
-	    	With events it is possible to start another application or a chain or both.
+	    	 Events are raised by ApplicationClients and identified by the eventId or eventClassName.
+	    	 The actions after an event can differ for every client.
+	    	 If the event is essential for every client, the key 'firedByApplicationId' can be omitted
+	    	 or the value of 'firedByApplicationId' must be empty.
+	    	 With events it is possible to start another application or a chain or both.
 	    -->
 	    <events>
 	    	<!-- List of events -->
@@ -75,8 +75,10 @@
 			<!--
 				- eventId not yet interesting but should be set with a dummy value
 			    - eventClassName the class name of the fired event
+			    - keyName attribute of the event which must be present as condition for the actions (optional)
+			    - keyValue value of the attribute which is condition for the actions (optional)
 			-->	    	
-	    	<event1 eventId="1" eventClassName="ApplicationStoppedEvent">
+	    	<event1 eventId="1" eventClassName="StoppedEvent" keyName="exitCode" keyValue="9">
 	    		<!-- 
 	    		    List of actions
 				    - actionType what to do with the application/chain - 'start' or 'stop' is possible here
@@ -132,9 +134,15 @@
 			<executable type="java" path="c:/programme/blablubb.bat">
 				<args>--blubb="1" --blase=2</args>
 			</executable>
-			<!-- schedule
+			<!-- exit
+			
+				asfsaf
 			     
 			-->
+			<exit>
+				<code>0</code>
+				<code>1</code>
+			</exit>
 			<!-- option
 			     multiplestart decides if an application may run multiple at the same time.
 			     enforce is true if the application should run permanently.

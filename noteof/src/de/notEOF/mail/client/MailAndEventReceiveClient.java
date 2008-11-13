@@ -87,7 +87,7 @@ public abstract class MailAndEventReceiveClient extends BaseClient {
                         NotEOFMail mail = getTalkLine().receiveMail();
                         MailWorker worker = new MailWorker(recipient, mail);
                         Thread workerThread = new Thread(worker);
-                        workerThread.run();
+                        workerThread.start();
                         // recipient.processMail(mail);
                     }
                     if (MailTag.VAL_ACTION_EVENT.name().equals(action)) {
@@ -95,7 +95,7 @@ public abstract class MailAndEventReceiveClient extends BaseClient {
                         NotEOFEvent event = getTalkLine().receiveBaseEvent(ConfigurationManager.getApplicationHome());
                         EventWorker worker = new EventWorker(recipient, event);
                         Thread workerThread = new Thread(worker);
-                        workerThread.run();
+                        workerThread.start();
                         // recipient.processEvent(event);
                     }
                 }

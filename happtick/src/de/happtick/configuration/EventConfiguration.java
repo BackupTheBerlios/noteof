@@ -20,6 +20,8 @@ public class EventConfiguration {
     private Long eventId;
     private String nodeNameEvent;
     private String eventClassName;
+    private String keyName;
+    private String keyValue;
     private List<EventAction> actionList = new ArrayList<EventAction>();
 
     /**
@@ -51,6 +53,10 @@ public class EventConfiguration {
             eventId = Util.parseLong(conf.getAttribute(node, "eventId", "-1"), -1);
             // eventClassName
             eventClassName = conf.getAttribute(node, "eventClassName");
+            // keyName
+            keyName = conf.getAttribute(node, "keyName");
+            // keyValue
+            keyValue = conf.getAttribute(node, "keyValue");
 
             // list of event actions
             // scheduler.events.event1.action
@@ -98,4 +104,19 @@ public class EventConfiguration {
         this.eventClassName = eventClassName;
     }
 
+    public String getKeyName() {
+        return keyName;
+    }
+
+    public void setKeyName(String keyName) {
+        this.keyName = keyName;
+    }
+
+    public String getKeyValue() {
+        return keyValue;
+    }
+
+    public void setKeyValue(String keyValue) {
+        this.keyValue = keyValue;
+    }
 }

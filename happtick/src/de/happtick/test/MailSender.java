@@ -23,8 +23,10 @@ public class MailSender {
         StartEvent event = new StartEvent();
         event.addAttribute("clientIp", "192.168.0.2");
         event.addAttribute("applicationId", "99");
-        event.addAttribute("applicationPath", "C:\\Projekte\\workspace\\noteof\\util\\test.bat");
-        event.addAttribute("applicationType", "JAVA");
+        // event.addAttribute("applicationPath",
+        // "C:\\Projekte\\workspace\\noteof\\util\\test.bat");
+        event.addAttribute("applicationPath", "calc.exe");
+        event.addAttribute("applicationType", "UNKNOWN");
         event.addAttribute("arguments", "--bla=blubb");
 
         System.out.println("Kontrolle applicationPath: " + event.getAttribute("applicationPath"));

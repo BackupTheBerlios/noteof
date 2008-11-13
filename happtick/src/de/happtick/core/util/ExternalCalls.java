@@ -27,7 +27,7 @@ public class ExternalCalls {
     public static void call(String className, String applicationPath, String applicationId, String startId, String serverAddress, String serverPort,
             String arguments) {
 
-        String[] args = new String[99];
+        String[] args = new String[6];
         args[0] = "--applicationPath=" + applicationPath;
         args[1] = "--applicationId=" + applicationId;
         args[2] = "--startId=" + startId;
@@ -37,8 +37,11 @@ public class ExternalCalls {
 
         try {
             Class<?> clazz = Class.forName(className);
+            System.out.println("ExternalCalls.call: clazz = " + clazz.getCanonicalName());
             Method methode = clazz.getMethod("main", new Class[] { args.getClass() });
+            System.out.println("ExternalCalls.call: Vor invoke. Arguments = " + args);
             methode.invoke(null, new Object[] { args });
+            System.out.println("ExternalCalls.call: Nach invoke");
         } catch (ClassNotFoundException clEx) {
             LocalLog.warn("Klasse nicht gefunden: " + className);
         } catch (Exception ex) {

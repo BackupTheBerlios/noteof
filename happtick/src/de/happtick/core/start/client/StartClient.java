@@ -119,10 +119,13 @@ public class StartClient extends HapptickBaseClient implements MailAndEventRecip
             // if type is 'java' the application start the application itself
             // if type is 'unknown' start the special Happtick application which
             // controls 'foreign' processess
-            LocalLog.info("Starting Application. ApplicationId: " + applicationId + "; ApplicationPath: " + applicationPath + "; Arguments: " + arguments);
             if ("JAVA".equalsIgnoreCase(applicationType)) {
+                LocalLog.info("Starting Happtick Application. ApplicationId: " + applicationId + "; ApplicationPath: " + applicationPath + "; Arguments: "
+                        + arguments);
                 ExternalCalls.startHapptickApplication(applicationPath, startId, serverAddress, String.valueOf(serverPort), arguments);
             } else if ("UNKNOWN".equalsIgnoreCase(applicationType)) {
+                LocalLog.info("Starting External Application. ApplicationId: " + applicationId + "; ApplicationPath: " + applicationPath + "; Arguments: "
+                        + arguments);
                 ExternalCalls.call(ExternalApplicationStarter.class.getCanonicalName(), applicationPath, applicationId, startId, serverAddress, String
                         .valueOf(serverPort), arguments);
             } else

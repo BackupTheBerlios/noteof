@@ -67,6 +67,10 @@ public class HapptickApplication extends HapptickBaseClient {
         return this.applicationId;
     }
 
+    public String getClientNetId() {
+        return this.applicationClient.getClientNetId();
+    }
+
     /**
      * Ask the application service if the application may do it's job.
      * <p>

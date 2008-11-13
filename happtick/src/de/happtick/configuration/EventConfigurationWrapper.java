@@ -78,6 +78,8 @@ public class EventConfigurationWrapper {
         map = new HashMap<String, String>();
         map.put("eventId", String.valueOf(eventConfiguration.getEventId()));
         map.put("eventClassName", String.valueOf(eventConfiguration.getEventClassName()));
+        map.put("keyName", String.valueOf(eventConfiguration.getKeyName()));
+        map.put("keyValue", String.valueOf(eventConfiguration.getKeyValue()));
 
         // number of links
         List<EventAction> eventActions = eventConfiguration.getEventActionList();
@@ -100,6 +102,8 @@ public class EventConfigurationWrapper {
 
         // atomize the vars to class attributes
         eventConfiguration.setEventClassName(map.get("eventClassName"));
+        eventConfiguration.setKeyName(map.get("keyName"));
+        eventConfiguration.setKeyValue(map.get("keyValue"));
 
         int numberOfActions = Util.parseInt(map.get("actionCount"), 0);
         if (0 < numberOfActions) {
