@@ -12,7 +12,9 @@ import de.happtick.application.client.HapptickApplication;
 import de.happtick.core.events.ActionEvent;
 import de.happtick.core.events.AlarmEvent;
 import de.happtick.core.events.LogEvent;
+import de.happtick.core.events.StartErrorEvent;
 import de.happtick.core.events.StartedEvent;
+import de.happtick.core.events.StoppedEvent;
 import de.happtick.core.exception.HapptickException;
 import de.notEOF.core.interfaces.NotEOFEvent;
 import de.notEOF.core.logging.LocalLog;
@@ -21,41 +23,42 @@ import de.notEOF.mail.MailToken;
 import de.notEOF.mail.NotEOFMail;
 import de.notEOF.mail.interfaces.MailAndEventRecipient;
 
-public class MailRecipient implements MailAndEventRecipient {
+public class MailRecipient extends HapptickApplication implements MailAndEventRecipient {
 
-    private HapptickApplication appl;
     private int counter = 0;
     private int complete = 0;
     private Date lastStamp;
     private long stampDiff = 0;
     private boolean ready = false;
 
-    public MailRecipient(String... args) throws HapptickException {
-        appl = new HapptickApplication(0, "localhost", 3000, args);
+    public MailRecipient(long applicationId, String serverAddress, int serverPort, String... args) throws HapptickException {
+        super(applicationId, serverAddress, serverPort, args);
 
         // Anwendung will selbst mails oder events verarbeiten
-        appl.useMailsAndEvents(this);
+        useMailsAndEvents(this);
 
         // Hinzufuegen von interessanten Nachrichteninhalten
         MailToken tokens = new MailToken();
         tokens.add("Begriff");
-        appl.addInterestingMailExpressions(tokens);
+        addInterestingMailExpressions(tokens);
 
         // Hinzufuegen von interessanten Nachrichtenheadern
         MailHeaders headers = new MailHeaders();
         headers.add("Kopf");
-        appl.addInterestingMailExpressions(headers);
+        addInterestingMailExpressions(headers);
 
         // Hinzufuegen von interessanten Events
         List<NotEOFEvent> events = new ArrayList<NotEOFEvent>();
         events.add(new ActionEvent());
         events.add(new AlarmEvent());
         events.add(new StartedEvent());
+        events.add(new StoppedEvent());
         events.add(new LogEvent());
-        appl.addInterestingEvents(events);
+        events.add(new StartErrorEvent());
+        addInterestingEvents(events);
 
         // jetzt geht's los
-        appl.startAcceptingMailsEvents();
+        startAcceptingMailsEvents();
 
         System.out.println("Jetzt gilts!");
         ready = true;
@@ -67,7 +70,7 @@ public class MailRecipient implements MailAndEventRecipient {
         return ready;
     }
 
-    public void processMail(NotEOFMail mail) {
+    public synchronized void processMail(NotEOFMail mail) {
         if (null == lastStamp)
             lastStamp = new Date();
         if (null != mail) {
@@ -101,14 +104,14 @@ public class MailRecipient implements MailAndEventRecipient {
         LocalLog.error("Mail-Empfang wurde mit einem Fehler unterbrochen: ", e);
     }
 
-    public void processEvent(NotEOFEvent event) {
+    public synchronized void processEvent(NotEOFEvent event) {
         try {
             if (null != event) {
                 System.out.println("=====================================");
                 System.out.println("Event ist eingetroffen: " + event.getEventType());
                 Map<String, String> attributeMap = event.getAttributes();
-                Set<Entry<String, String>> bla = attributeMap.entrySet();
-                Iterator<Entry<String, String>> it = bla.iterator();
+                Set<Entry<String, String>> set = attributeMap.entrySet();
+                Iterator<Entry<String, String>> it = set.iterator();
                 while (it.hasNext()) {
                     Entry<String, String> entry = it.next();
                     System.out.println("________________________________");
@@ -130,7 +133,7 @@ public class MailRecipient implements MailAndEventRecipient {
     public static void main(String... args) throws HapptickException {
 
         // MailRecipient x = new MailRecipient(args);
-        new MailRecipient(args);
+        new MailRecipient(0, "localhost", 3000, args);
 
         while (true) {
             try {

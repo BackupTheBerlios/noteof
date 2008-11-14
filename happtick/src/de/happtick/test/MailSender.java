@@ -11,14 +11,9 @@ public class MailSender {
         HapptickApplication appl = new HapptickApplication(2, "localhost", 3000, args);
         // NotEOFMail mail;
         // try {
-        appl.sendActionEvent("965", "Eine tolle Action");
-        try {
-            Thread.sleep(100);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
 
-        appl.sendAlarm("55", "Schlimmer Alarm", "2");
+        // appl.sendActionEvent("965", "Eine tolle Action");
+        // appl.sendAlarm("55", "Schlimmer Alarm", "2");
 
         StartEvent event = new StartEvent();
         event.addAttribute("clientIp", "192.168.0.2");
@@ -31,6 +26,13 @@ public class MailSender {
 
         System.out.println("Kontrolle applicationPath: " + event.getAttribute("applicationPath"));
         appl.sendEvent(event);
+
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
 
         // int counter = 0;
         // while (true) {

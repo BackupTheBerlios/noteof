@@ -58,10 +58,12 @@ public class StartClient extends HapptickBaseClient implements MailAndEventRecip
         }
     }
 
+    // TODO Pruefen, warum bei nicht Zurueckkehren des
+    // ExternalApplicationStarter sich der hier aufhängt... Nur interessehalber
     private synchronized void startStarter(NotEOFEvent event) {
         ApplStarter starter = new ApplStarter(event);
         Thread starterThread = new Thread(starter);
-        starterThread.run();
+        starterThread.start();
     }
 
     /*
@@ -69,21 +71,21 @@ public class StartClient extends HapptickBaseClient implements MailAndEventRecip
      * ApplicationClient is started here.
      */
     private class ApplStarter implements Runnable {
-        private NotEOFEvent event;
+        private NotEOFEvent startEvent;
 
-        protected ApplStarter(NotEOFEvent event) {
-            this.event = event;
+        protected ApplStarter(NotEOFEvent startEvent) {
+            this.startEvent = startEvent;
         }
 
         @Override
         public void run() {
             try {
-                startApplication(event);
+                startApplication(startEvent);
             } catch (Exception e) {
                 String applId = null;
-                if (!Util.isEmpty(event))
+                if (!Util.isEmpty(startEvent))
                     try {
-                        applId = event.getAttribute("applicationId");
+                        applId = startEvent.getAttribute("applicationId");
                     } catch (Exception ex) {
                         LocalLog.error("Fehler bei Verarbeitung eines StartEvents. Das Event ist nicht korrekt initialisiert.", ex);
                     }
@@ -92,16 +94,16 @@ public class StartClient extends HapptickBaseClient implements MailAndEventRecip
             }
         }
 
-        private void startApplication(NotEOFEvent event) throws HapptickException {
+        private void startApplication(NotEOFEvent startEvent) throws HapptickException {
             String applicationId = null;
             String applicationPath = null;
             String arguments = null;
             String applicationType = null;
             try {
-                applicationId = event.getAttribute("applicationId");
-                applicationPath = event.getAttribute("applicationPath");
-                arguments = event.getAttribute("arguments");
-                applicationType = event.getAttribute("applicationType");
+                applicationId = startEvent.getAttribute("applicationId");
+                applicationPath = startEvent.getAttribute("applicationPath");
+                arguments = startEvent.getAttribute("arguments");
+                applicationType = startEvent.getAttribute("applicationType");
             } catch (Exception ex) {
                 LocalLog.error("Fehler bei Verarbeitung eines Events.", ex);
             }
@@ -120,18 +122,20 @@ public class StartClient extends HapptickBaseClient implements MailAndEventRecip
             // if type is 'unknown' start the special Happtick application which
             // controls 'foreign' processess
             if ("JAVA".equalsIgnoreCase(applicationType)) {
-                LocalLog.info("Starting Happtick Application. ApplicationId: " + applicationId + "; ApplicationPath: " + applicationPath + "; Arguments: "
+                LocalLog.info("Happtick Application Starting. ApplicationId: " + applicationId + "; ApplicationPath: " + applicationPath + "; Arguments: "
                         + arguments);
                 ExternalCalls.startHapptickApplication(applicationPath, startId, serverAddress, String.valueOf(serverPort), arguments);
+                LocalLog.info("Happtick Application Started.  ApplicationId: " + applicationId + "; ApplicationPath: " + applicationPath + "; Arguments: "
+                        + arguments);
             } else if ("UNKNOWN".equalsIgnoreCase(applicationType)) {
-                LocalLog.info("Starting External Application. ApplicationId: " + applicationId + "; ApplicationPath: " + applicationPath + "; Arguments: "
+                LocalLog.info("External Application Starting. ApplicationId: " + applicationId + "; ApplicationPath: " + applicationPath + "; Arguments: "
                         + arguments);
                 ExternalCalls.call(ExternalApplicationStarter.class.getCanonicalName(), applicationPath, applicationId, startId, serverAddress, String
                         .valueOf(serverPort), arguments);
+                LocalLog.info("External Application Finished.  ApplicationId: " + applicationId + "; ApplicationPath: " + applicationPath + "; Arguments: "
+                        + arguments);
             } else
                 throw new HapptickException(1L, "Type: " + applicationType);
-
-            LocalLog.info("Application started.  ApplicationId: " + applicationId + "; ApplicationPath: " + applicationPath + "; Arguments: " + arguments);
         }
     }
 

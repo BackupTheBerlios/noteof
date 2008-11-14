@@ -180,7 +180,7 @@ public abstract class BaseService extends BaseClientOrService implements Service
     }
 
     // TODO synchronized oder nicht???
-    public synchronized void processEvent(Service service, NotEOFEvent event) throws ActionFailedException {
+    public void processEvent(Service service, NotEOFEvent event) throws ActionFailedException {
     }
 
     // EventProcessor entkoppelt den Observable (meistens Server) von den
@@ -189,7 +189,7 @@ public abstract class BaseService extends BaseClientOrService implements Service
     // Verarbeitung abgeschlossen hat.
     private final class EventProcessor implements Runnable {
         private BaseService mainClass;
-        private Map<Long, UpdateAction> actionMap2 = new HashMap<Long, UpdateAction>();
+        private Map<Long, UpdateAction> actionMap = new HashMap<Long, UpdateAction>();
         private boolean addingEvent = false;
         private boolean removingKey = false;
         private boolean deadlock = false;
@@ -212,7 +212,7 @@ public abstract class BaseService extends BaseClientOrService implements Service
             int tries = 5;
             while (tries > 0) {
                 try {
-                    actionMap2.put(now.getTime(), new UpdateAction(service, event));
+                    actionMap.put(now.getTime(), new UpdateAction(service, event));
                     tries = 0;
                 } catch (ConcurrentModificationException e) {
                     tries--;
@@ -234,8 +234,8 @@ public abstract class BaseService extends BaseClientOrService implements Service
                     // werden. Die
                     // run-Methode hier soll solange arbeiten, solange ein event
                     // vorliegt.
-                    while (!actionMap2.isEmpty()) {
-                        Set<Long> actionSet = actionMap2.keySet();
+                    while (!actionMap.isEmpty()) {
+                        Set<Long> actionSet = actionMap.keySet();
                         Collection<Long> keyCopy = new ArrayList<Long>();
                         keyCopy.addAll(actionSet);
 
@@ -243,7 +243,7 @@ public abstract class BaseService extends BaseClientOrService implements Service
                             Object[] arrayOfActionKeys = actionSet.toArray();
                             for (int i = 0; i < arrayOfActionKeys.length; i++) {
                                 Long actionMapIndex = (Long) arrayOfActionKeys[i];
-                                UpdateAction action = actionMap2.get(actionMapIndex);
+                                UpdateAction action = actionMap.get(actionMapIndex);
                                 processEvent(action.getService(), action.getEvent());
                             }
                         }
@@ -274,7 +274,7 @@ public abstract class BaseService extends BaseClientOrService implements Service
                                     int tries = 3;
                                     while (tries > 0) {
                                         try {
-                                            actionMap2.remove(keyToDelete);
+                                            actionMap.remove(keyToDelete);
                                             tries = 0;
                                         } catch (ConcurrentModificationException e) {
                                             tries--;
@@ -354,7 +354,6 @@ public abstract class BaseService extends BaseClientOrService implements Service
                     } else if (msg.equals(MailTag.REQ_READY_FOR_EVENT.name())) {
                         // writeMsg(BaseCommTag.VAL_OK);
                         try {
-                            System.out.println("BaseService.run: processEvent()");
                             processEvent();
                         } catch (Exception e) {
                             LocalLog.warn("Problem bei Verarbeitung einer Event-Nachricht.", e);

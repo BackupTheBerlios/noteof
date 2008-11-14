@@ -304,7 +304,7 @@ public class TalkLine implements Observer {
         socketLayer.close();
     }
 
-    public NotEOFEvent receiveBaseEvent(String applicationHome) throws ActionFailedException {
+    public synchronized NotEOFEvent receiveBaseEvent(String applicationHome) throws ActionFailedException {
         try {
             // class name and eventType
             DataObject eventInfo = receiveDataObject();
@@ -337,7 +337,7 @@ public class TalkLine implements Observer {
         }
     }
 
-    public NotEOFMail receiveMail() throws ActionFailedException {
+    public synchronized NotEOFMail receiveMail() throws ActionFailedException {
         DataObject contentObject = receiveDataObject();
         Map<String, String> content = contentObject.getMap();
 
@@ -364,7 +364,7 @@ public class TalkLine implements Observer {
         return mail;
     }
 
-    public void sendMail(NotEOFMail mail) throws ActionFailedException {
+    public synchronized void sendMail(NotEOFMail mail) throws ActionFailedException {
         // send message informations
         Map<String, String> envelope = new HashMap<String, String>();
         envelope.put("toClientNetId", mail.getToClientNetId());
@@ -400,7 +400,7 @@ public class TalkLine implements Observer {
      *            The event to send.
      * @throws ActionFailedException
      */
-    public void sendBaseEvent(NotEOFEvent event) throws ActionFailedException {
+    public synchronized void sendBaseEvent(NotEOFEvent event) throws ActionFailedException {
         // send className and eventType as ordinal value
         Map<String, String> infos = new HashMap<String, String>();
         infos.put("canonicalName", event.getClass().getCanonicalName());

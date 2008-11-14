@@ -28,6 +28,37 @@ public abstract class NotEOFBaseEvent implements NotEOFEvent {
     // forces the derived class to initialize the internal list of descriptions.
     protected abstract void initDescriptions();
 
+    /**
+     * Most Events are related to an application.
+     * <p>
+     * This method can be used to transport the applicationId. <br>
+     * 
+     * @param applicationId
+     *            Id of application
+     */
+    public void setApplicationId(Long applicationId) {
+        try {
+            addAttribute("internal->applicationId", String.valueOf(applicationId));
+        } catch (ActionFailedException e) {
+        }
+    }
+
+    /**
+     * Most Events are related to an application.
+     * <p>
+     * This method delivers the applicationId if was set before the event was
+     * raised. <br>
+     * 
+     * @return application id or NULL
+     */
+    public Long getApplicationId() {
+        try {
+            return Long.getLong(getAttribute("internal->applicationId"));
+        } catch (ActionFailedException e) {
+        }
+        return null;
+    }
+
     public void addAttribute(String key, String value) throws ActionFailedException {
         initDescriptions();
         if (null == attributes)

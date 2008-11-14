@@ -22,14 +22,19 @@ public enum EventType {
      * type can raise another action and should be the standard.
      */
     EVENT_ACTION,
-    /** START event indicates that a service / client was started */
     EVENT_SERVICE_STARTED,
     EVENT_CLIENT_STARTED,
     /** STOP event indicates that a service / client was stopped */
     EVENT_SERVICE_STOPPED,
     EVENT_CLIENT_STOPPED,
+    /** START event indicates that a service / client was started */
     EVENT_APPLICATION_START,
     EVENT_APPLICATION_STOP,
+    /**
+     * If an error occured while starting an event, application or something
+     * else
+     */
+    EVENT_START_ERROR,
     /** If a service has changed it's state this event happens */
     EVENT_SERVICE_CHANGE,
     /**

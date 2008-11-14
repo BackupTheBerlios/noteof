@@ -77,8 +77,9 @@
 			    - eventClassName the class name of the fired event
 			    - keyName attribute of the event which must be present as condition for the actions (optional)
 			    - keyValue value of the attribute which is condition for the actions (optional)
+			    - applicationId additional filter to ensure that the event was raised by this application (optional)
 			-->	    	
-	    	<event1 eventId="1" eventClassName="StoppedEvent" keyName="exitCode" keyValue="9">
+	    	<event1 eventId="1" eventClassName="StoppedEvent" keyName="exitCode" keyValue="9" applicationId="44">
 	    		<!-- 
 	    		    List of actions
 				    - actionType what to do with the application/chain - 'start' or 'stop' is possible here
@@ -95,7 +96,7 @@
 	    		<action>action0</action>
 	    		<action0 actionType="stop" applicationType="chain" id="1"></action0>
 	    	</event2>
-	    	<event3 eventId="3" eventClassName="ServiceStartedEvent">
+	    	<event3 eventId="3" eventClassName="StartedEvent">
 	    		<action>action0</action>
 	    		<action0 actionType="start" applicationType="chain" id="2"></action0>
 	    	</event3>
@@ -134,18 +135,9 @@
 			<executable type="java" path="c:/programme/blablubb.bat">
 				<args>--blubb="1" --blase=2</args>
 			</executable>
-			<!-- exit
-			
-				asfsaf
-			     
-			-->
-			<exit>
-				<code>0</code>
-				<code>1</code>
-			</exit>
 			<!-- option
 			     multiplestart decides if an application may run multiple at the same time.
-			     enforce is true if the application should run permanently.
+			     enforce set to true if the application should run permanently.
 			             If enforce is true and the application doesn't run the scheduler tries to start it. 
 			-->
 			<option multiplestart="false" enforce="false"></option>
@@ -166,13 +158,13 @@
 				<seconds>0 30</seconds> <!-- blank OR comma seperated -->
 				<minutes>15</minutes>
 				<hours>22,24</hours> <!-- blank OR comma seperated -->
-				<weekdays>TU MI FR SU</weekdays> <!-- mixed english and german is allowed -->
+				<weekdays>TU MI FR SU</weekdays> <!-- mixed english and german is allowed (MO, TU, DI, WE, MI, ...)  -->
 				<monthdays>13</monthdays>
 			</timeplan>
 			
 			<!-- dependencies
 			     Here you have some facilities:
-			     - Avoid the application start as long as other applications are running but start after they have stopped.
+			     - Avoid start of application as long as other applications are running but start after they have stopped.
 			     - Start another application AFTER the configured application has stopped.
 			     - Start another application SYNCHRONOUS with the configured application.  
 			-->

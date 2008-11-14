@@ -226,11 +226,4 @@ public class HapptickApplication extends HapptickBaseClient {
     public void stopObservingForStartAllowance() {
         applicationClient.stopObservingForStartAllowance();
     }
-
-    // @Override
-    // protected void initHapptickBaseClient(String serverAddress, int
-    // serverPort, String[] args, NotEOFClient notEofClient) throws
-    // HapptickException {
-    // super.init(serverAddress, serverPort, args, notEofClient);
-    // }
 }
