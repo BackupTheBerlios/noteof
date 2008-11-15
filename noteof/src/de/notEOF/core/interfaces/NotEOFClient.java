@@ -15,4 +15,8 @@ public interface NotEOFClient {
 
     public void sendMail(NotEOFMail mail) throws ActionFailedException;
 
+    public String getServerAddress();
+
+    public int getServerPort();
+
 }

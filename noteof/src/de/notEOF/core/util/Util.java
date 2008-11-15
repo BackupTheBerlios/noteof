@@ -403,19 +403,6 @@ public class Util {
         if (null == eventObservers)
             return;
 
-        // if (null != service)
-        // System.out.println("Auslösender Service: " +
-        // service.getClass().getSimpleName());
-        // System.out.println("Ausgelöstes Event:   " + event.getEventType());
-
-        // if (allEventsCounter++ > 1000) {
-        // Date newDate = new Date();
-        // long millis = newDate.getTime() - startDate.getTime();
-        // long millisPerRec = millis / allEventsCounter;
-        // System.out.println("Alle Events bisher: " + allEventsCounter +
-        // "; Millis pro Event: " + millisPerRec);
-        // }
-
         boolean retry = true;
 
         // all observer

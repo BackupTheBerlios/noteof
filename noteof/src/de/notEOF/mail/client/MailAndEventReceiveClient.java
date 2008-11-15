@@ -2,6 +2,7 @@ package de.notEOF.mail.client;
 
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import de.notEOF.core.client.BaseClient;
@@ -62,6 +63,7 @@ public abstract class MailAndEventReceiveClient extends BaseClient {
 
     private class MailAndEventAcceptor implements Runnable {
         private boolean stopped = true;
+        private List<EventWorker> eventWorkerList = new ArrayList<EventWorker>();
 
         public boolean isStopped() {
             return stopped;
@@ -88,15 +90,18 @@ public abstract class MailAndEventReceiveClient extends BaseClient {
                         MailWorker worker = new MailWorker(recipient, mail);
                         Thread workerThread = new Thread(worker);
                         workerThread.start();
-                        // recipient.processMail(mail);
                     }
                     if (MailTag.VAL_ACTION_EVENT.name().equals(action)) {
                         isEvent = true;
                         NotEOFEvent event = getTalkLine().receiveBaseEvent(ConfigurationManager.getApplicationHome());
-                        EventWorker worker = new EventWorker(recipient, event);
+                        System.out.println("==================================================================================");
+                        System.out.println("MailAndEventReceiveClient Worker: Event: " + event.getEventType().name());
+                        System.out.println("==================================================================================");
+                        EventWorker worker = new EventWorker(recipient, event, eventWorkerList);
                         Thread workerThread = new Thread(worker);
+                        // eventWorkerList.add(worker);
+                        worker.setId(new Date().getTime());
                         workerThread.start();
-                        // recipient.processEvent(event);
                     }
                 }
                 close();
@@ -118,14 +123,35 @@ public abstract class MailAndEventReceiveClient extends BaseClient {
     private class EventWorker implements Runnable {
         protected MailAndEventRecipient recipient;
         protected NotEOFEvent event;
+        protected long id;
+        protected List<EventWorker> workerList;
 
-        protected EventWorker(MailAndEventRecipient recipient, NotEOFEvent event) {
+        protected EventWorker(MailAndEventRecipient recipient, NotEOFEvent event, List<EventWorker> workerList) {
             this.recipient = recipient;
             this.event = event;
+            this.workerList = workerList;
+        }
+
+        protected void setId(long id) {
+            this.id = id;
+        }
+
+        protected long getId() {
+            return this.id;
         }
 
         public void run() {
+            // long listIdAt0 = workerList.get(0).getId();
+            // while (this.id != listIdAt0) {
+            // try {
+            // Thread.sleep(300);
+            // } catch (InterruptedException e) {
+            // // TODO Auto-generated catch block
+            // e.printStackTrace();
+            // }
+            // }
             recipient.processEvent(event);
+            // workerList.remove(0);
         }
     }
 

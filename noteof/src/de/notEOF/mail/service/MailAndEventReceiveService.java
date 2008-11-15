@@ -97,6 +97,10 @@ public abstract class MailAndEventReceiveService extends BaseService {
             throw new ActionFailedException(1154L, "Event ist NULL");
         }
 
+        System.out.println("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
+        System.out.println("MailAndEventReceiveService processEvent: Event: " + event.getEventType().name());
+        System.out.println("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
+
         try {
             if (EventType.EVENT_MAIL.equals(event.getEventType())) {
                 // check if interesting for this service
@@ -133,12 +137,12 @@ public abstract class MailAndEventReceiveService extends BaseService {
      *            The mail to send.
      * @throws ActionFailedException
      */
-    public final synchronized void mailToClient(NotEOFMail mail) throws ActionFailedException {
+    public final void mailToClient(NotEOFMail mail) throws ActionFailedException {
         writeMsg(MailTag.VAL_ACTION_MAIL);
         getTalkLine().sendMail(mail);
     }
 
-    public final synchronized void eventToClient(NotEOFEvent event) throws ActionFailedException {
+    public final void eventToClient(NotEOFEvent event) throws ActionFailedException {
         writeMsg(MailTag.VAL_ACTION_EVENT);
         getTalkLine().sendBaseEvent(event);
     }

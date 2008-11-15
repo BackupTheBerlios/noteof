@@ -84,4 +84,8 @@ public interface NotEOFEvent {
     public void setDescriptions(Map<String, String> descriptions);
 
     public void setEventType(EventType eventType);
+
+    public void setApplicationId(Long applicationId);
+
+    public Long getApplicationId();
 }

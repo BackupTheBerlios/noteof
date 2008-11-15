@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 
 import de.happtick.core.exception.HapptickException;
+import de.notEOF.core.interfaces.NotEOFEvent;
 import de.notEOF.core.logging.LocalLog;
 import de.notEOF.core.util.Util;
 
@@ -24,24 +25,47 @@ public class ExternalCalls {
      * @param args
      *            Aufrufargumente (z.B. --applicationPath=/home/appl.sh)
      */
-    public static void call(String className, String applicationPath, String applicationId, String startId, String serverAddress, String serverPort,
-            String arguments) {
+    public void call(String className, String serverAddress, int serverPort, String startId, NotEOFEvent startEvent) throws HapptickException {
+        String applicationId = null;
+        String applicationPath = null;
+        String arguments = null;
+        try {
+            applicationPath = startEvent.getAttribute("applicationPath");
+            applicationId = startEvent.getAttribute("applicationId");
+            arguments = startEvent.getAttribute("arguments");
+        } catch (Exception ex) {
+            LocalLog.error("Fehler bei Verarbeitung eines Events.", ex);
+        }
 
-        String[] args = new String[6];
+        if (Util.isEmpty(applicationId))
+            throw new HapptickException(650L, "applicationId");
+        if (Util.isEmpty(applicationPath))
+            throw new HapptickException(650L, "applicationPath");
+
+        int arrSize = 5;
+        if (null != arguments)
+            arrSize = 6;
+        String[] args = new String[arrSize];
         args[0] = "--applicationPath=" + applicationPath;
         args[1] = "--applicationId=" + applicationId;
         args[2] = "--startId=" + startId;
         args[3] = "--serverAddress=" + serverAddress;
-        args[4] = "--serverPort=" + serverPort;
-        args[5] = arguments;
+        args[4] = "--serverPort=" + String.valueOf(serverPort);
+        if (null != arguments)
+            args[5] = arguments;
 
+        for (String arg : args) {
+            System.out.println("ARGS... arg: " + arg);
+        }
+
+        // call the main method of the class with evaluated arguments
+        LocalLog.info("External Application Starting. ApplicationId: " + applicationId + "; ApplicationPath: " + applicationPath + "; Arguments: " + arguments);
         try {
             Class<?> clazz = Class.forName(className);
-            System.out.println("ExternalCalls.call: clazz = " + clazz.getCanonicalName());
             Method methode = clazz.getMethod("main", new Class[] { args.getClass() });
-            System.out.println("ExternalCalls.call: Vor invoke. Arguments = " + args);
             methode.invoke(null, new Object[] { args });
-            System.out.println("ExternalCalls.call: Nach invoke");
+            LocalLog.info("External Application Finished.  ApplicationId: " + applicationId + "; ApplicationPath: " + applicationPath + "; Arguments: "
+                    + arguments);
         } catch (ClassNotFoundException clEx) {
             LocalLog.warn("Klasse nicht gefunden: " + className);
         } catch (Exception ex) {
@@ -60,13 +84,14 @@ public class ExternalCalls {
      * @return
      * @throws HapptickException
      */
-    public static Process startApplication(String applicationPath, String arguments) throws HapptickException {
+    public Process startApplication(String applicationPath, String arguments) throws HapptickException {
         Process proc = null;
         Runtime runtime = Runtime.getRuntime();
         try {
             String[] cmdLine = new String[2];
             cmdLine[0] = applicationPath.trim();
             cmdLine[1] = arguments.trim();
+            System.out.println("ExternalCalls.start... vor proc = runtime...");
             proc = runtime.exec(cmdLine);
         } catch (IOException ioEx) {
             throw new HapptickException(651L, "Application: " + applicationPath);
@@ -92,17 +117,34 @@ public class ExternalCalls {
      *            Additional calling arguments. Depend to the application.
      * @return The started Process
      */
-    public static Process startHapptickApplication(String applicationPath, String startId, String serverAddress, String serverPort, String arguments)
-            throws HapptickException {
-        // nur weitermachen, wenn auch eine Anwendung eingetragen wurde...
+    public Process startHapptickApplication(String serverAddress, int serverPort, String startId, NotEOFEvent startEvent) throws HapptickException {
+        String applicationId = null;
+        String applicationPath = null;
+        String arguments = null;
+        try {
+            applicationPath = startEvent.getAttribute("applicationPath");
+            applicationId = startEvent.getAttribute("applicationId");
+            arguments = startEvent.getAttribute("arguments");
+        } catch (Exception ex) {
+            LocalLog.error("Fehler bei Verarbeitung eines Events.", ex);
+        }
+
+        if (Util.isEmpty(applicationId))
+            throw new HapptickException(650L, "applicationId");
         if (Util.isEmpty(applicationPath))
             throw new HapptickException(650L, "applicationPath");
 
         // special Happtick parameter for own Java applications
         String args = "--startId=" + startId.trim();
+        args += " --applicationId=" + applicationId.trim();
         args += " --serverAddress=" + serverAddress.trim();
-        args += " --serverPort=" + serverPort.trim();
+        args += " --serverPort=" + String.valueOf(serverPort);
         args += " " + arguments;
+
+        System.out.println("ExternalCalls.startHapptickApplication: applicationPath = " + applicationPath);
+        System.out.println("ExternalCalls.startHapptickApplication: args = " + args);
+
+        LocalLog.info("Happtick Application Starting. ApplicationId: " + applicationId + "; ApplicationPath: " + applicationPath + "; Arguments: " + arguments);
         return startApplication(applicationPath, arguments);
     }
 }

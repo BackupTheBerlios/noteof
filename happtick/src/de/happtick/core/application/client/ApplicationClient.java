@@ -323,4 +323,14 @@ public class ApplicationClient extends BaseClient implements NotEOFClient {
         }
     }
 
+    @Override
+    public String getServerAddress() {
+        return super.getPartnerHostAddress();
+    }
+
+    @Override
+    public int getServerPort() {
+        return super.getPartnerPort();
+    }
+
 }

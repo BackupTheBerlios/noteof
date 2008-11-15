@@ -37,68 +37,94 @@ public abstract class HapptickBaseClient {
         public String serviceForClientByName() {
             return null;
         }
-    }
 
-    public void useInternalClientForSendMailsAndEvents() {
-        this.notEofClient = new internalClient();
-    }
+        @Override
+        public String getServerAddress() {
+            return super.getPartnerHostAddress();
+        }
 
-    public int getNotEOFServerPort() {
-        return serverPort;
-    }
-
-    public String getNotEOFServerAddress() {
-        return serverAddress;
+        @Override
+        public int getServerPort() {
+            return super.getPartnerPort();
+        }
     }
 
     /**
-     * This method should be called by the extended classes as soon as
-     * possible...
+     * Delivers the internal client which is connected with the server.
      * <p>
-     * It forces the extended classes to do something. Within the implementation
-     * of this abstract function they should call the method init();
+     * Useful if comunication is required in classes which are not extended from
+     * any NotEOFClient-Class. <br>
+     * The internal client establishes a communication connection to the NotEOF
+     * core service SimpleService.
+     * <p>
+     * Attention! The internal client is not available before the connect() of
+     * this class was executed.
+     * 
+     * @return A client which can be used for communication acts to the server.
+     */
+    public NotEOFClient getSimpleClient() {
+        return this.notEofClient;
+    }
+
+    private void useInternalClientForSendMailsAndEvents() {
+        this.notEofClient = new internalClient();
+    }
+
+    /**
+     * Delivers the port of the NotEOF server.
+     * <p>
+     * Was set by the connect method.
+     * 
+     * @return Port of central server.
+     */
+    public int getServerPort() {
+        return this.serverPort;
+    }
+
+    /**
+     * Delivers the ip address of the NotEOF server.
+     * <p>
+     * Was set by the connect method.
+     * 
+     * @return IP address of central server.
+     */
+    public String getServerAddress() {
+        return this.serverAddress;
+    }
+
+    /**
+     * Connect with the happtick server.
+     * <p>
+     * Exactly this means to connect with an application service on the happtick
+     * server. <br>
+     * This method allows to explicitly define a client which is used for
+     * interactions to the server. Using special clients depends to the
+     * application requirements. <br>
+     * If not special client is required use the other connect() method without
+     * this parameter.
+     * <p>
+     * Later the service will decide if the application may run ->
+     * startAllowed().
      * 
      * @param serverAddress
      * @param serverPort
      * @param args
      * @param notEofClient
-     */
-    // protected abstract void initHapptickBaseClient(String serverAddress, int
-    // serverPort, String[] args, NotEOFClient notEofClient) throws
-    // HapptickException;
-    // protected void init(String serverAddress, int serverPort, String[] args,
-    // NotEOFClient notEofClient) throws HapptickException {
-    // this.serverAddress = serverAddress;
-    // this.serverPort = serverPort;
-    // this.args = args;
-    //
-    // if (null != notEofClient) {
-    // this.notEofClient = notEofClient;
-    // } else {
-    // useInternalClientForSendMailsAndEvents();
-    // }
-    // connect();
-    // }
-    /**
-     * Connect with the happtick server. Exactly this means to connect with an
-     * application service on the happtick server. <br>
-     * The service later decides if the application may run -> startAllowed(). <br>
-     * If you use this method, the connection informations (ip, port of happtick
-     * server) must be set before.
-     * 
+     *            Client with special functionality. NULL is not allowed here.
      * @throws HapptickException
+     *             Thrown if client is empty (NULL) or connection couldn't be
+     *             established.
      */
     public void connect(String serverAddress, int serverPort, String[] args, NotEOFClient notEofClient) throws HapptickException {
+        if (Util.isEmpty(notEofClient))
+            throw new HapptickException(50L, "NotEOFClient is leer.");
+
         this.serverAddress = serverAddress;
         this.serverPort = serverPort;
         this.args = args;
 
-        if (null != notEofClient) {
-            this.notEofClient = notEofClient;
-        } else {
-            useInternalClientForSendMailsAndEvents();
-        }
-        connect(serverAddress, serverPort);
+        this.notEofClient = notEofClient;
+        connect(serverAddress, serverPort, args);
     }
 
     /**
@@ -113,13 +139,18 @@ public abstract class HapptickBaseClient {
      *            running.
      * @throws HapptickException
      */
-    public void connect(String serverAddress, int serverPort) throws HapptickException {
-        if (Util.isEmpty(notEofClient))
-            throw new HapptickException(50L, "NotEOFClient is leer.");
+    public void connect(String serverAddress, int serverPort, String[] args) throws HapptickException {
         if (Util.isEmpty(serverAddress))
             throw new HapptickException(50L, "Server Addresse ist leer.");
         if (0 == serverPort)
             throw new HapptickException(50L, "Server Port = 0");
+
+        this.serverAddress = serverAddress;
+        this.serverPort = serverPort;
+        this.args = args;
+
+        if (null == this.notEofClient)
+            useInternalClientForSendMailsAndEvents();
 
         try {
             // connect with service
@@ -209,12 +240,18 @@ public abstract class HapptickBaseClient {
      *             Is raised when the connection with service could not be
      *             established or other problems occured.
      */
-    public void useMailsAndEvents(MailAndEventRecipient mailEventRecipient, MailExpressions expressions0, MailExpressions expressions1, List<NotEOFEvent> events)
+    public void useMailsAndEvents(MailAndEventRecipient mailEventRecipient, MailExpressions expressions, List<NotEOFEvent> events, boolean acceptOwnMails)
             throws HapptickException {
         initMailEventClient(mailEventRecipient);
-        addInterestingMailExpressions(expressions0);
-        addInterestingMailExpressions(expressions1);
+        addInterestingMailExpressions(expressions);
         addInterestingEvents(events);
+        if (!acceptOwnMails) {
+            try {
+                mailEventClient.addIgnoredClientNetId(this.notEofClient.getClientNetId());
+            } catch (ActionFailedException e) {
+                throw new HapptickException(605L, "Der Empfang eigener Mails konnte nicht unterdrueckt werden", e);
+            }
+        }
     }
 
     /**
@@ -285,7 +322,7 @@ public abstract class HapptickBaseClient {
      */
     public void useMailsAndEvents(MailAndEventRecipient mailEventRecipient, boolean acceptOwnMails) throws HapptickException {
         if (Util.isEmpty(this.notEofClient))
-            throw new HapptickException(605, "notEofClient ist leer.");
+            throw new HapptickException(605, "Vor Aufruf dieser Methode muss die Method connect() aufgerufen werden.");
 
         initMailEventClient(mailEventRecipient);
         if (!acceptOwnMails) {
@@ -384,6 +421,8 @@ public abstract class HapptickBaseClient {
         if (null == this.mailEventClient) {
             this.mailEventRecipient = mailEventRecipient;
             try {
+                System.out.println("server address: " + serverAddress);
+                System.out.println("server port:    " + serverPort);
                 this.mailEventClient = new HapptickMailEventClient(serverAddress, serverPort, null, null);
             } catch (ActionFailedException e) {
                 throw new HapptickException(601L, e);
@@ -397,15 +436,6 @@ public abstract class HapptickBaseClient {
     protected void checkClientInitialized() throws HapptickException {
         if (Util.isEmpty(notEofClient))
             throw new HapptickException(50L, "Client ist nicht initialisiert. Vermutlich wurde kein connect durchgeführt.");
-    }
-
-    /**
-     * Set the connection data for communication with happtick server / happtick
-     * application service
-     */
-    public void setServerConnectionData(String serverAddress, int serverPort) {
-        this.serverAddress = serverAddress;
-        this.serverPort = serverPort;
     }
 
 }

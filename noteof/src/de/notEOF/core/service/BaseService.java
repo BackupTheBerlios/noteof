@@ -172,6 +172,9 @@ public abstract class BaseService extends BaseClientOrService implements Service
                 Thread processThread = new Thread(processor);
                 processThread.start();
             }
+            System.out.println("==================================================================================");
+            System.out.println("BaseService Update: Event: " + event.getEventType().name());
+            System.out.println("==================================================================================");
             processor.addAction(service, event);
         } catch (Exception e) {
             System.out.println("im Update abgefangen, weil sonst der Server kaputt geht...");
@@ -450,7 +453,7 @@ public abstract class BaseService extends BaseClientOrService implements Service
      * 
      * @throws ActionFailedException
      */
-    public synchronized void processMail() throws ActionFailedException {
+    public void processMail() throws ActionFailedException {
         NotEOFMail mail = getTalkLine().receiveMail();
         server.postMail(mail, this);
     }
@@ -464,8 +467,11 @@ public abstract class BaseService extends BaseClientOrService implements Service
      * 
      * @throws ActionFailedException
      */
-    public synchronized void processEvent() throws ActionFailedException {
+    public void processEvent() throws ActionFailedException {
+        System.out.println("?????????????????????????????????????????");
         NotEOFEvent event = getTalkLine().receiveBaseEvent(Server.getApplicationHome());
+        System.out.println("BaseService.processEvent: Event: " + event.getEventType().name());
+        System.out.println("?????????????????????????????????????????");
         server.postEvent(event, this);
     }
 

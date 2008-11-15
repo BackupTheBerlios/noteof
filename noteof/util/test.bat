@@ -1,4 +1,4 @@
-@echo off
+rem @echo off
 
 set NOTEOF_HOME=C:\Projekte\workspace\noteof
 set CLASSPATH=%CLASSPATH%;%NOTEOF_HOME%\lib\noteof.jar
@@ -10,5 +10,8 @@ echo %CLASSPATH%
 
 @echo on
 java de.notEOF.test.Test
+
+
+C:\Projekte\workspace\noteof\util\happtick_test.bat
 
 pause

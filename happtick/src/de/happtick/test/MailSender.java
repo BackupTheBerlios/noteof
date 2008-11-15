@@ -12,18 +12,28 @@ public class MailSender {
         // NotEOFMail mail;
         // try {
 
-        // appl.sendActionEvent("965", "Eine tolle Action");
-        // appl.sendAlarm("55", "Schlimmer Alarm", "2");
+        appl.sendActionEvent("965", "Eine tolle Action");
+        appl.sendAlarm("55", "Schlimmer Alarm", "2");
 
         StartEvent event = new StartEvent();
         event.addAttribute("clientIp", "192.168.0.2");
         event.addAttribute("applicationId", "99");
-        // event.addAttribute("applicationPath",
-        // "C:\\Projekte\\workspace\\noteof\\util\\test.bat");
         event.addAttribute("applicationPath", "calc.exe");
         event.addAttribute("applicationType", "UNKNOWN");
-        event.addAttribute("arguments", "--bla=blubb");
+        event.addAttribute("arguments", "123 :m");
+        System.out.println("Kontrolle applicationPath: " + event.getAttribute("applicationPath"));
+        appl.sendEvent(event);
 
+        // try {
+        // Thread.sleep(150);
+        // } catch (InterruptedException e) {
+        // // TODO Auto-generated catch block
+        // e.printStackTrace();
+        // }
+
+        event.addAttribute("applicationId", "77");
+        event.addAttribute("applicationPath", "C:\\Projekte\\workspace\\noteof\\util\\test.bat");
+        event.addAttribute("applicationType", "JAVA");
         System.out.println("Kontrolle applicationPath: " + event.getAttribute("applicationPath"));
         appl.sendEvent(event);
 

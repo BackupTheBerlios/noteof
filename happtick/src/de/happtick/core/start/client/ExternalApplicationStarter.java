@@ -36,6 +36,11 @@ public class ExternalApplicationStarter extends HapptickApplication {
             throws HapptickException {
         super(applicationId, serverAddress, serverPort, applArgs);
 
+        if (Util.isEmpty(applicationId))
+            throw new HapptickException(650L, "applicationId");
+        if (Util.isEmpty(applicationPath))
+            throw new HapptickException(650L, "applicationPath");
+
         WorkerProcess worker = new WorkerProcess(applicationId, applicationPath, startId, applArgs);
         Thread workerThread = new Thread(worker);
         workerThread.start();
@@ -95,7 +100,8 @@ public class ExternalApplicationStarter extends HapptickApplication {
 
             try {
                 // create process
-                process = ExternalCalls.startApplication(applicationPath, applArgs);
+                ExternalCalls calls = new ExternalCalls();
+                calls.startApplication(applicationPath, applArgs);
                 started = true;
             } catch (HapptickException he) {
                 errNo = he.getErrNo();

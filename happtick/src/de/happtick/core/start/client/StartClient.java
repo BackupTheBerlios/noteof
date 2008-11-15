@@ -9,6 +9,7 @@ import de.happtick.core.events.StartEvent;
 import de.happtick.core.exception.HapptickException;
 import de.happtick.core.util.ExternalCalls;
 import de.notEOF.core.enumeration.EventType;
+import de.notEOF.core.interfaces.NotEOFClient;
 import de.notEOF.core.interfaces.NotEOFEvent;
 import de.notEOF.core.util.ArgsParser;
 import de.notEOF.core.util.Util;
@@ -36,8 +37,8 @@ import de.notIOC.logging.LocalLog;
 public class StartClient extends HapptickBaseClient implements MailAndEventRecipient {
 
     public StartClient(String serverAddress, int port, String[] args) throws HapptickException {
-        // initHapptickBaseClient(serverAddress, port, args, null);
-        connect(serverAddress, port, args, null);
+        // must be called before useMailsAndEvents()
+        connect(serverAddress, port, args);
 
         // Activate EventSystem
         useMailsAndEvents(this, false);
@@ -46,6 +47,7 @@ public class StartClient extends HapptickBaseClient implements MailAndEventRecip
         List<NotEOFEvent> events = new ArrayList<NotEOFEvent>();
         events.add(new StartEvent());
         addInterestingEvents(events);
+        // Before this the method useMailsAndEvents() must be called
         startAcceptingMailsEvents();
 
         while (true) {
@@ -61,7 +63,7 @@ public class StartClient extends HapptickBaseClient implements MailAndEventRecip
     // TODO Pruefen, warum bei nicht Zurueckkehren des
     // ExternalApplicationStarter sich der hier aufhהngt... Nur interessehalber
     private synchronized void startStarter(NotEOFEvent event) {
-        ApplStarter starter = new ApplStarter(event);
+        ApplStarter starter = new ApplStarter(this.notEofClient, event);
         Thread starterThread = new Thread(starter);
         starterThread.start();
     }
@@ -71,10 +73,12 @@ public class StartClient extends HapptickBaseClient implements MailAndEventRecip
      * ApplicationClient is started here.
      */
     private class ApplStarter implements Runnable {
+        private NotEOFClient client;
         private NotEOFEvent startEvent;
 
-        protected ApplStarter(NotEOFEvent startEvent) {
+        protected ApplStarter(NotEOFClient client, NotEOFEvent startEvent) {
             this.startEvent = startEvent;
+            this.client = client;
         }
 
         @Override
@@ -95,45 +99,27 @@ public class StartClient extends HapptickBaseClient implements MailAndEventRecip
         }
 
         private void startApplication(NotEOFEvent startEvent) throws HapptickException {
-            String applicationId = null;
-            String applicationPath = null;
-            String arguments = null;
             String applicationType = null;
             try {
-                applicationId = startEvent.getAttribute("applicationId");
-                applicationPath = startEvent.getAttribute("applicationPath");
-                arguments = startEvent.getAttribute("arguments");
                 applicationType = startEvent.getAttribute("applicationType");
             } catch (Exception ex) {
                 LocalLog.error("Fehler bei Verarbeitung eines Events.", ex);
             }
 
-            if (Util.isEmpty(applicationId))
-                throw new HapptickException(650L, "applicationId");
-            if (Util.isEmpty(applicationPath))
-                throw new HapptickException(650L, "applicationPath");
             if (Util.isEmpty(applicationType))
                 throw new HapptickException(650L, "applicationType");
 
-            String startId = serverAddress + String.valueOf(Thread.currentThread().getId()) + String.valueOf(new Date().getTime());
-            // String[] applArgs = Util.stringToArray(arguments, "");
+            // create unique identifier for the application process
+            String startId = getServerAddress() + String.valueOf(Thread.currentThread().getId()) + String.valueOf(new Date().getTime());
 
             // if type is 'java' the application start the application itself
             // if type is 'unknown' start the special Happtick application which
             // controls 'foreign' processess
             if ("JAVA".equalsIgnoreCase(applicationType)) {
-                LocalLog.info("Happtick Application Starting. ApplicationId: " + applicationId + "; ApplicationPath: " + applicationPath + "; Arguments: "
-                        + arguments);
-                ExternalCalls.startHapptickApplication(applicationPath, startId, serverAddress, String.valueOf(serverPort), arguments);
-                LocalLog.info("Happtick Application Started.  ApplicationId: " + applicationId + "; ApplicationPath: " + applicationPath + "; Arguments: "
-                        + arguments);
+                new HapptickApplicationStarter(client, getServerAddress(), getServerPort(), startId, startEvent);
             } else if ("UNKNOWN".equalsIgnoreCase(applicationType)) {
-                LocalLog.info("External Application Starting. ApplicationId: " + applicationId + "; ApplicationPath: " + applicationPath + "; Arguments: "
-                        + arguments);
-                ExternalCalls.call(ExternalApplicationStarter.class.getCanonicalName(), applicationPath, applicationId, startId, serverAddress, String
-                        .valueOf(serverPort), arguments);
-                LocalLog.info("External Application Finished.  ApplicationId: " + applicationId + "; ApplicationPath: " + applicationPath + "; Arguments: "
-                        + arguments);
+                ExternalCalls calls = new ExternalCalls();
+                calls.call(ExternalApplicationStarter.class.getCanonicalName(), getServerAddress(), getServerPort(), startId, startEvent);
             } else
                 throw new HapptickException(1L, "Type: " + applicationType);
         }
@@ -146,6 +132,19 @@ public class StartClient extends HapptickBaseClient implements MailAndEventRecip
     @Override
     public synchronized void processEvent(NotEOFEvent event) {
         // process start request
+        // try {
+        // System.out.println(
+        // "ההההההההההההההההההההההה   Event ist eingetroffen... ההההההההההההההההההההההההההההההה"
+        // );
+        // System.out.println("event applicationPath = " +
+        // event.getAttribute("applicationPath"));
+        // System.out.println(
+        // "ההההההההההההההההההההההה   Event wurde eingetroffen... ההההההההההההההההההההההההההההההה"
+        // );
+        // } catch (ActionFailedException e) {
+        // // TODO Auto-generated catch block
+        // e.printStackTrace();
+        // }
         if (event.getEventType().equals(EventType.EVENT_APPLICATION_START)) {
             startStarter(event);
         }
