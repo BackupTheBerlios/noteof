@@ -12,8 +12,18 @@ public class MailSender {
         // NotEOFMail mail;
         // try {
 
-        appl.sendActionEvent("965", "Eine tolle Action");
-        appl.sendAlarm("55", "Schlimmer Alarm", "2");
+        while (true) {
+            appl.sendActionEvent("965", "Eine tolle Action");
+            appl.sendAlarm("55", "Schlimmer Alarm", "2");
+            try {
+                Thread.sleep(300);
+            } catch (InterruptedException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+            if (false)
+                break;
+        }
 
         StartEvent event = new StartEvent();
         event.addAttribute("clientIp", "192.168.0.2");

@@ -2,13 +2,8 @@ package de.notEOF.core.service;
 
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.ConcurrentModificationException;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import de.notEOF.core.BaseClientOrService;
 import de.notEOF.core.communication.TalkLine;
@@ -169,12 +164,15 @@ public abstract class BaseService extends BaseClientOrService implements Service
             // Die events sollen nacheinander abgearbeitet werden.
             if (null == processor) {
                 processor = new EventProcessor(this);
-                Thread processThread = new Thread(processor);
-                processThread.start();
             }
-            System.out.println("==================================================================================");
-            System.out.println("BaseService Update: Event: " + event.getEventType().name());
-            System.out.println("==================================================================================");
+            // System.out.println(
+            // "=================================================================================="
+            // );
+            // System.out.println("BaseService Update: Event: " +
+            // event.getEventType().name());
+            // System.out.println(
+            // "=================================================================================="
+            // );
             processor.addAction(service, event);
         } catch (Exception e) {
             System.out.println("im Update abgefangen, weil sonst der Server kaputt geht...");
@@ -186,116 +184,35 @@ public abstract class BaseService extends BaseClientOrService implements Service
     public void processEvent(Service service, NotEOFEvent event) throws ActionFailedException {
     }
 
-    // EventProcessor entkoppelt den Observable (meistens Server) von den
-    // Observern.
-    // Ansonsten wuerde der Observable warten muessen, bis der Observer die
-    // Verarbeitung abgeschlossen hat.
-    private final class EventProcessor implements Runnable {
+    private class EventWorker implements Runnable {
         private BaseService mainClass;
-        private Map<Long, UpdateAction> actionMap = new HashMap<Long, UpdateAction>();
-        private boolean addingEvent = false;
-        private boolean removingKey = false;
-        private boolean deadlock = false;
+        private Service service;
+        private NotEOFEvent event;
+        private List<EventWorker> workerList;
+        private long id = 0;
 
-        private EventProcessor(BaseService mainClass) {
+        protected EventWorker(BaseService mainClass, Service service, NotEOFEvent event, List<EventWorker> workerList) {
             this.mainClass = mainClass;
+            this.service = service;
+            this.event = event;
+            this.workerList = workerList;
         }
 
-        protected synchronized void addAction(Service service, NotEOFEvent event) {
-            try {
-                while (removingKey) {
-                    if (removingKey && addingEvent)
-                        Thread.sleep(5);
-                }
-            } catch (InterruptedException e) {
-            }
-            addingEvent = true;
-            // key fuer die map (billig...)
-            Date now = new Date();
-            int tries = 5;
-            while (tries > 0) {
-                try {
-                    actionMap.put(now.getTime(), new UpdateAction(service, event));
-                    tries = 0;
-                } catch (ConcurrentModificationException e) {
-                    tries--;
-                    try {
-                        Thread.sleep(5);
-                    } catch (InterruptedException e1) {
-                    }
-                }
-            }
-            addingEvent = false;
+        protected void setId(long id) {
+            this.id = id;
+        }
+
+        protected long getId() {
+            return this.id;
         }
 
         public void run() {
             try {
-                while (true) {
-                    // Die actionMap kann theoretisch waehrend der Verarbeitung
-                    // hier
-                    // gleichzeitig durch Aufruf der update-Methode ergaenzt
-                    // werden. Die
-                    // run-Methode hier soll solange arbeiten, solange ein event
-                    // vorliegt.
-                    while (!actionMap.isEmpty()) {
-                        Set<Long> actionSet = actionMap.keySet();
-                        Collection<Long> keyCopy = new ArrayList<Long>();
-                        keyCopy.addAll(actionSet);
-
-                        if (null != actionSet && actionSet.size() > 0) {
-                            Object[] arrayOfActionKeys = actionSet.toArray();
-                            for (int i = 0; i < arrayOfActionKeys.length; i++) {
-                                Long actionMapIndex = (Long) arrayOfActionKeys[i];
-                                UpdateAction action = actionMap.get(actionMapIndex);
-                                processEvent(action.getService(), action.getEvent());
-                            }
-                        }
-
-                        if (!keyCopy.isEmpty()) {
-                            removingKey = true;
-                            try {
-                                while (addingEvent) {
-                                    if (removingKey && addingEvent) {
-                                        LocalLog.warn("====================== ALARM - DEADLOCK ================");
-                                        deadlock = true;
-                                        removingKey = false;
-                                        Thread.sleep(15);
-                                        removingKey = true;
-                                    }
-                                    Thread.sleep(15);
-                                }
-                            } catch (InterruptedException i) {
-                            }
-
-                            if (deadlock) {
-                                LocalLog.info("====================== Aus Deadlock befreit ================");
-                                deadlock = false;
-                            }
-
-                            if (removingKey) {
-                                for (Long keyToDelete : keyCopy) {
-                                    int tries = 3;
-                                    while (tries > 0) {
-                                        try {
-                                            actionMap.remove(keyToDelete);
-                                            tries = 0;
-                                        } catch (ConcurrentModificationException e) {
-                                            tries--;
-                                            Thread.sleep(7);
-                                        }
-                                    }
-                                }
-                            }
-                            removingKey = false;
-                        }
-                    }
-
-                    // throw old events to garbage
-                    try {
-                        Thread.sleep(30);
-                    } catch (InterruptedException i) {
-                    }
+                while (workerList.get(0).getId() != getId()) {
+                    Thread.sleep(300);
                 }
+                processEvent(service, event);
+                workerList.remove(0);
             } catch (Exception e) {
                 LocalLog
                         .error("Fehler bei Abarbeiten der MessageQueue im EventProcessor des BaseService. Der Service wird aus der Event-Benachrichtigung entfernt und beendet!"
@@ -309,23 +226,24 @@ public abstract class BaseService extends BaseClientOrService implements Service
         }
     }
 
-    // lokale helper klasse die fuer das Zwischenspeichern der events benoetigt
-    // wird (s.o.)
-    private final class UpdateAction {
-        private Service service;
-        private NotEOFEvent event;
+    // EventProcessor entkoppelt den Observable (meistens Server) von den
+    // Observern.
+    // Ansonsten wuerde der Observable warten muessen, bis der Observer die
+    // Verarbeitung abgeschlossen hat.
+    private final class EventProcessor {
+        private BaseService mainClass;
+        private List<EventWorker> workerList = new ArrayList<EventWorker>();
 
-        private UpdateAction(Service service, NotEOFEvent event) {
-            this.service = service;
-            this.event = event;
+        private EventProcessor(BaseService mainClass) {
+            this.mainClass = mainClass;
         }
 
-        private Service getService() {
-            return this.service;
-        }
-
-        private NotEOFEvent getEvent() {
-            return this.event;
+        protected synchronized void addAction(Service service, NotEOFEvent event) {
+            EventWorker worker = new EventWorker(mainClass, service, event, workerList);
+            workerList.add(worker);
+            worker.setId(new Date().getTime());
+            Thread workerThread = new Thread(worker);
+            workerThread.start();
         }
     }
 
@@ -350,14 +268,14 @@ public abstract class BaseService extends BaseClientOrService implements Service
                         // Mails from client are processed directly here in the
                         // base class
                         try {
-                            processMail();
+                            processClientMail();
                         } catch (Exception e) {
                             LocalLog.warn("Problem bei Verarbeitung einer Mail-Nachricht.", e);
                         }
                     } else if (msg.equals(MailTag.REQ_READY_FOR_EVENT.name())) {
                         // writeMsg(BaseCommTag.VAL_OK);
                         try {
-                            processEvent();
+                            processClientEvent();
                         } catch (Exception e) {
                             LocalLog.warn("Problem bei Verarbeitung einer Event-Nachricht.", e);
                         }
@@ -453,7 +371,7 @@ public abstract class BaseService extends BaseClientOrService implements Service
      * 
      * @throws ActionFailedException
      */
-    public void processMail() throws ActionFailedException {
+    public void processClientMail() throws ActionFailedException {
         NotEOFMail mail = getTalkLine().receiveMail();
         server.postMail(mail, this);
     }
@@ -467,11 +385,12 @@ public abstract class BaseService extends BaseClientOrService implements Service
      * 
      * @throws ActionFailedException
      */
-    public void processEvent() throws ActionFailedException {
-        System.out.println("?????????????????????????????????????????");
+    public void processClientEvent() throws ActionFailedException {
+        // System.out.println("?????????????????????????????????????????");
         NotEOFEvent event = getTalkLine().receiveBaseEvent(Server.getApplicationHome());
-        System.out.println("BaseService.processEvent: Event: " + event.getEventType().name());
-        System.out.println("?????????????????????????????????????????");
+        // System.out.println("BaseService.processEvent: Event: " +
+        // event.getEventType().name());
+        // System.out.println("?????????????????????????????????????????");
         server.postEvent(event, this);
     }
 

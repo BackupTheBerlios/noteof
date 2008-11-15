@@ -175,13 +175,6 @@ public class StartClient extends HapptickBaseClient implements MailAndEventRecip
 
     }
 
-    // @Override
-    // protected void initHapptickBaseClient(String serverAddress, int
-    // serverPort, String[] args, NotEOFClient notEofClient) throws
-    // HapptickException {
-    // super.init(serverAddress, serverPort, args, notEofClient);
-    // }
-
     /**
      * This application is used to start other applications.
      * <p>

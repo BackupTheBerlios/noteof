@@ -97,9 +97,14 @@ public abstract class MailAndEventReceiveService extends BaseService {
             throw new ActionFailedException(1154L, "Event ist NULL");
         }
 
-        System.out.println("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
-        System.out.println("MailAndEventReceiveService processEvent: Event: " + event.getEventType().name());
-        System.out.println("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
+        // System.out.println(
+        // "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+        // );
+        // System.out.println("MailAndEventReceiveService processEvent: Event: "
+        // + event.getEventType().name());
+        // System.out.println(
+        // "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+        // );
 
         try {
             if (EventType.EVENT_MAIL.equals(event.getEventType())) {
