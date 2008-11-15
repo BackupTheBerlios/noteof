@@ -92,7 +92,7 @@ public abstract class MailAndEventReceiveService extends BaseService {
      *            The incoming event that the client has fired or which was
      *            detected by the service.
      */
-    public void processEvent(Service service, NotEOFEvent event) throws ActionFailedException {
+    public synchronized void processEvent(Service service, NotEOFEvent event) throws ActionFailedException {
         if (null == event) {
             throw new ActionFailedException(1154L, "Event ist NULL");
         }

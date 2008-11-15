@@ -68,7 +68,7 @@ public class HapptickApplicationStarter {
 
             try {
                 ExternalCalls calls = new ExternalCalls();
-                Process proc = calls.startHapptickApplication(serverAddress, serverPort, startId, startEvent);
+                calls.startHapptickApplication(serverAddress, serverPort, startId, startEvent);
                 // proc.waitFor();
                 started = true;
             } catch (HapptickException he) {

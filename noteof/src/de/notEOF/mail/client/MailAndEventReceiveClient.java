@@ -63,7 +63,6 @@ public abstract class MailAndEventReceiveClient extends BaseClient {
 
     private class MailAndEventAcceptor implements Runnable {
         private boolean stopped = true;
-        private List<EventWorker> eventWorkerList = new ArrayList<EventWorker>();
 
         public boolean isStopped() {
             return stopped;
@@ -83,35 +82,43 @@ public abstract class MailAndEventReceiveClient extends BaseClient {
                 }
 
                 while (!stopped) {
-                    awaitRequest(MailTag.REQ_READY_FOR_ACTION);
-                    String action = readMsg();
-                    if (MailTag.VAL_ACTION_MAIL.name().equals(action)) {
-                        NotEOFMail mail = getTalkLine().receiveMail();
-                        MailWorker worker = new MailWorker(recipient, mail);
-                        Thread workerThread = new Thread(worker);
-                        workerThread.start();
-                    }
-                    if (MailTag.VAL_ACTION_EVENT.name().equals(action)) {
-                        isEvent = true;
-                        NotEOFEvent event = getTalkLine().receiveBaseEvent(ConfigurationManager.getApplicationHome());
-                        System.out.println("==================================================================================");
-                        System.out.println("MailAndEventReceiveClient Worker: Event: " + event.getEventType().name());
-                        System.out.println("==================================================================================");
-                        EventWorker worker = new EventWorker(recipient, event, eventWorkerList);
-                        Thread workerThread = new Thread(worker);
-                        // eventWorkerList.add(worker);
-                        worker.setId(new Date().getTime());
-                        workerThread.start();
+                    try {
+                        awaitRequest(MailTag.REQ_READY_FOR_ACTION);
+                        String action = readMsg();
+                        if (MailTag.VAL_ACTION_MAIL.name().equals(action)) {
+                            NotEOFMail mail = getTalkLine().receiveMail();
+                            MailWorker worker = new MailWorker(recipient, mail);
+                            Thread workerThread = new Thread(worker);
+                            workerThread.start();
+                        }
+                        if (MailTag.VAL_ACTION_EVENT.name().equals(action)) {
+                            isEvent = true;
+                            NotEOFEvent event = getTalkLine().receiveBaseEvent(ConfigurationManager.getApplicationHome());
+                            System.out.println("==================================================================================");
+                            System.out.println("MailAndEventReceiveClient Worker: Event: " + event.getEventType().name());
+                            System.out.println("==================================================================================");
+                            EventWorker worker = new EventWorker(recipient, event);
+                            Thread workerThread = new Thread(worker);
+                            worker.setId(new Date().getTime());
+                            workerThread.start();
+                        }
+                    } catch (Exception e) {
+                        if (!isEvent) {
+                            recipient.processMailException(e);
+                        } else {
+                            recipient.processEventException(e);
+                        }
                     }
                 }
                 close();
             } catch (Exception e) {
-                if (!stopped)
+                if (!stopped) {
                     if (!isEvent) {
                         recipient.processMailException(e);
                     } else {
                         recipient.processEventException(e);
                     }
+                }
             }
         }
     }
@@ -124,12 +131,10 @@ public abstract class MailAndEventReceiveClient extends BaseClient {
         protected MailAndEventRecipient recipient;
         protected NotEOFEvent event;
         protected long id;
-        protected List<EventWorker> workerList;
 
-        protected EventWorker(MailAndEventRecipient recipient, NotEOFEvent event, List<EventWorker> workerList) {
+        protected EventWorker(MailAndEventRecipient recipient, NotEOFEvent event) {
             this.recipient = recipient;
             this.event = event;
-            this.workerList = workerList;
         }
 
         protected void setId(long id) {
@@ -141,17 +146,7 @@ public abstract class MailAndEventReceiveClient extends BaseClient {
         }
 
         public void run() {
-            // long listIdAt0 = workerList.get(0).getId();
-            // while (this.id != listIdAt0) {
-            // try {
-            // Thread.sleep(300);
-            // } catch (InterruptedException e) {
-            // // TODO Auto-generated catch block
-            // e.printStackTrace();
-            // }
-            // }
             recipient.processEvent(event);
-            // workerList.remove(0);
         }
     }
 

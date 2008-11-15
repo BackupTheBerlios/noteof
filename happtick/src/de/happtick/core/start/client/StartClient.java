@@ -131,20 +131,6 @@ public class StartClient extends HapptickBaseClient implements MailAndEventRecip
      */
     @Override
     public synchronized void processEvent(NotEOFEvent event) {
-        // process start request
-        // try {
-        // System.out.println(
-        // "ההההההההההההההההההההההה   Event ist eingetroffen... ההההההההההההההההההההההההההההההה"
-        // );
-        // System.out.println("event applicationPath = " +
-        // event.getAttribute("applicationPath"));
-        // System.out.println(
-        // "ההההההההההההההההההההההה   Event wurde eingetroffen... ההההההההההההההההההההההההההההההה"
-        // );
-        // } catch (ActionFailedException e) {
-        // // TODO Auto-generated catch block
-        // e.printStackTrace();
-        // }
         if (event.getEventType().equals(EventType.EVENT_APPLICATION_START)) {
             startStarter(event);
         }

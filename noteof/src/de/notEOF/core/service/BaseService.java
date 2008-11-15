@@ -181,7 +181,7 @@ public abstract class BaseService extends BaseClientOrService implements Service
     }
 
     // TODO synchronized oder nicht???
-    public void processEvent(Service service, NotEOFEvent event) throws ActionFailedException {
+    public synchronized void processEvent(Service service, NotEOFEvent event) throws ActionFailedException {
     }
 
     private class EventWorker implements Runnable {
@@ -371,7 +371,7 @@ public abstract class BaseService extends BaseClientOrService implements Service
      * 
      * @throws ActionFailedException
      */
-    public void processClientMail() throws ActionFailedException {
+    public synchronized void processClientMail() throws ActionFailedException {
         NotEOFMail mail = getTalkLine().receiveMail();
         server.postMail(mail, this);
     }
@@ -385,7 +385,7 @@ public abstract class BaseService extends BaseClientOrService implements Service
      * 
      * @throws ActionFailedException
      */
-    public void processClientEvent() throws ActionFailedException {
+    public synchronized void processClientEvent() throws ActionFailedException {
         // System.out.println("?????????????????????????????????????????");
         NotEOFEvent event = getTalkLine().receiveBaseEvent(Server.getApplicationHome());
         // System.out.println("BaseService.processEvent: Event: " +

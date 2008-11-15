@@ -101,7 +101,7 @@ public class MailRecipient extends HapptickApplication implements MailAndEventRe
     }
 
     public void processMailException(Exception e) {
-        LocalLog.error("Mail-Empfang wurde mit einem Fehler unterbrochen: ", e);
+        LocalLog.error("Mail-Empfang verursachte Fehler: ", e);
     }
 
     public synchronized void processEvent(NotEOFEvent event) {
@@ -127,7 +127,7 @@ public class MailRecipient extends HapptickApplication implements MailAndEventRe
     }
 
     public void processEventException(Exception e) {
-        LocalLog.error("Event-Empfang wurde mit einem Fehler unterbrochen: ", e);
+        LocalLog.error("Event-Empfang verursachte Fehler: ", e);
     }
 
     public static void main(String... args) throws HapptickException {
@@ -141,11 +141,11 @@ public class MailRecipient extends HapptickApplication implements MailAndEventRe
             } catch (Exception e) {
                 System.out.println("HUPS - jetzt bin ich aber am Ende...");
                 System.out.println("HUPS - jetzt bin ich aber am Ende...");
-                System.out.println("HUPS - jetzt bin ich aber am Ende...");
                 e.printStackTrace();
                 break;
             }
         }
+        System.out.println("HUPS - jetzt bin ich aber am Ende...");
     }
 
 }

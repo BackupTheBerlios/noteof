@@ -150,7 +150,7 @@ public abstract class BaseClient extends BaseClientOrService {
      * @param mail
      * @throws ActionFailedException
      */
-    public void sendMail(NotEOFMail mail) throws ActionFailedException {
+    public synchronized void sendMail(NotEOFMail mail) throws ActionFailedException {
         if (Util.isEmpty(mail.getFromClientNetId()))
             mail.setFromClientNetId(clientNetId);
         writeMsg(MailTag.REQ_READY_FOR_MAIL.name());
@@ -168,7 +168,7 @@ public abstract class BaseClient extends BaseClientOrService {
      *            The event with EventType, Map attributes and Map descriptions.
      * @throws ActionFailedException
      */
-    public void sendEvent(NotEOFEvent event) throws ActionFailedException {
+    public synchronized void sendEvent(NotEOFEvent event) throws ActionFailedException {
         writeMsg(MailTag.REQ_READY_FOR_EVENT.name());
         getTalkLine().sendBaseEvent(event);
     }

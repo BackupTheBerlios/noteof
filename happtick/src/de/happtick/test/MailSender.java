@@ -12,20 +12,19 @@ public class MailSender {
         // NotEOFMail mail;
         // try {
 
-        while (true) {
-            appl.sendActionEvent("965", "Eine tolle Action");
-            appl.sendAlarm("55", "Schlimmer Alarm", "2");
-            try {
-                Thread.sleep(300);
-            } catch (InterruptedException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-            if (false)
-                break;
-        }
-
         StartEvent event = new StartEvent();
+        // while (true) {
+        // appl.sendActionEvent("965", "Eine tolle Action");
+        // appl.sendAlarm("55", "Schlimmer Alarm", "2");
+        try {
+            Thread.sleep(3000);
+        } catch (InterruptedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        // if (false)
+        // break;
+
         event.addAttribute("clientIp", "192.168.0.2");
         event.addAttribute("applicationId", "99");
         event.addAttribute("applicationPath", "calc.exe");
@@ -33,6 +32,7 @@ public class MailSender {
         event.addAttribute("arguments", "123 :m");
         System.out.println("Kontrolle applicationPath: " + event.getAttribute("applicationPath"));
         appl.sendEvent(event);
+        // }
 
         // try {
         // Thread.sleep(150);
