@@ -68,8 +68,10 @@ public class HapptickApplicationStarter {
 
             try {
                 ExternalCalls calls = new ExternalCalls();
-                calls.startHapptickApplication(serverAddress, serverPort, startId, startEvent);
-                // proc.waitFor();
+                Process proc = calls.startHapptickApplication(serverAddress, serverPort, startId, startEvent);
+                System.out.println("HapptickApplictaionStarter.run nach call...");
+                proc.waitFor();
+                System.out.println("HapptickApplictaionStarter.run nach waitFor...");
                 started = true;
             } catch (HapptickException he) {
                 errNo = he.getErrNo();

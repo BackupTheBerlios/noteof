@@ -60,8 +60,6 @@ public class StartClient extends HapptickBaseClient implements MailAndEventRecip
         }
     }
 
-    // TODO Pruefen, warum bei nicht Zurueckkehren des
-    // ExternalApplicationStarter sich der hier aufhängt... Nur interessehalber
     private synchronized void startStarter(NotEOFEvent event) {
         ApplStarter starter = new ApplStarter(this.notEofClient, event);
         Thread starterThread = new Thread(starter);

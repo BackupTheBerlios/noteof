@@ -86,13 +86,17 @@ public class ExternalCalls {
      */
     public Process startApplication(String applicationPath, String arguments) throws HapptickException {
         Process proc = null;
-        Runtime runtime = Runtime.getRuntime();
+        // Runtime runtime = Runtime.getRuntime();
         try {
             String[] cmdLine = new String[2];
             cmdLine[0] = applicationPath.trim();
             cmdLine[1] = arguments.trim();
             System.out.println("ExternalCalls.start... vor proc = runtime...");
-            proc = runtime.exec(cmdLine);
+
+            ProcessBuilder builder = new ProcessBuilder(cmdLine);
+            proc = builder.start();
+
+            // proc = runtime.exec(cmdLine);
         } catch (IOException ioEx) {
             throw new HapptickException(651L, "Application: " + applicationPath);
         }

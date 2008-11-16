@@ -228,7 +228,7 @@ public class SocketLayer {
      */
     private void initBufferedReader(boolean forceInit) throws ActionFailedException {
         try {
-            if (null == bufferedReader || forceInit)
+            if (null == bufferedReader || forceInit && null != socketToPartner && null != socketToPartner.getInputStream())
                 bufferedReader = new BufferedReader(new InputStreamReader(socketToPartner.getInputStream()));
         } catch (IOException ex) {
             throw new ActionFailedException(23L, ex);

@@ -2,7 +2,6 @@ package de.notEOF.mail.client;
 
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import de.notEOF.core.client.BaseClient;
@@ -20,6 +19,8 @@ public abstract class MailAndEventReceiveClient extends BaseClient {
 
     private MailAndEventAcceptor acceptor;
     private MailAndEventRecipient recipient;
+    private long workerPointer = 0;
+
     private List<String> ignoredClientNetIds = new ArrayList<String>();
 
     public MailAndEventReceiveClient(Socket socketToServer, TimeOut timeout, String[] args) throws ActionFailedException {
@@ -63,6 +64,7 @@ public abstract class MailAndEventReceiveClient extends BaseClient {
 
     private class MailAndEventAcceptor implements Runnable {
         private boolean stopped = true;
+        public long workerCounter = 0;
 
         public boolean isStopped() {
             return stopped;
@@ -74,6 +76,7 @@ public abstract class MailAndEventReceiveClient extends BaseClient {
 
         public void run() {
             boolean isEvent = false;
+            int errCounter = 0;
             try {
                 // Tell the service that now the client is ready to accept mails
                 // and events
@@ -92,17 +95,18 @@ public abstract class MailAndEventReceiveClient extends BaseClient {
                             workerThread.start();
                         }
                         if (MailTag.VAL_ACTION_EVENT.name().equals(action)) {
+                            if (workerCounter == 999999999)
+                                workerCounter = 0;
                             isEvent = true;
                             NotEOFEvent event = getTalkLine().receiveBaseEvent(ConfigurationManager.getApplicationHome());
-                            System.out.println("==================================================================================");
-                            System.out.println("MailAndEventReceiveClient Worker: Event: " + event.getEventType().name());
-                            System.out.println("==================================================================================");
                             EventWorker worker = new EventWorker(recipient, event);
                             Thread workerThread = new Thread(worker);
-                            worker.setId(new Date().getTime());
+                            worker.setId(++workerCounter);
                             workerThread.start();
                         }
                     } catch (Exception e) {
+                        if (5 < errCounter++)
+                            stopped = true;
                         if (!isEvent) {
                             recipient.processMailException(e);
                         } else {
@@ -146,7 +150,16 @@ public abstract class MailAndEventReceiveClient extends BaseClient {
         }
 
         public void run() {
+            while (getId() - 1 > workerPointer) {
+                try {
+                    Thread.sleep(30);
+                } catch (InterruptedException e) {
+                }
+            }
+            System.out.println("_______________________________________________________________");
+            System.out.println(" MailAndReceiveClien.Worker: ID = " + getId());
             recipient.processEvent(event);
+            workerPointer = getId();
         }
     }
 

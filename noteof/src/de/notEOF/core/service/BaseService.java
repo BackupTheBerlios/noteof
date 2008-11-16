@@ -2,7 +2,6 @@ package de.notEOF.core.service;
 
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import de.notEOF.core.BaseClientOrService;
@@ -42,8 +41,7 @@ public abstract class BaseService extends BaseClientOrService implements Service
     List<EventType> eventTypes;
     protected String clientNetId;
     private EventProcessor processor;
-
-    // private Map<Long, UpdateAction> actionMap;
+    private long workerPointer = 0;
 
     public boolean isRunning() {
         return isRunning;
@@ -147,32 +145,13 @@ public abstract class BaseService extends BaseClientOrService implements Service
      */
     public final void update(Service service, NotEOFEvent event) {
         try {
-            // Durch Verwendung einer map koennen die Eintraege (hoffentlich)
-            // gleichzeitig in die Liste geschrieben und ueber die keys daraus
-            // geloescht werden. Das ist der Versuch Synchronisationsprobleme
-            // der
-            // Liste in den Griff zu bekommen.
-            // if (null == actionMap)
-            // actionMap = new HashMap<Long, UpdateAction>();
-
-            // key fuer die map (billig...)
-            // Date now = new Date();
-            // actionMap.put(now.getTime(), new UpdateAction(service, event));
-
-            // Der Prozessor, der die events abarbeitet, darf nicht parallel
-            // laufen.
-            // Die events sollen nacheinander abgearbeitet werden.
+            // Prozessor zur Abarbeitung der Events ist eine eigene Klasse
+            // Nur des Handlings halber...
             if (null == processor) {
                 processor = new EventProcessor(this);
             }
-            // System.out.println(
-            // "=================================================================================="
-            // );
-            // System.out.println("BaseService Update: Event: " +
-            // event.getEventType().name());
-            // System.out.println(
-            // "=================================================================================="
-            // );
+            // Dem Prozessor wird das Event zur Verarbeitung vor die Fuesse
+            // geworfen
             processor.addAction(service, event);
         } catch (Exception e) {
             System.out.println("im Update abgefangen, weil sonst der Server kaputt geht...");
@@ -188,14 +167,12 @@ public abstract class BaseService extends BaseClientOrService implements Service
         private BaseService mainClass;
         private Service service;
         private NotEOFEvent event;
-        private List<EventWorker> workerList;
         private long id = 0;
 
-        protected EventWorker(BaseService mainClass, Service service, NotEOFEvent event, List<EventWorker> workerList) {
+        protected EventWorker(BaseService mainClass, Service service, NotEOFEvent event) {
             this.mainClass = mainClass;
             this.service = service;
             this.event = event;
-            this.workerList = workerList;
         }
 
         protected void setId(long id) {
@@ -208,11 +185,11 @@ public abstract class BaseService extends BaseClientOrService implements Service
 
         public void run() {
             try {
-                while (workerList.get(0).getId() != getId()) {
-                    Thread.sleep(300);
+                while (getId() - 1 > workerPointer) {
+                    Thread.sleep(50);
                 }
                 processEvent(service, event);
-                workerList.remove(0);
+                workerPointer = getId();
             } catch (Exception e) {
                 LocalLog
                         .error("Fehler bei Abarbeiten der MessageQueue im EventProcessor des BaseService. Der Service wird aus der Event-Benachrichtigung entfernt und beendet!"
@@ -232,16 +209,17 @@ public abstract class BaseService extends BaseClientOrService implements Service
     // Verarbeitung abgeschlossen hat.
     private final class EventProcessor {
         private BaseService mainClass;
-        private List<EventWorker> workerList = new ArrayList<EventWorker>();
+        private long workerCounter = 0;
 
         private EventProcessor(BaseService mainClass) {
             this.mainClass = mainClass;
         }
 
         protected synchronized void addAction(Service service, NotEOFEvent event) {
-            EventWorker worker = new EventWorker(mainClass, service, event, workerList);
-            workerList.add(worker);
-            worker.setId(new Date().getTime());
+            if (workerCounter > 999999999)
+                workerCounter = 0;
+            EventWorker worker = new EventWorker(mainClass, service, event);
+            worker.setId(++workerCounter);
             Thread workerThread = new Thread(worker);
             workerThread.start();
         }

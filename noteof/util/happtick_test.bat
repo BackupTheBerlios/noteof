@@ -1,4 +1,4 @@
-@echo off
+rem @echo off
 
 set NOTEOF_HOME=C:\Projekte\workspace\noteof
 set CLASSPATH=%CLASSPATH%;%NOTEOF_HOME%\lib\noteof.jar
@@ -9,8 +9,7 @@ set CLASSPATH=%CLASSPATH%;c:\Projekte\workspace\happtick\lib\happtick.jar
 
 
 echo %CLASSPATH%
-java de.happtick.test.TestHapptick
+javaw de.happtick.test.TestHapptick
 
 @echo on
 
-pause

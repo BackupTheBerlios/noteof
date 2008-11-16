@@ -21,6 +21,8 @@ public class Util {
     // private static long allEventsCounter = 0;
     // private static Date startDate = new Date();
     private static Thread consoleWaitThread;
+    private static boolean updatingObservers = false;
+    private static boolean registeringObserver = false;
 
     private Util() {
     }
@@ -368,19 +370,35 @@ public class Util {
         return simpleName;
     }
 
-    public static void registerForEvents(Map<String, EventObserver> eventObservers, EventObserver eventObserver) {
-        // if (null == eventObservers)
-        // eventObservers = new HashMap<String, EventObserver>();
+    public static synchronized void registerForEvents(Map<String, EventObserver> eventObservers, EventObserver eventObserver) {
+        // wait for updating the observers
+        while (updatingObservers) {
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+            }
+        }
         eventObservers.put(eventObserver.getName(), eventObserver);
     }
 
-    public static void unregisterFromEvents(Map<String, EventObserver> eventObservers, EventObserver eventObserver) {
+    public static synchronized void unregisterFromEvents(Map<String, EventObserver> eventObservers, EventObserver eventObserver) {
         if (null != eventObservers && null != eventObserver) {
+            registeringObserver = true;
+
+            // wait for updating the observers
+            while (updatingObservers) {
+                try {
+                    Thread.sleep(55);
+                } catch (InterruptedException e) {
+                }
+            }
+
             try {
                 eventObservers.remove(eventObserver.getName());
             } catch (Exception e) {
                 LocalLog.warn("EventObserver konnte nicht entfernt werden: " + eventObserver.getName(), e);
             }
+            registeringObserver = false;
         }
     }
 
@@ -403,32 +421,35 @@ public class Util {
         if (null == eventObservers)
             return;
 
-        boolean retry = true;
+        while (updatingObservers) {
+            try {
+                Thread.sleep(50);
+            } catch (InterruptedException e) {
+            }
+        }
 
+        updatingObservers = true;
         // all observer
         if (eventObservers.size() > 0) {
-            while (retry) {
-                retry = false;
-                Set<String> set = eventObservers.keySet();
-                for (String observerName : set) {
-                    // but only inform observer, when event in his list
-                    EventObserver eventObserver = eventObservers.get(observerName);
-                    if (null != eventObserver && null != eventObserver.getObservedEvents()) {
-                        for (EventType type : eventObserver.getObservedEvents()) {
-                            if (type.equals(EventType.EVENT_ANY_TYPE) || type.equals(event.getEventType())) {
-                                try {
-                                    eventObserver.update(service, event);
-                                } catch (Exception e) {
-                                    // eventObservers.remove(observerName);
-                                    LocalLog.error("Fehler bei Weiterleitung eines Events an einen Observer. Observer: " + eventObserver.getName(), e);
-                                }
-                                // break for inner loop
-                                break;
+            Set<String> set = eventObservers.keySet();
+            for (String observerName : set) {
+                // but only inform observer, when event in his list
+                EventObserver eventObserver = eventObservers.get(observerName);
+                if (null != eventObserver && null != eventObserver.getObservedEvents()) {
+                    for (EventType type : eventObserver.getObservedEvents()) {
+                        if (type.equals(EventType.EVENT_ANY_TYPE) || type.equals(event.getEventType())) {
+                            try {
+                                eventObserver.update(service, event);
+                            } catch (Exception e) {
+                                LocalLog.error("Fehler bei Weiterleitung eines Events an einen Observer. Observer: " + eventObserver.getName(), e);
                             }
+                            // break for inner loop
+                            break;
                         }
                     }
                 }
             }
         }
+        updatingObservers = false;
     }
 }
