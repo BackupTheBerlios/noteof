@@ -49,7 +49,7 @@ public class MailSender {
         // event.addAttribute("applicationPath",
         // "cmd /c start/wait C:\\Projekte\\workspace\\noteof\\util\\applStartTest.bat"
         // );
-        event.addAttribute("applicationPath", "C:\\Projekte\\workspace\\noteof\\util\\applStartTest.bat");
+        event.addAttribute("applicationPath", "C:/Projekte/workspace/noteof/util/applStartTest.bat");
         event.addAttribute("windowsSupport", "true");
         // event.addAttribute("applicationPath",
         // "cmd /c start/wait C:\\Projekte\\workspace\\noteof\\util\\applStartTest.bat"

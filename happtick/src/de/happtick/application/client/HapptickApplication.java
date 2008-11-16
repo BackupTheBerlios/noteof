@@ -39,8 +39,6 @@ public class HapptickApplication extends HapptickBaseClient {
      */
     public HapptickApplication(long applicationId, String serverAddress, int serverPort, String... args) throws HapptickException {
         connect(serverAddress, serverPort, args, applicationClient);
-        // initHapptickBaseClient(serverAddress, serverPort, args,
-        // applicationClient);
         this.applicationId = applicationId;
         applicationClient.applicationIdToService(applicationId);
         applicationClient.startIdToService(args);

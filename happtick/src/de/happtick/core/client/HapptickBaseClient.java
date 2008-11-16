@@ -15,6 +15,20 @@ import de.notEOF.mail.client.MailAndEventReceiveClient;
 import de.notEOF.mail.interfaces.MailAndEventRecipient;
 import de.notEOF.mail.interfaces.MailMatchExpressions;
 
+/**
+ * Simplifies the acts between application and service.
+ * <p>
+ * This class assembles the possibilities of communicating to a service and to
+ * receive mails and events. <br>
+ * This client is not an application client. If the connect() method of this
+ * class is used without a special NotEOFClient a basically client is used. <br>
+ * But also this client offers the functionalities of an application client plus
+ * the mail functions if a client of type NotEOFClient is used for the connect()
+ * method.
+ * 
+ * @author Dirk
+ * 
+ */
 public abstract class HapptickBaseClient {
     protected String serverAddress;
     protected int serverPort;

@@ -35,11 +35,6 @@ public class MasterTable {
     private static Map<Long, ApplicationConfiguration> applicationConfigurations = new HashMap<Long, ApplicationConfiguration>();
     private static Map<Long, ChainConfiguration> chainConfigurations = new HashMap<Long, ChainConfiguration>();
     private static Map<Long, EventConfiguration> eventConfigurations = new HashMap<Long, EventConfiguration>();
-    // private static Map<String, ApplicationService> applicationServices = new
-    // HashMap<String, ApplicationService>();
-    // private static Map<String, StartService> startServices = new
-    // HashMap<String, StartService>();
-
     private static Map<String, Service> services = new HashMap<String, Service>();
 
     // private static List<EventObserver> eventObservers = new
@@ -326,6 +321,11 @@ public class MasterTable {
                 break;
             }
         inAction = true;
+
+        if (service.getClass().isAssignableFrom(ApplicationService.class)) {
+            System.out.println("MasterTable.addService: applicationId bei Registrierung: " + ((ApplicationService) service).getApplicationId());
+        }
+
         services.put(service.getServiceId(), service);
         inAction = false;
     }

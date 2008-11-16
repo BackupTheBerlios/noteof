@@ -3,6 +3,7 @@ package de.happtick.core.application.service;
 import java.util.ArrayList;
 import java.util.List;
 
+import de.happtick.core.MasterTable;
 import de.happtick.core.enumeration.ApplicationTag;
 import de.happtick.core.events.ActionEvent;
 import de.happtick.core.events.AlarmEvent;
@@ -29,6 +30,14 @@ public class ApplicationService extends HapptickBaseService {
     private StartedEvent startedEvent;
 
     private int exitCode = 0;
+
+    /**
+     * Overwrite HapptickBaseService because the service mustn't be added to the
+     * master table before the client has send his applicationId.
+     */
+    public void implementationFirstSteps() {
+        // don't delete this method...
+    }
 
     /**
      * Delivers the communication tag class which client and service use.
@@ -122,6 +131,8 @@ public class ApplicationService extends HapptickBaseService {
         if (incomingMsgEnum.equals(ApplicationTag.PROCESS_APPLICATION_ID)) {
             Long applicationId = new Long(requestTo(ApplicationTag.REQ_APPLICATION_ID, ApplicationTag.RESP_APPLICATION_ID));
             this.applicationId = applicationId;
+            // now it is a good time point to register at master tables
+            MasterTable.addService(this);
         }
 
         // Start Id given by StartClient

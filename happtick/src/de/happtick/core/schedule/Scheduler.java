@@ -125,39 +125,6 @@ public class Scheduler {
         return appSched;
     }
 
-    /**
-     * Start the scheduler.
-     * 
-     * @param args
-     * <br>
-     *            --homeVar is the basic environment variable for the system to
-     *            find libs and configuration. Default is HAPPTICK_HOME <br>
-     *            --baseConfDir is the directory where the configuration files
-     *            are stored (e.g. if value is set to 'conf' the system will
-     *            search files in $HAPPTICK_HOME/conf/). <br>
-     *            --baseConfFile is the central configuration file. Default is
-     *            happtick_master.xml <br>
-     */
-    public static void main(String... args) {
-        // TODO hilfe einbasteln
-        String homeVar = "HAPPTICK_HOME";
-        String baseConfFile = "happtick_master.xml";
-        String baseConfDir = "conf";
-        ArgsParser argsParser = new ArgsParser(args);
-        if (argsParser.containsStartsWith("--homeVar")) {
-            homeVar = argsParser.getValue("homeVar");
-        }
-        if (argsParser.containsStartsWith("--baseConfFile")) {
-            baseConfFile = argsParser.getValue("baseConfFile");
-        }
-        if (argsParser.containsStartsWith("--baseConfPath")) {
-            baseConfDir = argsParser.getValue("baseConfPath");
-        }
-        ConfigurationManager.setInitialEnvironment(homeVar, baseConfDir, baseConfFile);
-
-        Scheduler.start();
-    }
-
     /*
      * This class initializes the start of application by talking with
      * StartServices. The StartService gets a startId from Client. This id is
@@ -440,6 +407,39 @@ public class Scheduler {
 
     public String getName() {
         return "Class: " + this.getClass().getName() + "; This is one of the central elements of Happtick.";
+    }
+
+    /**
+     * Start the scheduler.
+     * 
+     * @param args
+     * <br>
+     *            --homeVar is the basic environment variable for the system to
+     *            find libs and configuration. Default is HAPPTICK_HOME <br>
+     *            --baseConfDir is the directory where the configuration files
+     *            are stored (e.g. if value is set to 'conf' the system will
+     *            search files in $HAPPTICK_HOME/conf/). <br>
+     *            --baseConfFile is the central configuration file. Default is
+     *            happtick_master.xml <br>
+     */
+    public static void main(String... args) {
+        // TODO hilfe einbasteln
+        String homeVar = "HAPPTICK_HOME";
+        String baseConfFile = "happtick_master.xml";
+        String baseConfDir = "conf";
+        ArgsParser argsParser = new ArgsParser(args);
+        if (argsParser.containsStartsWith("--homeVar")) {
+            homeVar = argsParser.getValue("homeVar");
+        }
+        if (argsParser.containsStartsWith("--baseConfFile")) {
+            baseConfFile = argsParser.getValue("baseConfFile");
+        }
+        if (argsParser.containsStartsWith("--baseConfPath")) {
+            baseConfDir = argsParser.getValue("baseConfPath");
+        }
+        ConfigurationManager.setInitialEnvironment(homeVar, baseConfDir, baseConfFile);
+
+        Scheduler.start();
     }
 
 }

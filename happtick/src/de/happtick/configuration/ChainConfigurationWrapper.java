@@ -98,6 +98,10 @@ public class ChainConfigurationWrapper {
                     map.put("linkPreventEventId_" + i, String.valueOf(preventId));
 
                 map.put("linkSkip_" + i, String.valueOf(chainLinks.get(i).isSkip()));
+                map.put("conditionKey_" + i, chainLinks.get(i).getConditionKey());
+                map.put("conditionValue_" + i, chainLinks.get(i).getConditionValue());
+                map.put("preventKey_" + i, chainLinks.get(i).getPreventKey());
+                map.put("preventValue_" + i, chainLinks.get(i).getPreventValue());
             }
         }
     }
@@ -124,8 +128,12 @@ public class ChainConfigurationWrapper {
                 if (-1 == preventId)
                     preventId = null;
                 boolean skip = Util.parseBoolean(map.get("linkSkip_" + i), false);
+                String condKey = map.get("conditionKey_" + i);
+                String condValue = map.get("conditionValue_" + i);
+                String preventKey = map.get("preventKey_" + i);
+                String preventValue = map.get("preventKey_" + i);
 
-                ChainLink link = new ChainLink(linkId, applicationType, condId, preventId, skip);
+                ChainLink link = new ChainLink(linkId, applicationType, condId, condKey, condValue, preventId, preventKey, preventValue, skip);
                 chainConfiguration.addLink(link);
             }
         }

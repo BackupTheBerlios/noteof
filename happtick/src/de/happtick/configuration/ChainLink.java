@@ -8,7 +8,11 @@ public class ChainLink {
     private Long id;
     private String applicationType;
     private Long conditionEventId;
+    private String conditionKey;
+    private String conditionValue;
     private Long preventEventId;
+    private String preventKey;
+    private String preventValue;
     private boolean skip;
 
     public ChainLink(String node, NotEOFConfiguration conf) throws ActionFailedException {
@@ -16,15 +20,24 @@ public class ChainLink {
         id = Util.parseLong(conf.getAttribute(node, "id"), -1);
         applicationType = conf.getAttribute(node, "applicationType");
         conditionEventId = Util.parseLong(conf.getAttribute(node, "conditionEventId"), -1);
+        conditionKey = conf.getAttribute(node, "conditionKey");
+        conditionValue = conf.getAttribute(node, "conditionValue");
         preventEventId = Util.parseLong(conf.getAttribute(node, "preventEventId"), -1);
+        preventKey = conf.getAttribute(node, "preventKey");
+        preventValue = conf.getAttribute(node, "preventValue");
         skip = Util.parseBoolean(conf.getAttribute(node, "skip"), false);
     }
 
-    public ChainLink(Long id, String applicationType, Long conditionEventId, Long preventEventId, boolean skip) {
+    public ChainLink(Long id, String applicationType, Long conditionEventId, String conditionKey, String conditionValue, Long preventEventId,
+            String preventKey, String preventValue, boolean skip) {
         this.id = id;
         this.applicationType = applicationType;
         this.conditionEventId = conditionEventId;
+        this.conditionKey = conditionKey;
+        this.conditionValue = conditionValue;
         this.preventEventId = preventEventId;
+        this.preventKey = preventKey;
+        this.preventValue = preventValue;
         this.skip = skip;
     }
 
@@ -65,5 +78,65 @@ public class ChainLink {
      */
     public String getApplicationType() {
         return applicationType;
+    }
+
+    /**
+     * @param conditionKey
+     *            the conditionKey to set
+     */
+    public void setConditionKey(String conditionKey) {
+        this.conditionKey = conditionKey;
+    }
+
+    /**
+     * @return the conditionKey
+     */
+    public String getConditionKey() {
+        return conditionKey;
+    }
+
+    /**
+     * @param conditionValue
+     *            the conditionValue to set
+     */
+    public void setConditionValue(String conditionValue) {
+        this.conditionValue = conditionValue;
+    }
+
+    /**
+     * @return the conditionValue
+     */
+    public String getConditionValue() {
+        return conditionValue;
+    }
+
+    /**
+     * @param preventKey
+     *            the preventKey to set
+     */
+    public void setPreventKey(String preventKey) {
+        this.preventKey = preventKey;
+    }
+
+    /**
+     * @return the preventKey
+     */
+    public String getPreventKey() {
+        return preventKey;
+    }
+
+    /**
+     * @param preventValue
+     *            the preventValue to set
+     */
+    public void setPreventValue(String preventValue) {
+        this.preventValue = preventValue;
+    }
+
+    /**
+     * @return the preventValue
+     */
+    public String getPreventValue() {
+        return preventValue;
     }
 }

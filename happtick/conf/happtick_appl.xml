@@ -44,9 +44,16 @@
 		    	
 		    	<!-- The applications and chains to start
 		    	      Note that id's here are named id for applications and for chains.
+		    	      conditionEventId Event which must be raised of the application before to enable this application
+	          	      conditionKeyName, conditionKeyValue Attribute and Value the conditionEvent mus have (optional)
+		    	      preventEventId When this event was raised by the application before the application will not be activated
+		    	      preventKeyName, preventKeyValue Attribute and Value which the preventEvent mus have (optional)
 		    	      skip is optional, default is false.
 		    	-->
-				<link0 applicationType="application" id="1" conditionEventId="1" preventEventId="2" skip="false"></link0>
+				<link0 applicationType="application" id="1"
+				       conditionEventId="1" conditionKeyName="exitCode" conditionKeyValue="0"
+				       preventEventId="2" preventKeyName="exitCode" preventKeyValue="0" skip="false">
+				</link0>
 				<link1 applicationType="application" id="2"></link1>
 				<link2 applicationType="chain" id="2"></link2>
 		    </chain1>
