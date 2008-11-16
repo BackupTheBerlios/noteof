@@ -112,6 +112,8 @@ public class MailRecipient extends HapptickApplication implements MailAndEventRe
                 Map<String, String> attributeMap = event.getAttributes();
                 Set<Entry<String, String>> set = attributeMap.entrySet();
                 Iterator<Entry<String, String>> it = set.iterator();
+                System.out.println("________________________________");
+                System.out.println("*QueueId: " + event.getQueueId());
                 while (it.hasNext()) {
                     Entry<String, String> entry = it.next();
                     System.out.println("________________________________");

@@ -29,6 +29,7 @@ public class ApplicationClient extends BaseClient implements NotEOFClient {
     private boolean isWorkAllowed = false;
     private AllowanceWaiter allowanceWaiter;
     private ClientObserver clientObserver;
+    private Long applicationId;
 
     @Override
     public Class<?> serviceForClientByClass() {
@@ -89,6 +90,8 @@ public class ApplicationClient extends BaseClient implements NotEOFClient {
      * @throws HapptickException
      */
     public void applicationIdToService(Long applicationId) throws HapptickException {
+        if (null == this.applicationId)
+            this.applicationId = applicationId;
         try {
             writeMsg(ApplicationTag.PROCESS_APPLICATION_ID);
             awaitRequestAnswerImmediate(ApplicationTag.REQ_APPLICATION_ID, ApplicationTag.RESP_APPLICATION_ID, String.valueOf(applicationId));
@@ -218,6 +221,7 @@ public class ApplicationClient extends BaseClient implements NotEOFClient {
     public void sendEvent(NotEOFEvent event) throws HapptickException {
         try {
             System.out.println("ApplicationClient - sendEvent: super.sendEvent()");
+            event.setApplicationId(this.applicationId);
             super.sendEvent(event);
         } catch (ActionFailedException e) {
             throw new HapptickException(202L, "Event: " + event.getClass().getSimpleName(), e);

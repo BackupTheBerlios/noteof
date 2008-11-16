@@ -88,4 +88,8 @@ public interface NotEOFEvent {
     public void setApplicationId(Long applicationId);
 
     public Long getApplicationId();
+
+    public Long getQueueId();
+
+    public void setQueueId(Long queueId);
 }

@@ -23,6 +23,7 @@ public class Util {
     private static Thread consoleWaitThread;
     private static boolean updatingObservers = false;
     private static boolean registeringObserver = false;
+    private static long queueId = 0;
 
     private Util() {
     }
@@ -421,12 +422,26 @@ public class Util {
         if (null == eventObservers)
             return;
 
-        while (updatingObservers) {
+        while (registeringObserver) {
             try {
                 Thread.sleep(50);
             } catch (InterruptedException e) {
             }
         }
+
+        if (queueId == 0)
+            queueId = new Date().getTime() - 1;
+
+        while (new Date().getTime() <= queueId) {
+            try {
+                Thread.sleep(5);
+            } catch (InterruptedException e) {
+            }
+        }
+        queueId = new Date().getTime();
+
+        // Here the event gets his unique identifier
+        event.setQueueId(queueId);
 
         updatingObservers = true;
         // all observer

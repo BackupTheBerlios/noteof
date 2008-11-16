@@ -6,6 +6,7 @@ import java.util.Map;
 import de.notEOF.core.enumeration.EventType;
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.interfaces.NotEOFEvent;
+import de.notEOF.core.util.Util;
 
 /**
  * Basic Event class for send fast messages through the net.
@@ -38,8 +39,10 @@ public abstract class NotEOFBaseEvent implements NotEOFEvent {
      */
     public void setApplicationId(Long applicationId) {
         try {
+            this.descriptions.put("internal->applicationId", "basic attribute 'applicationId' of !EOF");
             addAttribute("internal->applicationId", String.valueOf(applicationId));
         } catch (ActionFailedException e) {
+            e.printStackTrace();
         }
     }
 
@@ -55,6 +58,7 @@ public abstract class NotEOFBaseEvent implements NotEOFEvent {
         try {
             return Long.getLong(getAttribute("internal->applicationId"));
         } catch (ActionFailedException e) {
+            e.printStackTrace();
         }
         return null;
     }
@@ -100,5 +104,23 @@ public abstract class NotEOFBaseEvent implements NotEOFEvent {
 
     public final void setEventType(EventType eventType) {
         this.eventType = eventType;
+    }
+
+    public void setQueueId(Long queueId) {
+        try {
+            this.descriptions.put("internal->queueId", "basic attribute 'queueId' of !EOF");
+            addAttribute("internal->queueId", String.valueOf(queueId));
+        } catch (ActionFailedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public Long getQueueId() {
+        try {
+            return Util.parseLong(getAttribute("internal->queueId"), 0);
+        } catch (ActionFailedException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }

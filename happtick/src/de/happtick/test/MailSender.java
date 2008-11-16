@@ -13,16 +13,15 @@ public class MailSender {
         // try {
 
         StartEvent event = new StartEvent();
-        int counter = 0;
+        int counter = -1;
         while (true) {
-            appl.sendActionEvent("965", String.valueOf(counter));
-            appl.sendAlarm("55", String.valueOf(counter++), "2");
-            // try {
-            // Thread.sleep(1);
-            // } catch (InterruptedException e) {
-            // // TODO Auto-generated catch block
-            // e.printStackTrace();
-            // }
+            counter++;
+            appl.sendActionEvent(String.valueOf(counter), String.valueOf(counter));
+            appl.sendAlarm(String.valueOf(counter), String.valueOf(counter), String.valueOf(counter));
+            try {
+                Thread.sleep(50);
+            } catch (InterruptedException e) {
+            }
             if (false)
                 break;
 

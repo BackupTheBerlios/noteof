@@ -95,7 +95,7 @@ public abstract class MailAndEventReceiveClient extends BaseClient {
                             workerThread.start();
                         }
                         if (MailTag.VAL_ACTION_EVENT.name().equals(action)) {
-                            if (workerCounter == 999999999)
+                            if (workerCounter == Long.MAX_VALUE - 1)
                                 workerCounter = 0;
                             isEvent = true;
                             NotEOFEvent event = getTalkLine().receiveBaseEvent(ConfigurationManager.getApplicationHome());
@@ -156,8 +156,6 @@ public abstract class MailAndEventReceiveClient extends BaseClient {
                 } catch (InterruptedException e) {
                 }
             }
-            System.out.println("_______________________________________________________________");
-            System.out.println(" MailAndReceiveClien.Worker: ID = " + getId());
             recipient.processEvent(event);
             workerPointer = getId();
         }
