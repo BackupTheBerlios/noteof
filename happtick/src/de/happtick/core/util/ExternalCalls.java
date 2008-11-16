@@ -29,33 +29,33 @@ public class ExternalCalls {
         String applicationId = null;
         String applicationPath = null;
         String arguments = null;
-        try {
-            applicationPath = startEvent.getAttribute("applicationPath");
-            applicationId = startEvent.getAttribute("applicationId");
-            arguments = startEvent.getAttribute("arguments");
-        } catch (Exception ex) {
-            LocalLog.error("Fehler bei Verarbeitung eines Events.", ex);
-        }
+        String windowsSupport = null;
+
+        applicationPath = startEvent.getAttribute("applicationPath");
+        applicationId = startEvent.getAttribute("applicationId");
+        windowsSupport = startEvent.getAttribute("windowsSupport");
+        arguments = startEvent.getAttribute("arguments");
 
         if (Util.isEmpty(applicationId))
             throw new HapptickException(650L, "applicationId");
         if (Util.isEmpty(applicationPath))
             throw new HapptickException(650L, "applicationPath");
 
-        int arrSize = 5;
+        int arrSize = 6;
         if (null != arguments)
-            arrSize = 6;
+            arrSize = 7;
         String[] args = new String[arrSize];
         args[0] = "--applicationPath=" + applicationPath;
         args[1] = "--applicationId=" + applicationId;
         args[2] = "--startId=" + startId;
         args[3] = "--serverAddress=" + serverAddress;
         args[4] = "--serverPort=" + String.valueOf(serverPort);
+        args[5] = "--windowsSupport=" + String.valueOf(windowsSupport);
         if (null != arguments)
-            args[5] = arguments;
+            args[6] = arguments;
 
         for (String arg : args) {
-            System.out.println("ARGS... arg: " + arg);
+            System.out.println("ExternalCalls.call ARGS... arg: " + arg);
         }
 
         // call the main method of the class with evaluated arguments
@@ -81,22 +81,25 @@ public class ExternalCalls {
      * 
      * @param applicationPath
      * @param arguments
+     * @param windowsSupport
+     *            if true the application will be started with 'cmd /c
+     *            start/wait'. If this is used the windows script should end
+     *            with 'exit' as last command
      * @return
      * @throws HapptickException
      */
-    public Process startApplication(String applicationPath, String arguments) throws HapptickException {
+    public Process startApplication(String applicationPath, String arguments, boolean windowsSupport) throws HapptickException {
         Process proc = null;
-        // Runtime runtime = Runtime.getRuntime();
+
         try {
-            String[] cmdLine = new String[2];
-            cmdLine[0] = applicationPath.trim();
-            cmdLine[1] = arguments.trim();
-            System.out.println("ExternalCalls.start... vor proc = runtime...");
+            Runtime runtime = Runtime.getRuntime();
+            String cmdLine = applicationPath + " " + arguments;
 
-            ProcessBuilder builder = new ProcessBuilder(cmdLine);
-            proc = builder.start();
+            if (windowsSupport)
+                cmdLine = "cmd /c start/wait " + cmdLine;
 
-            // proc = runtime.exec(cmdLine);
+            cmdLine.trim();
+            proc = runtime.exec(cmdLine);
         } catch (IOException ioEx) {
             throw new HapptickException(651L, "Application: " + applicationPath);
         }
@@ -145,10 +148,12 @@ public class ExternalCalls {
         args += " --serverPort=" + String.valueOf(serverPort);
         args += " " + arguments;
 
+        boolean windowsSupport = Util.parseBoolean(startEvent.getAttribute("windowsSupport"), false);
+
         System.out.println("ExternalCalls.startHapptickApplication: applicationPath = " + applicationPath);
         System.out.println("ExternalCalls.startHapptickApplication: args = " + args);
 
         LocalLog.info("Happtick Application Starting. ApplicationId: " + applicationId + "; ApplicationPath: " + applicationPath + "; Arguments: " + arguments);
-        return startApplication(applicationPath, arguments);
+        return startApplication(applicationPath, arguments, windowsSupport);
     }
 }

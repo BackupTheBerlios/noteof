@@ -22,6 +22,8 @@ import de.notEOF.core.interfaces.NotEOFEvent;
  * one string.</>
  * <li>applicationType -> The type of application. Options are 'JAVA' or
  * 'UNKNOWN'. </>
+ * <li>windowsSupport -> Option to automatically support Windows start
+ * scripts.</>
  * </ul>
  * 
  * @see NotEOFEvent
@@ -36,6 +38,7 @@ public class StartEvent extends HapptickEvent implements NotEOFEvent {
         descriptions.put("applicationPath", "Physical path of the executable application. Normally stored in the configuration.");
         descriptions.put("arguments", "All arguments and their values are transported within this one string.");
         descriptions.put("applicationType", "The type of application. Options are 'JAVA' or 'UNKNOWN'.");
+        descriptions.put("windowsSupport", "Option to automatically support Windows start scripts.");
     }
 
     public EventType getEventType() {

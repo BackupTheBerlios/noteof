@@ -130,9 +130,10 @@
 			<!-- executable
 			     type options are 'java' or 'unknown'. If the application was implemented for or with the Happtick framework insert 'JAVA'.
 			     path is the complete description of the executable which the start client has to start.
-			     arg is a calling argument
+			     windows set to true if a shell start script is used (don't forget 'exit' as last command within this script) 
+			     args is a calling argument
 			--> 
-			<executable type="java" path="c:/programme/blablubb.bat">
+			<executable type="java" path="c:/programme/blablubb.bat" windows="true">
 				<args>--blubb="1" --blase=2</args>
 			</executable>
 			<!-- option

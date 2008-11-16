@@ -27,6 +27,7 @@ public class ApplicationConfiguration {
     private String executablePath;
     private boolean multipleStart;
     private boolean enforce;
+    private boolean windowsSupport;
     private String executableArgs;
     private List<Integer> timePlanSeconds;
     private List<Integer> timePlanMinutes;
@@ -72,6 +73,8 @@ public class ApplicationConfiguration {
             executableType = conf.getAttribute(node, "type", "UNKNOWN");
             // executable path
             executablePath = conf.getAttribute(node, "path", "");
+            // executable windowsSupport
+            windowsSupport = Util.parseBoolean(conf.getAttribute(node, "windows"), false);
 
             // arguments of executable
             node = "scheduler." + nodeNameApplication + ".executable.args";
@@ -465,5 +468,13 @@ public class ApplicationConfiguration {
 
     public void setMaxStepStep(int maxStepStep) {
         this.maxStepStep = maxStepStep;
+    }
+
+    public void setWindowsSupport(boolean windowsSupport) {
+        this.windowsSupport = windowsSupport;
+    }
+
+    public boolean isWindowsSupport() {
+        return this.windowsSupport;
     }
 }

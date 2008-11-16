@@ -13,27 +13,29 @@ public class MailSender {
         // try {
 
         StartEvent event = new StartEvent();
-        int counter = -1;
-        while (true) {
-            counter++;
-            appl.sendActionEvent(String.valueOf(counter), String.valueOf(counter));
-            appl.sendAlarm(String.valueOf(counter), String.valueOf(counter), String.valueOf(counter));
-            try {
-                Thread.sleep(50);
-            } catch (InterruptedException e) {
-            }
-            if (false)
-                break;
+        event.addAttribute("clientIp", "192.168.0.2");
+        // int counter = -1;
+        // while (true) {
+        // counter++;
+        // appl.sendActionEvent(String.valueOf(counter),
+        // String.valueOf(counter));
+        // appl.sendAlarm(String.valueOf(counter), String.valueOf(counter),
+        // String.valueOf(counter));
+        // try {
+        // Thread.sleep(50);
+        // } catch (InterruptedException e) {
+        // }
+        // if (false)
+        // break;
 
-            // event.addAttribute("clientIp", "192.168.0.2");
-            // event.addAttribute("applicationId", "99");
-            // event.addAttribute("applicationPath", "calc.exe");
-            // event.addAttribute("applicationType", "UNKNOWN");
-            // event.addAttribute("arguments", "123 :m");
-            // System.out.println("Kontrolle applicationPath: " +
-            // event.getAttribute("applicationPath"));
-            // appl.sendEvent(event);
-        }
+        // event.addAttribute("applicationId", "99");
+        // event.addAttribute("applicationPath", "calc.exe");
+        // event.addAttribute("applicationType", "UNKNOWN");
+        // event.addAttribute("arguments", "123 :m");
+        // System.out.println("Kontrolle applicationPath: " +
+        // event.getAttribute("applicationPath"));
+        // appl.sendEvent(event);
+        // }
 
         // try {
         // Thread.sleep(150);
@@ -42,8 +44,16 @@ public class MailSender {
         // e.printStackTrace();
         // }
 
+        event.setApplicationId(new Long(77));
         event.addAttribute("applicationId", "77");
-        event.addAttribute("applicationPath", "C:\\Projekte\\workspace\\noteof\\util\\happtick_test.bat");
+        // event.addAttribute("applicationPath",
+        // "cmd /c start/wait C:\\Projekte\\workspace\\noteof\\util\\applStartTest.bat"
+        // );
+        event.addAttribute("applicationPath", "C:\\Projekte\\workspace\\noteof\\util\\applStartTest.bat");
+        event.addAttribute("windowsSupport", "true");
+        // event.addAttribute("applicationPath",
+        // "cmd /c start/wait C:\\Projekte\\workspace\\noteof\\util\\applStartTest.bat"
+        // );
         event.addAttribute("applicationType", "JAVA");
         System.out.println("Kontrolle applicationPath: " + event.getAttribute("applicationPath"));
         appl.sendEvent(event);

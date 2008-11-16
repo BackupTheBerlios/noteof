@@ -9,7 +9,7 @@ set CLASSPATH=%CLASSPATH%;c:\Projekte\workspace\happtick\lib\happtick.jar
 
 
 echo %CLASSPATH%
-javaw de.happtick.test.TestHapptick
+java de.happtick.test.TestHapptick
 
 @echo on
 

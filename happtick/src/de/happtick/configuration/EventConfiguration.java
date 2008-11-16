@@ -22,6 +22,7 @@ public class EventConfiguration {
     private String eventClassName;
     private String keyName;
     private String keyValue;
+    private Long applicationId;
     private List<EventAction> actionList = new ArrayList<EventAction>();
 
     /**
@@ -50,13 +51,15 @@ public class EventConfiguration {
             // eventId
             // scheduler.events.chain1
             node = "scheduler.events." + nodeNameEvent;
-            eventId = Util.parseLong(conf.getAttribute(node, "eventId", "-1"), -1);
+            eventId = Util.parseLong(conf.getAttribute(node, "eventId"), -1);
             // eventClassName
             eventClassName = conf.getAttribute(node, "eventClassName");
             // keyName
             keyName = conf.getAttribute(node, "keyName");
             // keyValue
             keyValue = conf.getAttribute(node, "keyValue");
+            // applicationId (maybe null)
+            applicationId = Util.parseLong(conf.getAttribute(node, "applicationId"), -1);
 
             // list of event actions
             // scheduler.events.event1.action
@@ -119,4 +122,13 @@ public class EventConfiguration {
     public void setKeyValue(String keyValue) {
         this.keyValue = keyValue;
     }
+
+    public void setApplicationId(Long applicationId) {
+        this.applicationId = applicationId;
+    }
+
+    public Long getApplicationId() {
+        return this.applicationId;
+    }
+
 }

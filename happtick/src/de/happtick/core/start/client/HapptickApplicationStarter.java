@@ -3,7 +3,6 @@ package de.happtick.core.start.client;
 import de.happtick.core.events.StartErrorEvent;
 import de.happtick.core.exception.HapptickException;
 import de.happtick.core.util.ExternalCalls;
-import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.interfaces.NotEOFClient;
 import de.notEOF.core.interfaces.NotEOFEvent;
 import de.notEOF.core.util.Util;
@@ -49,12 +48,8 @@ public class HapptickApplicationStarter {
         public void run() {
             String applicationId = null;
             String applicationPath = null;
-            try {
-                applicationId = this.startEvent.getAttribute("applicationId");
-                applicationPath = this.startEvent.getAttribute("applicationPath");
-            } catch (ActionFailedException e) {
-                LocalLog.error("Fehler bei Starten einer Anwendung. Fehlender Wert im Start-Event: applicationId oder applicationPath", e);
-            }
+            applicationId = this.startEvent.getAttribute("applicationId");
+            applicationPath = this.startEvent.getAttribute("applicationPath");
 
             if (Util.isEmpty(applicationId))
                 LocalLog.error("Fehler bei Starten einer Anwendung. Fehlender Wert im Start-Event: applicationId");

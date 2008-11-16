@@ -80,6 +80,7 @@ public class EventConfigurationWrapper {
         map.put("eventClassName", String.valueOf(eventConfiguration.getEventClassName()));
         map.put("keyName", String.valueOf(eventConfiguration.getKeyName()));
         map.put("keyValue", String.valueOf(eventConfiguration.getKeyValue()));
+        map.put("applicationId", String.valueOf(eventConfiguration.getApplicationId()));
 
         // number of links
         List<EventAction> eventActions = eventConfiguration.getEventActionList();
@@ -104,6 +105,7 @@ public class EventConfigurationWrapper {
         eventConfiguration.setEventClassName(map.get("eventClassName"));
         eventConfiguration.setKeyName(map.get("keyName"));
         eventConfiguration.setKeyValue(map.get("keyValue"));
+        eventConfiguration.setApplicationId(Util.parseLong(map.get("applicationId"), -1));
 
         int numberOfActions = Util.parseInt(map.get("actionCount"), 0);
         if (0 < numberOfActions) {

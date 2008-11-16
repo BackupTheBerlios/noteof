@@ -39,9 +39,10 @@ public interface NotEOFEvent {
      * getAttributeDescriptions().
      * 
      * @return The value of the attribute which is specified by the exactly used
-     *         key.
+     *         key or NULL if no attributes are stored or the searched key
+     *         doesn't exists.
      */
-    public String getAttribute(String key) throws ActionFailedException;
+    public String getAttribute(String key);
 
     /**
      * Delivers a map with descriptions for every attribute.

@@ -55,12 +55,7 @@ public abstract class NotEOFBaseEvent implements NotEOFEvent {
      * @return application id or NULL
      */
     public Long getApplicationId() {
-        try {
-            return Long.getLong(getAttribute("internal->applicationId"));
-        } catch (ActionFailedException e) {
-            e.printStackTrace();
-        }
-        return null;
+        return Util.parseLong(getAttribute("internal->applicationId"), -1);
     }
 
     public void addAttribute(String key, String value) throws ActionFailedException {
@@ -80,11 +75,11 @@ public abstract class NotEOFBaseEvent implements NotEOFEvent {
 
     public abstract EventType getEventType();
 
-    public String getAttribute(String key) throws ActionFailedException {
+    public String getAttribute(String key) {
         if (null != attributes) {
-            String value = attributes.get(key);
-            if (null == value)
-                throw new ActionFailedException(1155L, key);
+            // String value = attributes.get(key);
+            // if (null == value)
+            // throw new ActionFailedException(1155L, key);
             return attributes.get(key);
         }
         return null;
@@ -116,11 +111,6 @@ public abstract class NotEOFBaseEvent implements NotEOFEvent {
     }
 
     public Long getQueueId() {
-        try {
-            return Util.parseLong(getAttribute("internal->queueId"), 0);
-        } catch (ActionFailedException e) {
-            e.printStackTrace();
-        }
-        return null;
+        return Util.parseLong(getAttribute("internal->queueId"), 0);
     }
 }
