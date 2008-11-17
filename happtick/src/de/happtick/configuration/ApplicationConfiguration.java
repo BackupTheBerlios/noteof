@@ -2,6 +2,7 @@ package de.happtick.configuration;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
@@ -95,6 +96,7 @@ public class ApplicationConfiguration {
                 timePlanSeconds.add(0);
             } else {
                 timePlanSeconds = getElementsOfStringAsInt(node, conf);
+                Collections.sort(timePlanSeconds);
             }
 
             // minutes
@@ -105,6 +107,7 @@ public class ApplicationConfiguration {
                 timePlanMinutes.add(0);
             } else {
                 timePlanMinutes = getElementsOfStringAsInt(node, conf);
+                Collections.sort(timePlanMinutes);
             }
 
             // hours
@@ -116,6 +119,7 @@ public class ApplicationConfiguration {
                 }
             } else {
                 timePlanHours = getElementsOfStringAsInt(node, conf);
+                Collections.sort(timePlanHours);
             }
 
             // days of week
@@ -143,6 +147,7 @@ public class ApplicationConfiguration {
                 if (element.equalsIgnoreCase("SU") || element.equalsIgnoreCase("SO"))
                     timePlanWeekdays.add(Calendar.SUNDAY);
             }
+            Collections.sort(timePlanWeekdays);
 
             // days of month
             node = nodeTime + ".monthdays";
@@ -151,6 +156,7 @@ public class ApplicationConfiguration {
                 timePlanMonthdays.add(0);
             } else {
                 timePlanMonthdays = getElementsOfStringAsInt(node, conf);
+                Collections.sort(timePlanMonthdays);
             }
 
             // applications to wait for
@@ -207,133 +213,112 @@ public class ApplicationConfiguration {
             return new Date();
         }
 
-        Calendar actDate = new GregorianCalendar();
+        // Mit aktueller Systemzeit beginnen...
         Calendar calcDate = new GregorianCalendar();
 
         // ermittle den ersten gueltigen Tag, ohne die Wochentage zu
         // beruecksichtigen
-        boolean dayFound = true;
+        boolean timeValueFound = true;
         if (!Util.isEmpty(timePlanMonthdays)) {
-            dayFound = timePlanMonthdays.contains(actDate.get(Calendar.DAY_OF_MONTH));
+            timeValueFound = timePlanMonthdays.contains(calcDate.get(Calendar.DAY_OF_MONTH));
 
-            if (!dayFound) {
+            if (!timeValueFound) {
                 for (Integer day : timePlanMonthdays) {
                     // Tag kommt noch in diesem Monat
-                    if (actDate.get(Calendar.DAY_OF_MONTH) < day) {
-                        actDate.set(Calendar.DAY_OF_MONTH, day);
-                        actDate.set(Calendar.HOUR, 0);
-                        actDate.set(Calendar.MINUTE, 0);
-                        actDate.set(Calendar.SECOND, 0);
-                        dayFound = true;
+                    if (calcDate.get(Calendar.DAY_OF_MONTH) < day) {
+                        calcDate.set(Calendar.DAY_OF_MONTH, day);
+                        calcDate.set(Calendar.HOUR_OF_DAY, 0);
+                        calcDate.set(Calendar.MINUTE, 0);
+                        calcDate.set(Calendar.SECOND, 0);
+                        timeValueFound = true;
                         break;
                     }
                 }
             }
             // Tag folgt in diesem Monat nicht mehr, also auf den kleinsten des
             // naechsten Monats setzen.
-            if (!dayFound) {
-                actDate.set(Calendar.DAY_OF_MONTH, timePlanMonthdays.get(0));
-                actDate.set(Calendar.HOUR, 0);
-                actDate.set(Calendar.MINUTE, 0);
-                actDate.set(Calendar.SECOND, 0);
+            if (!timeValueFound) {
+                calcDate.set(Calendar.DAY_OF_MONTH, timePlanMonthdays.get(0));
+                calcDate.add(Calendar.MONTH, 1);
+                calcDate.set(Calendar.HOUR_OF_DAY, 0);
+                calcDate.set(Calendar.MINUTE, 0);
+                calcDate.set(Calendar.SECOND, 0);
             }
         }
 
         // pruefe, ob Wochentag passt
         if (!Util.isEmpty(timePlanWeekdays)) {
-            dayFound = timePlanWeekdays.contains(actDate.get(Calendar.DAY_OF_WEEK));
+            timeValueFound = timePlanWeekdays.contains(calcDate.get(Calendar.DAY_OF_WEEK));
 
             // Tag passt nicht... Zeit erst mal auf 0
-            if (!dayFound) {
+            if (!timeValueFound) {
                 // ein anderer Tag ist es
-                actDate.set(Calendar.HOUR, 0);
-                actDate.set(Calendar.MINUTE, 0);
-                actDate.set(Calendar.SECOND, 0);
+                calcDate.set(Calendar.HOUR_OF_DAY, 0);
+                calcDate.set(Calendar.MINUTE, 0);
+                calcDate.set(Calendar.SECOND, 0);
             }
         }
 
         // Solange suchen, bis Wochentag und Tag im Monat passen...
-        while (!dayFound) {
-            actDate.roll(Calendar.DATE, 1);
+        while (!timeValueFound) {
+            calcDate.add(Calendar.DATE, 1);
 
             // vergleiche Wochentage
             // wenn Wochentag nicht passt direkt naechsten Tag
             if (!Util.isEmpty(timePlanWeekdays) && //
-                    !timePlanWeekdays.contains(actDate.get(Calendar.DAY_OF_WEEK)))
+                    !timePlanWeekdays.contains(calcDate.get(Calendar.DAY_OF_WEEK)))
                 continue;
 
             // vergleiche Tag des Monats
-            dayFound = !Util.isEmpty(timePlanMonthdays) && //
-                    !timePlanMonthdays.contains(actDate.get(Calendar.DAY_OF_MONTH));
-
+            timeValueFound = !Util.isEmpty(timePlanMonthdays) && //
+                    timePlanMonthdays.contains(calcDate.get(Calendar.DAY_OF_MONTH));
         }
 
-        // jetzt kommt die Uhrzeit
-        // TODO HIER WEITER...
-
-        // seconds
-        for (int confSecond : timePlanSeconds) {
-            calcDate.set(Calendar.SECOND, confSecond);
-            if (calcDate.getTimeInMillis() >= actDate.getTimeInMillis())
+        // Jetzt auf Uhrzeit pruefen
+        // Sekunden
+        timeValueFound = false;
+        for (int sec = calcDate.get(Calendar.SECOND); sec < 60; sec++) {
+            if (timePlanSeconds.contains(sec)) {
+                calcDate.set(Calendar.SECOND, sec);
+                timeValueFound = true;
                 break;
+            }
         }
-        if (calcDate.getTimeInMillis() < actDate.getTimeInMillis()) {
-            // next minute, smallest second
-            calcDate.set(Calendar.SECOND, timePlanSeconds.get(0));
+        if (!timeValueFound) {
             calcDate.add(Calendar.MINUTE, 1);
+            calcDate.set(Calendar.SECOND, timePlanSeconds.get(0));
         }
 
-        // minutes
-        for (int confMinute : timePlanMinutes) {
-            calcDate.set(Calendar.MINUTE, confMinute);
-            if (calcDate.getTimeInMillis() >= actDate.getTimeInMillis())
+        // Minuten
+        timeValueFound = false;
+        for (int minute = calcDate.get(Calendar.MINUTE); minute < 60; minute++) {
+            if (timePlanMinutes.contains(minute)) {
+                calcDate.set(Calendar.MINUTE, minute);
+                timeValueFound = true;
                 break;
+            }
         }
-        if (calcDate.getTimeInMillis() < actDate.getTimeInMillis()) {
-            // next hour, smallest minute
-            calcDate.set(Calendar.MINUTE, timePlanMinutes.get(0));
+        if (!timeValueFound) {
             calcDate.add(Calendar.HOUR_OF_DAY, 1);
+            calcDate.set(Calendar.MINUTE, timePlanMinutes.get(0));
+            calcDate.set(Calendar.SECOND, timePlanSeconds.get(0));
         }
 
-        // hours
-        for (int confHour : timePlanHours) {
-            calcDate.set(Calendar.HOUR_OF_DAY, confHour);
-            if (calcDate.getTimeInMillis() >= actDate.getTimeInMillis())
+        // Stunden
+        timeValueFound = false;
+        for (int hour = calcDate.get(Calendar.HOUR_OF_DAY); hour < 24; hour++) {
+            if (timePlanHours.contains(hour)) {
+                calcDate.set(Calendar.HOUR_OF_DAY, hour);
+                timeValueFound = true;
                 break;
+            }
         }
-        if (calcDate.getTimeInMillis() < actDate.getTimeInMillis()) {
-            // next day, smallest hour
-            calcDate.set(Calendar.HOUR, timePlanHours.get(0));
+        if (!timeValueFound) {
             calcDate.add(Calendar.DATE, 1);
+            calcDate.set(Calendar.HOUR_OF_DAY, timePlanHours.get(0));
+            calcDate.set(Calendar.MINUTE, timePlanMinutes.get(0));
+            calcDate.set(Calendar.SECOND, timePlanSeconds.get(0));
         }
-
-        // days of month and days of week
-        boolean found = false;
-        int dayOfMonth = 0;
-        if (timePlanMonthdays.get(dayOfMonth) > calcDate.get(Calendar.DATE))
-            calcDate.set(Calendar.DATE, timePlanMonthdays.get(dayOfMonth));
-        while (!found) {
-            for (int dayOfWeek : timePlanWeekdays) {
-                if (calcDate.getTimeInMillis() >= actDate.getTimeInMillis() && //
-                        (calcDate.get(Calendar.DATE) == timePlanMonthdays.get(dayOfMonth) || //
-                        timePlanMonthdays.get(dayOfMonth) == 0) && //
-                        (calcDate.get(Calendar.DAY_OF_WEEK) == dayOfWeek || dayOfWeek == 0)) {
-                    found = true;
-                    break;
-                }
-            }
-            if (found) {
-                break;
-            }
-
-            dayOfMonth++;
-            if (dayOfMonth == timePlanMonthdays.size()) {
-                dayOfMonth = 0;
-                calcDate.add(Calendar.MONTH, 1);
-            }
-            calcDate.set(Calendar.DAY_OF_MONTH, timePlanMonthdays.get(dayOfMonth));
-        }
-
         return calcDate.getTime();
     }
 

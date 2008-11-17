@@ -151,7 +151,6 @@
 			<option multiplestart="false" enforce="false"></option>
 			<!-- timeplan
 			     Definition of time points when the application has to run.
-			     Multiple values for a time unit (second, minute, ...) must be inserted in ascending order.
 			     seconds   is a simple textual list of the seconds. For full minutes use * or 0.
 			     minutes   is a simple textual list of the minutes. For full hours use * or 0.
 			     hours     is a simple textual list of the hours. For every hour fill in * (not 0!). The day has 24 hours (setting am or pm is not possible). 
@@ -160,6 +159,7 @@
 			     monthdays is a simple textual list of reduction to appointed days of the month (15, 20).
 			     if weekday and monthday is defined the time points can be very seldom (e.g. there are not many Fridays on the 13. day in month).
 			     
+			     This lists for time informations automatically will be sorted by Happtick.
 			     Use blanks or comma as delimiter for textual lists here.
 			-->
 			<timeplan> 
