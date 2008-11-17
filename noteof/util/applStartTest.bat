@@ -13,4 +13,5 @@ java de.happtick.test.TestClient
 
 @echo on
 
+pause
 exit

@@ -6,7 +6,6 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
 
-import de.happtick.core.MasterTable;
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.interfaces.NotEOFConfiguration;
 import de.notEOF.core.util.Util;
@@ -203,15 +202,75 @@ public class ApplicationConfiguration {
      *         configuration, ignoring other active processes etc.
      */
     public Date calculateNextStart() {
-        // when multipleStart or enforce the application could start immediately
+        // if multipleStart or enforce the application may start immediately
         if (multipleStart || enforce) {
-            // give the system a little bit time to work...
-            long now = System.currentTimeMillis() + MasterTable.getTimeDelayForStart();
-            return new Date(now);
+            return new Date();
         }
 
         Calendar actDate = new GregorianCalendar();
         Calendar calcDate = new GregorianCalendar();
+
+        // ermittle den ersten gueltigen Tag, ohne die Wochentage zu
+        // beruecksichtigen
+        boolean dayFound = true;
+        if (!Util.isEmpty(timePlanMonthdays)) {
+            dayFound = timePlanMonthdays.contains(actDate.get(Calendar.DAY_OF_MONTH));
+
+            if (!dayFound) {
+                for (Integer day : timePlanMonthdays) {
+                    // Tag kommt noch in diesem Monat
+                    if (actDate.get(Calendar.DAY_OF_MONTH) < day) {
+                        actDate.set(Calendar.DAY_OF_MONTH, day);
+                        actDate.set(Calendar.HOUR, 0);
+                        actDate.set(Calendar.MINUTE, 0);
+                        actDate.set(Calendar.SECOND, 0);
+                        dayFound = true;
+                        break;
+                    }
+                }
+            }
+            // Tag folgt in diesem Monat nicht mehr, also auf den kleinsten des
+            // naechsten Monats setzen.
+            if (!dayFound) {
+                actDate.set(Calendar.DAY_OF_MONTH, timePlanMonthdays.get(0));
+                actDate.set(Calendar.HOUR, 0);
+                actDate.set(Calendar.MINUTE, 0);
+                actDate.set(Calendar.SECOND, 0);
+            }
+        }
+
+        // pruefe, ob Wochentag passt
+        if (!Util.isEmpty(timePlanWeekdays)) {
+            dayFound = timePlanWeekdays.contains(actDate.get(Calendar.DAY_OF_WEEK));
+
+            // Tag passt nicht... Zeit erst mal auf 0
+            if (!dayFound) {
+                // ein anderer Tag ist es
+                actDate.set(Calendar.HOUR, 0);
+                actDate.set(Calendar.MINUTE, 0);
+                actDate.set(Calendar.SECOND, 0);
+            }
+        }
+
+        // Solange suchen, bis Wochentag und Tag im Monat passen...
+        while (!dayFound) {
+            actDate.roll(Calendar.DATE, 1);
+
+            // vergleiche Wochentage
+            // wenn Wochentag nicht passt direkt naechsten Tag
+            if (!Util.isEmpty(timePlanWeekdays) && //
+                    !timePlanWeekdays.contains(actDate.get(Calendar.DAY_OF_WEEK)))
+                continue;
+
+            // vergleiche Tag des Monats
+            dayFound = !Util.isEmpty(timePlanMonthdays) && //
+                    !timePlanMonthdays.contains(actDate.get(Calendar.DAY_OF_MONTH));
+
+        }
+
+        // jetzt kommt die Uhrzeit
+        // TODO HIER WEITER...
+
         // seconds
         for (int confSecond : timePlanSeconds) {
             calcDate.set(Calendar.SECOND, confSecond);
@@ -275,8 +334,6 @@ public class ApplicationConfiguration {
             calcDate.set(Calendar.DAY_OF_MONTH, timePlanMonthdays.get(dayOfMonth));
         }
 
-        // buffer for performance problems
-        calcDate.add(Calendar.MILLISECOND, MasterTable.getTimeDelayForStart());
         return calcDate.getTime();
     }
 

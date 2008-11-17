@@ -1,8 +1,6 @@
 package de.happtick.core.schedule;
 
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -13,8 +11,6 @@ import de.happtick.core.application.service.ApplicationService;
 import de.happtick.core.enumeration.HapptickAlarmLevel;
 import de.happtick.core.enumeration.HapptickAlarmType;
 import de.happtick.core.events.AlarmEvent;
-import de.happtick.core.events.StoppedEvent;
-import de.happtick.core.start.service.StartService;
 import de.notEOF.configuration.LocalConfiguration;
 import de.notEOF.core.enumeration.EventType;
 import de.notEOF.core.exception.ActionFailedException;
@@ -63,7 +59,10 @@ public class Scheduler {
             // events are active
             Boolean useEvents = Util.parseBoolean(conf.getAttribute("scheduler.use", "event"), false);
             if (useEvents) {
-
+                /*
+                 * Alle events in der konfiguration - auch die der chains nehmen
+                 * als observer an util klasse anmelden
+                 */
             }
         } catch (ActionFailedException afx) {
             LocalLog.error("Fehler bei Lesen der Konfiguration für Anwendungsscheduler.", afx);
@@ -71,12 +70,50 @@ public class Scheduler {
     }
 
     /**
-     * The only interface...
+     * Start from outer side - normally not needed
      */
     public static void start() {
         if (null == scheduler) {
             scheduler = new Scheduler();
         }
+    }
+
+    /**
+     * Checks if the application may be started now.
+     * <p>
+     * The calculation regards the timeplan of the application and other
+     * (active) processes.
+     * 
+     * @param applicationConfiguration
+     *            The configuration which contains informations about the time
+     *            plan.
+     * @return True if start is now allowed. False if not.
+     */
+    public boolean isStartAllowed(ApplicationConfiguration applicationConfiguration) {
+
+        // durchsuche alle StartServices. wenn startservice = startservice ok.
+        // ansonsten vergleiche konfiguration und applikationsid
+        // berücksichtigen applicationservices
+
+        return false;
+    }
+
+    /**
+     * Looks if there is any application running for which the asking
+     * application has to wait for.
+     * 
+     * @param applicationConfiguration
+     *            Configuration of the application that is asking here.
+     * @return True if the application has to wait.
+     */
+    public static boolean mustWaitForApplication(ApplicationConfiguration applicationConfiguration) {
+        // iterate over the list of applications to wait for
+        for (Long id : applicationConfiguration.getApplicationsWaitFor()) {
+            // if list with found services > 0 there exists one or more service
+            if (MasterTable.getApplicationServicesByApplicationId(id).size() > 0)
+                return true;
+        }
+        return false;
     }
 
     // TODO Prozesskette ebenfalls in runnern, die die Anwendungen abarbeiten.
@@ -103,7 +140,7 @@ public class Scheduler {
                 startApplicationScheduler(conf);
             }
         } catch (ActionFailedException afx) {
-            LocalLog.error("Fehler bei Start der Anwendugnsscheduler.", afx);
+            LocalLog.error("Fehler bei Start der Anwendungsscheduler.", afx);
         }
     }
 
@@ -112,12 +149,9 @@ public class Scheduler {
      */
     private ApplicationScheduler startApplicationScheduler(ApplicationConfiguration configuration) {
         ApplicationScheduler appSched;
-        StartService startService = null;
-        if (null == startService) {
-            LocalLog.warn("Nicht aktiver StartService. Id: " + configuration.getApplicationId() + "; clientIp: " + configuration.getClientIp());
-            return null;
-        }
-        appSched = new ApplicationScheduler(configuration, startService, false);
+        LocalLog.warn("Nicht aktiver StartService. Id: " + configuration.getApplicationId() + "; clientIp: " + configuration.getClientIp());
+        // return null;
+        appSched = new ApplicationScheduler(configuration, false);
         applicationSchedulers.add(appSched);
         Thread thread = new Thread(appSched);
         appSched.setThread(thread);
@@ -138,12 +172,9 @@ public class Scheduler {
         private boolean appServiceStopped = false;
         private boolean chainMode = false;
         private ApplicationConfiguration applicationConfiguration;
-        private StartService startService;
-        private Map<String, EventObserver> eventObservers;
 
-        protected ApplicationScheduler(ApplicationConfiguration applicationConfiguration, StartService startService, boolean chainMode) {
+        protected ApplicationScheduler(ApplicationConfiguration applicationConfiguration, boolean chainMode) {
             this.applicationConfiguration = applicationConfiguration;
-            this.startService = startService;
         }
 
         protected boolean hasStopped() {
@@ -167,14 +198,9 @@ public class Scheduler {
                     if (chainMode) {
                         // This runner is part of a chain
                         // wait for other applications
-                        while (MasterTable.mustWaitForApplication(applicationConfiguration)) {
+                        while (mustWaitForApplication(applicationConfiguration)) {
                             Thread.sleep(300);
                         }
-                        // tell StartService to start the application
-                        // when the method startService.startApplication returns
-                        // the client has started. After that there can
-                        // time goes by until the ApplicationService exists.
-                        String startId = startService.startApplication(applicationConfiguration);
 
                         // after starting the application check other
                         // dependencies
@@ -187,12 +213,15 @@ public class Scheduler {
                         }
 
                         // wait for activated ApplicationService
-                        Date endDate = MasterTable.dateToWaitForApplicationService(null);
+                        // Date endDate =
+                        // MasterTable.dateToWaitForApplicationService(null);
                         ApplicationService applicationService = null;
-                        while (null == (applicationService = MasterTable.getApplicationServiceByStartId(startId)) && //
-                                endDate.getTime() < System.currentTimeMillis()) {
-                            Thread.sleep(500);
-                        }
+                        // while (null == (applicationService =
+                        // MasterTable.getApplicationServiceByStartId(startId))
+                        // && //
+                        // endDate.getTime() < System.currentTimeMillis()) {
+                        // Thread.sleep(500);
+                        // }
 
                         // Start of application not checkable
                         if (null == applicationService) {
@@ -208,7 +237,7 @@ public class Scheduler {
 
                             event.addAttribute("description", "Anwendung als Teil einer Kette wurde evtl. nicht gestartet. Id: "
                                     + applicationConfiguration.getApplicationId());
-                            updateAllObserver(eventObservers, null, event);
+                            // updateAllObserver(eventObservers, null, event);
                             // stop working
                             break;
                         }
@@ -224,13 +253,19 @@ public class Scheduler {
 
                         // Fire event to all observer
                         // probably a chain runner is waiting...
-                        NotEOFEvent event = new StoppedEvent();
-                        event.addAttribute("applicationId", String.valueOf(applicationConfiguration.getApplicationId()));
-                        event.addAttribute("startId", startService.getStartId());
-                        event.addAttribute("clientNetId", startService.getClientNetId());
-                        event.addAttribute("serviceId", startService.getServiceId());
-                        event.addAttribute("exitCode", String.valueOf(applicationService.getExitCode()));
-                        updateAllObserver(eventObservers, null, event);
+                        // NotEOFEvent event = new StoppedEvent();
+                        // event.addAttribute("applicationId",
+                        // String.valueOf(applicationConfiguration
+                        // .getApplicationId()));
+                        // event.addAttribute("startId",
+                        // startService.getStartId());
+                        // event.addAttribute("clientNetId",
+                        // startService.getClientNetId());
+                        // event.addAttribute("serviceId",
+                        // startService.getServiceId());
+                        // event.addAttribute("exitCode",
+                        // String.valueOf(applicationService.getExitCode()));
+                        // updateAllObserver(eventObservers, null, event);
 
                         // start dependent applications
                         for (Long applId : applicationConfiguration.getApplicationsStartAfter()) {
@@ -272,13 +307,13 @@ public class Scheduler {
         }
 
         public void registerForEvents(EventObserver observer) {
-            if (null == eventObservers)
-                eventObservers = new HashMap<String, EventObserver>();
-            Util.registerForEvents(eventObservers, observer);
+            // if (null == eventObservers)
+            // eventObservers = new HashMap<String, EventObserver>();
+            // Util.registerForEvents(eventObservers, observer);
         }
 
         public void unregisterFromEvents(EventObserver observer) {
-            Util.unregisterFromEvents(eventObservers, observer);
+            // Util.unregisterFromEvents(eventObservers, observer);
         }
 
         public void update(Service service, NotEOFEvent event) {

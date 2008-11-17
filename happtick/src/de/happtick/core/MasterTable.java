@@ -10,12 +10,12 @@ import de.happtick.configuration.ApplicationConfiguration;
 import de.happtick.configuration.ChainConfiguration;
 import de.happtick.configuration.EventConfiguration;
 import de.happtick.core.application.service.ApplicationService;
+import de.happtick.core.events.StartEvent;
 import de.happtick.core.exception.HapptickException;
-import de.happtick.core.start.service.StartService;
 import de.notEOF.configuration.LocalConfiguration;
-import de.notEOF.core.enumeration.EventType;
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.interfaces.NotEOFConfiguration;
+import de.notEOF.core.interfaces.NotEOFEvent;
 import de.notEOF.core.interfaces.Service;
 import de.notEOF.core.logging.LocalLog;
 import de.notEOF.core.server.Server;
@@ -36,6 +36,13 @@ public class MasterTable {
     private static Map<Long, ChainConfiguration> chainConfigurations = new HashMap<Long, ChainConfiguration>();
     private static Map<Long, EventConfiguration> eventConfigurations = new HashMap<Long, EventConfiguration>();
     private static Map<String, Service> services = new HashMap<String, Service>();
+    // Liste der gestarteten oder aktiven Applications. Hier spielt die Anzahl
+    // der Applications keine Rolle. Es kann auch sein, dass eine Anwendung, die
+    // mehrfach gestartet werden darf, nicht mehr in dieser Liste auftaucht.
+    // Weil sie mit dem ersten Stopp wieder entfernt wird. Das macht aber nix.
+    // Die Liste ist also nur wichtig zum Vereiteln des Mehrfachstarts, wenn der
+    // nicht erlaubt ist.
+    private static Map<Long, NotEOFEvent> startEvents = new HashMap<Long, NotEOFEvent>();
 
     // private static List<EventObserver> eventObservers = new
     // ArrayList<EventObserver>();
@@ -347,36 +354,41 @@ public class MasterTable {
             }
         inAction = true;
         services.remove(service.getServiceId());
+        if (service.getClass().isAssignableFrom(ApplicationService.class)) {
+            removeStartEvent(((ApplicationService) service).getApplicationId());
+        }
         inAction = false;
     }
 
     /**
-     * This function delivers a list with the Events for which the Observer is
-     * interested in.
+     * If the StoppedEvent was raised the StartEvent then must be removed.
      * <p>
-     * If the Observer doesn't initialized this list he get's no event.
+     * It is possible that the map doesn't contains the event because it was
+     * removed before by a service or another event. <br>
+     * This is no problem because the map is only important to avoid the
+     * multiple start of applications which are not allowed for this.
      * 
-     * @return A list with the Events which the observer wants to get.
+     * @param startedEvent
      */
-    public synchronized List<EventType> getObservedEvents() {
-        List<EventType> observedEvents = new ArrayList<EventType>();
-        observedEvents.add(EventType.EVENT_SERVICE_STOPPED);
-        observedEvents.add(EventType.EVENT_SERVICE_CHANGE);
-        return observedEvents;
+    public static synchronized void removeStartEvent(NotEOFEvent event) {
+        StartEvent startEvent = (StartEvent) startEvents.get(event.getApplicationId());
+        if (null != startEvent) {
+            startEvents.remove(startEvent.getApplicationId());
+        }
     }
 
     /**
-     * Returns the delay for starting applications (+ -) in milliseconds.
+     * Remove StartEvent by applicationId. Normally done by ApplicationServices.
      * <p>
-     * The delay is used for the time which goes by between request for and
-     * response of the next start point of an application. So the delay is a
-     * buffer for system performance 'problems'.
+     * It is possible that the map doesn't contains the event because it was
+     * removed before by a service or another event. <br>
+     * This is no problem because the map is only important to avoid the
+     * multiple start of applications which are not allowed for this.
      * 
-     * @return The delay. At the time the delay is a static hard coded value. In
-     *         a later version this should be configurable.
+     * @param applicationId
      */
-    public static int getTimeDelayForStart() {
-        return 1000;
+    public static synchronized void removeStartEvent(Long applicationId) {
+        startEvents.remove(applicationId);
     }
 
     /**
@@ -406,46 +418,5 @@ public class MasterTable {
             startDate = new Date();
         long endTime = startDate.getTime() + waitTimeForStartApplicationService();
         return new Date(endTime);
-    }
-
-    /**
-     * Checks if the application may be started now.
-     * <p>
-     * The calculation regards the timeplan of the application and other
-     * (active) processes.
-     * 
-     * @param applicationConfiguration
-     *            The configuration which contains informations about the time
-     *            plan.
-     * @param startService
-     *            The service which holds connection to the StartClient where
-     *            the application would be started.
-     * @return True if start is now allowed. False if not.
-     */
-    public boolean isStartAllowed(ApplicationConfiguration applicationConfiguration, StartService startService) {
-
-        // durchsuche alle StartServices. wenn startservice = startservice ok.
-        // ansonsten vergleiche konfiguration und applikationsid
-        // berücksichtigen applicationservices
-
-        return false;
-    }
-
-    /**
-     * Looks if there is any application running for which the asking
-     * application has to wait for.
-     * 
-     * @param applicationConfiguration
-     *            Configuration of the application that is asking here.
-     * @return True if the application has to wait.
-     */
-    public static boolean mustWaitForApplication(ApplicationConfiguration applicationConfiguration) {
-        // iterate over the list of applications to wait for
-        for (Long id : applicationConfiguration.getApplicationsWaitFor()) {
-            // if list with found services > 0 there exists one or more service
-            if (getApplicationServicesByApplicationId(id).size() > 0)
-                return true;
-        }
-        return false;
     }
 }

@@ -93,4 +93,8 @@ public interface NotEOFEvent {
     public Long getQueueId();
 
     public void setQueueId(Long queueId);
+
+    public Long getRequestQueueId();
+
+    public void setRequestQueueId(Long queueId);
 }

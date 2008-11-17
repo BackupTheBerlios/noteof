@@ -29,35 +29,6 @@ public abstract class NotEOFBaseEvent implements NotEOFEvent {
     // forces the derived class to initialize the internal list of descriptions.
     protected abstract void initDescriptions();
 
-    /**
-     * Most Events are related to an application.
-     * <p>
-     * This method can be used to transport the applicationId. <br>
-     * 
-     * @param applicationId
-     *            Id of application
-     */
-    public void setApplicationId(Long applicationId) {
-        try {
-            this.descriptions.put("internal->applicationId", "basic attribute 'applicationId' of !EOF");
-            addAttribute("internal->applicationId", String.valueOf(applicationId));
-        } catch (ActionFailedException e) {
-            e.printStackTrace();
-        }
-    }
-
-    /**
-     * Most Events are related to an application.
-     * <p>
-     * This method delivers the applicationId if was set before the event was
-     * raised. <br>
-     * 
-     * @return application id or NULL
-     */
-    public Long getApplicationId() {
-        return Util.parseLong(getAttribute("internal->applicationId"), -1);
-    }
-
     public void addAttribute(String key, String value) throws ActionFailedException {
         initDescriptions();
         if (null == attributes)
@@ -113,4 +84,47 @@ public abstract class NotEOFBaseEvent implements NotEOFEvent {
     public Long getQueueId() {
         return Util.parseLong(getAttribute("internal->queueId"), 0);
     }
+
+    public void setRequestQueueId(Long queueId) {
+        try {
+            this.descriptions.put("internal->queueResponseId", "basic attribute 'queueResponseId' of !EOF");
+            addAttribute("internal->queueResponseId", String.valueOf(queueId));
+        } catch (ActionFailedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public Long getRequestQueueId() {
+        return Util.parseLong(getAttribute("internal->queueResponseId"), 0);
+    }
+
+    /**
+     * Most Events are related to an application.
+     * <p>
+     * This method can be used to transport the applicationId. <br>
+     * 
+     * @param applicationId
+     *            Id of application
+     */
+    public void setApplicationId(Long applicationId) {
+        try {
+            this.descriptions.put("internal->applicationId", "basic attribute 'applicationId' of !EOF");
+            addAttribute("internal->applicationId", String.valueOf(applicationId));
+        } catch (ActionFailedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Most Events are related to an application.
+     * <p>
+     * This method delivers the applicationId if was set before the event was
+     * raised. <br>
+     * 
+     * @return application id or NULL
+     */
+    public Long getApplicationId() {
+        return Util.parseLong(getAttribute("internal->applicationId"), -1);
+    }
+
 }
