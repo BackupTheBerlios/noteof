@@ -38,7 +38,7 @@ public abstract class BaseService extends BaseClientOrService implements Service
     public boolean isRunning = true;
     private Thread serviceThread;
     private Server server;
-    List<EventType> eventTypes;
+    List<EventType> observedEvents;
     protected String clientNetId;
     private EventProcessor processor;
     private long workerPointer = 0;
@@ -315,14 +315,14 @@ public abstract class BaseService extends BaseClientOrService implements Service
      * the relevant types.
      */
     public List<EventType> getObservedEvents() {
-        return eventTypes;
+        return observedEvents;
     }
 
-    protected final void addObservedEventType(EventType type) {
-        if (null == eventTypes) {
-            eventTypes = new ArrayList<EventType>();
+    protected final void addObservedEvent(EventType eventType) {
+        if (null == observedEvents) {
+            observedEvents = new ArrayList<EventType>();
         }
-        eventTypes.add(type);
+        observedEvents.add(eventType);
     }
 
     // @SuppressWarnings("unchecked")

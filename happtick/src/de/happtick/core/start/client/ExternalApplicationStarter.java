@@ -67,7 +67,7 @@ public class ExternalApplicationStarter extends HapptickApplication {
         try {
             sendEvent(event);
         } catch (HapptickException e) {
-            LocalLog.warn("StoppedEvent konnte nicht versendet werden. ApplicationId: " + super.getApplicationId(), e);
+            LocalLog.warn("Event konnte nicht versendet werden. EventType: " + event.getEventType() + "; ApplicationId: " + super.getApplicationId(), e);
         }
     }
 

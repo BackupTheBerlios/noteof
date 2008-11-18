@@ -54,5 +54,6 @@ public enum EventType {
      * if they want to be informed by any raised event.
      * 
      */
+    EVENT_EMPTY,
     EVENT_ANY_TYPE;
 }

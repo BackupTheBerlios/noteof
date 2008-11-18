@@ -41,7 +41,7 @@ public abstract class HapptickBaseClient {
      * Internal class for sending mails and events. Used if the
      * MailEventRecipient has no own client.
      */
-    private class internalClient extends BaseClient implements NotEOFClient {
+    private class InternalClient extends BaseClient implements NotEOFClient {
         @Override
         public Class<?> serviceForClientByClass() {
             return de.notEOF.core.service.SimpleService.class;
@@ -81,7 +81,7 @@ public abstract class HapptickBaseClient {
     }
 
     private void useInternalClientForSendMailsAndEvents() {
-        this.notEofClient = new internalClient();
+        this.notEofClient = new InternalClient();
     }
 
     /**

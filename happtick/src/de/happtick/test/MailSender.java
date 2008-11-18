@@ -14,13 +14,11 @@ public class MailSender {
 
         StartEvent event = new StartEvent();
         event.addAttribute("clientIp", "192.168.0.2");
-        // int counter = -1;
+        int counter = -1;
         // while (true) {
         // counter++;
-        // appl.sendActionEvent(String.valueOf(counter),
-        // String.valueOf(counter));
-        // appl.sendAlarm(String.valueOf(counter), String.valueOf(counter),
-        // String.valueOf(counter));
+        appl.sendActionEvent(String.valueOf(counter), String.valueOf(counter));
+        appl.sendAlarm(String.valueOf(counter), String.valueOf(counter), String.valueOf(counter));
         // try {
         // Thread.sleep(50);
         // } catch (InterruptedException e) {

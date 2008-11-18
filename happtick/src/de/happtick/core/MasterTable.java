@@ -392,6 +392,25 @@ public class MasterTable {
     }
 
     /**
+     * Add StartEvent
+     * 
+     * @param event
+     */
+    public static synchronized void addStartEvent(NotEOFEvent event) {
+        startEvents.put(event.getApplicationId(), event);
+    }
+
+    /**
+     * Delivers a StartEvent for an application
+     * 
+     * @param applicationId
+     * @return
+     */
+    public static NotEOFEvent getStartEvent(Long applicationId) {
+        return startEvents.get(applicationId);
+    }
+
+    /**
      * After an application start was activated there can elapse some time until
      * the ApplicationServie is alive.
      * 

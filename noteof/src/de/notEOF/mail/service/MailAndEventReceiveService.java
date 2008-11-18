@@ -213,8 +213,8 @@ public abstract class MailAndEventReceiveService extends BaseService {
         if (incomingMsgEnum.equals(MailTag.INFO_READY_FOR_EVENTS)) {
             // responseTo(MailTag.VAL_OK, MailTag.VAL_OK.name());
             responseTo(MailTag.VAL_OK, MailTag.VAL_OK.name());
-            addObservedEventType(EventType.EVENT_MAIL);
-            addObservedEventType(EventType.EVENT_ANY_TYPE);
+            addObservedEvent(EventType.EVENT_MAIL);
+            addObservedEvent(EventType.EVENT_ANY_TYPE);
             getServer().registerForEvents(this);
         }
     }

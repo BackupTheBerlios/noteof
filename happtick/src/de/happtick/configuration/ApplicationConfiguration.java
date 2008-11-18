@@ -4,9 +4,9 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.List;
 
+import de.happtick.core.util.Scheduling;
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.interfaces.NotEOFConfiguration;
 import de.notEOF.core.util.Util;
@@ -39,6 +39,7 @@ public class ApplicationConfiguration {
     private List<Long> applicationsStartSync;
     private int maxStartStop;
     private int maxStepStep;
+    private Date nextStartDate = null;
 
     /**
      * Simple constructor
@@ -202,124 +203,48 @@ public class ApplicationConfiguration {
     }
 
     /**
-     * Calculates the next start point up from now
+     * Looks if the application has to start now.
+     * <p>
      * 
-     * @return Date when the application should run only depending to the
-     *         configuration, ignoring other active processes etc.
+     * @return TRUE if yes, FALSE if not...
      */
-    public Date calculateNextStart() {
-        // if multipleStart or enforce the application may start immediately
-        if (multipleStart || enforce) {
-            return new Date();
+    public boolean startAllowed(boolean chainMode) {
+        // chainMode
+
+        // if no instance of application is running and enforce is set to true
+        // the application must start immediately
+        if (!Scheduling.isEqualApplicationActive(this) && enforce) {
+            return true;
         }
 
-        // Mit aktueller Systemzeit beginnen...
-        Calendar calcDate = new GregorianCalendar();
+        // if program drops by here for first time calculate next start point
+        if (null == this.nextStartDate)
+            nextStartDate = Scheduling.calculateNextStart(this);
 
-        // ermittle den ersten gueltigen Tag, ohne die Wochentage zu
-        // beruecksichtigen
-        boolean timeValueFound = true;
-        if (!Util.isEmpty(timePlanMonthdays)) {
-            timeValueFound = timePlanMonthdays.contains(calcDate.get(Calendar.DAY_OF_MONTH));
+        // Some millis as tolerance value...
+        // +- 1000 millis
+        long timeNow = new Date().getTime();
+        if (nextStartDate.getTime() > timeNow - 1000 && //
+                nextStartDate.getTime() < timeNow + 1000) {
 
-            if (!timeValueFound) {
-                for (Integer day : timePlanMonthdays) {
-                    // Tag kommt noch in diesem Monat
-                    if (calcDate.get(Calendar.DAY_OF_MONTH) < day) {
-                        calcDate.set(Calendar.DAY_OF_MONTH, day);
-                        calcDate.set(Calendar.HOUR_OF_DAY, 0);
-                        calcDate.set(Calendar.MINUTE, 0);
-                        calcDate.set(Calendar.SECOND, 0);
-                        timeValueFound = true;
-                        break;
-                    }
-                }
-            }
-            // Tag folgt in diesem Monat nicht mehr, also auf den kleinsten des
-            // naechsten Monats setzen.
-            if (!timeValueFound) {
-                calcDate.set(Calendar.DAY_OF_MONTH, timePlanMonthdays.get(0));
-                calcDate.add(Calendar.MONTH, 1);
-                calcDate.set(Calendar.HOUR_OF_DAY, 0);
-                calcDate.set(Calendar.MINUTE, 0);
-                calcDate.set(Calendar.SECOND, 0);
-            }
+            // ok time point reached
+            nextStartDate = Scheduling.calculateNextStart(this);
+
+            // check if other instances of application are running
+            // and if multiple start is allowed
+            if (!multipleStart && Scheduling.isEqualApplicationActive(this))
+                // wait for ending other instances (next time point is
+                // calculated above)
+                return false;
+
+            // ok - time point reached, no more other instances are running or
+            // multiple
+            // start allowed
+            return true;
         }
 
-        // pruefe, ob Wochentag passt
-        if (!Util.isEmpty(timePlanWeekdays)) {
-            timeValueFound = timePlanWeekdays.contains(calcDate.get(Calendar.DAY_OF_WEEK));
-
-            // Tag passt nicht... Zeit erst mal auf 0
-            if (!timeValueFound) {
-                // ein anderer Tag ist es
-                calcDate.set(Calendar.HOUR_OF_DAY, 0);
-                calcDate.set(Calendar.MINUTE, 0);
-                calcDate.set(Calendar.SECOND, 0);
-            }
-        }
-
-        // Solange suchen, bis Wochentag und Tag im Monat passen...
-        while (!timeValueFound) {
-            calcDate.add(Calendar.DATE, 1);
-
-            // vergleiche Wochentage
-            // wenn Wochentag nicht passt direkt naechsten Tag
-            if (!Util.isEmpty(timePlanWeekdays) && //
-                    !timePlanWeekdays.contains(calcDate.get(Calendar.DAY_OF_WEEK)))
-                continue;
-
-            // vergleiche Tag des Monats
-            timeValueFound = !Util.isEmpty(timePlanMonthdays) && //
-                    timePlanMonthdays.contains(calcDate.get(Calendar.DAY_OF_MONTH));
-        }
-
-        // Jetzt auf Uhrzeit pruefen
-        // Sekunden
-        timeValueFound = false;
-        for (int sec = calcDate.get(Calendar.SECOND); sec < 60; sec++) {
-            if (timePlanSeconds.contains(sec)) {
-                calcDate.set(Calendar.SECOND, sec);
-                timeValueFound = true;
-                break;
-            }
-        }
-        if (!timeValueFound) {
-            calcDate.add(Calendar.MINUTE, 1);
-            calcDate.set(Calendar.SECOND, timePlanSeconds.get(0));
-        }
-
-        // Minuten
-        timeValueFound = false;
-        for (int minute = calcDate.get(Calendar.MINUTE); minute < 60; minute++) {
-            if (timePlanMinutes.contains(minute)) {
-                calcDate.set(Calendar.MINUTE, minute);
-                timeValueFound = true;
-                break;
-            }
-        }
-        if (!timeValueFound) {
-            calcDate.add(Calendar.HOUR_OF_DAY, 1);
-            calcDate.set(Calendar.MINUTE, timePlanMinutes.get(0));
-            calcDate.set(Calendar.SECOND, timePlanSeconds.get(0));
-        }
-
-        // Stunden
-        timeValueFound = false;
-        for (int hour = calcDate.get(Calendar.HOUR_OF_DAY); hour < 24; hour++) {
-            if (timePlanHours.contains(hour)) {
-                calcDate.set(Calendar.HOUR_OF_DAY, hour);
-                timeValueFound = true;
-                break;
-            }
-        }
-        if (!timeValueFound) {
-            calcDate.add(Calendar.DATE, 1);
-            calcDate.set(Calendar.HOUR_OF_DAY, timePlanHours.get(0));
-            calcDate.set(Calendar.MINUTE, timePlanMinutes.get(0));
-            calcDate.set(Calendar.SECOND, timePlanSeconds.get(0));
-        }
-        return calcDate.getTime();
+        // please wait
+        return false;
     }
 
     /*
