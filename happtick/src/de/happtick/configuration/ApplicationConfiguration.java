@@ -28,6 +28,7 @@ public class ApplicationConfiguration {
     private boolean multipleStart;
     private boolean enforce;
     private boolean windowsSupport;
+    private boolean partOfChain;
     private String executableArgs;
     private List<Integer> timePlanSeconds;
     private List<Integer> timePlanMinutes;
@@ -76,6 +77,8 @@ public class ApplicationConfiguration {
             executablePath = conf.getAttribute(node, "path", "");
             // executable windowsSupport
             windowsSupport = Util.parseBoolean(conf.getAttribute(node, "windows"), false);
+            // executable partOfChain
+            partOfChain = Util.parseBoolean(conf.getAttribute(node, "partOfChain"), false);
 
             // arguments of executable
             node = "scheduler." + nodeNameApplication + ".executable.args";
@@ -96,7 +99,7 @@ public class ApplicationConfiguration {
             if ("".equals(seconds) || "*".equals(seconds) || "0".equals(seconds)) {
                 timePlanSeconds.add(0);
             } else {
-                timePlanSeconds = getElementsOfStringAsInt(node, conf);
+                timePlanSeconds = Util.getElementsOfStringAsInt(node, conf);
                 Collections.sort(timePlanSeconds);
             }
 
@@ -107,7 +110,7 @@ public class ApplicationConfiguration {
             if ("".equals(minutes) || "*".equals(minutes) || "0".equals(minutes)) {
                 timePlanMinutes.add(0);
             } else {
-                timePlanMinutes = getElementsOfStringAsInt(node, conf);
+                timePlanMinutes = Util.getElementsOfStringAsInt(node, conf);
                 Collections.sort(timePlanMinutes);
             }
 
@@ -119,7 +122,7 @@ public class ApplicationConfiguration {
                     timePlanHours.add(i);
                 }
             } else {
-                timePlanHours = getElementsOfStringAsInt(node, conf);
+                timePlanHours = Util.getElementsOfStringAsInt(node, conf);
                 Collections.sort(timePlanHours);
             }
 
@@ -132,7 +135,7 @@ public class ApplicationConfiguration {
                     timePlanWeekdays.add(Calendar.DAY_OF_WEEK, i);
                 }
             }
-            for (String element : (List<String>) getElementsOfString(node, conf)) {
+            for (String element : (List<String>) Util.getElementsOfString(node, conf)) {
                 if (element.equalsIgnoreCase("MO"))
                     timePlanWeekdays.add(Calendar.MONDAY);
                 if (element.equalsIgnoreCase("TU"))
@@ -156,7 +159,7 @@ public class ApplicationConfiguration {
             if ("".equals(months) || "*".equals(months)) {
                 timePlanMonthdays.add(0);
             } else {
-                timePlanMonthdays = getElementsOfStringAsInt(node, conf);
+                timePlanMonthdays = Util.getElementsOfStringAsInt(node, conf);
                 Collections.sort(timePlanMonthdays);
             }
 
@@ -168,7 +171,7 @@ public class ApplicationConfiguration {
             } catch (ActionFailedException e) {
                 LocalLog.warn("Fehler bei Lesen der Applikationen auf die gewartet werden soll.", e);
             }
-            applicationsWaitFor = stringListToLongList(ids);
+            applicationsWaitFor = Util.stringListToLongList(ids);
 
             // applications to start after
             node = "scheduler." + nodeNameApplication + ".dependencies.startafter";
@@ -178,7 +181,7 @@ public class ApplicationConfiguration {
             } catch (ActionFailedException e) {
                 LocalLog.warn("Fehler bei Lesen der Applikationen die anschließend gestartet werden sollen.", e);
             }
-            applicationsStartAfter = stringListToLongList(ids);
+            applicationsStartAfter = Util.stringListToLongList(ids);
 
             // applications to start synchronously
             node = "scheduler." + nodeNameApplication + ".dependencies.startsync";
@@ -188,7 +191,7 @@ public class ApplicationConfiguration {
             } catch (ActionFailedException e) {
                 LocalLog.warn("Fehler bei Lesen der Applikationen die gleichzeitig gestartet werden sollen.", e);
             }
-            applicationsStartAfter = stringListToLongList(ids);
+            applicationsStartAfter = Util.stringListToLongList(ids);
 
             // maxStartStop
             node = "scheduler." + nodeNameApplication + ".runtime";
@@ -208,13 +211,18 @@ public class ApplicationConfiguration {
      * 
      * @return TRUE if yes, FALSE if not...
      */
-    public boolean startAllowed(boolean chainMode) {
-        // chainMode
+    public boolean startAllowed() {
 
         // if no instance of application is running and enforce is set to true
         // the application must start immediately
         if (!Scheduling.isEqualApplicationActive(this) && enforce) {
             return true;
+        }
+
+        // Perhaps this application has to wait till other application processes
+        // are stopped
+        if (Scheduling.mustWaitForApplication(this)) {
+            return false;
         }
 
         // if program drops by here for first time calculate next start point
@@ -245,43 +253,6 @@ public class ApplicationConfiguration {
 
         // please wait
         return false;
-    }
-
-    /*
-     * Converts a List<String> to List<Long>
-     */
-    private List<Long> stringListToLongList(List<String> stringList) {
-        List<Long> newList = new ArrayList<Long>();
-        if (null != stringList) {
-            for (String element : stringList) {
-                newList.add(Util.parseLong(element, -1));
-            }
-        }
-        return newList;
-    }
-
-    /*
-     * delivers elements of a text string comma separated or blank separated
-     */
-    private List<Integer> getElementsOfStringAsInt(String node, NotEOFConfiguration conf) throws ActionFailedException {
-        List<String> elementList = getElementsOfString(node, conf);
-        List<Integer> intList = new ArrayList<Integer>();
-        for (String element : elementList) {
-            intList.add(Util.parseInt(element, -1));
-        }
-        return intList;
-    }
-
-    /*
-     * delivers elements of a text string comma separated or blank separated
-     */
-    private List<String> getElementsOfString(String node, NotEOFConfiguration conf) throws ActionFailedException {
-        List<String> elementList;
-        String elements = conf.getText(node);
-        elements = elements.replace(" ", ",");
-        elements = elements.replace(",,", ",");
-        elementList = Util.stringToList(elements, ",");
-        return elementList;
     }
 
     public Long getApplicationId() {
@@ -443,5 +414,13 @@ public class ApplicationConfiguration {
 
     public boolean isWindowsSupport() {
         return this.windowsSupport;
+    }
+
+    public void setPartOfChain(boolean partOfChain) {
+        this.partOfChain = partOfChain;
+    }
+
+    public boolean isPartOfChain() {
+        return this.partOfChain;
     }
 }

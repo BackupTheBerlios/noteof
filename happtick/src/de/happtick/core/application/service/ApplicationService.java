@@ -5,31 +5,24 @@ import java.util.List;
 
 import de.happtick.core.MasterTable;
 import de.happtick.core.enumeration.ApplicationTag;
-import de.happtick.core.events.ActionEvent;
-import de.happtick.core.events.AlarmEvent;
-import de.happtick.core.events.ErrorEvent;
-import de.happtick.core.events.LogEvent;
-import de.happtick.core.events.StartedEvent;
-import de.happtick.core.events.StoppedEvent;
 import de.happtick.core.service.HapptickBaseService;
 import de.notEOF.core.enumeration.EventType;
 import de.notEOF.core.exception.ActionFailedException;
-import de.notEOF.core.interfaces.NotEOFEvent;
-import de.notEOF.core.server.Server;
 import de.notEOF.core.util.Util;
 
 public class ApplicationService extends HapptickBaseService {
 
     private Long applicationId = new Long(-1);
     private String startId;
-    private AlarmEvent lastAlarmEvent;
-    private ErrorEvent lastErrorEvent;
-    private ActionEvent lastActionEvent;
-    private LogEvent lastLogEvent;
-    private StoppedEvent stoppedEvent;
-    private StartedEvent startedEvent;
+    // private AlarmEvent lastAlarmEvent;
+    // private ErrorEvent lastErrorEvent;
+    // private ActionEvent lastActionEvent;
+    // private LogEvent lastLogEvent;
+    // private StoppedEvent stoppedEvent;
+    // private StartedEvent startedEvent;
 
     private int exitCode = 0;
+    private boolean clientIsActive = false;
 
     /**
      * Overwrite HapptickBaseService because the service mustn't be added to the
@@ -75,53 +68,6 @@ public class ApplicationService extends HapptickBaseService {
     }
 
     /**
-     * Returns the last from client fired event
-     * 
-     * @param eventType
-     * @return
-     */
-    public NotEOFEvent getLastEvent(EventType eventType) {
-        if (eventType.equals(EventType.EVENT_ALARM))
-            return lastAlarmEvent;
-        if (eventType.equals(EventType.EVENT_ERROR))
-            return lastErrorEvent;
-        if (eventType.equals(EventType.EVENT_EVENT))
-            return lastActionEvent;
-        if (eventType.equals(EventType.EVENT_LOG))
-            return lastLogEvent;
-        if (eventType.equals(EventType.EVENT_CLIENT_STARTED))
-            return startedEvent;
-        if (eventType.equals(EventType.EVENT_CLIENT_STOPPED))
-            return stoppedEvent;
-        return null;
-    }
-
-    /*
-     * Set last event of client
-     */
-    private void updateEvent(NotEOFEvent event) {
-        if (event.getClass().equals(AlarmEvent.class)) {
-            lastAlarmEvent = (AlarmEvent) event;
-        }
-        if (event.getClass().equals(ErrorEvent.class)) {
-            lastErrorEvent = (ErrorEvent) event;
-        }
-        if (event.getClass().equals(ActionEvent.class)) {
-            lastActionEvent = (ActionEvent) event;
-        }
-        if (event.getClass().equals(LogEvent.class)) {
-            lastLogEvent = (LogEvent) event;
-        }
-        if (event.getClass().equals(StoppedEvent.class)) {
-            stoppedEvent = (StoppedEvent) event;
-        }
-        if (event.getClass().equals(StartedEvent.class)) {
-            startedEvent = (StartedEvent) event;
-        }
-        Server.getInstance().updateObservers(this, event);
-    }
-
-    /**
      * Here the service part of the communication acts between an application
      * client and an application service is implemented.
      */
@@ -141,68 +87,18 @@ public class ApplicationService extends HapptickBaseService {
             this.startId = startId;
         }
 
-        // LOG event
-        if (incomingMsgEnum.equals(ApplicationTag.PROCESS_NEW_LOG)) {
-            String text = requestTo(ApplicationTag.REQ_LOG_TEXT, ApplicationTag.RESP_LOG_TEXT);
-            NotEOFEvent event = new LogEvent();
-            event.addAttribute("information", text);
-            updateEvent(event);
-        }
-
-        // ERROR event
-        if (incomingMsgEnum.equals(ApplicationTag.PROCESS_NEW_ERROR)) {
-            String id = requestTo(ApplicationTag.REQ_ERROR_ID, ApplicationTag.RESP_ERROR_ID);
-            String level = requestTo(ApplicationTag.REQ_ERROR_LEVEL, ApplicationTag.RESP_ERROR_LEVEL);
-            String description = requestTo(ApplicationTag.REQ_ERROR_TEXT, ApplicationTag.RESP_ERROR_TEXT);
-            NotEOFEvent event = new ErrorEvent();
-            event.addAttribute("description", description);
-            event.addAttribute("errorId", id);
-            event.addAttribute("level", level);
-            updateEvent(event);
-        }
-
-        // ALARM event
-        if (incomingMsgEnum.equals(ApplicationTag.PROCESS_NEW_ALARM)) {
-            String type = requestTo(ApplicationTag.REQ_ALARM_TYPE, ApplicationTag.RESP_ALARM_TYPE);
-            String level = requestTo(ApplicationTag.REQ_ALARM_LEVEL, ApplicationTag.RESP_ALARM_LEVEL);
-            String text = requestTo(ApplicationTag.REQ_ALARM_TEXT, ApplicationTag.RESP_ALARM_TEXT);
-            NotEOFEvent event = new AlarmEvent();
-            event.addAttribute("description", text);
-            event.addAttribute("level", level);
-            event.addAttribute("type", type);
-            updateEvent(event);
-        }
-
-        // ACTION event
-        if (incomingMsgEnum.equals(ApplicationTag.PROCESS_NEW_EVENT)) {
-            String id = requestTo(ApplicationTag.REQ_EVENT_ID, ApplicationTag.RESP_EVENT_ID);
-            String information = requestTo(ApplicationTag.REQ_EVENT_TEXT, ApplicationTag.RESP_EVENT_TEXT);
-            NotEOFEvent event = new ActionEvent();
-            event.addAttribute("information", information);
-            event.addAttribute("eventId", id);
-            updateEvent(event);
-        }
-
-        // STOP event
-        if (incomingMsgEnum.equals(ApplicationTag.PROCESS_STOP_EVENT)) {
+        // STOP
+        if (incomingMsgEnum.equals(ApplicationTag.PROCESS_STOP_WORK)) {
             this.exitCode = Util.parseInt(requestTo(ApplicationTag.REQ_EXIT_CODE, ApplicationTag.RESP_EXIT_CODE), -1);
-            NotEOFEvent event = new StoppedEvent();
-            event.addAttribute("applicationId", String.valueOf(this.applicationId));
-            event.addAttribute("clientNetId", String.valueOf(super.getClientNetId()));
-            event.addAttribute("startId", this.startId);
-            event.addAttribute("exitCode", String.valueOf(exitCode));
-            updateEvent(event);
+            this.clientIsActive = false;
             writeMsg(ApplicationTag.INFO_TRUE);
         }
 
-        // START event
-        if (incomingMsgEnum.equals(ApplicationTag.PROCESS_START_WORK_EVENT)) {
+        // START
+        if (incomingMsgEnum.equals(ApplicationTag.PROCESS_START_WORK)) {
             System.out.println("ApplicationService: incomingMsg = START_...");
-            NotEOFEvent event = new StartedEvent();
-            event.addAttribute("applicationId", String.valueOf(this.applicationId));
-            event.addAttribute("clientNetId", String.valueOf(super.getClientNetId()));
-            event.addAttribute("startId", this.startId);
-            updateEvent(event);
+            this.clientIsActive = true;
+            writeMsg(ApplicationTag.INFO_TRUE);
         }
 
         // Request for start allowance
@@ -224,5 +120,14 @@ public class ApplicationService extends HapptickBaseService {
      */
     public String getStartId() {
         return startId;
+    }
+
+    /**
+     * Shows if the client has started or finished his activities.
+     * 
+     * @return TRUE after client start and before client stopped.
+     */
+    public boolean isClientActive() {
+        return this.clientIsActive;
     }
 }

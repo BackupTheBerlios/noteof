@@ -26,7 +26,9 @@
 	         no sense setting loop to true.
 	         Application start can depend to one event or prevented by one event.
 	         When the skip flag is set to false the chain waits for the end of the application.
-	         If skip = true and the preventEvent for a application is fired the chain overleaps this application and starts the next one.  
+	         If skip = true and the preventEvent for a application is fired the chain overleaps this application and starts the next one.
+	         
+	         Applications which are started by chains cannot be started within the application configuration (partOfChain=true).  
 	     -->
 	    <chains>
 		    <!-- The list of chains.
@@ -44,7 +46,7 @@
 		    	
 		    	<!-- The applications and chains to start
 		    	      Note that id's here are named id for applications and for chains.
-		    	      conditionEventId Event which must be raised of the application before to enable this application
+		    	      conditionEventId Event which must be raised of the application before enabling this application
 	          	      conditionKeyName, conditionKeyValue Attribute and Value the conditionEvent mus have (optional)
 		    	      preventEventId When this event was raised by the application before the application will not be activated
 		    	      preventKeyName, preventKeyValue Attribute and Value which the preventEvent mus have (optional)
@@ -78,41 +80,51 @@
 	    	<event>event1</event>
 	    	<event>event2</event>
 	    	<event>event3</event>
+	    	<event>event4</event>
 
 			<!--
 				- eventId not yet interesting but should be set with a dummy value
 			    - eventClassName the class name of the fired event
 			    - keyName attribute of the event which must be present as condition for the actions (optional)
 			    - keyValue value of the attribute which is condition for the actions (optional)
-			    - applicationId additional filter to ensure that the event was raised by this application (optional)
+			    - applicationId additional filter to ensure that the event was raised by the application with given id (optional)
 			-->	    	
 	    	<event1 eventId="1" eventClassName="StoppedEvent" keyName="exitCode" keyValue="9" applicationId="44">
 	    		<!-- 
 	    		    List of actions
-				    - actionType what to do with the application/chain - 'start' or 'stop' is possible here
-				    - applicationType 'application' or 'chain' is possible here
-				    - id is applicationId of an application or chainId of a chain
+				    - actionType what to do with the application/chain - 'start' or 'stop' or 'clear' is possible here.
+				      clear means that the chain forgets the received events and continues it's work.
+				    - applicationType 'application' or 'chain' is possible here.
+				    - id is applicationId of an application or chainId of a chain.
 	    		-->
-	    			<action>action0</action>
-	    			<action>action1</action>
+    			<action>action0</action>
+    			<action>action1</action>
 
-	    			<action0 actionType="start" applicationType="application" id="1"></action0>
-	    			<action1 actionType="start" applicationType="application" id="2"></action1>
+    			<action0 actionType="start" applicationType="application" id="1"></action0>
+    			<action1 actionType="start" applicationType="application" id="2"></action1>
 	    	</event1>
 	    	<event2 eventId="2" eventClassName="AlarmEvent">
 	    		<action>action0</action>
+	    		<action>action1</action>
 	    		<action0 actionType="stop" applicationType="chain" id="1"></action0>
+	    		<action1 actionType="stop" applicationType="application" id="11"></action1>
 	    	</event2>
 	    	<event3 eventId="3" eventClassName="StartedEvent">
 	    		<action>action0</action>
 	    		<action0 actionType="start" applicationType="chain" id="2"></action0>
 	    	</event3>
+	    	<event4 eventId="4" eventClassName="ActionEvent" keyName="clear" keyValue="0">
+	    		<action>action0</action>
+	    		<action0 actionType="clear" applicationType="chain" id="2"></action0>
+	    	</event4>
 	    </events>
 	
 		<!-- List of applications.
 		     Beneath of this list the configurations of the different applications follows.
 		     The simple text of the applications here are the node names of the application configurations.
 		     To 'disable' an application (ignored by Happtick) without loose or change the complex configuration surround it with comments here.
+
+	         Applications which are started by application configuration here (partOfChain=false) cannot be started within the chain configuration.  
 		-->
 		<applications>
 			<application>application1</application>
@@ -146,9 +158,10 @@
 			<!-- option
 			     multiplestart decides if an application may run multiple at the same time.
 			     enforce set to true if the application should run permanently.
-			             If enforce is true and the application doesn't run the scheduler tries to start it. 
+			             If enforce is true and the application doesn't run the scheduler tries to start it.
+			             If enforce is true waiting for other applications is ignored 
 			-->
-			<option multiplestart="false" enforce="false"></option>
+			<option partOfChain="false" multiplestart="false" enforce="false"></option>
 			<!-- timeplan
 			     Definition of time points when the application has to run.
 			     seconds   is a simple textual list of the seconds. For full minutes use * or 0.
@@ -184,6 +197,12 @@
 				<startsync applicationId="99"></startsync>
 			</dependencies>
 			
+			<!-- maxStartStop, maxStepStep
+				 +++ For later use. +++
+				 Values will be evaluated for controlling the processes.
+				 maxStartStop is the time which the complete application has time to run.
+				 maxStepStep is the time which may elapse between the single Steps (e.g. ActionEvents)
+			 -->
 			<runtime maxStartStop="300" maxStepStep="10"></runtime>
 		</application1>
 		

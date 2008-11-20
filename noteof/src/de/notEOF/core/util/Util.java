@@ -8,7 +8,9 @@ import java.util.Map;
 import java.util.Set;
 
 import de.notEOF.core.enumeration.EventType;
+import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.interfaces.EventObserver;
+import de.notEOF.core.interfaces.NotEOFConfiguration;
 import de.notEOF.core.interfaces.NotEOFEvent;
 import de.notEOF.core.interfaces.Service;
 import de.notIOC.logging.LocalLog;
@@ -47,6 +49,43 @@ public class Util {
             return array;
         }
         return null;
+    }
+
+    /*
+     * Converts a List<String> to List<Long>
+     */
+    public static List<Long> stringListToLongList(List<String> stringList) {
+        List<Long> newList = new ArrayList<Long>();
+        if (null != stringList) {
+            for (String element : stringList) {
+                newList.add(Util.parseLong(element, -1));
+            }
+        }
+        return newList;
+    }
+
+    /*
+     * delivers elements of a text string comma separated or blank separated
+     */
+    public static List<Integer> getElementsOfStringAsInt(String node, NotEOFConfiguration conf) throws ActionFailedException {
+        List<String> elementList = getElementsOfString(node, conf);
+        List<Integer> intList = new ArrayList<Integer>();
+        for (String element : elementList) {
+            intList.add(Util.parseInt(element, -1));
+        }
+        return intList;
+    }
+
+    /*
+     * delivers elements of a text string comma separated or blank separated
+     */
+    public static List<String> getElementsOfString(String node, NotEOFConfiguration conf) throws ActionFailedException {
+        List<String> elementList;
+        String elements = conf.getText(node);
+        elements = elements.replace(" ", ",");
+        elements = elements.replace(",,", ",");
+        elementList = Util.stringToList(elements, ",");
+        return elementList;
     }
 
     /**

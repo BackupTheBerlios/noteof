@@ -377,6 +377,14 @@ public class MasterTable {
         }
     }
 
+    public static synchronized void replaceStartEvent(NotEOFEvent event) {
+        StartEvent startEvent = (StartEvent) startEvents.get(event.getApplicationId());
+        if (null != startEvent) {
+            startEvents.remove(startEvent.getApplicationId());
+        }
+        setStartEvent(event);
+    }
+
     /**
      * Remove StartEvent by applicationId. Normally done by ApplicationServices.
      * <p>
@@ -396,7 +404,7 @@ public class MasterTable {
      * 
      * @param event
      */
-    public static synchronized void addStartEvent(NotEOFEvent event) {
+    public static synchronized void setStartEvent(NotEOFEvent event) {
         startEvents.put(event.getApplicationId(), event);
     }
 

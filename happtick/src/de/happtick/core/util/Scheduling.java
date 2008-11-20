@@ -34,6 +34,25 @@ public class Scheduling {
     }
 
     /**
+     * Looks if there is any application active for which the configured
+     * application has to wait...
+     * 
+     * @param applConf
+     * @return
+     */
+    public static boolean mustWaitForApplication(ApplicationConfiguration applConf) {
+        for (Long id : applConf.getApplicationsWaitFor()) {
+            // if list with found services > 0 there exists one or more service
+            if (MasterTable.getApplicationServicesByApplicationId(id).size() > 0)
+                return true;
+
+            if (null != MasterTable.getStartEvent(id))
+                return true;
+        }
+        return false;
+    }
+
+    /**
      * Looks if there is any application running for which the asking
      * application has to wait for.
      * 
@@ -41,16 +60,12 @@ public class Scheduling {
      *            Configuration of the application that is asking here.
      * @return True if the application has to wait.
      */
-    public static boolean isEqualApplicationActive(ApplicationConfiguration applicationConfiguration) {
-        // 1. check: Application process active?
-        for (Long id : applicationConfiguration.getApplicationsWaitFor()) {
-            // if list with found services > 0 there exists one or more service
-            if (MasterTable.getApplicationServicesByApplicationId(id).size() > 0)
-                return true;
-        }
+    public static boolean isEqualApplicationActive(ApplicationConfiguration applConf) {
+        if (MasterTable.getApplicationServicesByApplicationId(applConf.getApplicationId()).size() > 0)
+            return true;
 
         // 2. check: StartEvent was raised before?
-        if (null != MasterTable.getStartEvent(applicationConfiguration.getApplicationId()))
+        if (null != MasterTable.getStartEvent(applConf.getApplicationId()))
             return true;
 
         // nothing found

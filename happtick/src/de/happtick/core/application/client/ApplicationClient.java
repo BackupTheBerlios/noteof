@@ -57,7 +57,7 @@ public class ApplicationClient extends BaseClient implements NotEOFClient {
             allowanceWaiter.stop();
 
         try {
-            writeMsg(ApplicationTag.PROCESS_STOP_EVENT);
+            writeMsg(ApplicationTag.PROCESS_STOP_WORK);
             awaitRequestAnswerImmediate(ApplicationTag.REQ_EXIT_CODE, ApplicationTag.RESP_EXIT_CODE, String.valueOf(exitCode));
             // give service a little bit time...
             // TODO Was ist das für eine Zahl?
@@ -75,7 +75,8 @@ public class ApplicationClient extends BaseClient implements NotEOFClient {
      */
     public void startWork() throws HapptickException {
         try {
-            writeMsg(ApplicationTag.PROCESS_START_WORK_EVENT);
+            writeMsg(ApplicationTag.PROCESS_START_WORK);
+            readMsgTimedOut(7654);
         } catch (ActionFailedException e) {
             throw new HapptickException(207L, e);
         }

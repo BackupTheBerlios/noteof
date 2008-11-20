@@ -195,9 +195,7 @@ public abstract class BaseService extends BaseClientOrService implements Service
                         .error("Fehler bei Abarbeiten der MessageQueue im EventProcessor des BaseService. Der Service wird aus der Event-Benachrichtigung entfernt und beendet!"
                                 + e);
                 server.unregisterFromEvents(mainClass);
-                System.out.println("=======================================================================");
                 e.printStackTrace();
-                System.out.println("=======================================================================");
                 stopService();
             }
         }
@@ -364,11 +362,7 @@ public abstract class BaseService extends BaseClientOrService implements Service
      * @throws ActionFailedException
      */
     public synchronized void processClientEvent() throws ActionFailedException {
-        // System.out.println("?????????????????????????????????????????");
         NotEOFEvent event = getTalkLine().receiveBaseEvent(Server.getApplicationHome());
-        // System.out.println("BaseService.processEvent: Event: " +
-        // event.getEventType().name());
-        // System.out.println("?????????????????????????????????????????");
         server.postEvent(event, this);
     }
 

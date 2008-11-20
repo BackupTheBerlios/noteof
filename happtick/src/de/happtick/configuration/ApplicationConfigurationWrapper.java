@@ -86,6 +86,7 @@ public class ApplicationConfigurationWrapper {
         map.put("executableType", String.valueOf(applicationConfiguration.getExecutableType()));
         map.put("executablePath", String.valueOf(applicationConfiguration.getExecutablePath()));
         map.put("multipleStart", String.valueOf(applicationConfiguration.isMultipleStart()));
+        map.put("partOfChain", String.valueOf(applicationConfiguration.isPartOfChain()));
         map.put("windowsSupport", String.valueOf(applicationConfiguration.isWindowsSupport()));
         map.put("enforce", String.valueOf(applicationConfiguration.isEnforce()));
         map.put("maxStartStop", String.valueOf(applicationConfiguration.getMaxStartStop()));
@@ -196,7 +197,8 @@ public class ApplicationConfigurationWrapper {
         applicationConfiguration.setExecutablePath(map.get("executablePath"));
         applicationConfiguration.setMultipleStart(Util.parseBoolean(map.get("multipleStart"), false));
         applicationConfiguration.setEnforce(Util.parseBoolean(map.get("enforce"), false));
-        applicationConfiguration.setEnforce(Util.parseBoolean(map.get("windows"), false));
+        applicationConfiguration.setWindowsSupport(Util.parseBoolean(map.get("windows"), false));
+        applicationConfiguration.setPartOfChain(Util.parseBoolean(map.get("partOfChain"), false));
         applicationConfiguration.setMaxStartStop(Util.parseInt(map.get("maxStartStop"), 0));
         applicationConfiguration.setMaxStepStep(Util.parseInt(map.get("maxStepStep"), 0));
         applicationConfiguration.setExecutableArgs(map.get("executableArgs"));

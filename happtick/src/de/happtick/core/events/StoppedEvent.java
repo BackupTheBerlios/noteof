@@ -41,6 +41,6 @@ public class StoppedEvent extends HapptickEvent implements NotEOFEvent {
     }
 
     public EventType getEventType() {
-        return EventType.EVENT_CLIENT_STOPPED;
+        return EventType.EVENT_APPLICATION_STOPPED;
     }
 }

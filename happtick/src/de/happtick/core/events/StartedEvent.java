@@ -35,6 +35,6 @@ public class StartedEvent extends HapptickEvent implements NotEOFEvent {
     }
 
     public EventType getEventType() {
-        return EventType.EVENT_CLIENT_STARTED;
+        return EventType.EVENT_APPLICATION_STARTED;
     }
 }
