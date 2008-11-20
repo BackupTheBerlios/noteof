@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Observer;
 
 import de.happtick.configuration.ApplicationConfiguration;
 import de.happtick.configuration.ChainConfiguration;
@@ -55,10 +56,10 @@ public class Scheduler {
             // process chain is active
             Boolean useChain = Util.parseBoolean(conf.getAttribute("scheduler.use", "chain"), false);
             if (useChain) {
-                startAllChainSchedulers();
+                startAllChainSchedulers(observer.getObservedEvents());
             }
         } catch (ActionFailedException afx) {
-            LocalLog.error("Fehler bei Lesen der Konfiguration für Anwendungsscheduler.", afx);
+            LocalLog.error("Fehler bei Lesen der Konfiguration fï¿½r Anwendungsscheduler.", afx);
         }
     }
 
@@ -75,19 +76,10 @@ public class Scheduler {
      * Observes the events for starting applications or to avoid the starts.
      */
     private class SchedulerObserver implements Runnable, EventObserver {
-
+        List<EventType> observedEvents = new ArrayList<EventType>();;
+        
         protected SchedulerObserver() {
-            Server.getInstance().registerForEvents(this);
-        }
-
-        @Override
-        public String getName() {
-            return this.getClass().getSimpleName();
-        }
-
-        @Override
-        public List<EventType> getObservedEvents() {
-            List<EventType> observedEvents = new ArrayList<EventType>();
+            // before registering add events
             observedEvents.add(EventType.EVENT_START_ERROR);
             observedEvents.add(EventType.EVENT_APPLICATION_STARTED);
             observedEvents.add(EventType.EVENT_APPLICATION_STOPPED);
@@ -100,13 +92,21 @@ public class Scheduler {
                     observedEvents.add(event.getEventType());
                 }
             } catch (ActionFailedException e) {
-                LocalLog.warn("Fehler bei Registrierung der Events. Evtl. werden nicht alle Events im Scheduling korrekt verarbeitet oder berücksichtigt.", e);
+                LocalLog.warn("Fehler bei Registrierung der Events. Evtl. werden nicht alle Events im Scheduling korrekt verarbeitet oder berï¿½cksichtigt.", e);
             }
-
-            return null;
+            
+            // list completed - now register
+            Server.getInstance().registerForEvents(this);
         }
 
-        @Override
+        public String getName() {
+            return this.getClass().getSimpleName();
+        }
+
+        public List<EventType> getObservedEvents() {
+            return this.observedEvents;
+        }
+
         public void update(Service service, NotEOFEvent event) {
             // Application process now running
             // Activate dependent applications
@@ -142,7 +142,6 @@ public class Scheduler {
             // Evtl. in eigenem Thread...
         }
 
-        @Override
         public void run() {
             while (true) {
                 try {
@@ -178,18 +177,18 @@ public class Scheduler {
      * For each configured chain start a runner. The runner observes the start
      * points. Put the runner into a list.
      */
-    private void startAllChainSchedulers() {
+    private void startAllChainSchedulers(List<EventType>observedEvents) {
         try {
             for (ChainConfiguration conf : MasterTable.getChainConfigurationsAsList()) {
-                startChainScheduler(conf);
+                startChainScheduler(conf, observedEvents);
             }
         } catch (ActionFailedException afx) {
             LocalLog.error("Fehler bei Start der Chain-Scheduler.", afx);
         }
     }
 
-    private ChainScheduler startChainScheduler(ChainConfiguration conf) {
-        ChainScheduler chainSched = new ChainScheduler(conf);
+    private ChainScheduler startChainScheduler(ChainConfiguration conf, List<EventType>observedEvents) {
+        ChainScheduler chainSched = new ChainScheduler(conf, observedEvents);
         Thread thread = new Thread(chainSched);
         thread.start();
         return chainSched;
@@ -198,28 +197,33 @@ public class Scheduler {
     // TODO ChainScheduler evtl. als Observer, weil der doch jede Menge events
     // abfangen muss
     // Wenn ein Event rein kommt, prufen, ob prevent oder condition und ob auch
-    // die übrigen Parameter passen (key, value). Wenn ja mit setEvent in die
+    // die ï¿½brigen Parameter passen (key, value). Wenn ja mit setEvent in die
     // interne Liste...
-    private class ChainScheduler implements Runnable {
+    private class ChainScheduler implements Runnable, EventObserver {
         private ChainConfiguration conf;
         private Map<EventType, NotEOFEvent> uniqueEvents = new HashMap<EventType, NotEOFEvent>();
         private boolean stopped = false;
-        // TODO lastStartedListIndex -> so weiß ich, welche appl. als nächste
+        private List<EventType>observedEvents;
+        // TODO lastStartedListIndex -> so weiï¿½ ich, welche appl. als nï¿½chste
         // dran ist.
         private int lastStartedListIndex = -1;
 
-        protected ChainScheduler(ChainConfiguration conf) {
+        protected ChainScheduler(ChainConfiguration conf, List<EventType>observedEvents) {
             this.conf = conf;
+            this.observedEvents = observedEvents;
+            Server.getInstance().registerForEvents(this);
         }
 
         protected void setEvent(NotEOFEvent event) {
+            if (event.getAttribute("actionType))
+            
             uniqueEvents.put(event.getEventType(), event);
         }
 
         protected void clear() {
             uniqueEvents.clear();
         }
-
+        
         /*
          * Check what to do with the next application
          */
@@ -237,21 +241,37 @@ public class Scheduler {
         }
 
         // TODO
-        // vor dem Start jeder anwendung prüfen, ob conditionevent oder
+        // vor dem Start jeder anwendung prï¿½fen, ob conditionevent oder
         // preventevent vorliegt
         // erste anwendung starten
         // mit jedem einer hier gestarteten anwendung erhaltenen stopp die
-        // nächste anwendung starten, wenn bedingungen (events) erfüllt
+        // nï¿½chste anwendung starten, wenn bedingungen (events) erfï¿½llt
 
-        @Override
+        
         public void run() {
             try {
                 while (!stopped) {
                     Thread.sleep(10000);
                 }
             } catch (Exception e) {
-                LocalLog.error("Scheduling für Chain mit Id " + conf.getChainId() + " ist ausgefallen.", e);
+                LocalLog.error("Scheduling fï¿½r Chain mit Id " + conf.getChainId() + " ist ausgefallen.", e);
             }
+        }
+
+        @Override
+        public String getName() {
+            return this.getClass().getCanonicalName();
+        }
+
+        @Override
+        public List<EventType> getObservedEvents() {
+            return this.observedEvents;
+        }
+
+        @Override
+        public void update(Service arg0, NotEOFEvent arg1) {
+            if (EventType.EVENT_ACTION)
+            
         }
     }
 
@@ -291,7 +311,7 @@ public class Scheduler {
                     Thread.sleep(300);
                 }
             } catch (Exception e) {
-                LocalLog.error("Scheduling für Applikation mit Id " + conf.getApplicationId() + " ist ausgefallen.", e);
+                LocalLog.error("Scheduling fï¿½r Applikation mit Id " + conf.getApplicationId() + " ist ausgefallen.", e);
             }
         }
     }
