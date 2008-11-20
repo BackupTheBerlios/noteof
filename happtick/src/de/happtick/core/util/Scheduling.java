@@ -1,13 +1,22 @@
 package de.happtick.core.util;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import de.happtick.configuration.ApplicationConfiguration;
+import de.happtick.configuration.EventConfiguration;
 import de.happtick.core.MasterTable;
 import de.happtick.core.events.StartEvent;
+import de.notEOF.core.enumeration.EventType;
 import de.notEOF.core.exception.ActionFailedException;
+import de.notEOF.core.interfaces.NotEOFEvent;
+import de.notEOF.core.logging.LocalLog;
 import de.notEOF.core.server.Server;
 import de.notEOF.core.util.Util;
 
@@ -189,4 +198,108 @@ public class Scheduling {
         return calcDate.getTime();
     }
 
+    /**
+     * Delivers a list with EventType which match to some conditions.
+     * <p>
+     * 
+     * @param addresseeType
+     *            'chain', 'application', 'event'
+     * @param addresseeId
+     *            id of chain, application or event
+     * @param eventConfigurations
+     *            Complete List of all EventConfigurations (MasterTable)
+     * @return Filtered EventTypes - matching to the conditions above.
+     */
+    public static List<EventType> filterObservedEvents(String addresseeType, Long addresseeId, List<EventConfiguration> eventConfigurations) {
+        // only one entry for the different event types is needed...
+        // so a map simplifies filtering that
+        Map<EventType, EventType> types = new HashMap<EventType, EventType>();
+        try {
+            for (EventConfiguration conf : eventConfigurations) {
+                if (conf.getAddresseeType().equalsIgnoreCase(addresseeType)) {
+                    if (Util.isEmpty(conf.getAddresseeId()) || //
+                            conf.getAddresseeId().equals(addresseeId)) {
+                        EventType type = Util.lookForEventType(conf.getEventClassName());
+                        types.put(type, type);
+                    }
+                }
+            }
+        } catch (ActionFailedException e) {
+            LocalLog.warn("Event konnte der Chain nicht zugeordnet werden.", e);
+        }
+        Set<EventType> typeSet = types.keySet();
+        List<EventType> typeList = new ArrayList<EventType>();
+        typeList.addAll(typeSet);
+
+        return typeList;
+    }
+
+    /**
+     * Delivers a list with EventConfiguration Ids which match to some
+     * conditions.
+     * <p>
+     * 
+     * @param addresseeType
+     *            'chain', 'application', 'event'
+     * @param addresseeId
+     *            id of chain, application or event
+     * @param eventConfigurations
+     *            Complete List of all EventConfigurations (MasterTable)
+     * @return Filtered EventConfigurations - matching to the conditions above.
+     */
+    public static List<Long> filterObservedConfigurations(String addresseeType, Long addresseeId, List<EventConfiguration> completeListEventConfigurations) {
+        // only one entry for the different event types is needed...
+        // so a map simplifies filtering that
+        List<Long> configurationIds = new ArrayList<Long>();
+        for (EventConfiguration conf : completeListEventConfigurations) {
+            if (conf.getAddresseeType().equalsIgnoreCase(addresseeType)) {
+                if (Util.isEmpty(conf.getAddresseeId()) || //
+                        conf.getAddresseeId().equals(addresseeId)) {
+                    configurationIds.add(conf.getEventId());
+                }
+            }
+        }
+        return configurationIds;
+    }
+
+    /**
+     * Delivers an action which is configured by EventType, key and value.
+     * <p>
+     * Only if all parameters match, the action can be found.
+     * 
+     * @param event
+     *            The raised event.
+     * @param eventConfigurations
+     *            List of the event configurations, maintained in single chain
+     *            startern.
+     * @return Action if found or null.
+     */
+    public static String filterActionOfEvent(NotEOFEvent event, List<Long> eventConfigurationIds) {
+        String action = null;
+        for (Long confId : eventConfigurationIds) {
+            EventConfiguration conf = MasterTable.getEventConfiguration(confId);
+            if (event.getClass().getName().equals(conf.getEventClassName()) || //
+                    event.getClass().getCanonicalName().equals(conf.getEventClassName())) {
+                // event und konf. passen
+
+                if (!Util.isEmpty(conf.getKeyName())) {
+                    // ein key wurde in der Konfiguration angegeben
+                    if (Util.isEmpty(conf.getKeyValue())) {
+                        LocalLog.warn("Event-Konfiguration mit Key aber ohne Value. Id: " + conf.getEventId());
+                    }
+
+                    // key, value gleich?
+                    if (!Util.isEmpty(event.getAttribute(conf.getKeyName())) && //
+                            event.getAttribute(conf.getKeyName()).equals(conf.getKeyValue())) {
+                        action = conf.getAction();
+                        break;
+                    }
+                } else {
+                    // kein key wurde verwendet
+                    action = conf.getAction();
+                }
+            }
+        }
+        return action;
+    }
 }

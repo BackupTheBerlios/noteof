@@ -13,24 +13,25 @@ package de.notIOC.logging;
  * @author Dirk
  * 
  */
-public class LocalLog {
+public class NotIOCLocalLog {
 
-    protected static LocalLog localLog;
+    protected static NotIOCLocalLog localLog;
     protected Exception ex;
     protected String additionalInfo;
 
-    private LocalLog() {
-        localLog = new LocalLog();
+    private NotIOCLocalLog() {
+        localLog = new NotIOCLocalLog();
     }
 
-    public LocalLog getInstance() {
+    public NotIOCLocalLog getInstance() {
         if (null == localLog)
-            localLog = new LocalLog();
+            localLog = new NotIOCLocalLog();
         return localLog;
     }
 
     public static void error(String additionalInfo, Throwable th) {
-        System.out.println(additionalInfo + ": \n" + th);
+        System.out.println(additionalInfo);
+        th.printStackTrace();
     }
 
     public static void error(String additionalInfo) {
@@ -38,14 +39,21 @@ public class LocalLog {
     }
 
     public static void warn(String additionalInfo, Throwable th) {
-        System.out.println(additionalInfo + ": \n" + th);
+        System.out.println(additionalInfo);
+        th.printStackTrace();
+    }
+
+    public static void warn(String additionalInfo) {
+        System.out.println(additionalInfo);
     }
 
     public static void debug(String additionalInfo, Throwable th) {
+        th.printStackTrace();
     }
 
     public static void info(String additionalInfo, Throwable th) {
-        System.out.println(additionalInfo + ": \n" + th);
+        System.out.println(additionalInfo);
+        th.printStackTrace();
     }
 
     public static void info(String additionalInfo) {

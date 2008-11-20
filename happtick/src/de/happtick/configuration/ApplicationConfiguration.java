@@ -9,8 +9,8 @@ import java.util.List;
 import de.happtick.core.util.Scheduling;
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.interfaces.NotEOFConfiguration;
+import de.notEOF.core.logging.LocalLog;
 import de.notEOF.core.util.Util;
-import de.notIOC.logging.LocalLog;
 
 /**
  * This class represents configuration entries of applications.

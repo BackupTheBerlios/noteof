@@ -11,11 +11,11 @@ import de.happtick.core.util.ExternalCalls;
 import de.notEOF.core.enumeration.EventType;
 import de.notEOF.core.interfaces.NotEOFClient;
 import de.notEOF.core.interfaces.NotEOFEvent;
+import de.notEOF.core.logging.LocalLog;
 import de.notEOF.core.util.ArgsParser;
 import de.notEOF.core.util.Util;
 import de.notEOF.mail.NotEOFMail;
 import de.notEOF.mail.interfaces.MailAndEventRecipient;
-import de.notIOC.logging.LocalLog;
 
 /**
  * This client awaits StartEvents by the StartService. It is needed to start

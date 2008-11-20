@@ -45,7 +45,7 @@
 		    	<link>link1</link>
 		    	
 		    	<!-- The applications and chains to start
-		    	      Note that id's here are named id for applications and for chains.
+		    	      Note that id's here can be used as id for an application or a chain.
 		    	      conditionEventId Event which must be raised of the application before enabling this application
 	          	      conditionKeyName, conditionKeyValue Attribute and Value the conditionEvent mus have (optional)
 		    	      preventEventId When this event was raised by the application before the application will not be activated
@@ -73,7 +73,7 @@
 	    	 The actions after an event can differ for every client.
 	    	 If the event is essential for every client, the key 'firedByApplicationId' can be omitted
 	    	 or the value of 'firedByApplicationId' must be empty.
-	    	 With events it is possible to start another application or a chain or both.
+	    	 With events applications and chains can be started or stopped and the state of chains can be cleared.
 	    -->
 	    <events>
 	    	<!-- List of events -->
@@ -88,35 +88,17 @@
 			    - keyName attribute of the event which must be present as condition for the actions (optional)
 			    - keyValue value of the attribute which is condition for the actions (optional)
 			    - applicationId additional filter to ensure that the event was raised by the application with given id (optional)
-			-->	    	
-	    	<event1 eventId="1" eventClassName="StoppedEvent" keyName="exitCode" keyValue="9" applicationId="44">
-	    		<!-- 
-	    		    List of actions
-				    - actionType what to do with the application/chain - 'start' or 'stop' or 'clear' is possible here.
+			    - adresseeId additional information for which application or chain the event is appointed to.
+			    - action what to do with the application/chain - 'start' or 'stop' or 'clear' is possible here.
 				      clear means that the chain forgets the received events and continues it's work.
-				    - applicationType 'application' or 'chain' is possible here.
-				    - id is applicationId of an application or chainId of a chain.
-	    		-->
-    			<action>action0</action>
-    			<action>action1</action>
-
-    			<action0 actionType="start" applicationType="application" id="1"></action0>
-    			<action1 actionType="start" applicationType="application" id="2"></action1>
-	    	</event1>
-	    	<event2 eventId="2" eventClassName="AlarmEvent">
-	    		<action>action0</action>
-	    		<action>action1</action>
-	    		<action0 actionType="stop" applicationType="chain" id="1"></action0>
-	    		<action1 actionType="stop" applicationType="application" id="11"></action1>
-	    	</event2>
-	    	<event3 eventId="3" eventClassName="StartedEvent">
-	    		<action>action0</action>
-	    		<action0 actionType="start" applicationType="chain" id="2"></action0>
-	    	</event3>
-	    	<event4 eventId="4" eventClassName="ActionEvent" keyName="clear" keyValue="0">
-	    		<action>action0</action>
-	    		<action0 actionType="clear" applicationType="chain" id="2"></action0>
-	    	</event4>
+			    - addresseeType kind of receiver 'application' or 'chain' or 'event' is possible here.
+			-->	    	
+	    	<event1 eventId="1" eventClassName="StoppedEvent" keyName="exitCode" keyValue="9" action="start" addresseeType="application" applicationId="44" addresseeId="7"></event1>
+	    	<event2 eventId="2" eventClassName="AlarmEvent"></event2>
+	    	<event3 eventId="3" eventClassName="StartedEvent"></event3>
+	    	<event4 eventId="4" eventClassName="ActionEvent" keyName="clear" keyValue="0" action="clear" addresseeType="chain" addresseeId="99"></event4>
+	    	<event5 eventId="5" eventClassName="ActionEvent" keyName="clear" keyValue="1" action="clear" addresseeType="chain"></event5>
+	    	<event6 eventId="6" eventClassName="StartedEvent" action="raise" addresseeType="event" addresseeId="2" applicationId="2"></event6>
 	    </events>
 	
 		<!-- List of applications.

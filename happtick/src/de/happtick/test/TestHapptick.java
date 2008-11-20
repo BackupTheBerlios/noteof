@@ -7,7 +7,6 @@ import de.happtick.application.client.ApplicationTimeOut;
 import de.happtick.configuration.ApplicationConfiguration;
 import de.happtick.configuration.ChainConfiguration;
 import de.happtick.configuration.ChainLink;
-import de.happtick.configuration.EventAction;
 import de.happtick.configuration.EventConfiguration;
 import de.happtick.information.client.HapptickInformationClient;
 import de.notEOF.configuration.LocalConfiguration;
@@ -92,12 +91,6 @@ public class TestHapptick {
                 for (EventConfiguration conf : eventList) {
                     System.out.println("events... EventId:   " + conf.getEventId());
                     System.out.println("events... EventConf: " + conf.getEventClassName());
-
-                    for (EventAction action : conf.getEventActionList()) {
-                        System.out.println("--- eventAction... Id:              " + action.getId());
-                        System.out.println("--- eventAction... ApplicationType: " + action.getApplicationType());
-                        System.out.println("--- eventAction... ActionType:      " + action.getActionType());
-                    }
                 }
             }
 

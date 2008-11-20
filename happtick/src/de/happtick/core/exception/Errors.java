@@ -66,6 +66,7 @@ public class Errors {
 
         // Scheduler faults
         errorList.put(500L, "Fehler bei Ermitteln des Startservice zur Anwendung.");
+        errorList.put(501L, "Fehler bei Zuordnung eines Events zu einer Aktion.");
 
         // Mail and Event errors
         errorList.put(600L, "Fehler bei Senden einer Mail.");

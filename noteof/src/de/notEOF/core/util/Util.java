@@ -8,12 +8,14 @@ import java.util.Map;
 import java.util.Set;
 
 import de.notEOF.core.enumeration.EventType;
+import de.notEOF.core.event.EventFinder;
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.interfaces.EventObserver;
 import de.notEOF.core.interfaces.NotEOFConfiguration;
 import de.notEOF.core.interfaces.NotEOFEvent;
 import de.notEOF.core.interfaces.Service;
-import de.notIOC.logging.LocalLog;
+import de.notEOF.core.logging.LocalLog;
+import de.notEOF.core.server.Server;
 
 /**
  * When used several times in one file use this: import static
@@ -505,5 +507,20 @@ public class Util {
             }
         }
         updatingObservers = false;
+    }
+
+    /**
+     * Lookup for the EventType by className of NotEOFEvent
+     * 
+     * @param className
+     *            the class name (canonical if possible)
+     * @return The EventType that is stored at a member of the class NotEOFEvent
+     * @throws ActionFailedException
+     *             Thrown if EventType could not be evaluated (e.g. because of
+     *             the NotEOFEvent class was not found.
+     */
+    public static EventType lookForEventType(String className) throws ActionFailedException {
+        NotEOFEvent event = EventFinder.getNotEOFEvent(Server.getApplicationHome(), className);
+        return event.getEventType();
     }
 }

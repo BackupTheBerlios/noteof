@@ -5,8 +5,8 @@ import java.util.List;
 
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.interfaces.NotEOFConfiguration;
+import de.notEOF.core.logging.LocalLog;
 import de.notEOF.core.util.Util;
-import de.notIOC.logging.LocalLog;
 
 /**
  * Represents the configuration of a chain which is stored in the configuration

@@ -1,7 +1,6 @@
 package de.happtick.configuration;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import de.notEOF.core.exception.ActionFailedException;
@@ -81,18 +80,9 @@ public class EventConfigurationWrapper {
         map.put("keyName", String.valueOf(eventConfiguration.getKeyName()));
         map.put("keyValue", String.valueOf(eventConfiguration.getKeyValue()));
         map.put("applicationId", String.valueOf(eventConfiguration.getApplicationId()));
-
-        // number of links
-        List<EventAction> eventActions = eventConfiguration.getEventActionList();
-        int numberOfActions = eventActions.size();
-        map.put("actionCount", String.valueOf(numberOfActions));
-        if (0 < numberOfActions) {
-            for (int i = 0; i < numberOfActions; i++) {
-                map.put("id_" + i, String.valueOf(eventActions.get(i).getId()));
-                map.put("actionType_" + i, String.valueOf(eventActions.get(i).getActionType()));
-                map.put("applicationType_" + i, String.valueOf(eventActions.get(i).getApplicationType()));
-            }
-        }
+        map.put("addresseeId", String.valueOf(eventConfiguration.getAddresseeId()));
+        map.put("addresseeType", String.valueOf(eventConfiguration.getAddresseeType()));
+        map.put("action", String.valueOf(eventConfiguration.getAction()));
     }
 
     /*
@@ -100,23 +90,13 @@ public class EventConfigurationWrapper {
      */
     private void createEventConfiguration() {
         eventConfiguration = new EventConfiguration(Long.valueOf(map.get("eventId")));
-
         // atomize the vars to class attributes
         eventConfiguration.setEventClassName(map.get("eventClassName"));
         eventConfiguration.setKeyName(map.get("keyName"));
         eventConfiguration.setKeyValue(map.get("keyValue"));
         eventConfiguration.setApplicationId(Util.parseLong(map.get("applicationId"), -1));
-
-        int numberOfActions = Util.parseInt(map.get("actionCount"), 0);
-        if (0 < numberOfActions) {
-            for (int i = 0; i < numberOfActions; i++) {
-                Long id = Util.parseLong(map.get("id_" + i), 0);
-                String actionType = map.get("actionType_" + i);
-                String applicationType = map.get("applicationType_" + i);
-
-                EventAction action = new EventAction(id, applicationType, actionType);
-                eventConfiguration.addEventAction(action);
-            }
-        }
+        eventConfiguration.setAddresseeId(Util.parseLong(map.get("addresseeId"), -1));
+        eventConfiguration.setAddresseeType(map.get("addresseeType"));
+        eventConfiguration.setAction(map.get("action"));
     }
 }

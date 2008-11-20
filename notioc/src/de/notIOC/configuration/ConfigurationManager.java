@@ -7,7 +7,7 @@ import javax.naming.NamingException;
 import javax.security.auth.login.Configuration;
 
 import de.notIOC.exception.NotIOCException;
-import de.notIOC.logging.LocalLog;
+import de.notIOC.logging.NotIOCLocalLog;
 import de.notIOC.util.Util;
 
 /**
@@ -35,7 +35,7 @@ public class ConfigurationManager {
         try {
             loadConfiguration();
         } catch (NotIOCException e) {
-            LocalLog.error("ConfigurationManager kann nicht geladen werden.", e);
+            NotIOCLocalLog.error("ConfigurationManager kann nicht geladen werden.", e);
         }
     }
 
@@ -86,7 +86,7 @@ public class ConfigurationManager {
     private void loadConfiguration() throws NotIOCException {
         File cfgRoot = new File(getConfigRoot());
         String configFilePath = new File(cfgRoot, configFile).getAbsolutePath();
-        LocalLog.info("ConfigManager ConfigFile: " + configFilePath);
+        NotIOCLocalLog.info("ConfigManager ConfigFile: " + configFilePath);
         ConfigurationStore.setMasterXmlFile(configFilePath);
     }
 
@@ -134,7 +134,7 @@ public class ConfigurationManager {
             try {
                 applicationHome = (String) new InitialContext().lookup("java:comp/env/" + homeVarName);
                 if (applicationHome != null)
-                    LocalLog.info("Home '" + homeVarName + "' found as initial context: " + applicationHome);
+                    NotIOCLocalLog.info("Home '" + homeVarName + "' found as initial context: " + applicationHome);
             } catch (NamingException e) {
             }
         }
@@ -142,13 +142,13 @@ public class ConfigurationManager {
         if (applicationHome == null) {
             applicationHome = System.getProperty(homeVarName);
             if (applicationHome != null)
-                LocalLog.info("Home '" + homeVarName + "' found in VM variable: " + applicationHome);
+                NotIOCLocalLog.info("Home '" + homeVarName + "' found in VM variable: " + applicationHome);
         }
         // NOTEOF_HOME as system variable
         if (applicationHome == null) {
             applicationHome = System.getenv(homeVarName);
             if (applicationHome != null)
-                LocalLog.info("Home '" + homeVarName + "' found in system variable: " + applicationHome);
+                NotIOCLocalLog.info("Home '" + homeVarName + "' found in system variable: " + applicationHome);
         }
         if (applicationHome == null) {
             throw new RuntimeException("Could not determine home variable: " + homeVarName);

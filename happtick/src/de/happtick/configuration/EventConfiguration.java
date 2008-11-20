@@ -1,12 +1,9 @@
 package de.happtick.configuration;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.interfaces.NotEOFConfiguration;
+import de.notEOF.core.logging.LocalLog;
 import de.notEOF.core.util.Util;
-import de.notIOC.logging.LocalLog;
 
 /**
  * Represents the configuration of an event which is stored in the configuration
@@ -23,7 +20,9 @@ public class EventConfiguration {
     private String keyName;
     private String keyValue;
     private Long applicationId;
-    private List<EventAction> actionList = new ArrayList<EventAction>();
+    private Long addresseeId;
+    private String addresseeType;
+    private String action;
 
     /**
      * Simple constructor
@@ -60,31 +59,17 @@ public class EventConfiguration {
             keyValue = conf.getAttribute(node, "keyValue");
             // applicationId (maybe null)
             applicationId = Util.parseLong(conf.getAttribute(node, "applicationId"), -1);
-
-            // list of event actions
-            // scheduler.events.event1.action
-            List<String> actionNames = conf.getTextList(node + ".action");
-            if (null != actionNames) {
-                for (String actionName : actionNames) {
-                    node = "scheduler.events." + nodeNameEvent + "." + actionName;
-                    // scheduler.events.event1.action0
-                    EventAction action = new EventAction(node, conf);
-                    actionList.add(action);
-                }
-            }
+            // addresseeId (maybe null)
+            addresseeId = Util.parseLong(conf.getAttribute(node, "addresseeId"), -1);
+            // addresseeType (maybe null)
+            addresseeType = conf.getAttribute(node, "addresseeType");
+            // action (maybe null)
+            action = conf.getAttribute(node, "action");
 
         } catch (Exception ex) {
             LocalLog.error("Konfiguration der Events konnte nicht fehlerfrei gelesen werden. Event: " + nodeNameEvent, ex);
             throw new ActionFailedException(401, "Initialisierung EventConfiguration", ex);
         }
-    }
-
-    public List<EventAction> getEventActionList() {
-        return actionList;
-    }
-
-    public void addEventAction(EventAction eventAction) {
-        actionList.add(eventAction);
     }
 
     public Long getEventId() {
@@ -131,4 +116,41 @@ public class EventConfiguration {
         return this.applicationId;
     }
 
+    public void setAddresseeId(Long addresseeId) {
+        this.addresseeId = addresseeId;
+    }
+
+    public Long getAddresseeId() {
+        return this.addresseeId;
+    }
+
+    /**
+     * @param addresseeType
+     *            the addresseeType to set
+     */
+    public void setAddresseeType(String addresseeType) {
+        this.addresseeType = addresseeType;
+    }
+
+    /**
+     * @return the addresseeType
+     */
+    public String getAddresseeType() {
+        return addresseeType;
+    }
+
+    /**
+     * @param action
+     *            the action to set
+     */
+    public void setAction(String action) {
+        this.action = action;
+    }
+
+    /**
+     * @return the action
+     */
+    public String getAction() {
+        return action;
+    }
 }

@@ -7,7 +7,7 @@ import javax.crypto.spec.SecretKeySpec;
 
 import com.thoughtworks.xstream.core.util.Base64Encoder;
 
-import de.notIOC.logging.LocalLog;
+import de.notIOC.logging.NotIOCLocalLog;
 
 public class Krypto {
 
@@ -61,12 +61,12 @@ public class Krypto {
      */
     public void init(String keyText) throws SecurityException {
         if (null == keyText) {
-            LocalLog.error("Initialisierung der Kryptisierung mit null-Key nicht zulässig.");
+            NotIOCLocalLog.error("Initialisierung der Kryptisierung mit null-Key nicht zulässig.");
             throw new SecurityException("Kryptisierung konnte wegen null-Key nicht initialisiert werden.");
         }
 
         if (keyText.length() != 16) {
-            LocalLog.error("Initialisierung der Kryptisierung mit Key-Länge <> 16 nicht zulässig.");
+            NotIOCLocalLog.error("Initialisierung der Kryptisierung mit Key-Länge <> 16 nicht zulässig.");
             throw new SecurityException("Kryptisierung konnte wegen falscher Key-Länge nicht initialisiert werden.");
         }
 
@@ -80,7 +80,7 @@ public class Krypto {
             encryptCipher.init(Cipher.ENCRYPT_MODE, secretKey);
             decryptCipher.init(Cipher.DECRYPT_MODE, secretKey);
         } catch (Exception e) {
-            LocalLog.error("Kryptisierung konnte nicht initialisiert werden", e);
+            NotIOCLocalLog.error("Kryptisierung konnte nicht initialisiert werden", e);
             throw new SecurityException("Kryptisierung konnte nicht initialisiert werden", e);
         }
     }
@@ -104,7 +104,7 @@ public class Krypto {
             byte[] b = str.getBytes(this.charset);
             return encryptCipher.doFinal(b);
         } catch (Exception e) {
-            LocalLog.error("Text konnte nicht kryptisiert werden", e);
+            NotIOCLocalLog.error("Text konnte nicht kryptisiert werden", e);
             throw new SecurityException("Text konnte nicht kryptisiert werden.", e);
         }
     }
@@ -126,7 +126,7 @@ public class Krypto {
             byte[] b = decryptCipher.doFinal(dec);
             return new String(b, this.charset);
         } catch (Exception e) {
-            LocalLog.error("Text konnte nicht dekryptisiert werden", e);
+            NotIOCLocalLog.error("Text konnte nicht dekryptisiert werden", e);
             throw new SecurityException("Text konnte nicht dekryptisiert werden.", e);
         }
     }

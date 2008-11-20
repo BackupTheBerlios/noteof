@@ -5,8 +5,8 @@ import de.happtick.core.exception.HapptickException;
 import de.happtick.core.util.ExternalCalls;
 import de.notEOF.core.interfaces.NotEOFClient;
 import de.notEOF.core.interfaces.NotEOFEvent;
+import de.notEOF.core.logging.LocalLog;
 import de.notEOF.core.util.Util;
-import de.notIOC.logging.LocalLog;
 
 public class HapptickApplicationStarter {
     NotEOFClient notEOFClient;

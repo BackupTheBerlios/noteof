@@ -67,7 +67,7 @@ public class ChainLink {
     }
 
     /**
-     * @return the id
+     * @return the id of application or chain
      */
     public Long getId() {
         return id;
