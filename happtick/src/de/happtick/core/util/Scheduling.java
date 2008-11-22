@@ -10,12 +10,13 @@ import java.util.Map;
 import java.util.Set;
 
 import de.happtick.configuration.ApplicationConfiguration;
+import de.happtick.configuration.ChainLink;
 import de.happtick.configuration.EventConfiguration;
 import de.happtick.core.MasterTable;
 import de.happtick.core.events.StartEvent;
+import de.happtick.core.schedule.ChainAction;
 import de.notEOF.core.enumeration.EventType;
 import de.notEOF.core.exception.ActionFailedException;
-import de.notEOF.core.interfaces.NotEOFEvent;
 import de.notEOF.core.logging.LocalLog;
 import de.notEOF.core.server.Server;
 import de.notEOF.core.util.Util;
@@ -210,18 +211,22 @@ public class Scheduling {
      *            Complete List of all EventConfigurations (MasterTable)
      * @return Filtered EventTypes - matching to the conditions above.
      */
-    public static List<EventType> filterObservedEvents(String addresseeType, Long addresseeId, List<EventConfiguration> eventConfigurations) {
+    public static List<EventType> filterObservedEventsForChain(Long addresseeId, Map<String, ChainAction> chainActions,
+            List<EventConfiguration> eventConfigurations) {
         // only one entry for the different event types is needed...
         // so a map simplifies filtering that
         Map<EventType, EventType> types = new HashMap<EventType, EventType>();
         try {
             for (EventConfiguration conf : eventConfigurations) {
-                if (conf.getAddresseeType().equalsIgnoreCase(addresseeType)) {
-                    if (Util.isEmpty(conf.getAddresseeId()) || //
-                            conf.getAddresseeId().equals(addresseeId)) {
-                        EventType type = Util.lookForEventType(conf.getEventClassName());
-                        types.put(type, type);
-                    }
+                if (Util.isEmpty(conf.getAddresseeId()) || //
+                        conf.getAddresseeId().equals(addresseeId)) {
+                    EventType type = Util.lookForEventType(conf.getEventClassName());
+                    types.put(type, type);
+
+                    // action merken
+                    ChainAction action = new ChainAction(conf.getAction(), conf.getAddresseeType(), conf.getAddresseeId(), true);
+                    String typeName = type.name();
+                    chainActions.put(typeName + conf.getKeyName() + conf.getKeyValue(), action);
                 }
             }
         } catch (ActionFailedException e) {
@@ -235,71 +240,64 @@ public class Scheduling {
     }
 
     /**
-     * Delivers a list with EventConfiguration Ids which match to some
-     * conditions.
+     * Updates a EventTypes list with EventTypes for chain configurations.
      * <p>
+     * Takes ChainLinks and looks for prevent or condition events. If there is
+     * an event and it is not yet stored in the list the EventType of the found
+     * event will be added to the list.
      * 
-     * @param addresseeType
-     *            'chain', 'application', 'event'
-     * @param addresseeId
-     *            id of chain, application or event
-     * @param eventConfigurations
-     *            Complete List of all EventConfigurations (MasterTable)
-     * @return Filtered EventConfigurations - matching to the conditions above.
+     * @param observedEvents
+     *            List with EventTypes
+     * @param link
+     *            The ChainLink contains perhaps a prevent or a condition event.
      */
-    public static List<Long> filterObservedConfigurations(String addresseeType, Long addresseeId, List<EventConfiguration> completeListEventConfigurations) {
-        // only one entry for the different event types is needed...
-        // so a map simplifies filtering that
-        List<Long> configurationIds = new ArrayList<Long>();
-        for (EventConfiguration conf : completeListEventConfigurations) {
-            if (conf.getAddresseeType().equalsIgnoreCase(addresseeType)) {
-                if (Util.isEmpty(conf.getAddresseeId()) || //
-                        conf.getAddresseeId().equals(addresseeId)) {
-                    configurationIds.add(conf.getEventId());
-                }
-            }
-        }
-        return configurationIds;
-    }
-
-    /**
-     * Delivers an action which is configured by EventType, key and value.
-     * <p>
-     * Only if all parameters match, the action can be found.
-     * 
-     * @param event
-     *            The raised event.
-     * @param eventConfigurations
-     *            List of the event configurations, maintained in single chain
-     *            startern.
-     * @return Action if found or null.
-     */
-    public static String filterActionOfEvent(NotEOFEvent event, List<Long> eventConfigurationIds) {
-        String action = null;
-        for (Long confId : eventConfigurationIds) {
-            EventConfiguration conf = MasterTable.getEventConfiguration(confId);
-            if (event.getClass().getName().equals(conf.getEventClassName()) || //
-                    event.getClass().getCanonicalName().equals(conf.getEventClassName())) {
-                // event und konf. passen
-
-                if (!Util.isEmpty(conf.getKeyName())) {
-                    // ein key wurde in der Konfiguration angegeben
-                    if (Util.isEmpty(conf.getKeyValue())) {
-                        LocalLog.warn("Event-Konfiguration mit Key aber ohne Value. Id: " + conf.getEventId());
-                    }
-
-                    // key, value gleich?
-                    if (!Util.isEmpty(event.getAttribute(conf.getKeyName())) && //
-                            event.getAttribute(conf.getKeyName()).equals(conf.getKeyValue())) {
-                        action = conf.getAction();
+    public static void updateObservedEventsForChain(List<EventType> observedEvents, Map<String, ChainAction> chainActions, ChainLink link) {
+        // Conditions
+        if (null != link.getConditionEventId()) {
+            try {
+                EventConfiguration conf = MasterTable.getEventConfiguration(link.getConditionEventId());
+                EventType type = Util.lookForEventType(conf.getEventClassName());
+                boolean alreadyExists = false;
+                for (EventType existingType : observedEvents) {
+                    if (type.equals(existingType)) {
+                        alreadyExists = true;
                         break;
                     }
-                } else {
-                    // kein key wurde verwendet
-                    action = conf.getAction();
                 }
+                if (!alreadyExists)
+                    observedEvents.add(type);
+
+                // action merken
+                ChainAction action = new ChainAction("condition", link.getApplicationType(), link.getAddresseeId(), link.isSkip());
+                String typeName = type.name();
+                chainActions.put(typeName + link.getConditionKey() + link.getConditionValue(), action);
+            } catch (ActionFailedException e) {
+                LocalLog.warn("ChainLink konnte nicht auf Condition untersucht werden.", e);
+            }
+
+        }
+        // Prevents
+        if (null != link.getPreventEventId()) {
+            try {
+                EventConfiguration conf = MasterTable.getEventConfiguration(link.getPreventEventId());
+                EventType type = Util.lookForEventType(conf.getEventClassName());
+                boolean alreadyExists = false;
+                for (EventType existingType : observedEvents) {
+                    if (type.equals(existingType)) {
+                        alreadyExists = true;
+                        break;
+                    }
+                }
+                if (!alreadyExists)
+                    observedEvents.add(type);
+
+                // action merken
+                ChainAction action = new ChainAction("prevent", link.getApplicationType(), link.getAddresseeId(), link.isSkip());
+                String typeName = type.name();
+                chainActions.put(typeName + link.getPreventKey() + link.getPreventValue(), action);
+            } catch (ActionFailedException e) {
+                LocalLog.warn("ChainLink konnte nicht auf Prevent untersucht werden.", e);
             }
         }
-        return action;
     }
 }

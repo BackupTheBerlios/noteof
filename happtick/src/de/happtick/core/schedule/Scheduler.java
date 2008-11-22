@@ -180,7 +180,9 @@ public class Scheduler {
     private void startAllChainSchedulers() {
         try {
             for (ChainConfiguration conf : MasterTable.getChainConfigurationsAsList()) {
-                startChainScheduler(conf);
+                // start only if this chain is not part of another chain
+                if (!conf.isDepends())
+                    startChainScheduler(conf);
             }
         } catch (ActionFailedException afx) {
             LocalLog.error("Fehler bei Start der Chain-Scheduler.", afx);
@@ -194,20 +196,12 @@ public class Scheduler {
         return chainSched;
     }
 
-    // TODO ChainScheduler evtl. als Observer, weil der doch jede Menge events
-    // abfangen muss
-    // Wenn ein Event rein kommt, prufen, ob prevent oder condition und ob auch
-    // die uebrigen Parameter passen (key, value). Wenn ja mit setEvent in die
-    // interne Liste...
     private class ChainScheduler implements Runnable, EventObserver {
         private ChainConfiguration conf;
         private Map<EventType, NotEOFEvent> uniqueEvents = new HashMap<EventType, NotEOFEvent>();
-        // TODO String: applicationType + application id +
-        private Map<String, Long> conditionEvents;
-        private Map<String, Long> preventEvents;
+        private Map<String, ChainAction> eventActions;
         private boolean stopped = false;
         private List<EventType> observedEvents;
-        private List<Long> observedConfigurationIds;
         // TODO lastStartedListIndex -> so weiss ich, welche appl. als
         // naechste
         // dran ist.
@@ -218,12 +212,12 @@ public class Scheduler {
             try {
                 // filter events and configurations which the chain is
                 // interested in
-                this.observedEvents = Scheduling.filterObservedEvents("chain", conf.getChainId(), MasterTable.getEventConfigurationsAsList());
-                //TODO hinzufügen der events, die als condition oder prevent in den chain-konfigurationen sind
-                for (ChainLink link :  conf.getChainLinkList()){
-                    if (link.getConditionEventId())
+                this.observedEvents = Scheduling.filterObservedEventsForChain(conf.getChainId(), eventActions, MasterTable.getEventConfigurationsAsList());
+                // Hinzufügen der events, die als condition oder prevent in
+                // den chain-konfigurationen sind
+                for (ChainLink link : conf.getChainLinkList()) {
+                    Scheduling.updateObservedEventsForChain(this.observedEvents, eventActions, link);
                 }
-                this.observedConfigurationIds = Scheduling.filterObservedConfigurations("chain", conf.getChainId(), MasterTable.getEventConfigurationsAsList());
             } catch (ActionFailedException e) {
                 LocalLog.warn("Scheduling für Chain konnte nicht aktiviert werden.", e);
             }
@@ -232,7 +226,12 @@ public class Scheduler {
         }
 
         protected void setEvent(NotEOFEvent event) {
-            String action = Scheduling.filterActionOfEvent(event, this.observedConfigurationIds);
+            // TODO unterscheiden in Aktionen (actions filtern) für
+            // standard-events und für
+            // prevent und condition
+            // merken, wenn prevent, condition eingetroffen ist
+            // stopevent einer anwendung: naechstes teil starten
+            // gestoppt wird chain von aussen!
 
             uniqueEvents.put(event.getEventType(), event);
         }
@@ -286,8 +285,7 @@ public class Scheduler {
 
         @Override
         public void update(Service arg0, NotEOFEvent arg1) {
-            if (EventType.EVENT_ACTION)
-            
+
         }
     }
 

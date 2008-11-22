@@ -175,7 +175,7 @@ public class MasterTable {
      * Delivers the configuration object for one event.
      * 
      * @param eventId
-     *            The identifier of the event.
+     *            The identifier of the event like stored in the configuration.
      * @return The object if found or null.
      */
     public synchronized static EventConfiguration getEventConfiguration(Long eventId) {

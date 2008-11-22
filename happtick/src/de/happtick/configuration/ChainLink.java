@@ -5,7 +5,8 @@ import de.notEOF.core.interfaces.NotEOFConfiguration;
 import de.notEOF.core.util.Util;
 
 public class ChainLink {
-    private Long id;
+    private Long linkId;
+    private Long addresseeId;
     private String applicationType;
     private Long conditionEventId;
     private String conditionKey;
@@ -17,7 +18,8 @@ public class ChainLink {
 
     public ChainLink(String node, NotEOFConfiguration conf) throws ActionFailedException {
         // sample node: scheduler.chains.chain1.link0
-        id = Util.parseLong(conf.getAttribute(node, "id"), -1);
+        linkId = Util.parseLong(conf.getAttribute(node, "linkId"), -1);
+        addresseeId = (Util.parseLong(conf.getAttribute(node, "addresseId"), -1));
         applicationType = conf.getAttribute(node, "applicationType");
         conditionEventId = Util.parseLong(conf.getAttribute(node, "conditionEventId"), -1);
         conditionKey = conf.getAttribute(node, "conditionKey");
@@ -28,9 +30,10 @@ public class ChainLink {
         skip = Util.parseBoolean(conf.getAttribute(node, "skip"), false);
     }
 
-    public ChainLink(Long id, String applicationType, Long conditionEventId, String conditionKey, String conditionValue, Long preventEventId,
-            String preventKey, String preventValue, boolean skip) {
-        this.id = id;
+    public ChainLink(Long linkId, Long addresseId, String applicationType, Long conditionEventId, String conditionKey, String conditionValue,
+            Long preventEventId, String preventKey, String preventValue, boolean skip) {
+        this.linkId = linkId;
+        this.addresseeId = (addresseId);
         this.applicationType = applicationType;
         this.conditionEventId = conditionEventId;
         this.conditionKey = conditionKey;
@@ -49,7 +52,7 @@ public class ChainLink {
     }
 
     /**
-     * @return the preventEventId
+     * @return the preventEventId. Is an event id.
      */
     public Long getPreventEventId() {
         if ((null != preventEventId) && (-1 != preventEventId))
@@ -58,7 +61,7 @@ public class ChainLink {
     }
 
     /**
-     * @return the conditionEventId
+     * @return the conditionEventId. Is an event id.
      */
     public Long getConditionEventId() {
         if ((null != conditionEventId) && (-1 != conditionEventId))
@@ -67,10 +70,10 @@ public class ChainLink {
     }
 
     /**
-     * @return the id of application or chain
+     * @return the id of this link
      */
-    public Long getId() {
-        return id;
+    public Long getLinkId() {
+        return linkId;
     }
 
     /**
@@ -138,5 +141,20 @@ public class ChainLink {
      */
     public String getPreventValue() {
         return preventValue;
+    }
+
+    /**
+     * @param addresseId
+     *            the addresseId to set
+     */
+    public void setAddresseeId(Long addresseId) {
+        this.addresseeId = addresseId;
+    }
+
+    /**
+     * @return the addresseId
+     */
+    public Long getAddresseeId() {
+        return addresseeId;
     }
 }
