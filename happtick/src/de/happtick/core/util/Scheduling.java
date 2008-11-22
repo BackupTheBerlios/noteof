@@ -268,7 +268,7 @@ public class Scheduling {
                     observedEvents.add(type);
 
                 // action merken
-                ChainAction action = new ChainAction("condition", link.getApplicationType(), link.getAddresseeId(), link.isSkip());
+                ChainAction action = new ChainAction("condition", link.getAddresseeType(), link.getAddresseeId(), link.isSkip());
                 String typeName = type.name();
                 chainActions.put(typeName + link.getConditionKey() + link.getConditionValue(), action);
             } catch (ActionFailedException e) {
@@ -292,7 +292,7 @@ public class Scheduling {
                     observedEvents.add(type);
 
                 // action merken
-                ChainAction action = new ChainAction("prevent", link.getApplicationType(), link.getAddresseeId(), link.isSkip());
+                ChainAction action = new ChainAction("prevent", link.getAddresseeType(), link.getAddresseeId(), link.isSkip());
                 String typeName = type.name();
                 chainActions.put(typeName + link.getPreventKey() + link.getPreventValue(), action);
             } catch (ActionFailedException e) {

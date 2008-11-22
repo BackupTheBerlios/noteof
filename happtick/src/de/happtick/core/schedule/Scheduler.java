@@ -2,14 +2,19 @@ package de.happtick.core.schedule;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import de.happtick.configuration.ApplicationConfiguration;
 import de.happtick.configuration.ChainConfiguration;
 import de.happtick.configuration.ChainLink;
 import de.happtick.configuration.EventConfiguration;
 import de.happtick.core.MasterTable;
+import de.happtick.core.events.ChainStoppedEvent;
+import de.happtick.core.events.StoppedEvent;
+import de.happtick.core.exception.HapptickException;
 import de.happtick.core.util.Scheduling;
 import de.notEOF.configuration.LocalConfiguration;
 import de.notEOF.core.enumeration.EventType;
@@ -181,15 +186,19 @@ public class Scheduler {
         try {
             for (ChainConfiguration conf : MasterTable.getChainConfigurationsAsList()) {
                 // start only if this chain is not part of another chain
-                if (!conf.isDepends())
-                    startChainScheduler(conf);
+                try {
+                    if (!conf.isDepends())
+                        startChainScheduler(conf);
+                } catch (ActionFailedException afx) {
+                    LocalLog.error("Fehler bei Start eines Chain-Scheduler.", afx);
+                }
             }
         } catch (ActionFailedException afx) {
             LocalLog.error("Fehler bei Start der Chain-Scheduler.", afx);
         }
     }
 
-    private ChainScheduler startChainScheduler(ChainConfiguration conf) {
+    private ChainScheduler startChainScheduler(ChainConfiguration conf) throws HapptickException {
         ChainScheduler chainSched = new ChainScheduler(conf);
         Thread thread = new Thread(chainSched);
         thread.start();
@@ -198,70 +207,249 @@ public class Scheduler {
 
     private class ChainScheduler implements Runnable, EventObserver {
         private ChainConfiguration conf;
-        private Map<EventType, NotEOFEvent> uniqueEvents = new HashMap<EventType, NotEOFEvent>();
-        private Map<String, ChainAction> eventActions;
+        private Map<String, ChainAction> raisedEventActions = new HashMap<String, ChainAction>();
+        private Map<String, ChainAction> expectedEventActions;
         private boolean stopped = false;
         private List<EventType> observedEvents;
-        // TODO lastStartedListIndex -> so weiss ich, welche appl. als
-        // naechste
-        // dran ist.
-        private int lastStartedListIndex = -1;
+        private int nextStartConfIndex = 0;
 
-        protected ChainScheduler(ChainConfiguration conf) {
+        /*
+         * Register events, store actions for fast detection and starting of
+         * applications or chains. Start first application.
+         */
+        protected ChainScheduler(ChainConfiguration conf) throws HapptickException {
             this.conf = conf;
+            // check if there are links
+            if (Util.isEmpty(conf.getChainLinkList().size())) {
+                LocalLog.warn("Chain-Konfiguration ohne Link-Angaben. ChainId: " + conf.getChainId());
+                throw new HapptickException(403L, "ChainId: " + conf.getChainId());
+            }
+
             try {
+                // standard event 'stopped'
+                StoppedEvent event = new StoppedEvent();
+                this.observedEvents.add(event.getEventType());
+
                 // filter events and configurations which the chain is
                 // interested in
-                this.observedEvents = Scheduling.filterObservedEventsForChain(conf.getChainId(), eventActions, MasterTable.getEventConfigurationsAsList());
+                this.observedEvents = Scheduling.filterObservedEventsForChain(conf.getChainId(), expectedEventActions, MasterTable
+                        .getEventConfigurationsAsList());
                 // Hinzufügen der events, die als condition oder prevent in
                 // den chain-konfigurationen sind
                 for (ChainLink link : conf.getChainLinkList()) {
-                    Scheduling.updateObservedEventsForChain(this.observedEvents, eventActions, link);
+                    Scheduling.updateObservedEventsForChain(this.observedEvents, expectedEventActions, link);
                 }
             } catch (ActionFailedException e) {
                 LocalLog.warn("Scheduling für Chain konnte nicht aktiviert werden.", e);
             }
             // Events are filtered - now register as observer
             Server.getInstance().registerForEvents(this);
+
+            // Ignition
+            try {
+                startAddressee();
+            } catch (HapptickException e) {
+                LocalLog.error("Fehler bei Initialisierung eines ChainSchedulers.", e);
+            }
         }
 
         protected void setEvent(NotEOFEvent event) {
-            // TODO unterscheiden in Aktionen (actions filtern) für
-            // standard-events und für
-            // prevent und condition
-            // merken, wenn prevent, condition eingetroffen ist
-            // stopevent einer anwendung: naechstes teil starten
-            // gestoppt wird chain von aussen!
+            // wenn gestoppt - keine weitere Verarbeitung von events
+            if (stopped)
+                return;
 
-            uniqueEvents.put(event.getEventType(), event);
+            // Sonderfall StopEvent
+            if (EventType.EVENT_CHAIN_STOP.equals(event.getEventType()) && //
+                    String.valueOf(conf.getChainId()).equals(event.getAttribute("addresseeId"))) {
+                stop();
+                // this chain may not do anything more...
+                return;
+            }
+
+            // Sonderfall StoppedEvent
+            // Pruefen, ob das der Vorgaenger war
+            if (EventType.EVENT_APPLICATION_STOPPED.equals(event.getEventType()) || //
+                    EventType.EVENT_CHAIN_STOPPED.equals(event.getEventType())) {
+                boolean executeNext = false;
+                boolean chainEndReached = false;
+                int index = nextStartConfIndex - 1;
+                if (index < 0) {
+                    index = conf.getChainLinkList().size() - 1;
+                    chainEndReached = true;
+                }
+
+                if (EventType.EVENT_APPLICATION_STOPPED.equals(event.getEventType())) {
+                    if (String.valueOf(conf.getChainLinkList().get(index).getAddresseeId()).equals(event.getAttribute("applicationId"))) {
+                        executeNext = true;
+                    }
+                }
+                if (EventType.EVENT_CHAIN_STOPPED.equals(event.getEventType())) {
+                    if (String.valueOf(conf.getChainLinkList().get(index).getAddresseeId()).equals(event.getAttribute("chainId"))) {
+                        executeNext = true;
+                    }
+                }
+
+                if (executeNext) {
+                    // application or sub-chain of this chain was stopped
+                    try {
+                        // if sub-chain or loop is not allowed and the stopped
+                        // application/ chain was the last of the chain then
+                        // stop this chain
+                        if ((conf.isDepends() || !conf.isLoop()) && chainEndReached) {
+                            // Ende-Event losschicken
+                            ChainStoppedEvent stoppedEvent = new ChainStoppedEvent();
+                            try {
+                                this.stop();
+                                stoppedEvent.addAttribute("chainId", String.valueOf(conf.getChainId()));
+                                Server.getInstance().updateObservers(null, stoppedEvent);
+                                // keine weitere Verarbeitung!
+                                return;
+                            } catch (ActionFailedException e) {
+                            }
+                        }
+
+                        // OK - next chain or application please
+                        startAddressee();
+                        // RETURN!
+                        // Code below will not be used!
+                        return;
+                    } catch (HapptickException e) {
+                        LocalLog.error("Fehler bei Start nach Erhalt eines Stopp-Events des Vorgaengers.", e);
+                    }
+                }
+            }
+
+            // Next code only will be executed if before there was no exit by
+            // return!
+            // typ + alle key-value paare durchforsten
+            String eventTypeName = event.getEventType().name();
+            Set<String> keySet = event.getAttributes().keySet();
+            Iterator<String> it = keySet.iterator();
+            while (it.hasNext()) {
+                String key = it.next();
+                String value = event.getAttribute(key);
+
+                String actionKey = eventTypeName + key + value;
+                ChainAction action = expectedEventActions.get(actionKey);
+                if (null != action) {
+                    // was ist mit der action zu tun?
+                    if ("reset".equalsIgnoreCase(action.getAction())) {
+                        // wieder mit der ersten Anwendung starten, alle
+                        // eingetroffen events loeschen
+                        reset();
+                    }
+                    if ("clear".equalsIgnoreCase(action.getAction())) {
+                        clear();
+                    }
+                    if ("prevent".equalsIgnoreCase(action.getAction()) || //
+                            "condition".equalsIgnoreCase(action.getAction())) {
+                        raisedEventActions.put(actionKey, action);
+                    }
+                }
+            }
         }
 
-        protected void clear() {
-            uniqueEvents.clear();
+        private void clear() {
+            raisedEventActions.clear();
+        }
+
+        private void reset() {
+            nextStartConfIndex = 0;
+            clear();
         }
 
         /*
-         * Check what to do with the next application
+         * Startet eine Anwendung oder eine Chain
          */
-        private boolean conditionsValid() {
-            // TODO pruefen, ob kein prevent, und ob condition ok
-            // dann das event loeschen
-            // condition: warten bis condition mit entspr. Werten eintritt;
-            // bleibt bis clear erhalten
-            // prevent: verhindert den Start der Anwendung bis zum clear
-            return false;
+        private void startAddressee() throws HapptickException {
+            Long addresseeId = conf.getChainLinkList().get(nextStartConfIndex).getAddresseeId();
+            String addresseeType = conf.getChainLinkList().get(nextStartConfIndex).getAddresseeType();
+            ChainLink link = conf.getChainLinkList().get(nextStartConfIndex);
+
+            try {
+                // application
+                if ("application".equalsIgnoreCase(addresseeType)) {
+                    // Start application
+                    ApplicationConfiguration applConf = MasterTable.getApplicationConfiguration(addresseeId);
+                    if (conditionsValid(link)) {
+                        Scheduling.startApplication(applConf);
+                    }
+                }
+                // chain
+                if ("chain".equalsIgnoreCase(addresseeType)) {
+                    // Start application
+                    ChainConfiguration chainConf = MasterTable.getChainConfiguration(addresseeId);
+                    if (conditionsValid(link)) {
+                        startChainScheduler(chainConf);
+                    }
+                }
+                ++nextStartConfIndex;
+                if (nextStartConfIndex >= conf.getChainLinkList().size()) {
+                    nextStartConfIndex = 0;
+                }
+            } catch (ActionFailedException e) {
+                throw new HapptickException(502L, addresseeType, e);
+            }
+        }
+
+        /*
+         * Check if prevent or condition (if required) are fired before start
+         * application or chain
+         */
+        private boolean conditionsValid(ChainLink link) {
+            String reason = "";
+            boolean conditionEventFound = true;
+            boolean preventEventFound = false;
+            if (!Util.isEmpty(link.getConditionKey())) {
+                conditionEventFound = false;
+                for (EventType type : this.observedEvents) {
+                    String typeName = type.name();
+                    String actionKey = typeName + link.getConditionKey() + link.getConditionValue();
+
+                    ChainAction action = raisedEventActions.get(actionKey);
+                    if (!Util.isEmpty(action)) {
+                        // suche starterlaubnis
+                        if ("prevent".equalsIgnoreCase(action.getAction())) {
+                            reason = "Condition Event wurde bisher nicht gefeuert.";
+                            conditionEventFound = true;
+                        }
+                    }
+                }
+            }
+
+            if (!Util.isEmpty(link.getPreventKey())) {
+                preventEventFound = false;
+                for (EventType type : this.observedEvents) {
+                    String typeName = type.name();
+                    String actionKey = typeName + link.getPreventKey() + link.getPreventValue();
+
+                    ChainAction action = raisedEventActions.get(actionKey);
+                    if (!Util.isEmpty(action)) {
+                        // pruefe auf startverbot
+                        if ("prevent".equalsIgnoreCase(action.getAction())) {
+                            reason = "Prevent Event wurde gefeuert.";
+                            preventEventFound = true;
+                        }
+                    }
+                }
+            }
+
+            if (preventEventFound) {
+                LocalLog.info("Startbedingung wurde nicht erfuellt. " + reason);
+                return false;
+            }
+            if (!conditionEventFound) {
+                LocalLog.info("Startbedingung wurde nicht erfuellt. " + reason);
+                return false;
+            }
+
+            // alle Bedingungen erfuellt
+            return true;
         }
 
         protected void stop() {
             stopped = true;
         }
-
-        // TODO
-        // vor dem Start jeder anwendung prï¿½fen, ob conditionevent oder
-        // preventevent vorliegt
-        // erste anwendung starten
-        // mit jedem einer hier gestarteten anwendung erhaltenen stopp die
-        // nï¿½chste anwendung starten, wenn bedingungen (events) erfï¿½llt
 
         public void run() {
             try {

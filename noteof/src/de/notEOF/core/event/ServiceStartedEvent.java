@@ -4,10 +4,7 @@ import de.notEOF.core.enumeration.EventType;
 import de.notEOF.core.interfaces.NotEOFEvent;
 
 public class ServiceStartedEvent extends NotEOFBaseEvent implements NotEOFEvent {
-
-    public EventType getEventType() {
-        return EventType.EVENT_SERVICE_STARTED;
-    }
+    public final static EventType EVENT_TYPE = EventType.EVENT_SERVICE_STARTED;
 
     protected void initDescriptions() {
         descriptions.put("startDate", "[Type: Date] Date when the service started. Milliseconds of Java.Date.");

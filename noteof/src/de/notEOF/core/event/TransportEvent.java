@@ -6,18 +6,12 @@ import de.notEOF.core.enumeration.EventType;
 import de.notEOF.core.interfaces.NotEOFEvent;
 
 public class TransportEvent extends NotEOFBaseEvent implements NotEOFEvent {
-
-    private EventType eventType;
+    public EventType EVENT_TYPE = EventType.EVENT_DEFAULT;
 
     public TransportEvent(EventType eventType, Map<String, String> attributes, Map<String, String> descriptions) {
-        this.eventType = eventType;
+        this.EVENT_TYPE = eventType;
         this.descriptions = descriptions;
         this.attributes = attributes;
-    }
-
-    @Override
-    public EventType getEventType() {
-        return eventType;
     }
 
     @Override

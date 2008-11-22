@@ -76,7 +76,7 @@ public class TestHapptick {
 
                     for (ChainLink link : chainConf.getChainLinkList()) {
                         System.out.println("--- chainLink... Id:     " + link.getLinkId());
-                        System.out.println("--- chainLink... Type:   " + link.getApplicationType());
+                        System.out.println("--- chainLink... Type:   " + link.getAddresseeType());
                         System.out.println("--- chainLink... Skip:   " + link.isSkip());
                         System.out.println("--- chainLink... CEvent: " + link.getConditionEventId());
                         Thread.sleep(500);

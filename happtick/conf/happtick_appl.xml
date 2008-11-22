@@ -36,7 +36,6 @@
 		     -->
 	    	<chain>chain1</chain>
 	    	<chain>chain2</chain>
-
 		    <chain1 depends="false" loop="true" chainId="1">
 		    	<!-- The order for start applications and ...chains -->
 		    	<link>link0</link>
@@ -51,19 +50,18 @@
 		    	      preventKeyName, preventKeyValue Attribute and Value which the preventEvent mus have (optional)
 		    	      skip is optional, default is false.
 		    	-->
-				<link0 linkId="0" applicationType="application" addresseeId="1"
-				       conditionEventId="1" action="condition" conditionKeyName="exitCode" conditionKeyValue="0"
-				       preventEventId="2" action="prevent" preventKeyName="exitCode" preventKeyValue="0" skip="false">
- 				</link0>
-				<link1 linkId="1" applicationType="application" addresseeId="2"></link1>
-				<link2 linkId="2" applicationType="chain" addresseeId="2"></link2>
+				<link0 linkId="1" addresseeType="application" addresseeId="2"></link0>
+				<link1 linkId="2" addresseeType="chain"       addresseeId="2"></link1>
+				<link2 linkId="0" addresseeType="application" addresseeId="1"
+				                  conditionEventId="1" conditionKeyName="exitCode" conditionKeyValue="0"
+				                  preventEventId="2"   preventKeyName="exitCode"   preventKeyValue="0" skip="false"></link2>
 		    </chain1>
 		    
 		    <chain2 depends="true" loop="false" chainId="2">
 		    	<link>link0</link>
 		    	<link>link1</link>
-				<link0 linkId="0" applicationType="application" addresseeId="1"></link0>
-				<link1 linkId="1" applicationType="application" addresseeId="2"></link1>
+				<link0 linkId="0" addresseeType="application" addresseeId="1"></link0>
+				<link1 linkId="1" addresseeType="application" addresseeId="2"></link1>
 		    </chain2>
 	    </chains>
 	    
@@ -87,16 +85,17 @@
 			    - keyValue value of the attribute which is condition for the actions (optional)
 			    - applicationId additional filter to ensure that the event was raised by the application with given id (optional)
 			    - adresseeId additional information for which application or chain the event is appointed to.
-			    - action what to do with the application/chain - 'start', 'stop', 'clear', 'ignite' is possible here.
+			    - action what to do with the application/chain - 'start', 'stop', 'clear', 'reset', 'ignite' is possible here.
 				      clear means that the chain forgets the received events and continues it's work.
 			    - addresseeType kind of receiver 'application' or 'chain' or 'event' is possible here.
 			-->	    	
 	    	<event1 eventId="1" eventClassName="StoppedEvent" keyName="exitCode" keyValue="9" action="start" addresseeType="application" applicationId="44" addresseeId="7"></event1>
 	    	<event2 eventId="2" eventClassName="AlarmEvent"></event2>
 	    	<event3 eventId="3" eventClassName="StartedEvent"></event3>
-	    	<event4 eventId="4" eventClassName="ActionEvent" keyName="clear" keyValue="0" action="clear" addresseeType="chain" addresseeId="99"></event4>
-	    	<event5 eventId="5" eventClassName="ActionEvent" keyName="clear" keyValue="1" action="clear" addresseeType="chain"></event5>
-	    	<event6 eventId="6" eventClassName="StartedEvent" action="ignite" addresseeType="event" addresseeId="2" applicationId="2"></event6>
+	    	<event4 eventId="4" eventClassName="ActionEvent" keyName="clear" keyValue="chain" action="clear" addresseeType="chain" addresseeId="99"></event4>
+	    	<event5 eventId="5" eventClassName="ActionEvent" keyName="clear" keyValue="application" action="clear" addresseeType="application"></event5>
+	    	<event5 eventId="6" eventClassName="ActionEvent" keyName="reset" keyValue="2" action="reset" addresseeType="chain"></event5>
+	    	<event6 eventId="7" eventClassName="StartedEvent" action="ignite" addresseeType="event" addresseeId="2" applicationId="2"></event6>
 	    </events>
 	
 	    <!-- ============================================== Application Configuration ====================================

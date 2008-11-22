@@ -24,12 +24,15 @@ public enum EventType {
     EVENT_ACTION,
     EVENT_SERVICE_STARTED,
     EVENT_APPLICATION_STARTED,
+    EVENT_CHAIN_STARTED,
     /** STOP event indicates that a service / client was stopped */
     EVENT_SERVICE_STOPPED,
     EVENT_APPLICATION_STOPPED,
+    EVENT_CHAIN_STOPPED,
     /** START event indicates that a service / client was started */
     EVENT_APPLICATION_START,
     EVENT_APPLICATION_STOP,
+    EVENT_CHAIN_STOP,
     /**
      * If an error occured while starting an event, application or something
      * else

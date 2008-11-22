@@ -22,6 +22,7 @@ import de.notEOF.core.util.Util;
  */
 public abstract class NotEOFBaseEvent implements NotEOFEvent {
 
+    public static EventType EVENT_TYPE;
     protected Map<String, String> attributes;
     protected Map<String, String> descriptions = new HashMap<String, String>();
     protected EventType eventType;
@@ -44,7 +45,9 @@ public abstract class NotEOFBaseEvent implements NotEOFEvent {
         return this.attributes;
     }
 
-    public abstract EventType getEventType();
+    public EventType getEventType() {
+        return eventType;
+    }
 
     public String getAttribute(String key) {
         if (null != attributes) {

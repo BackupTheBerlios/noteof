@@ -4,10 +4,7 @@ import de.notEOF.core.enumeration.EventType;
 import de.notEOF.core.interfaces.NotEOFEvent;
 
 public class ServiceStoppedEvent extends NotEOFBaseEvent implements NotEOFEvent {
-
-    public EventType getEventType() {
-        return EventType.EVENT_SERVICE_STOPPED;
-    }
+    public final static EventType EVENT_TYPE = EventType.EVENT_SERVICE_STOPPED;
 
     @Override
     protected void initDescriptions() {

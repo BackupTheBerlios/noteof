@@ -26,6 +26,7 @@ import de.notEOF.core.interfaces.NotEOFEvent;
  * 
  */
 public class StartErrorEvent extends HapptickEvent implements NotEOFEvent {
+    public final static EventType EVENT_TYPE = EventType.EVENT_START_ERROR;
 
     protected void initDescriptions() {
         descriptions.put("applicationId", "Unique identifier which is fix given by the happtick configuration.");
@@ -35,9 +36,5 @@ public class StartErrorEvent extends HapptickEvent implements NotEOFEvent {
         descriptions.put("errorDescription", "Exact description of the Error.");
         descriptions.put("errorId", "Id specified by implementations.");
         descriptions.put("errorLevel", "Numeric value which indicates the level of the error.");
-    }
-
-    public EventType getEventType() {
-        return EventType.EVENT_START_ERROR;
     }
 }

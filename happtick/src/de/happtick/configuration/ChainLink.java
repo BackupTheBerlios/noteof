@@ -7,7 +7,7 @@ import de.notEOF.core.util.Util;
 public class ChainLink {
     private Long linkId;
     private Long addresseeId;
-    private String applicationType;
+    private String addresseeType;
     private Long conditionEventId;
     private String conditionKey;
     private String conditionValue;
@@ -20,7 +20,7 @@ public class ChainLink {
         // sample node: scheduler.chains.chain1.link0
         linkId = Util.parseLong(conf.getAttribute(node, "linkId"), -1);
         addresseeId = (Util.parseLong(conf.getAttribute(node, "addresseId"), -1));
-        applicationType = conf.getAttribute(node, "applicationType");
+        addresseeType = conf.getAttribute(node, "addresseeType");
         conditionEventId = Util.parseLong(conf.getAttribute(node, "conditionEventId"), -1);
         conditionKey = conf.getAttribute(node, "conditionKey");
         conditionValue = conf.getAttribute(node, "conditionValue");
@@ -30,11 +30,11 @@ public class ChainLink {
         skip = Util.parseBoolean(conf.getAttribute(node, "skip"), false);
     }
 
-    public ChainLink(Long linkId, Long addresseId, String applicationType, Long conditionEventId, String conditionKey, String conditionValue,
+    public ChainLink(Long linkId, Long addresseId, String addresseeType, Long conditionEventId, String conditionKey, String conditionValue,
             Long preventEventId, String preventKey, String preventValue, boolean skip) {
         this.linkId = linkId;
         this.addresseeId = (addresseId);
-        this.applicationType = applicationType;
+        this.addresseeType = addresseeType;
         this.conditionEventId = conditionEventId;
         this.conditionKey = conditionKey;
         this.conditionValue = conditionValue;
@@ -79,8 +79,8 @@ public class ChainLink {
     /**
      * @return the type
      */
-    public String getApplicationType() {
-        return applicationType;
+    public String getAddresseeType() {
+        return addresseeType;
     }
 
     /**
