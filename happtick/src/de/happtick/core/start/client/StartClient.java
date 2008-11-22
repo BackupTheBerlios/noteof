@@ -38,7 +38,7 @@ public class StartClient extends HapptickBaseClient implements MailAndEventRecip
 
     public StartClient(String serverAddress, int port, String[] args) throws HapptickException {
         // must be called before useMailsAndEvents()
-        connect(serverAddress, port, args);
+        connect(serverAddress, port, args, false);
 
         // Activate EventSystem
         useMailsAndEvents(this, false);

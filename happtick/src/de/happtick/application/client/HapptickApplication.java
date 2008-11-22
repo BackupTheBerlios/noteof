@@ -38,7 +38,9 @@ public class HapptickApplication extends HapptickBaseClient {
      *            --startId=<value>.
      */
     public HapptickApplication(long applicationId, String serverAddress, int serverPort, String... args) throws HapptickException {
-        connect(serverAddress, serverPort, args, applicationClient);
+        // TODO Wenn dipatched getestet, kann der letzte Parameter auch nach
+        // oben frei gegeben werden...
+        connect(serverAddress, serverPort, args, applicationClient, false);
         this.applicationId = applicationId;
         applicationClient.applicationIdToService(applicationId);
         applicationClient.startIdToService(args);

@@ -1,14 +1,18 @@
 package de.happtick.core.client;
 
+import java.net.Socket;
 import java.util.List;
 
 import de.happtick.core.exception.HapptickException;
 import de.happtick.mail.client.HapptickMailEventClient;
 import de.notEOF.core.client.BaseClient;
+import de.notEOF.core.communication.BaseTimeOut;
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.interfaces.NotEOFClient;
 import de.notEOF.core.interfaces.NotEOFEvent;
+import de.notEOF.core.logging.LocalLog;
 import de.notEOF.core.util.Util;
+import de.notEOF.dispatch.client.DispatchClient;
 import de.notEOF.mail.MailExpressions;
 import de.notEOF.mail.NotEOFMail;
 import de.notEOF.mail.client.MailAndEventReceiveClient;
@@ -129,7 +133,7 @@ public abstract class HapptickBaseClient {
      *             Thrown if client is empty (NULL) or connection couldn't be
      *             established.
      */
-    public void connect(String serverAddress, int serverPort, String[] args, NotEOFClient notEofClient) throws HapptickException {
+    public void connect(String serverAddress, int serverPort, String[] args, NotEOFClient notEofClient, boolean dispatched) throws HapptickException {
         if (Util.isEmpty(notEofClient))
             throw new HapptickException(50L, "NotEOFClient is leer.");
 
@@ -138,7 +142,37 @@ public abstract class HapptickBaseClient {
         this.args = args;
 
         this.notEofClient = notEofClient;
-        connect(serverAddress, serverPort, args);
+
+        if (dispatched) {
+            try {
+                Socket socketToService = dispatchSocket(serverAddress, serverPort, (String[]) null);
+                connect(socketToService, args, false);
+            } catch (ActionFailedException e) {
+                LocalLog.error("HapptickBaseClient.connect: Achtung! dispatched ist noch nicht getestet!!!", e);
+            }
+        } else {
+            connect(serverAddress, serverPort, args, false);
+        }
+    }
+
+    private Socket dispatchSocket(String serverAddress, int serverPort, String[] args) {
+        Socket socketToService = null;
+        try {
+            BaseTimeOut baseTimeOut = new BaseTimeOut(0, 60000);
+            DispatchClient dispatchClient;
+            dispatchClient = new DispatchClient(serverAddress, serverPort, baseTimeOut, (String[]) null);
+            String serviceClassName = notEofClient.serviceForClientByName();
+            socketToService = dispatchClient.getServiceConnection(serviceClassName, 0);
+        } catch (ActionFailedException e) {
+            LocalLog.error("HapptickBaseClient.connect: Achtung! dispatched ist noch nicht getestet!!!", e);
+        }
+        return socketToService;
+    }
+
+    public void connect(Socket socket, String[] args, boolean dispatched) throws HapptickException {
+        String serverAddress = socket.getInetAddress().getHostAddress();
+        int serverPort = socket.getLocalPort();
+        connect(serverAddress, serverPort, args, dispatched);
     }
 
     /**
@@ -153,11 +187,17 @@ public abstract class HapptickBaseClient {
      *            running.
      * @throws HapptickException
      */
-    public void connect(String serverAddress, int serverPort, String[] args) throws HapptickException {
+    public void connect(String serverAddress, int serverPort, String[] args, boolean dispatched) throws HapptickException {
         if (Util.isEmpty(serverAddress))
             throw new HapptickException(50L, "Server Addresse ist leer.");
         if (0 == serverPort)
             throw new HapptickException(50L, "Server Port = 0");
+
+        if (dispatched) {
+            Socket socketToService = dispatchSocket(serverAddress, serverPort, (String[]) null);
+            serverAddress = socketToService.getInetAddress().getHostAddress();
+            serverPort = socketToService.getLocalPort();
+        }
 
         this.serverAddress = serverAddress;
         this.serverPort = serverPort;

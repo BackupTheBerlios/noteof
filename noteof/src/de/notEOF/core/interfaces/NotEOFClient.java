@@ -19,4 +19,6 @@ public interface NotEOFClient {
 
     public int getServerPort();
 
+    public String serviceForClientByName();
+
 }
