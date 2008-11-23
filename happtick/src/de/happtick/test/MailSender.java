@@ -1,7 +1,7 @@
 package de.happtick.test;
 
 import de.happtick.application.client.HapptickApplication;
-import de.happtick.core.events.StartEvent;
+import de.happtick.core.events.ApplicationStartEvent;
 import de.notEOF.core.exception.ActionFailedException;
 
 public class MailSender {
@@ -12,7 +12,7 @@ public class MailSender {
         // NotEOFMail mail;
         // try {
 
-        StartEvent event = new StartEvent();
+        ApplicationStartEvent event = new ApplicationStartEvent();
         event.addAttribute("clientIp", "192.168.0.2");
         int counter = -1;
         // while (true) {

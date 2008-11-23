@@ -13,7 +13,7 @@ import de.happtick.configuration.ApplicationConfiguration;
 import de.happtick.configuration.ChainLink;
 import de.happtick.configuration.EventConfiguration;
 import de.happtick.core.MasterTable;
-import de.happtick.core.events.StartEvent;
+import de.happtick.core.events.ApplicationStartEvent;
 import de.happtick.core.schedule.ChainAction;
 import de.notEOF.core.enumeration.EventType;
 import de.notEOF.core.exception.ActionFailedException;
@@ -31,7 +31,7 @@ public class Scheduling {
      * @throws ActionFailedException
      */
     public static synchronized void startApplication(ApplicationConfiguration applConf) throws ActionFailedException {
-        StartEvent event = new StartEvent();
+        ApplicationStartEvent event = new ApplicationStartEvent();
         event.setApplicationId(applConf.getApplicationId());
         event.addAttribute("clientIp", applConf.getClientIp());
         event.addAttribute("applicationId", String.valueOf(applConf.getApplicationId()));

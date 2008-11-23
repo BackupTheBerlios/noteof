@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    This file contains the descriptions of self made raised Happtick events
+-->
+<root>
+	<raisedEvents>
+		<!-- This self build events exist -->
+		<event>MyOwnEvent</event>
+		<event>YourOwnEvent</event>
+
+		<MyOwnEvent>
+			<!-- An Happtick event mus have attributes -->
+			<attribute>attribute0</attribute>
+			<attribute>attribute1</attribute>
+			<!-- All properties are mandatory (keyName, keyValue, descriptionKey, descriptionValue -->
+			<attribute0 keyName="firstName" keyValue="Dirk" descriptionKey="firstName" descriptionValue="Vorname"></attribute0>
+			<attribute1 keyName="lastName" keyValue="Goldbach" descriptionKey="LastName" descriptionValue="Nachname"></attribute1>
+		</MyOwnEvent>
+
+		<YourOwnEvent>
+			<attribute>attribute0</attribute>
+			<attribute0 keyName="amount" keyValue="100" descriptionKey="amount" descriptionValue="cash value"></attribute0>
+		</YourOwnEvent>
+	</raisedEvents>
+</root>

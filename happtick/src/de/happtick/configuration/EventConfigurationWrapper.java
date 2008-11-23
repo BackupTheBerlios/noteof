@@ -83,6 +83,7 @@ public class EventConfigurationWrapper {
         map.put("addresseeId", String.valueOf(eventConfiguration.getAddresseeId()));
         map.put("addresseeType", String.valueOf(eventConfiguration.getAddresseeType()));
         map.put("action", String.valueOf(eventConfiguration.getAction()));
+        map.put("raiseId", String.valueOf(eventConfiguration.getRaiseId()));
     }
 
     /*
@@ -98,5 +99,6 @@ public class EventConfigurationWrapper {
         eventConfiguration.setAddresseeId(Util.parseLong(map.get("addresseeId"), -1));
         eventConfiguration.setAddresseeType(map.get("addresseeType"));
         eventConfiguration.setAction(map.get("action"));
+        eventConfiguration.setRaiseId(map.get("raiseId"));
     }
 }

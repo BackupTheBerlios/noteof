@@ -9,8 +9,9 @@ import java.util.Map;
 import de.happtick.configuration.ApplicationConfiguration;
 import de.happtick.configuration.ChainConfiguration;
 import de.happtick.configuration.EventConfiguration;
+import de.happtick.configuration.RaiseConfiguration;
 import de.happtick.core.application.service.ApplicationService;
-import de.happtick.core.events.StartEvent;
+import de.happtick.core.events.ApplicationStartEvent;
 import de.happtick.core.exception.HapptickException;
 import de.notEOF.configuration.LocalConfiguration;
 import de.notEOF.core.exception.ActionFailedException;
@@ -35,6 +36,7 @@ public class MasterTable {
     private static Map<Long, ApplicationConfiguration> applicationConfigurations = new HashMap<Long, ApplicationConfiguration>();
     private static Map<Long, ChainConfiguration> chainConfigurations = new HashMap<Long, ChainConfiguration>();
     private static Map<Long, EventConfiguration> eventConfigurations = new HashMap<Long, EventConfiguration>();
+    private static Map<String, RaiseConfiguration> raiseConfigurations = new HashMap<String, RaiseConfiguration>();
     private static Map<String, Service> services = new HashMap<String, Service>();
     // Liste der gestarteten oder aktiven Applications. Hier spielt die Anzahl
     // der Applications keine Rolle. Es kann auch sein, dass eine Anwendung, die
@@ -97,13 +99,23 @@ public class MasterTable {
             Boolean useEvent = Util.parseBoolean(conf.getAttribute("scheduler.use", "event"), false);
             if (useEvent) {
                 // Liste der nodes
-                List<String> nodes = conf.getTextList("scheduler.events.event");
-                if (null != nodes) {
+                List<String> eventNodes = conf.getTextList("scheduler.events.event");
+                if (null != eventNodes) {
                     // for every node create object of type EventConfiguration
                     // the objects initialize themselve with configuration data
-                    for (String node : nodes) {
+                    for (String node : eventNodes) {
                         EventConfiguration eventConf = new EventConfiguration(node, conf);
                         eventConfigurations.put(eventConf.getEventId(), eventConf);
+                    }
+                }
+                // Liste der raise-nodes
+                List<String> raiseNodes = conf.getTextList("scheduler.events.raise");
+                if (null != raiseNodes) {
+                    // for every node create object of type RaiseConfiguration
+                    // the objects initialize themselve with configuration data
+                    for (String node : raiseNodes) {
+                        RaiseConfiguration raiseConf = new RaiseConfiguration(node, conf);
+                        raiseConfigurations.put(raiseConf.getRaiseId(), raiseConf);
                     }
                 }
             }
@@ -183,6 +195,17 @@ public class MasterTable {
     }
 
     /**
+     * Delivers the configuration object for one event.
+     * 
+     * @param raiseId
+     *            The identifier of the event like stored in the configuration.
+     * @return The object if found or null.
+     */
+    public synchronized static RaiseConfiguration getRaiseConfiguration(String raiseId) {
+        return raiseConfigurations.get(raiseId);
+    }
+
+    /**
      * Delivers the configuration of events
      * 
      * @return Map with configurations. eventId is the key like used in
@@ -195,6 +218,14 @@ public class MasterTable {
     }
 
     /**
+     * Delivers the configuration of raising
+     */
+    public synchronized static Map<String, RaiseConfiguration> getRaiseConfigurations() throws ActionFailedException {
+        updateConfiguration();
+        return raiseConfigurations;
+    }
+
+    /**
      * Delivers the events.
      * 
      * @return A list with events.
@@ -203,6 +234,18 @@ public class MasterTable {
     public synchronized static List<EventConfiguration> getEventConfigurationsAsList() throws ActionFailedException {
         List<EventConfiguration> confList = new ArrayList<EventConfiguration>();
         confList.addAll(getEventConfigurations().values());
+        return confList;
+    }
+
+    /**
+     * Delivers the raise configurations as list.
+     * 
+     * @return A list with raise entries.
+     * @throws ActionFailedException
+     */
+    public synchronized static List<RaiseConfiguration> getRaiseConfigurationsAsList() throws ActionFailedException {
+        List<RaiseConfiguration> confList = new ArrayList<RaiseConfiguration>();
+        confList.addAll(getRaiseConfigurations().values());
         return confList;
     }
 
@@ -371,14 +414,14 @@ public class MasterTable {
      * @param startedEvent
      */
     public static synchronized void removeStartEvent(NotEOFEvent event) {
-        StartEvent startEvent = (StartEvent) startEvents.get(event.getApplicationId());
+        ApplicationStartEvent startEvent = (ApplicationStartEvent) startEvents.get(event.getApplicationId());
         if (null != startEvent) {
             startEvents.remove(startEvent.getApplicationId());
         }
     }
 
     public static synchronized void replaceStartEvent(NotEOFEvent event) {
-        StartEvent startEvent = (StartEvent) startEvents.get(event.getApplicationId());
+        ApplicationStartEvent startEvent = (ApplicationStartEvent) startEvents.get(event.getApplicationId());
         if (null != startEvent) {
             startEvents.remove(startEvent.getApplicationId());
         }

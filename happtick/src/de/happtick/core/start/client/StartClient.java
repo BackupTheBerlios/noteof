@@ -5,7 +5,7 @@ import java.util.Date;
 import java.util.List;
 
 import de.happtick.core.client.HapptickBaseClient;
-import de.happtick.core.events.StartEvent;
+import de.happtick.core.events.ApplicationStartEvent;
 import de.happtick.core.exception.HapptickException;
 import de.happtick.core.util.ExternalCalls;
 import de.notEOF.core.enumeration.EventType;
@@ -45,7 +45,7 @@ public class StartClient extends HapptickBaseClient implements MailAndEventRecip
 
         // Catching important events is defined here
         List<NotEOFEvent> events = new ArrayList<NotEOFEvent>();
-        events.add(new StartEvent());
+        events.add(new ApplicationStartEvent());
         addInterestingEvents(events);
         // Before this the method useMailsAndEvents() must be called
         startAcceptingMailsEvents();

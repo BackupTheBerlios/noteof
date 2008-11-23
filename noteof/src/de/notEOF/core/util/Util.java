@@ -520,6 +520,10 @@ public class Util {
      *             the NotEOFEvent class was not found.
      */
     public static EventType lookForEventType(String className) throws ActionFailedException {
+        if (className.startsWith("Alias:")) {
+            return EventType.EVENT_GENERIC;
+        }
+
         NotEOFEvent event = EventFinder.getNotEOFEvent(Server.getApplicationHome(), className);
         return event.getEventType();
     }

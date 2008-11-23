@@ -13,12 +13,10 @@ import de.happtick.configuration.ChainLink;
 import de.happtick.configuration.EventConfiguration;
 import de.happtick.core.MasterTable;
 import de.happtick.core.events.ChainStoppedEvent;
-import de.happtick.core.events.StoppedEvent;
 import de.happtick.core.exception.HapptickException;
 import de.happtick.core.util.Scheduling;
 import de.notEOF.configuration.LocalConfiguration;
 import de.notEOF.core.enumeration.EventType;
-import de.notEOF.core.event.EventFinder;
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.interfaces.EventObserver;
 import de.notEOF.core.interfaces.NotEOFConfiguration;
@@ -38,6 +36,7 @@ import de.notIOC.configuration.ConfigurationManager;
  */
 public class Scheduler {
     private static Scheduler scheduler = new Scheduler();
+    private EventHandler eventHandler;
 
     /*
      * Initialize...
@@ -45,10 +44,13 @@ public class Scheduler {
     private Scheduler() {
         NotEOFConfiguration conf = new LocalConfiguration();
 
-        // Start Event Handler
-        SchedulerObserver observer = new SchedulerObserver();
-        Thread observerThread = new Thread(observer);
-        observerThread.start();
+        // Start Observer who gets all fired Events
+        new Thread(new SchedulerObserver()).start();
+
+        // Start Event Handler which decides what to do with the events by
+        // regarding the configuration
+        eventHandler = new EventHandler();
+        new Thread(eventHandler).start();
 
         // Standard via timer
         try {
@@ -76,6 +78,25 @@ public class Scheduler {
         }
     }
 
+    private class EventHandler implements Runnable {
+
+        protected void handleEvent(NotEOFEvent event) {
+            // TODO wenn Generic reinkommt, attribut 'aliasName' auswerten
+            // bei Versand von Generic aliasName setzen
+
+        }
+
+        @Override
+        public void run() {
+            while (true) {
+                try {
+                    Thread.sleep(10000);
+                } catch (InterruptedException e) {
+                }
+            }
+        }
+    }
+
     /*
      * Observes the events for starting applications or to avoid the starts.
      */
@@ -91,9 +112,7 @@ public class Scheduler {
             // all events from configuration are important
             try {
                 for (EventConfiguration conf : MasterTable.getEventConfigurationsAsList()) {
-                    conf.getEventClassName();
-                    NotEOFEvent event = EventFinder.getNotEOFEvent(Server.getApplicationHome(), conf.getEventClassName());
-                    observedEvents.add(event.getEventType());
+                    observedEvents.add(Util.lookForEventType(conf.getEventClassName()));
                 }
             } catch (ActionFailedException e) {
                 LocalLog
@@ -141,10 +160,8 @@ public class Scheduler {
                 MasterTable.removeStartEvent(event);
             }
 
-            // TODO
-            // rufe funktion auf, die ALLE events auswertet und entspr. der
-            // Konfiguration handhabt
-            // Evtl. in eigenem Thread...
+            // EventHandler processes all events additional to the observer
+            eventHandler.handleEvent(event);
         }
 
         public void run() {
@@ -152,7 +169,6 @@ public class Scheduler {
                 try {
                     Thread.sleep(10000);
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
                 }
             }
         }
@@ -227,8 +243,8 @@ public class Scheduler {
 
             try {
                 // standard event 'stopped'
-                StoppedEvent event = new StoppedEvent();
-                this.observedEvents.add(event.getEventType());
+                this.observedEvents.add(EventType.EVENT_APPLICATION_STOPPED);
+                this.observedEvents.add(EventType.EVENT_CHAIN_STOPPED);
 
                 // filter events and configurations which the chain is
                 // interested in

@@ -30,7 +30,7 @@ import de.notEOF.core.interfaces.NotEOFEvent;
  * @author Dirk
  * 
  */
-public class StartEvent extends HapptickEvent implements NotEOFEvent {
+public class ApplicationStartEvent extends HapptickEvent implements NotEOFEvent {
     public final static EventType EVENT_TYPE = EventType.EVENT_APPLICATION_START;
 
     protected void initDescriptions() {

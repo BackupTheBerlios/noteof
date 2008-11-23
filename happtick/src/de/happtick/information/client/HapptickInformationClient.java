@@ -11,6 +11,8 @@ import de.happtick.configuration.ChainConfiguration;
 import de.happtick.configuration.ChainConfigurationWrapper;
 import de.happtick.configuration.EventConfiguration;
 import de.happtick.configuration.EventConfigurationWrapper;
+import de.happtick.configuration.RaiseConfiguration;
+import de.happtick.configuration.RaiseConfigurationWrapper;
 import de.happtick.configuration.enumeration.HapptickConfigTag;
 import de.notEOF.core.client.BaseClient;
 import de.notEOF.core.communication.DataObject;
@@ -80,6 +82,36 @@ public class HapptickInformationClient extends BaseClient {
         }
 
         return eventConfs;
+    }
+
+    /**
+     * Requests the service for a list of all raised event configurations.
+     */
+    public List<RaiseConfiguration> getRaiseConfigurations() throws ActionFailedException {
+        // Initialize return list
+        List<RaiseConfiguration> raiseConfs = new ArrayList<RaiseConfiguration>();
+
+        // send first request to service that the chains are required
+        if (HapptickConfigTag.INFO_OK.name().equals(requestTo(HapptickConfigTag.REQ_ALL_RAISE_CONFIGURATIONS, HapptickConfigTag.RESP_ALL_RAISE_CONFIGURATIONS))) {
+            // service perhaps will send some chains
+            String next = requestTo(HapptickConfigTag.REQ_NEXT_RAISE_CONFIGURATION, HapptickConfigTag.RESP_NEXT_RAISE_CONFIGURATION);
+            while (!Util.isEmpty(next) && next.equals(HapptickConfigTag.INFO_OK.name())) {
+                RaiseConfiguration raiseConf = null;
+                DataObject vars = receiveDataObject();
+                if (null != vars) {
+                    Map<String, String> confVars = vars.getMap();
+                    if (null != confVars) {
+                        RaiseConfigurationWrapper raiseWrap = new RaiseConfigurationWrapper(confVars);
+                        raiseConf = raiseWrap.getRaiseConfiguration();
+                    }
+                }
+
+                raiseConfs.add(raiseConf);
+                next = requestTo(HapptickConfigTag.REQ_NEXT_RAISE_CONFIGURATION, HapptickConfigTag.RESP_NEXT_RAISE_CONFIGURATION);
+            }
+        }
+
+        return raiseConfs;
     }
 
     /**

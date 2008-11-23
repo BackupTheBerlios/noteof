@@ -14,20 +14,12 @@
 	    <!-- ============================================== Chain Configuration ====================================
 	         With chains it is possible to define process chains depending to events or other chains.
 	         The scheduler tries to start the applications in the order like they are configured within a chain.
-	         He uses the configuration details for applications:
-	         - applicationId
-	         - client ip
-	         - executable
-	         - dependencies
-	         Other informations are ignored (options, timeplan, dependencies, etc.).
 	    
 	         If loop is true the chain will start again. For a chain which must be started depending to another chain it make
 	         no sense setting loop to true.
 	         Application start can depend to one event or prevented by one event.
 	         When the skip flag is set to false the chain waits for the end of the application.
 	         If skip = true and the preventEvent for a application is fired the chain overleaps this application and starts the next one.
-	         
-	         Applications which are started by chains cannot be started within the application configuration (partOfChain=true).  
 	     -->
 	    <chains>
 		    <!-- The list of chains.
@@ -36,19 +28,28 @@
 		     -->
 	    	<chain>chain1</chain>
 	    	<chain>chain2</chain>
-		    <chain1 depends="false" loop="true" chainId="1">
+	    	<!-- 
+	    		 - type is it runnable (application or chain) or
+	    		        is it event (event)
+	    		 - depends if true the chain ends with the end of the last application or chain
+	    		                   loop will be ignored then
+	    		 - loop if true the chain starts again with the first application or chain (endless loop)
+	    	 -->
+		    <chain1 type="runnable" depends="false" loop="true" chainId="1">
 		    	<!-- The order for start applications and ...chains -->
 		    	<link>link0</link>
 		    	<link>link2</link>
 		    	<link>link1</link>
 		    	
 		    	<!-- The applications and chains to start
-		    	      Note that id's here can be used as id for an application or a chain.
-		    	      conditionEventId Event which must be raised of the application before enabling this application
-	          	      conditionKeyName, conditionKeyValue Attribute and Value the conditionEvent mus have (optional)
-		    	      preventEventId When this event was raised by the application before the application will not be activated
-		    	      preventKeyName, preventKeyValue Attribute and Value which the preventEvent mus have (optional)
-		    	      skip is optional, default is false.
+		    	      Note that addresseeId's here can be used as id for an application or a chain.
+		    	      - addresseeType Indicates if the runnable is an application or a chain
+		    	      - addresseeId is the id of the application or the chain
+		    	      - conditionEventId Event which must be raised of the application before enabling this application
+	          	      - conditionKeyName, conditionKeyValue Attribute and Value the conditionEvent mus have (optional)
+		    	      - preventEventId When this event was raised by the application before the application will not be activated
+		    	      - preventKeyName, preventKeyValue Attribute and Value which the preventEvent mus have (optional)
+		    	      - skip is optional, default is false.
 		    	-->
 				<link0 linkId="1" addresseeType="application" addresseeId="2"></link0>
 				<link1 linkId="2" addresseeType="chain"       addresseeId="2"></link1>
@@ -57,23 +58,26 @@
 				                  preventEventId="2"   preventKeyName="exitCode"   preventKeyValue="0" skip="false"></link2>
 		    </chain1>
 		    
-		    <chain2 depends="true" loop="false" chainId="2">
+		    <chain2 type = "runnable" depends="true" loop="false" chainId="2">
 		    	<link>link0</link>
 		    	<link>link1</link>
 				<link0 linkId="0" addresseeType="application" addresseeId="1"></link0>
 				<link1 linkId="1" addresseeType="application" addresseeId="2"></link1>
 		    </chain2>
+		    
 	    </chains>
 	    
 	    <!-- ============================================== Event Configuration ====================================
+	    	 Please note that Raised Events should be configured in another file (e.g. events.xml)
+	    	 
 	    	 Events are raised by ApplicationClients and identified by the eventId or eventClassName.
 	    	 The actions after an event can differ for every client.
-	    	 If the event is essential for every client, the key 'firedByApplicationId' can be omitted
+	    	 If the event is essential for every client, the key 'applicationId' can be omitted
 	    	 or the value of 'firedByApplicationId' must be empty.
 	    	 With events applications and chains can be started or stopped and the state of chains can be cleared.
 	    -->
 	    <events>
-	    	<!-- List of events -->
+	    	<!-- List of FIRED events -->
 	    	<event>event1</event>
 	    	<event>event2</event>
 	    	<event>event3</event>
@@ -88,14 +92,31 @@
 			    - action what to do with the application/chain - 'start', 'stop', 'clear', 'reset', 'ignite' is possible here.
 				      clear means that the chain forgets the received events and continues it's work.
 			    - addresseeType kind of receiver 'application' or 'chain' or 'event' is possible here.
+			    
+			    - please note the special eventClassName 'Alias:MyOwnEvent'. If an self described event was fired it is recognized as
+			      'GenericEvent'. The notation Alias:<AliasEventName> is required here to map the incoming event to the fired event
 			-->	    	
 	    	<event1 eventId="1" eventClassName="StoppedEvent" keyName="exitCode" keyValue="9" action="start" addresseeType="application" applicationId="44" addresseeId="7"></event1>
-	    	<event2 eventId="2" eventClassName="AlarmEvent"></event2>
+	    	<event2 eventId="2" eventClassName="AlarmEvent" raiseId="raise0"></event2>
 	    	<event3 eventId="3" eventClassName="StartedEvent"></event3>
 	    	<event4 eventId="4" eventClassName="ActionEvent" keyName="clear" keyValue="chain" action="clear" addresseeType="chain" addresseeId="99"></event4>
 	    	<event5 eventId="5" eventClassName="ActionEvent" keyName="clear" keyValue="application" action="clear" addresseeType="application"></event5>
-	    	<event5 eventId="6" eventClassName="ActionEvent" keyName="reset" keyValue="2" action="reset" addresseeType="chain"></event5>
-	    	<event6 eventId="7" eventClassName="StartedEvent" action="ignite" addresseeType="event" addresseeId="2" applicationId="2"></event6>
+	    	<event6 eventId="6" eventClassName="ActionEvent" keyName="reset" keyValue="2" action="reset" addresseeType="chain"></event6>
+	    	<event7 eventId="7" eventClassName="StartedEvent" action="ignite" addresseeType="event" addresseeId="2" applicationId="2"></event7>
+	    	<event8 eventId="8" eventClassName="Alias:MyOwnEvent" keyName="foreName" keyValue="Dirk"></event8>
+	    	
+	    	
+	    	<!--
+	    		 Raise one ore more events when an event comes in.
+	    		 The events here are alias names. This names are used in the raised event configuration.
+	    	-->
+	    	
+	    	<raise>raise0</raise>
+	    	
+		    <raise0>
+		    	<eventAlias>MyOwnEvent</eventAlias>
+		    </raise0>
+	    	
 	    </events>
 	
 	    <!-- ============================================== Application Configuration ====================================

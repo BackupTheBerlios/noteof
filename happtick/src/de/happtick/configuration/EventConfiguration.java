@@ -23,6 +23,7 @@ public class EventConfiguration {
     private Long addresseeId;
     private String addresseeType;
     private String action;
+    private String raiseId;
 
     /**
      * Simple constructor
@@ -65,6 +66,8 @@ public class EventConfiguration {
             addresseeType = conf.getAttribute(node, "addresseeType");
             // action (maybe null)
             action = conf.getAttribute(node, "action");
+            // raising other events (maybe null)
+            raiseId = conf.getAttribute(node, "raiseId");
 
         } catch (Exception ex) {
             LocalLog.error("Konfiguration der Events konnte nicht fehlerfrei gelesen werden. Event: " + nodeNameEvent, ex);
@@ -152,5 +155,20 @@ public class EventConfiguration {
      */
     public String getAction() {
         return action;
+    }
+
+    /**
+     * @param raiseId
+     *            the raiseId to set
+     */
+    public void setRaiseId(String raiseId) {
+        this.raiseId = raiseId;
+    }
+
+    /**
+     * @return the raiseId
+     */
+    public String getRaiseId() {
+        return raiseId;
     }
 }

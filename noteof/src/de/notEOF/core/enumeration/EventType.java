@@ -9,6 +9,8 @@ package de.notEOF.core.enumeration;
  */
 public enum EventType {
 
+    /** Generic Events... */
+    EVENT_GENERIC,
     /** Default if the type is not specified */
     EVENT_DEFAULT, //
     /** Alarm was raised */

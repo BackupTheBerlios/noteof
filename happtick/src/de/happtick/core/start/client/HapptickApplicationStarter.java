@@ -1,6 +1,6 @@
 package de.happtick.core.start.client;
 
-import de.happtick.core.events.StartErrorEvent;
+import de.happtick.core.events.ApplicationStartErrorEvent;
 import de.happtick.core.exception.HapptickException;
 import de.happtick.core.util.ExternalCalls;
 import de.notEOF.core.interfaces.NotEOFClient;
@@ -77,7 +77,7 @@ public class HapptickApplicationStarter {
             if (!started) {
                 LocalLog.error("Applikation konnte nicht gestartet werden.", th);
                 try {
-                    StartErrorEvent errorEvent = new StartErrorEvent();
+                    ApplicationStartErrorEvent errorEvent = new ApplicationStartErrorEvent();
                     errorEvent.setApplicationId(startEvent.getApplicationId());
                     errorEvent.addAttribute("applicationId", String.valueOf(startEvent.getAttribute("applicationId")));
                     errorEvent.addAttribute("clientNetId", this.notEOFClient.getClientNetId());

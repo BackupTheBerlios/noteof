@@ -1,9 +1,9 @@
 package de.happtick.core.start.client;
 
 import de.happtick.application.client.HapptickApplication;
-import de.happtick.core.events.StartErrorEvent;
-import de.happtick.core.events.StartedEvent;
-import de.happtick.core.events.StoppedEvent;
+import de.happtick.core.events.ApplicationStartErrorEvent;
+import de.happtick.core.events.ApplicationStartedEvent;
+import de.happtick.core.events.ApplicationStoppedEvent;
 import de.happtick.core.exception.HapptickException;
 import de.happtick.core.util.ExternalCalls;
 import de.notEOF.core.interfaces.NotEOFEvent;
@@ -118,7 +118,7 @@ public class ExternalApplicationStarter extends HapptickApplication {
             if (!started) {
                 LocalLog.error("Applikation konnte nicht gestartet werden.", th);
                 try {
-                    StartErrorEvent errorEvent = new StartErrorEvent();
+                    ApplicationStartErrorEvent errorEvent = new ApplicationStartErrorEvent();
                     errorEvent.setApplicationId(applicationId);
                     errorEvent.addAttribute("applicationId", String.valueOf(applicationId));
                     errorEvent.addAttribute("clientNetId", getClientNetId());
@@ -135,7 +135,7 @@ public class ExternalApplicationStarter extends HapptickApplication {
             } else if (null != process) {
                 try {
                     // send StartedEvent
-                    StartedEvent startedEvent = new StartedEvent();
+                    ApplicationStartedEvent startedEvent = new ApplicationStartedEvent();
                     startedEvent.setApplicationId(applicationId);
                     startedEvent.addAttribute("applicationId", String.valueOf(applicationId));
                     startedEvent.addAttribute("clientNetId", getClientNetId());
@@ -156,7 +156,7 @@ public class ExternalApplicationStarter extends HapptickApplication {
 
                     // create Event for inform other processes (clients,
                     // services)
-                    StoppedEvent stoppedEvent = new StoppedEvent();
+                    ApplicationStoppedEvent stoppedEvent = new ApplicationStoppedEvent();
                     stoppedEvent.setApplicationId(applicationId);
                     stoppedEvent.addAttribute("exitCode", String.valueOf(exitCode));
                     stoppedEvent.addAttribute("serviceId", "");

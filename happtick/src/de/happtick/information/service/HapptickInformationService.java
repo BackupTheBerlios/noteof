@@ -9,6 +9,8 @@ import de.happtick.configuration.ChainConfiguration;
 import de.happtick.configuration.ChainConfigurationWrapper;
 import de.happtick.configuration.EventConfiguration;
 import de.happtick.configuration.EventConfigurationWrapper;
+import de.happtick.configuration.RaiseConfiguration;
+import de.happtick.configuration.RaiseConfigurationWrapper;
 import de.happtick.configuration.enumeration.HapptickConfigTag;
 import de.happtick.core.MasterTable;
 import de.happtick.core.service.HapptickBaseService;
@@ -44,6 +46,11 @@ public class HapptickInformationService extends HapptickBaseService {
         if (HapptickConfigTag.REQ_ALL_EVENT_CONFIGURATIONS.equals(configTag)) {
             deliverEventConfiguration();
         }
+
+        // Client asks for all event configurations
+        if (HapptickConfigTag.REQ_ALL_RAISE_CONFIGURATIONS.equals(configTag)) {
+            deliverRaiseConfiguration();
+        }
     }
 
     /*
@@ -71,6 +78,35 @@ public class HapptickInformationService extends HapptickBaseService {
             // an OK . So the next statement answers with no more
             // configurations.
             awaitRequestAnswerImmediate(HapptickConfigTag.REQ_NEXT_EVENT_CONFIGURATION, HapptickConfigTag.RESP_NEXT_EVENT_CONFIGURATION,
+                                        HapptickConfigTag.INFO_NO_CONFIGURATION.name());
+        }
+    }
+
+    /*
+     * Client asked for event configurations. Here the service sends the data.
+     */
+    private void deliverRaiseConfiguration() throws ActionFailedException {
+        List<RaiseConfiguration> raiseConfigurations = MasterTable.getRaiseConfigurationsAsList();
+        if (null != raiseConfigurations) {
+            // tell client that there are configurations and he can begin to
+            // request for them
+            responseTo(HapptickConfigTag.RESP_ALL_RAISE_CONFIGURATIONS, HapptickConfigTag.INFO_OK.name());
+            for (RaiseConfiguration raiseConfiguration : raiseConfigurations) {
+                awaitRequestAnswerImmediate(HapptickConfigTag.REQ_NEXT_RAISE_CONFIGURATION, HapptickConfigTag.RESP_NEXT_RAISE_CONFIGURATION,
+                                            HapptickConfigTag.INFO_OK.name());
+
+                RaiseConfigurationWrapper raiseWrap = new RaiseConfigurationWrapper(raiseConfiguration);
+                Map<String, String> confVars = raiseWrap.getMap();
+
+                // send the map with list-data
+                DataObject confObject = new DataObject();
+                confObject.setMap(confVars);
+                sendDataObject(confObject);
+            }
+            // the client requests as long for next configuration as we send
+            // an OK . So the next statement answers with no more
+            // configurations.
+            awaitRequestAnswerImmediate(HapptickConfigTag.REQ_NEXT_RAISE_CONFIGURATION, HapptickConfigTag.RESP_NEXT_RAISE_CONFIGURATION,
                                         HapptickConfigTag.INFO_NO_CONFIGURATION.name());
         }
     }
