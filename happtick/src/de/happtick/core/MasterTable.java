@@ -9,7 +9,6 @@ import java.util.Map;
 import de.happtick.configuration.ApplicationConfiguration;
 import de.happtick.configuration.ChainConfiguration;
 import de.happtick.configuration.EventConfiguration;
-import de.happtick.configuration.RaiseConfiguration;
 import de.happtick.core.application.service.ApplicationService;
 import de.happtick.core.events.ApplicationStartEvent;
 import de.happtick.core.exception.HapptickException;
@@ -36,7 +35,8 @@ public class MasterTable {
     private static Map<Long, ApplicationConfiguration> applicationConfigurations = new HashMap<Long, ApplicationConfiguration>();
     private static Map<Long, ChainConfiguration> chainConfigurations = new HashMap<Long, ChainConfiguration>();
     private static Map<Long, EventConfiguration> eventConfigurations = new HashMap<Long, EventConfiguration>();
-    private static Map<String, RaiseConfiguration> raiseConfigurations = new HashMap<String, RaiseConfiguration>();
+    // private static Map<String, RaiseConfiguration> raiseConfigurations = new
+    // HashMap<String, RaiseConfiguration>();
     private static Map<String, Service> services = new HashMap<String, Service>();
     // Liste der gestarteten oder aktiven Applications. Hier spielt die Anzahl
     // der Applications keine Rolle. Es kann auch sein, dass eine Anwendung, die
@@ -108,16 +108,18 @@ public class MasterTable {
                         eventConfigurations.put(eventConf.getEventId(), eventConf);
                     }
                 }
-                // Liste der raise-nodes
-                List<String> raiseNodes = conf.getTextList("scheduler.events.raise");
-                if (null != raiseNodes) {
-                    // for every node create object of type RaiseConfiguration
-                    // the objects initialize themselve with configuration data
-                    for (String node : raiseNodes) {
-                        RaiseConfiguration raiseConf = new RaiseConfiguration(node, conf);
-                        raiseConfigurations.put(raiseConf.getRaiseId(), raiseConf);
-                    }
-                }
+                // // Liste der raise-nodes
+                // List<String> raiseNodes =
+                // conf.getTextList("scheduler.events.raise");
+                // if (null != raiseNodes) {
+                // // for every node create object of type RaiseConfiguration
+                // // the objects initialize themselve with configuration data
+                // for (String node : raiseNodes) {
+                // RaiseConfiguration raiseConf = new RaiseConfiguration(node,
+                // conf);
+                // raiseConfigurations.put(raiseConf.getRaiseId(), raiseConf);
+                // }
+                // }
             }
 
             confUpdated = true;
@@ -194,17 +196,18 @@ public class MasterTable {
         return eventConfigurations.get(eventId);
     }
 
-    /**
-     * Delivers the configuration object for one event.
-     * 
-     * @param raiseId
-     *            The identifier of the event like stored in the configuration.
-     * @return The object if found or null.
-     */
-    public synchronized static RaiseConfiguration getRaiseConfiguration(String raiseId) {
-        return raiseConfigurations.get(raiseId);
-    }
-
+    // /**
+    // * Delivers the configuration object for one event.
+    // *
+    // * @param raiseId
+    // * The identifier of the event like stored in the configuration.
+    // * @return The object if found or null.
+    // */
+    // public synchronized static RaiseConfiguration
+    // getRaiseConfiguration(String raiseId) {
+    // return raiseConfigurations.get(raiseId);
+    // }
+    //
     /**
      * Delivers the configuration of events
      * 
@@ -217,14 +220,15 @@ public class MasterTable {
         return eventConfigurations;
     }
 
-    /**
-     * Delivers the configuration of raising
-     */
-    public synchronized static Map<String, RaiseConfiguration> getRaiseConfigurations() throws ActionFailedException {
-        updateConfiguration();
-        return raiseConfigurations;
-    }
-
+    // /**
+    // * Delivers the configuration of raising
+    // */
+    // public synchronized static Map<String, RaiseConfiguration>
+    // getRaiseConfigurations() throws ActionFailedException {
+    // updateConfiguration();
+    // return raiseConfigurations;
+    // }
+    //
     /**
      * Delivers the events.
      * 
@@ -237,18 +241,19 @@ public class MasterTable {
         return confList;
     }
 
-    /**
-     * Delivers the raise configurations as list.
-     * 
-     * @return A list with raise entries.
-     * @throws ActionFailedException
-     */
-    public synchronized static List<RaiseConfiguration> getRaiseConfigurationsAsList() throws ActionFailedException {
-        List<RaiseConfiguration> confList = new ArrayList<RaiseConfiguration>();
-        confList.addAll(getRaiseConfigurations().values());
-        return confList;
-    }
-
+    // /**
+    // * Delivers the raise configurations as list.
+    // *
+    // * @return A list with raise entries.
+    // * @throws ActionFailedException
+    // */
+    // public synchronized static List<RaiseConfiguration>
+    // getRaiseConfigurationsAsList() throws ActionFailedException {
+    // List<RaiseConfiguration> confList = new ArrayList<RaiseConfiguration>();
+    // confList.addAll(getRaiseConfigurations().values());
+    // return confList;
+    // }
+    //
     /**
      * Delivers the active Services for processes (running applications).
      * 

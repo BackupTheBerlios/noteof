@@ -17,6 +17,7 @@ import de.happtick.core.events.ApplicationStartEvent;
 import de.happtick.core.schedule.ChainAction;
 import de.notEOF.core.enumeration.EventType;
 import de.notEOF.core.exception.ActionFailedException;
+import de.notEOF.core.interfaces.NotEOFEvent;
 import de.notEOF.core.logging.LocalLog;
 import de.notEOF.core.server.Server;
 import de.notEOF.core.util.Util;
@@ -319,5 +320,59 @@ public class Scheduling {
                 LocalLog.warn("ChainLink konnte nicht auf Prevent untersucht werden.", e);
             }
         }
+    }
+
+    /**
+     * Delivers the event configurations for a EventType
+     * 
+     * @param eventType
+     *            The type...
+     * @return A list with the configurations or NULL
+     */
+    public synchronized static List<EventConfiguration> getEventConfigurationsForEventType(EventType eventType) {
+        if (Util.isEmpty(eventType))
+            return null;
+
+        List<EventConfiguration> foundConfigurations = new ArrayList<EventConfiguration>();
+        try {
+            for (EventConfiguration conf : MasterTable.getEventConfigurationsAsList()) {
+                if (eventType.equals(Util.lookForEventType(conf.getEventClassName()))) {
+                    foundConfigurations.add(conf);
+                }
+            }
+            return foundConfigurations;
+        } catch (ActionFailedException e) {
+        }
+        return null;
+    }
+
+    /**
+     * Delivers a event configuration for a event.
+     * <p>
+     * To find the correct configuration keyName is searched to the attributes
+     * of the event. If the keyName matches with the configuration keyName or if
+     * there is no keyname in the configuration but an action this are matches
+     * ...
+     * 
+     * @param event
+     *            A fired event that has some attributes.
+     * @param configurations
+     *            A List with configurations for this EventType.
+     * @return A list mit some matching configurations or NULL.
+     */
+    public synchronized static List<EventConfiguration> getEventConfigurationsForEvent(NotEOFEvent event, List<EventConfiguration> configurations) {
+        if (Util.isEmpty(event) || Util.isEmpty(configurations))
+            return null;
+
+        List<EventConfiguration> foundConfigurations = new ArrayList<EventConfiguration>();
+        for (EventConfiguration conf : configurations) {
+            // keyName found or no keyName configured but any action...
+            if (!Util.isEmpty(event.getAttribute(conf.getKeyName())))
+                foundConfigurations.add(conf);
+        }
+
+        if (Util.isEmpty(foundConfigurations))
+            return null;
+        return foundConfigurations;
     }
 }

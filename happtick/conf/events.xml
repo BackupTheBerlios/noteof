@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-    This file contains the descriptions of self made raised Happtick events
+    This file contains the descriptions of self made Happtick events
 -->
 <root>
-	<raisedEvents>
+	<ownEvents>
 		<!-- This self build events exist -->
 		<event>MyOwnEvent</event>
 		<event>YourOwnEvent</event>
@@ -21,5 +21,5 @@
 			<attribute>attribute0</attribute>
 			<attribute0 keyName="amount" keyValue="100" descriptionKey="amount" descriptionValue="cash value"></attribute0>
 		</YourOwnEvent>
-	</raisedEvents>
+	</ownEvents>
 </root>

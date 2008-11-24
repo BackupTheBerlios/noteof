@@ -13,6 +13,7 @@ import de.happtick.configuration.ChainConfiguration;
 import de.happtick.configuration.ChainLink;
 import de.happtick.configuration.EventConfiguration;
 import de.happtick.core.MasterTable;
+import de.happtick.core.events.ApplicationStartEvent;
 import de.happtick.core.events.ChainStoppedEvent;
 import de.happtick.core.exception.HapptickException;
 import de.happtick.core.util.Scheduling;
@@ -37,7 +38,6 @@ import de.notIOC.configuration.ConfigurationManager;
  */
 public class Scheduler {
     private static Scheduler scheduler = new Scheduler();
-    private EventHandler eventHandler;
 
     /*
      * Initialize...
@@ -47,11 +47,6 @@ public class Scheduler {
 
         // Start Observer who gets all fired Events
         new Thread(new SchedulerObserver()).start();
-
-        // Start Event Handler which decides what to do with the events by
-        // regarding the configuration
-        eventHandler = new EventHandler();
-        new Thread(eventHandler).start();
 
         // Standard via timer
         try {
@@ -80,26 +75,56 @@ public class Scheduler {
     }
 
     private class EventHandler implements Runnable {
+        private NotEOFEvent event;
 
-        protected synchronized void handleEvent(NotEOFEvent event) {
-            // TODO wenn Generic reinkommt, attribut 'aliasName' auswerten
+        protected EventHandler(NotEOFEvent event) {
+            this.event = event;
+        }
+
+        protected void handleEvent() {
+            // TODO wenn Generic ausgelöst werden soll, attribut 'alias'
+            // auswerten
             // bei Versand von Generic aliasName setzen
             // nochmal happtick_appl.xml konsultieren...
 
-            if (EventType.EVENT_GENERIC.equals(event.getEventType())) {
+            // search for the configuration to this event
+            List<EventConfiguration> eventConfigurations = Scheduling.getEventConfigurationsForEventType(this.event.getEventType());
+            List<EventConfiguration> actionEventConfigurations = Scheduling.getEventConfigurationsForEvent(this.event, eventConfigurations);
 
+            // if configuration found look what to do...
+            if (!Util.isEmpty(actionEventConfigurations)) {
+                for (EventConfiguration eConf : actionEventConfigurations) {
+                    // start, stop, ignite
+                    String action = eConf.getAction();
+
+                    // start: generate StartEvent and send
+                    // stop: generate StopEvent and send
+                    // ignite: start Event
+
+                    if ("start".equals(action)) {
+                        // search Application configuration and start event
+                        NotEOFEvent startEvent = new ApplicationStartEvent();
+                        clientIp -> Ip where the application must be started. 
+                        applicationId -> Unique identifier which is fix given by the happtick configuration. 
+                        applicationPath -> Physical path of the executable application. Normally stored in the configuration. 
+                        arguments -> All arguments and their values are transported within this one string. 
+                        applicationType -> The type of application. Options are 'JAVA' or 'UNKNOWN'. 
+                        windowsSupport -> Option to automatically support Windows start scripts.
+                    }
+                }
             }
 
+            // ignite....
+            if (EventType.EVENT_GENERIC.equals(this.event.getEventType())) {
+                if (!Util.isEmpty(this.event.getAttribute("internal->className"))) {
+                    Util.getGenericEvent(this.event.getAttribute("internal->className"), true);
+                }
+            }
         }
 
         @Override
         public void run() {
-            while (true) {
-                try {
-                    Thread.sleep(10000);
-                } catch (InterruptedException e) {
-                }
-            }
+            handleEvent();
         }
     }
 
@@ -167,8 +192,9 @@ public class Scheduler {
                 MasterTable.removeStartEvent(event);
             }
 
-            // EventHandler processes all events additional to the observer
-            eventHandler.handleEvent(event);
+            // EventHandler Threads process all events independent to the
+            // observer
+            new Thread(new EventHandler(event)).start();
         }
 
         public void run() {
@@ -495,8 +521,8 @@ public class Scheduler {
         }
 
         @Override
-        public void update(Service arg0, NotEOFEvent arg1) {
-
+        public void update(Service arg0, NotEOFEvent event) {
+            this.setEvent(event);
         }
     }
 

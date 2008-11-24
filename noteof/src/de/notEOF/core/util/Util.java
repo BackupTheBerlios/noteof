@@ -3,12 +3,15 @@ package de.notEOF.core.util;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import de.notEOF.configuration.LocalConfiguration;
 import de.notEOF.core.enumeration.EventType;
 import de.notEOF.core.event.EventFinder;
+import de.notEOF.core.event.GenericEvent;
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.interfaces.EventObserver;
 import de.notEOF.core.interfaces.NotEOFConfiguration;
@@ -526,5 +529,54 @@ public class Util {
 
         NotEOFEvent event = EventFinder.getNotEOFEvent(Server.getApplicationHome(), className);
         return event.getEventType();
+    }
+
+    /**
+     * Delivers a new Generic Event with fix configured attributes
+     * 
+     * @param aliasClassName
+     *            The className of the Event like configured as 'own' Event. The
+     *            className maybe contains 'Alias:'. Then this Part must be
+     *            erased...
+     * @param aliasCleaned
+     *            If the aliasClassName was cleaned of the prefix 'Alias:' this
+     *            must be true, else false.
+     * @return
+     */
+    public static NotEOFEvent getGenericEvent(String aliasClassName, boolean aliasCleaned) {
+        if (!aliasCleaned) {
+            // Alias: = 6 signs
+            aliasClassName = aliasClassName.substring(6);
+        }
+
+        // read configuration of this own event
+        String xmlPath = "ownEvents";
+
+        NotEOFConfiguration localConf = new LocalConfiguration();
+        try {
+            Map<String, String> descriptions = new HashMap<String, String>();
+            Map<String, String> attributes = new HashMap<String, String>();
+            xmlPath = "ownEvents." + aliasClassName;
+            List<String> confAttributes = localConf.getTextList(xmlPath + ".attribute");
+            for (String attribute : confAttributes) {
+                // keyName="firstName" keyValue="Dirk"
+                // descriptionKey="firstName" descriptionValue="Vorname"
+                String keyName = localConf.getAttribute(xmlPath + attribute, "keyName");
+                String keyValue = localConf.getAttribute(xmlPath + attribute, "keyValue");
+                String descriptionKey = localConf.getAttribute(xmlPath + attribute, "descriptionKey");
+                String descriptionValue = localConf.getAttribute(xmlPath + attribute, "descriptionValue");
+
+                descriptions.put(descriptionKey, descriptionValue);
+                attributes.put(keyName, keyValue);
+
+            }
+            NotEOFEvent genericEvent = new GenericEvent();
+            genericEvent.setDescriptions(descriptions);
+            genericEvent.setAttributes(attributes);
+            return genericEvent;
+        } catch (ActionFailedException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }
