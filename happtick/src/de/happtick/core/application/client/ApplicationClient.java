@@ -8,11 +8,13 @@ import de.happtick.core.events.ErrorEvent;
 import de.happtick.core.exception.HapptickException;
 import de.happtick.core.interfaces.ClientObserver;
 import de.notEOF.core.client.BaseClient;
+import de.notEOF.core.communication.DataObject;
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.interfaces.NotEOFClient;
 import de.notEOF.core.interfaces.NotEOFEvent;
 import de.notEOF.core.util.ArgsParser;
 import de.notEOF.core.util.Util;
+import de.notEOF.mail.NotEOFMail;
 
 /**
  * This client has less business logic and more connection / communication
@@ -68,12 +70,100 @@ public class ApplicationClient extends BaseClient implements NotEOFClient {
         }
     }
 
+    public String requestTo(Enum<?> requestHeader, Enum<?> expectedResponseHeader) throws ActionFailedException {
+        if (!isWorkAllowed()) {
+            throw new HapptickException(208L, "Methode: requestTo");
+        }
+        return super.requestTo(requestHeader, expectedResponseHeader);
+    }
+
+    public void awaitRequest(Enum<?> expectedRequestHeader) throws ActionFailedException {
+        if (!isWorkAllowed()) {
+            throw new HapptickException(208L, "Methode: awaitRequest");
+        }
+        super.awaitRequest(expectedRequestHeader);
+    }
+
+    public void awaitRequestAnswerImmediate(Enum<?> expectedRequestHeader, Enum<?> responseHeader, String value) throws ActionFailedException {
+        if (!isWorkAllowed()) {
+            throw new HapptickException(208L, "Methode: awaitRequestAnswerImmediate");
+        }
+        super.awaitRequestAnswerImmediate(expectedRequestHeader, responseHeader, value);
+    }
+
+    public synchronized void sendMail(NotEOFMail mail) throws ActionFailedException {
+        if (!isWorkAllowed()) {
+            throw new HapptickException(208L, "Methode: sendMail");
+        }
+        super.sendMail(mail);
+    }
+
+    public void responseTo(Enum<?> responseHeader, String value) throws ActionFailedException {
+        if (!isWorkAllowed()) {
+            throw new HapptickException(208L, "Methode: responseTo");
+        }
+        super.responseTo(responseHeader, value);
+    }
+
+    public String readMsg() throws ActionFailedException {
+        if (!isWorkAllowed()) {
+            throw new HapptickException(208L, "Methode: readMsg");
+        }
+        return super.readMsg();
+    }
+
+    public String readMsgNoTimeOut() throws ActionFailedException {
+        if (!isWorkAllowed()) {
+            throw new HapptickException(208L, "Methode: readMsgNoTimeOut");
+        }
+        return super.readMsgNoTimeOut();
+    }
+
+    public String readMsgTimedOut(int timeOutMillis) throws ActionFailedException {
+        if (!isWorkAllowed()) {
+            throw new HapptickException(208L, "Methode: readMsgTimedOut");
+        }
+        return super.readMsgTimedOut(timeOutMillis);
+    }
+
+    public void writeMsg(String msg) throws ActionFailedException {
+        if (!isWorkAllowed()) {
+            throw new HapptickException(208L, "Methode: writeMsg");
+        }
+        super.writeMsg(msg);
+    }
+
+    public void writeMsg(Enum<?> requestHeader) throws ActionFailedException {
+        if (!isWorkAllowed()) {
+            throw new HapptickException(208L, "Methode: writeMsg");
+        }
+        super.writeMsg(requestHeader);
+    }
+
+    public DataObject receiveDataObject() throws ActionFailedException {
+        if (!isWorkAllowed()) {
+            throw new HapptickException(208L, "Methode: receiveDataObject");
+        }
+        return super.receiveDataObject();
+    }
+
+    public void sendDataObject(DataObject dataObject) throws ActionFailedException {
+        if (!isWorkAllowed()) {
+            throw new HapptickException(208L, "Methode: sendDataObject");
+        }
+        super.sendDataObject(dataObject);
+    }
+
     /**
      * Send event to service that the client has started his work.
      * 
      * @throws HapptickException
      */
     public void startWork() throws HapptickException {
+        if (!isWorkAllowed()) {
+            throw new HapptickException(208L, "Methode: startWork");
+        }
+
         try {
             writeMsg(ApplicationTag.PROCESS_START_WORK);
             readMsgTimedOut(7654);
@@ -146,17 +236,24 @@ public class ApplicationClient extends BaseClient implements NotEOFClient {
      * @throws HapptickException
      */
     public boolean isWorkAllowed() throws HapptickException {
+        // simpliest case
+        if (isWorkAllowed)
+            return true;
+
+        // if this client has a clientNetId it was started by scheduler.
+        if (!Util.isEmpty(getClientNetId()))
+            return true;
+
         // only when start allowance not given yet service must be asked for
-        if (!isWorkAllowed) {
-            try {
-                // inform service that an requests for start allowance will
-                // follow
-                writeMsg(ApplicationTag.PROCESS_START_ALLOWANCE);
-                isWorkAllowed = ApplicationTag.INFO_TRUE.name().equals(requestTo(ApplicationTag.REQ_START_ALLOWED, ApplicationTag.RESP_START_ALLOWED));
-            } catch (ActionFailedException e) {
-                throw new HapptickException(201L, e);
-            }
+        try {
+            // inform service that an requests for start allowance will
+            // follow
+            writeMsg(ApplicationTag.PROCESS_START_ALLOWANCE);
+            isWorkAllowed = ApplicationTag.INFO_TRUE.name().equals(requestTo(ApplicationTag.REQ_START_ALLOWED, ApplicationTag.RESP_START_ALLOWED));
+        } catch (ActionFailedException e) {
+            throw new HapptickException(201L, e);
         }
+
         return isWorkAllowed;
     }
 
@@ -220,6 +317,10 @@ public class ApplicationClient extends BaseClient implements NotEOFClient {
      * @throws HapptickException
      */
     public void sendEvent(NotEOFEvent event) throws HapptickException {
+        if (!isWorkAllowed()) {
+            throw new HapptickException(208L, "Versenden eines Events.");
+        }
+
         try {
             System.out.println("ApplicationClient - sendEvent: super.sendEvent()");
             event.setApplicationId(this.applicationId);

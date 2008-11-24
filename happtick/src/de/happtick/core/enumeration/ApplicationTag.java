@@ -11,6 +11,9 @@ public enum ApplicationTag {
     REQ_APPLICATION_ID,
     RESP_APPLICATION_ID,
 
+    REQ_CLIENT_NET_ID,
+    RESP_CLIENT_NET_ID,
+
     REQ_START_ID,
     RESP_START_ID,
 

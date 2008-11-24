@@ -19,6 +19,8 @@ public enum EventType {
     EVENT_ERROR,
     /** New LOG entry is delivered with this event */
     EVENT_LOG,
+    /** Start allowance response or request */
+    EVENT_START_ALLOWANCE,
     /**
      * This event tells about an action which happened before - events of this
      * type can raise another action and should be the standard.

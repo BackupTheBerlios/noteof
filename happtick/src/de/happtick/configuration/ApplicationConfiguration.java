@@ -221,7 +221,7 @@ public class ApplicationConfiguration {
 
         // Perhaps this application has to wait till other application processes
         // are stopped
-        if (Scheduling.mustWaitForApplication(this)) {
+        if (Scheduling.mustWaitForOtherApplication(this)) {
             return false;
         }
 
@@ -235,15 +235,16 @@ public class ApplicationConfiguration {
         if (nextStartDate.getTime() > timeNow - 1000 && //
                 nextStartDate.getTime() < timeNow + 1000) {
 
-            // ok time point reached
-            nextStartDate = Scheduling.calculateNextStart(this);
-
             // check if other instances of application are running
             // and if multiple start is allowed
-            if (!multipleStart && Scheduling.isEqualApplicationActive(this))
+            if (!isMultipleStart() && Scheduling.isEqualApplicationActive(this))
                 // wait for ending other instances (next time point is
                 // calculated above)
                 return false;
+
+            // ok time point reached, application may be started now
+            // calculate the next start point
+            nextStartDate = Scheduling.calculateNextStart(this);
 
             // ok - time point reached, no more other instances are running or
             // multiple
@@ -253,6 +254,10 @@ public class ApplicationConfiguration {
 
         // please wait
         return false;
+    }
+
+    public Date getNextStartDate() {
+        return nextStartDate;
     }
 
     public Long getApplicationId() {

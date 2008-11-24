@@ -6,6 +6,7 @@ import java.util.List;
 import de.happtick.core.MasterTable;
 import de.happtick.core.enumeration.ApplicationTag;
 import de.happtick.core.service.HapptickBaseService;
+import de.happtick.core.util.Scheduling;
 import de.notEOF.core.enumeration.EventType;
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.util.Util;
@@ -103,7 +104,10 @@ public class ApplicationService extends HapptickBaseService {
 
         // Request for start allowance
         if (incomingMsgEnum.equals(ApplicationTag.PROCESS_START_ALLOWANCE)) {
-            // TODO Wird wohl mit MasterTable oder scheduler ausgehandelt...
+            ApplicationTag tag = ApplicationTag.INFO_TRUE;
+            if (Scheduling.mustWaitForSameApplication(getApplicationId()))
+                tag = ApplicationTag.INFO_FALSE;
+            responseTo(ApplicationTag.RESP_START_ALLOWED, tag.name());
         }
     }
 

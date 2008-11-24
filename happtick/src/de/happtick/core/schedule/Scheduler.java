@@ -1,6 +1,7 @@
 package de.happtick.core.schedule;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -80,9 +81,14 @@ public class Scheduler {
 
     private class EventHandler implements Runnable {
 
-        protected void handleEvent(NotEOFEvent event) {
+        protected synchronized void handleEvent(NotEOFEvent event) {
             // TODO wenn Generic reinkommt, attribut 'aliasName' auswerten
             // bei Versand von Generic aliasName setzen
+            // nochmal happtick_appl.xml konsultieren...
+
+            if (EventType.EVENT_GENERIC.equals(event.getEventType())) {
+
+            }
 
         }
 
@@ -106,6 +112,7 @@ public class Scheduler {
         protected SchedulerObserver() {
             // before registering add events
             observedEvents.add(EventType.EVENT_START_ERROR);
+            observedEvents.add(EventType.EVENT_GENERIC);
             observedEvents.add(EventType.EVENT_APPLICATION_STARTED);
             observedEvents.add(EventType.EVENT_APPLICATION_STOPPED);
 
@@ -525,11 +532,20 @@ public class Scheduler {
                                 startApplicationScheduler(syncConf);
                             }
                         }
+
+                        // this thread may sleep a while till next start point
+                        if (null != conf.getNextStartDate()) {
+                            long millis = conf.getNextStartDate().getTime() - new Date().getTime();
+                            if (millis > 5000) {
+                                // wake up some millis before
+                                Thread.sleep(millis - 2000);
+                            }
+                        }
                     }
                     Thread.sleep(300);
                 }
             } catch (Exception e) {
-                LocalLog.error("Scheduling f�r Applikation mit Id " + conf.getApplicationId() + " ist ausgefallen.", e);
+                LocalLog.error("Scheduling fuer Applikation mit Id " + conf.getApplicationId() + " ist ausgefallen.", e);
             }
         }
     }

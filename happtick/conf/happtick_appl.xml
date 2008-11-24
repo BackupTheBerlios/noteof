@@ -89,7 +89,7 @@
 			    - keyValue value of the attribute which is condition for the actions (optional)
 			    - applicationId additional filter to ensure that the event was raised by the application with given id (optional)
 			    - adresseeId additional information for which application or chain the event is appointed to.
-			    - action what to do with the application/chain - 'start', 'stop', 'clear', 'reset', 'ignite' is possible here.
+			    - action what to do with the application/chain/event - 'start', 'stop', 'clear', 'reset', 'ignite' is possible here.
 				      clear means that the chain forgets the received events and continues it's work.
 			    - addresseeType kind of receiver 'application' or 'chain' or 'event' is possible here.
 			    
@@ -100,22 +100,22 @@
 	    	<event2 eventId="2" eventClassName="AlarmEvent" raiseId="raise0"></event2>
 	    	<event3 eventId="3" eventClassName="StartedEvent"></event3>
 	    	<event4 eventId="4" eventClassName="ActionEvent" keyName="clear" keyValue="chain" action="clear" addresseeType="chain" addresseeId="99"></event4>
-	    	<event5 eventId="5" eventClassName="ActionEvent" keyName="clear" keyValue="application" action="clear" addresseeType="application"></event5>
 	    	<event6 eventId="6" eventClassName="ActionEvent" keyName="reset" keyValue="2" action="reset" addresseeType="chain"></event6>
-	    	<event7 eventId="7" eventClassName="StartedEvent" action="ignite" addresseeType="event" addresseeId="2" applicationId="2"></event7>
-	    	<event8 eventId="8" eventClassName="Alias:MyOwnEvent" keyName="foreName" keyValue="Dirk"></event8>
+	    	<event7 eventId="7" eventClassName="StartedEvent" action="ignite" addresseeType="event" addresseeId="2" applicationId="8"></event7>
+	    	<event8 eventId="8" eventClassName="Alias:MyOwnEvent"></event8>
+	    	<event9 eventId="9" eventClassName="Alias:MyOwnEvent" keyName="foreName" keyValue="Dirk" action="reset" addresseeType="chain"></event9>
 	    	
 	    	
 	    	<!--
 	    		 Raise one ore more events when an event comes in.
 	    		 The events here are alias names. This names are used in the raised event configuration.
-	    	-->
 	    	
 	    	<raise>raise0</raise>
 	    	
 		    <raise0>
 		    	<eventAlias>MyOwnEvent</eventAlias>
 		    </raise0>
+	    	-->
 	    	
 	    </events>
 	
