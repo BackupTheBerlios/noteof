@@ -21,10 +21,14 @@ import de.notEOF.core.interfaces.NotEOFEvent;
  * 
  */
 public class ActionEvent extends HapptickEvent implements NotEOFEvent {
-    public final static EventType EVENT_TYPE = EventType.EVENT_ACTION;
 
     protected void initDescriptions() {
         descriptions.put("information", "Additional information(s) about the raised event.");
         descriptions.put("eventId", "Unique identifier which is maintained in the application.");
     }
+
+    protected void initEventType() {
+        eventType = EventType.EVENT_ACTION;
+    }
+
 }

@@ -404,6 +404,7 @@ public class TalkLine implements Observer {
         // send className and eventType as ordinal value
         Map<String, String> infos = new HashMap<String, String>();
         infos.put("canonicalName", event.getClass().getCanonicalName());
+        System.out.println("event.getEventType() " + event.getEventType());
         infos.put("eventTypeOrdinal", String.valueOf(event.getEventType().ordinal()));
 
         DataObject eventInfo = new DataObject();

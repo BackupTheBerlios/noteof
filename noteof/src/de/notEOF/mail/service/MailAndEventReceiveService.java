@@ -27,7 +27,7 @@ public abstract class MailAndEventReceiveService extends BaseService {
 
     private MailToken mailDestinations;
     private MailHeaders mailHeaders;
-    private List<String> eventNames;
+    private List<String> eventTypeNames;
     private List<String> ignoredClientNetIds;
 
     @Override
@@ -70,16 +70,20 @@ public abstract class MailAndEventReceiveService extends BaseService {
         this.mailHeaders.addAll(headers);
     }
 
-    protected void addInterestingEventNames(List<String> eventNames) {
-        if (null == this.eventNames)
-            this.eventNames = new ArrayList<String>();
-        this.eventNames.addAll(eventNames);
+    protected void addInterestingEventNames(List<String> eventTypeNames) {
+        if (null == this.eventTypeNames)
+            this.eventTypeNames = new ArrayList<String>();
+        this.eventTypeNames.addAll(eventTypeNames);
+        for (String eventName : eventTypeNames) {
+            addObservedEvent(EventType.valueOf(eventName));
+        }
     }
 
     protected void addInterestingEventName(String eventName) {
-        if (null == this.eventNames)
-            this.eventNames = new ArrayList<String>();
-        this.eventNames.add(eventName);
+        if (null == this.eventTypeNames)
+            this.eventTypeNames = new ArrayList<String>();
+        this.eventTypeNames.add(eventName);
+        addObservedEvent(EventType.valueOf(eventName));
     }
 
     /**
@@ -182,9 +186,9 @@ public abstract class MailAndEventReceiveService extends BaseService {
     }
 
     protected boolean interestedInEvent(NotEOFEvent event) {
-        if (null != eventNames) {
-            for (String eventName : eventNames) {
-                if (eventName.equals(event.getClass().getName())) {
+        if (null != eventTypeNames) {
+            for (String eventName : eventTypeNames) {
+                if (eventName.equals(event.getEventType().name())) {
                     return true;
                 }
             }
@@ -200,7 +204,7 @@ public abstract class MailAndEventReceiveService extends BaseService {
             addExpressions();
         }
         if (incomingMsgEnum.equals(MailTag.REQ_READY_FOR_EVENTLIST)) {
-            addEvents();
+            addEventClientIsInterestedIn();
         }
         if (incomingMsgEnum.equals(MailTag.REQ_READY_FOR_IGNORED_CLIENTS)) {
             addIgnoredMails();
@@ -214,7 +218,7 @@ public abstract class MailAndEventReceiveService extends BaseService {
             // responseTo(MailTag.VAL_OK, MailTag.VAL_OK.name());
             responseTo(MailTag.VAL_OK, MailTag.VAL_OK.name());
             addObservedEvent(EventType.EVENT_MAIL);
-            addObservedEvent(EventType.EVENT_ANY_TYPE);
+            addObservedEvent(EventType.EVENT_APPLICATION_STOP);
             getServer().registerForEvents(this);
         }
     }
@@ -243,7 +247,7 @@ public abstract class MailAndEventReceiveService extends BaseService {
     }
 
     @SuppressWarnings("unchecked")
-    private void addEvents() throws ActionFailedException {
+    private void addEventClientIsInterestedIn() throws ActionFailedException {
         responseTo(MailTag.RESP_READY_FOR_EVENTLIST, MailTag.VAL_OK.name());
         DataObject dataObject = receiveDataObject();
         if (null != dataObject && null != dataObject.getList() && dataObject.getList().size() > 0) {

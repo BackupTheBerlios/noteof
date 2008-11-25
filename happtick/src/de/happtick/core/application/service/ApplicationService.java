@@ -1,26 +1,18 @@
 package de.happtick.core.application.service;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import de.happtick.core.MasterTable;
 import de.happtick.core.enumeration.ApplicationTag;
 import de.happtick.core.service.HapptickBaseService;
 import de.happtick.core.util.Scheduling;
 import de.notEOF.core.enumeration.EventType;
 import de.notEOF.core.exception.ActionFailedException;
+import de.notEOF.core.interfaces.Service;
 import de.notEOF.core.util.Util;
 
-public class ApplicationService extends HapptickBaseService {
+public class ApplicationService extends HapptickBaseService implements Service {
 
     private Long applicationId = new Long(-1);
     private String startId;
-    // private AlarmEvent lastAlarmEvent;
-    // private ErrorEvent lastErrorEvent;
-    // private ActionEvent lastActionEvent;
-    // private LogEvent lastLogEvent;
-    // private StoppedEvent stoppedEvent;
-    // private StartedEvent startedEvent;
 
     private int exitCode = 0;
     private boolean clientIsActive = false;
@@ -31,6 +23,7 @@ public class ApplicationService extends HapptickBaseService {
      */
     public void implementationFirstSteps() {
         // don't delete this method...
+        addObservedEvent(EventType.EVENT_ANY_TYPE);
     }
 
     /**
@@ -109,12 +102,6 @@ public class ApplicationService extends HapptickBaseService {
                 tag = ApplicationTag.INFO_FALSE;
             responseTo(ApplicationTag.RESP_START_ALLOWED, tag.name());
         }
-    }
-
-    public List<EventType> getObservedEvents() {
-        List<EventType> observedTypes = new ArrayList<EventType>();
-        observedTypes.add(EventType.EVENT_ANY_TYPE);
-        return observedTypes;
     }
 
     /**

@@ -150,4 +150,9 @@ public class MailRecipient extends HapptickApplication implements MailAndEventRe
         System.out.println("HUPS - jetzt bin ich aber am Ende...");
     }
 
+    @Override
+    public void processStopEvent(NotEOFEvent event) {
+
+    }
+
 }

@@ -20,9 +20,13 @@ import de.notEOF.core.interfaces.NotEOFEvent;
  * 
  */
 public class ChainStopEvent extends HapptickEvent implements NotEOFEvent {
-    public final static EventType EVENT_TYPE = EventType.EVENT_CHAIN_STOP;
 
     protected void initDescriptions() {
         descriptions.put("chainId", "Unique identifier which is fix given by the happtick configuration.");
+    }
+
+    @Override
+    protected void initEventType() {
+        eventType = EventType.EVENT_CHAIN_STOP;
     }
 }

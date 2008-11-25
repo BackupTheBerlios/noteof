@@ -13,7 +13,6 @@ import de.happtick.configuration.ChainConfiguration;
 import de.happtick.configuration.ChainLink;
 import de.happtick.configuration.EventConfiguration;
 import de.happtick.core.MasterTable;
-import de.happtick.core.events.ApplicationStartEvent;
 import de.happtick.core.events.ChainStoppedEvent;
 import de.happtick.core.exception.HapptickException;
 import de.happtick.core.util.Scheduling;
@@ -81,6 +80,10 @@ public class Scheduler {
             this.event = event;
         }
 
+        /*
+         * some events are handled directly by chain runners or application
+         * runners (s. below)
+         */
         protected void handleEvent() {
             // TODO wenn Generic ausgelöst werden soll, attribut 'alias'
             // auswerten
@@ -97,27 +100,36 @@ public class Scheduler {
                     // start, stop, ignite
                     String action = eConf.getAction();
 
-                    // start: generate StartEvent and send
-                    // stop: generate StopEvent and send
-                    // ignite: start Event
+                    try {
+                        if ("application".equalsIgnoreCase(eConf.getAddresseeType())) {
+                            // only application related events
+                            ApplicationConfiguration applConf = MasterTable.getApplicationConfiguration(eConf.getAddresseeId());
 
-                    if ("start".equals(action)) {
-                        // search Application configuration and start event
-                        NotEOFEvent startEvent = new ApplicationStartEvent();
-                        clientIp -> Ip where the application must be started. 
-                        applicationId -> Unique identifier which is fix given by the happtick configuration. 
-                        applicationPath -> Physical path of the executable application. Normally stored in the configuration. 
-                        arguments -> All arguments and their values are transported within this one string. 
-                        applicationType -> The type of application. Options are 'JAVA' or 'UNKNOWN'. 
-                        windowsSupport -> Option to automatically support Windows start scripts.
+                            if ("start".equals(action)) {
+                                Scheduling.startApplication(applConf);
+                            }
+                            if ("stop".equals(action)) {
+                                Scheduling.stopApplication(applConf);
+                            }
+                        }
+
+                        if ("event".equalsIgnoreCase(eConf.getAddresseeType())) {
+                            EventConfiguration eventConf = MasterTable.getEventConfiguration(eConf.getAddresseeId());
+                            if ("ignite".equals(action)) {
+                                String eventClassName = eventConf.getEventClassName();
+                                if (eventClassName.startsWith("Alias:")) {
+                                    NotEOFEvent newEvent = Util.getGenericEvent(eventClassName, false);
+                                    Scheduling.raiseEvent(newEvent);
+                                } else {
+                                    LocalLog
+                                            .warn("Nur konfigurierte Events koennen mit ignite ausgeloest werden. Konfigurierte Events sind am Prefix 'Alias:' erkennbar.");
+                                }
+                            }
+                        }
+
+                    } catch (ActionFailedException e) {
+                        e.printStackTrace();
                     }
-                }
-            }
-
-            // ignite....
-            if (EventType.EVENT_GENERIC.equals(this.event.getEventType())) {
-                if (!Util.isEmpty(this.event.getAttribute("internal->className"))) {
-                    Util.getGenericEvent(this.event.getAttribute("internal->className"), true);
                 }
             }
         }

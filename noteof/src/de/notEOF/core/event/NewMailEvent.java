@@ -5,7 +5,6 @@ import de.notEOF.core.interfaces.NotEOFEvent;
 import de.notEOF.mail.NotEOFMail;
 
 public class NewMailEvent extends NotEOFBaseEvent implements NotEOFEvent {
-    public final static EventType EVENT_TYPE = EventType.EVENT_MAIL;
 
     private NotEOFMail mail;
 
@@ -22,5 +21,10 @@ public class NewMailEvent extends NotEOFBaseEvent implements NotEOFEvent {
      */
     protected void initDescriptions() {
         descriptions.put("", "");
+    }
+
+    @Override
+    protected void initEventType() {
+        this.eventType = EventType.EVENT_MAIL;
     }
 }

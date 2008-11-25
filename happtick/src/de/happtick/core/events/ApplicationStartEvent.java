@@ -31,7 +31,6 @@ import de.notEOF.core.interfaces.NotEOFEvent;
  * 
  */
 public class ApplicationStartEvent extends HapptickEvent implements NotEOFEvent {
-    public final static EventType EVENT_TYPE = EventType.EVENT_APPLICATION_START;
 
     protected void initDescriptions() {
         descriptions.put("clientIp", "Ip where the application must be started.");
@@ -40,5 +39,9 @@ public class ApplicationStartEvent extends HapptickEvent implements NotEOFEvent 
         descriptions.put("arguments", "All arguments and their values are transported within this one string.");
         descriptions.put("applicationType", "The type of application. Options are 'JAVA' or 'UNKNOWN'.");
         descriptions.put("windowsSupport", "Option to automatically support Windows start scripts.");
+    }
+
+    protected void initEventType() {
+        this.eventType = EventType.EVENT_APPLICATION_START;
     }
 }

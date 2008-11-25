@@ -16,10 +16,10 @@ public interface MailAndEventRecipient {
     /**
      * Callback method if an exception is raised while receiving a mail.
      * 
-     * @param e
+     * @param exception
      *            Any exception...
      */
-    public void processMailException(Exception e);
+    public void processMailException(Exception exception);
 
     /**
      * Callback method to process received events. You should synchronize this.
@@ -32,9 +32,16 @@ public interface MailAndEventRecipient {
     /**
      * Callback method if an exception is raised while receiving an event.
      * 
-     * @param e
+     * @param exception
      *            Any exception...
      */
-    public void processEventException(Exception e);
+    public void processEventException(Exception exception);
+
+    /**
+     * Callback method if this application has to be stopped.
+     * 
+     * @param event
+     */
+    public void processStopEvent(NotEOFEvent event);
 
 }

@@ -1,6 +1,7 @@
 package de.happtick.core.service;
 
 import de.happtick.core.MasterTable;
+import de.notEOF.core.interfaces.Service;
 import de.notEOF.core.service.BaseService;
 
 /**
@@ -16,7 +17,7 @@ import de.notEOF.core.service.BaseService;
  * @author Dirk
  * 
  */
-public abstract class HapptickBaseService extends BaseService {
+public abstract class HapptickBaseService extends BaseService implements Service {
 
     public void implementationFirstSteps() {
         // register at master tables

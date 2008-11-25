@@ -92,7 +92,8 @@
 			    - applicationId additional filter to ensure that the event was raised by the application with given id (optional)
 			    - adresseeId additional information for which application or chain the event is appointed to.
 			    - action what to do with the application/chain/event - 'start', 'stop', 'clear', 'reset', 'ignite' is possible here.
-				      clear means that the chain forgets the received events and continues it's work.
+				      'clear' means that the chain forgets the received events and continues it's work.
+				      'ignite' is only possible to self configured events (Alias:<EventName>). Other events are fired by applications directly 
 			    - addresseeType kind of receiver 'application' or 'chain' or 'event' is possible here.
 			    
 			    - please note the special eventClassName 'Alias:MyOwnEvent'. If an self described event was fired it is recognized as
@@ -106,7 +107,6 @@
 	    	<event6 eventId="6" eventClassName="ActionEvent" keyName="reset" keyValue="2" action="reset" addresseeType="chain"></event6>
 	    	<event7 eventId="7" eventClassName="StartedEvent" action="ignite" addresseeType="event" addresseeId="8" applicationId="8"></event7>
 	    	<event8 eventId="8" eventClassName="Alias:MyOwnEvent"></event8>
-	    	<event9 eventId="9" eventClassName="Alias:MyOwnEvent" action="reset" addresseeType="chain"></event9>
 	    	
 	    </events>
 	

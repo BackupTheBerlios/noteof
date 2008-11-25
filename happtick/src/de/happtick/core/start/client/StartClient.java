@@ -36,6 +36,8 @@ import de.notEOF.mail.interfaces.MailAndEventRecipient;
  */
 public class StartClient extends HapptickBaseClient implements MailAndEventRecipient {
 
+    private boolean stopped = false;
+
     public StartClient(String serverAddress, int port, String[] args) throws HapptickException {
         // must be called before useMailsAndEvents()
         connect(serverAddress, port, args, false);
@@ -50,7 +52,7 @@ public class StartClient extends HapptickBaseClient implements MailAndEventRecip
         // Before this the method useMailsAndEvents() must be called
         startAcceptingMailsEvents();
 
-        while (true) {
+        while (!stopped) {
             try {
                 Thread.sleep(10000);
             } catch (InterruptedException e) {
@@ -139,7 +141,7 @@ public class StartClient extends HapptickBaseClient implements MailAndEventRecip
      */
     @Override
     public void processEventException(Exception e) {
-        LocalLog.error("Fehler wurde durch die Event-Schnittstelle ausgelöst.", e);
+        LocalLog.error("Fehler wurde durch die Event-Schnittstelle ausgeloest.", e);
 
     }
 
@@ -155,8 +157,13 @@ public class StartClient extends HapptickBaseClient implements MailAndEventRecip
      */
     @Override
     public void processMailException(Exception e) {
-        LocalLog.error("Fehler wurde durch die Mail-Schnittstelle ausgelöst.", e);
+        LocalLog.error("Fehler wurde durch die Mail-Schnittstelle ausgeloest.", e);
 
+    }
+
+    @Override
+    public void processStopEvent(NotEOFEvent event) {
+        this.stopped = true;
     }
 
     /**
@@ -189,4 +196,5 @@ public class StartClient extends HapptickBaseClient implements MailAndEventRecip
             System.out.println("FINISHED.");
         }
     }
+
 }

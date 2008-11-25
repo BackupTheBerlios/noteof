@@ -22,11 +22,15 @@ import de.notEOF.core.interfaces.NotEOFEvent;
  * 
  */
 public class AlarmEvent extends HapptickEvent implements NotEOFEvent {
-    public final static EventType EVENT_TYPE = EventType.EVENT_ALARM;
 
     protected void initDescriptions() {
         descriptions.put("description", "Exact description of the Alarm.");
         descriptions.put("type", "Numeric value which indicates the kind of the alarm.");
         descriptions.put("level", "Numeric value which indicates the level of the alarm.");
+    }
+
+    @Override
+    protected void initEventType() {
+        eventType = EventType.EVENT_ALARM;
     }
 }

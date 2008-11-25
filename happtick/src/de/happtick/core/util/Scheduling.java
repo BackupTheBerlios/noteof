@@ -14,6 +14,7 @@ import de.happtick.configuration.ChainLink;
 import de.happtick.configuration.EventConfiguration;
 import de.happtick.core.MasterTable;
 import de.happtick.core.events.ApplicationStartEvent;
+import de.happtick.core.events.ApplicationStopEvent;
 import de.happtick.core.schedule.ChainAction;
 import de.notEOF.core.enumeration.EventType;
 import de.notEOF.core.exception.ActionFailedException;
@@ -37,10 +38,28 @@ public class Scheduling {
         event.addAttribute("clientIp", applConf.getClientIp());
         event.addAttribute("applicationId", String.valueOf(applConf.getApplicationId()));
         event.addAttribute("applicationPath", applConf.getExecutablePath());
-        event.addAttribute("windowsSupport", String.valueOf(applConf.isWindowsSupport()));
         event.addAttribute("applicationType", applConf.getExecutableType());
         event.addAttribute("arguments", applConf.getExecutableArgs());
+        event.addAttribute("windowsSupport", String.valueOf(applConf.isWindowsSupport()));
 
+        raiseEvent(event);
+    }
+
+    public static synchronized void stopApplication(ApplicationConfiguration applConf) throws ActionFailedException {
+        ApplicationStopEvent event = new ApplicationStopEvent();
+        event.addAttribute("clientIp", applConf.getClientIp());
+        event.addAttribute("applicationId", String.valueOf(applConf.getApplicationId()));
+        event.addAttribute("kill", "FALSE");
+
+        raiseEvent(event);
+    }
+
+    /**
+     * Raise (fire) event - all interested observers will get it.
+     * 
+     * @param event
+     */
+    public static synchronized void raiseEvent(NotEOFEvent event) {
         Server.getInstance().updateObservers(null, event);
     }
 
@@ -367,7 +386,9 @@ public class Scheduling {
         List<EventConfiguration> foundConfigurations = new ArrayList<EventConfiguration>();
         for (EventConfiguration conf : configurations) {
             // keyName found or no keyName configured but any action...
-            if (!Util.isEmpty(event.getAttribute(conf.getKeyName())))
+            // and verify applicationId's
+            if ((Util.isEmpty(conf.getKeyName()) || !Util.isEmpty(event.getAttribute(conf.getKeyName())))
+                    && (Util.isEmpty(conf.getApplicationId()) || conf.getApplicationId().equals(event.getApplicationId())))
                 foundConfigurations.add(conf);
         }
 

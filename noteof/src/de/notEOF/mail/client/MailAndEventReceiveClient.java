@@ -181,6 +181,8 @@ public abstract class MailAndEventReceiveClient extends BaseClient {
 
     /**
      * Add events which the client is interested in.
+     * <p>
+     * If this is not done the client doesn't receives any event...
      * 
      * @param events
      *            The list that contains events.
@@ -189,12 +191,12 @@ public abstract class MailAndEventReceiveClient extends BaseClient {
     public void addInterestingEvents(List<NotEOFEvent> events) throws ActionFailedException {
         if (MailTag.VAL_OK.name().equals(requestTo(MailTag.REQ_READY_FOR_EVENTLIST, MailTag.RESP_READY_FOR_EVENTLIST))) {
             DataObject dataObject = new DataObject();
-            List<String> eventClassNames = new ArrayList<String>();
+            List<String> eventTypeNames = new ArrayList<String>();
             for (NotEOFEvent event : events) {
-                String className = event.getClass().getName();
-                eventClassNames.add(className);
+                String eventTypeName = event.getEventType().name();
+                eventTypeNames.add(eventTypeName);
             }
-            dataObject.setList(eventClassNames);
+            dataObject.setList(eventTypeNames);
             sendDataObject(dataObject);
         }
     }

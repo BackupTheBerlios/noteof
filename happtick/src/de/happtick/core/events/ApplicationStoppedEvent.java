@@ -30,7 +30,6 @@ import de.notEOF.core.interfaces.NotEOFEvent;
  * 
  */
 public class ApplicationStoppedEvent extends HapptickEvent implements NotEOFEvent {
-    public final static EventType EVENT_TYPE = EventType.EVENT_APPLICATION_STOPPED;
 
     protected void initDescriptions() {
         descriptions.put("applicationId", "Unique identifier which is fix given by the happtick configuration.");
@@ -39,5 +38,10 @@ public class ApplicationStoppedEvent extends HapptickEvent implements NotEOFEven
         descriptions.put("startId", "Identifier which the client gets by the process which started the client.");
         descriptions.put("serviceId", "Id of the service. Probably not set.");
         descriptions.put("exitCode", "Result of a process. Normally 0. Used for raising actions.");
+    }
+
+    @Override
+    protected void initEventType() {
+        eventType = EventType.EVENT_APPLICATION_STOPPED;
     }
 }

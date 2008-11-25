@@ -18,9 +18,13 @@ import de.notEOF.core.interfaces.NotEOFEvent;
  * 
  */
 public class LogEvent extends HapptickEvent implements NotEOFEvent {
-    public final static EventType EVENT_TYPE = EventType.EVENT_LOG;
 
     protected void initDescriptions() {
         descriptions.put("information", "Any Log-Text.");
+    }
+
+    @Override
+    protected void initEventType() {
+        eventType = EventType.EVENT_LOG;
     }
 }

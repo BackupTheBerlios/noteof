@@ -6,6 +6,7 @@ import java.util.Map;
 import de.notEOF.core.enumeration.EventType;
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.interfaces.NotEOFEvent;
+import de.notEOF.core.logging.LocalLog;
 import de.notEOF.core.util.Util;
 
 /**
@@ -22,13 +23,14 @@ import de.notEOF.core.util.Util;
  */
 public abstract class NotEOFBaseEvent implements NotEOFEvent {
 
-    public static EventType EVENT_TYPE;
     protected Map<String, String> attributes;
     protected Map<String, String> descriptions = new HashMap<String, String>();
     protected EventType eventType;
 
     // forces the derived class to initialize the internal list of descriptions.
     protected abstract void initDescriptions();
+
+    protected abstract void initEventType();
 
     public void addAttribute(String key, String value) throws ActionFailedException {
         initDescriptions();
@@ -46,6 +48,9 @@ public abstract class NotEOFBaseEvent implements NotEOFEvent {
     }
 
     public EventType getEventType() {
+        initEventType();
+        if (null == eventType)
+            LocalLog.warn("Event ist nicht vollstaendig implementiert! EventType ist null. Event Class: " + this.getClass().getCanonicalName());
         return eventType;
     }
 

@@ -379,6 +379,7 @@ public class MasterTable {
 
         if (service.getClass().isAssignableFrom(ApplicationService.class)) {
             System.out.println("MasterTable.addService: applicationId bei Registrierung: " + ((ApplicationService) service).getApplicationId());
+            System.out.println("MasterTable.addService: ClassName = " + service.getClass());
         }
 
         services.put(service.getServiceId(), service);
