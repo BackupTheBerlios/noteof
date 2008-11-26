@@ -19,13 +19,19 @@ public class ExternalCalls {
      * Ruft eine andere main()-Methode auf.
      * <p>
      * Dabei koennen zusaetzlich Aufrufargumente (args[]) mit angegeben werden.
+     * <br>
+     * Diese Methode ist speziell fuer Anwendungen gedacht, die mit dem
+     * Happtick-Framework erstellt wurden und durch den Scheduler gestartet
+     * werden sollen. <br>
+     * Zum Start sonstiger Klassen (z.B. Server) muss die Method call()
+     * verwendet werden.
      * 
      * @param className
      *            Name der Klasse (z.B. de.happtick.core.LocalApplStarter)
      * @param args
      *            Aufrufargumente (z.B. --applicationPath=/home/appl.sh)
      */
-    public void call(String className, String serverAddress, int serverPort, String startId, NotEOFEvent startEvent) throws HapptickException {
+    public void callHapptickMain(String className, String serverAddress, int serverPort, String startId, NotEOFEvent startEvent) throws HapptickException {
         String applicationId = null;
         String applicationPath = null;
         String arguments = null;
@@ -66,6 +72,19 @@ public class ExternalCalls {
             methode.invoke(null, new Object[] { args });
             LocalLog.info("External Application Finished.  ApplicationId: " + applicationId + "; ApplicationPath: " + applicationPath + "; Arguments: "
                     + arguments);
+        } catch (ClassNotFoundException clEx) {
+            LocalLog.warn("Klasse nicht gefunden: " + className);
+        } catch (Exception ex) {
+            LocalLog.error("Error in call", ex);
+        }
+    }
+
+    public void call(String className, String[] args) {
+        LocalLog.info("Externe Anwendung wird ueber die main()-Methode gestartet: " + className);
+        try {
+            Class<?> clazz = Class.forName(className);
+            Method methode = clazz.getMethod("main", new Class[] { args.getClass() });
+            methode.invoke(null, new Object[] { args });
         } catch (ClassNotFoundException clEx) {
             LocalLog.warn("Klasse nicht gefunden: " + className);
         } catch (Exception ex) {

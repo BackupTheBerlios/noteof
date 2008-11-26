@@ -12,27 +12,38 @@ package de.notIOC.exception;
 public class NotIOCException extends Exception {
 
     private static final long serialVersionUID = 1L;
-    private long errNo;
-    private String addInfo;
-    private String message;
+    protected long errNo;
+    protected String addInfo;
+    protected String message;
+
+    public NotIOCException(Exception ex) {
+        super(ex);
+    }
 
     public NotIOCException(long errNo, String addInfo, Exception ex) {
         super(ex);
-        this.errNo = errNo;
-        this.message = Errors.getMsg(errNo);
-        this.addInfo = addInfo;
+        initMembers(errNo, addInfo);
     }
 
     public NotIOCException(long errNo, String addInfo) {
         this.errNo = errNo;
-        this.message = Errors.getMsg(errNo);
-        this.addInfo = addInfo;
+        initMembers(errNo, addInfo);
     }
 
     public NotIOCException(long errNo, Exception ex) {
         super(ex);
+        initMembers(errNo, null);
+    }
+
+    protected void initMembers(long errNo, String addInfo) {
         this.errNo = errNo;
-        this.message = Errors.getMsg(errNo);
+        String msg = Errors.getMsg(errNo);
+        if (null == msg || msg.trim().length() == 0) {
+            msg = "Message not defined in Errors.class. Index of msg in code: " + errNo;
+        }
+        this.message = msg;
+        if (null != addInfo)
+            this.addInfo = addInfo;
     }
 
     /**
@@ -42,7 +53,7 @@ public class NotIOCException extends Exception {
      *         can be null.
      */
     public String getMessage() {
-        return message;
+        return message + "    " + addInfo;
     }
 
     /**

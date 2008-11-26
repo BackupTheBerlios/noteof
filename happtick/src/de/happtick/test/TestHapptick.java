@@ -88,6 +88,7 @@ public class TestHapptick {
             List<EventConfiguration> eventList = hConfClient.getEventConfigurations();
             if (null != eventList && eventList.size() > 0) {
                 System.out.println("--------------------------------------");
+                System.out.println("Events: " + eventList.size());
                 for (EventConfiguration conf : eventList) {
                     System.out.println("events... EventId:   " + conf.getEventId());
                     System.out.println("events... EventConf: " + conf.getEventClassName());

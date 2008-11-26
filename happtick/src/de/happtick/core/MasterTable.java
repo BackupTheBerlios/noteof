@@ -368,7 +368,6 @@ public class MasterTable {
         if (null == server)
             server = service.getServer();
 
-        // TODO pruefen, ob isAssignableFrom() so funktioniert...
         while (inAction)
             try {
                 Thread.sleep(100);
@@ -377,10 +376,13 @@ public class MasterTable {
             }
         inAction = true;
 
-        if (service.getClass().isAssignableFrom(ApplicationService.class)) {
-            System.out.println("MasterTable.addService: applicationId bei Registrierung: " + ((ApplicationService) service).getApplicationId());
-            System.out.println("MasterTable.addService: ClassName = " + service.getClass());
-        }
+        // if (service.getClass().isAssignableFrom(ApplicationService.class)) {
+        // System.out.println(
+        // "MasterTable.addService: applicationId bei Registrierung: " +
+        // ((ApplicationService) service).getApplicationId());
+        // System.out.println("MasterTable.addService: ClassName = " +
+        // service.getClass());
+        // }
 
         services.put(service.getServiceId(), service);
         inAction = false;

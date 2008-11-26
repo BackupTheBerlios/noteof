@@ -9,7 +9,7 @@
 
 <root>
 	<scheduler>
-	   	<use chain="true" timer="true" event="true"></use>
+	   	<use chain="true" timer="true" ></use>
 	
 	    <!-- ============================================== Chain Configuration ====================================
 	         With chains it is possible to define process chains depending to events or other chains.

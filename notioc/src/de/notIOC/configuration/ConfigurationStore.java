@@ -69,12 +69,13 @@ public class ConfigurationStore {
      */
     public static void addConfigurationFile(String fileName) throws NotIOCException {
         if (null == fileName)
-            throw new NotIOCException(5L, "Name der Konfigurationsdatei is NULL");
+            throw new NotIOCException(5L, "Name der Konfigurationsdatei is NULL.");
+        System.out.println("ConfigurationStor.addXmlFile: " + fileName);
         File dummyFile = new File(fileName);
         if (dummyFile.exists())
             theStore.addXmlFile(fileName);
         else {
-            throw new NotIOCException(5L, "Datei existiert nicht.");
+            throw new NotIOCException(5L, "Konfigurationsdatei existiert nicht: " + fileName);
         }
     }
 
@@ -103,7 +104,9 @@ public class ConfigurationStore {
      * 
      * @param fileName The complete path.
      */
-    private void addXmlFile(String fileName) {
+    private void addXmlFile(String fileName) throws NotIOCException {
+        if (null == fileName)
+            throw new NotIOCException(5L, "Name der XML-Datei is NULL.");
         if (null == configurationFiles)
             configurationFiles = new ArrayList<String>();
         configurationFiles.add(fileName);

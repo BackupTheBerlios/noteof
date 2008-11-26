@@ -15,54 +15,58 @@ public class MailSender {
         ApplicationStartEvent event = new ApplicationStartEvent();
         event.addAttribute("clientIp", "192.168.0.2");
         int counter = -1;
-        // while (true) {
-        // counter++;
-        appl.sendActionEvent(String.valueOf(counter), String.valueOf(counter));
-        appl.sendAlarm(String.valueOf(counter), String.valueOf(counter), String.valueOf(counter));
-        // try {
-        // Thread.sleep(50);
-        // } catch (InterruptedException e) {
-        // }
-        // if (false)
-        // break;
+        while (true) {
+            counter++;
+            appl.sendActionEvent(String.valueOf(counter), String.valueOf(counter));
+            appl.sendAlarm(String.valueOf(counter), String.valueOf(counter), String.valueOf(counter));
+            try {
+                Thread.sleep(50);
+            } catch (InterruptedException e) {
+            }
+            if (false)
+                break;
 
-        // event.addAttribute("applicationId", "99");
-        // event.addAttribute("applicationPath", "calc.exe");
-        // event.addAttribute("applicationType", "UNKNOWN");
-        // event.addAttribute("arguments", "123 :m");
-        // System.out.println("Kontrolle applicationPath: " +
-        // event.getAttribute("applicationPath"));
-        // appl.sendEvent(event);
-        // }
+            // event.addAttribute("applicationId", "99");
+            // event.addAttribute("applicationPath", "calc.exe");
+            // event.addAttribute("applicationType", "UNKNOWN");
+            // event.addAttribute("arguments", "123 :m");
+            // System.out.println("Kontrolle applicationPath: " +
+            // event.getAttribute("applicationPath"));
+            // appl.sendEvent(event);
+            // }
 
-        // try {
-        // Thread.sleep(150);
-        // } catch (InterruptedException e) {
-        // // TODO Auto-generated catch block
-        // e.printStackTrace();
-        // }
+            // try {
+            // Thread.sleep(150);
+            // } catch (InterruptedException e) {
+            // // TODO Auto-generated catch block
+            // e.printStackTrace();
+            // }
 
-        event.setApplicationId(new Long(77));
-        event.addAttribute("applicationId", "77");
-        // event.addAttribute("applicationPath",
-        // "cmd /c start/wait C:\\Projekte\\workspace\\noteof\\util\\applStartTest.bat"
-        // );
-        event.addAttribute("applicationPath", "C:/Projekte/workspace/noteof/util/applStartTest.bat");
-        event.addAttribute("windowsSupport", "true");
-        // event.addAttribute("applicationPath",
-        // "cmd /c start/wait C:\\Projekte\\workspace\\noteof\\util\\applStartTest.bat"
-        // );
-        event.addAttribute("applicationType", "JAVA");
-        System.out.println("Kontrolle applicationPath: " + event.getAttribute("applicationPath"));
-        appl.sendEvent(event);
+            if (counter < 30) {
+                event.setApplicationId(new Long(77));
+                event.addAttribute("applicationId", "77");
+                // event.addAttribute("applicationPath",
+                // "cmd /c start/wait C:\\Projekte\\workspace\\noteof\\util\\applStartTest.bat"
+                // );
+                // event.addAttribute("applicationPath",
+                // "C:/Projekte/workspace/noteof/util/applStartTest.bat");
+                event.addAttribute("applicationPath", "C:/Projekte/workspace/noteof/util/mail_recipient.bat");
+                event.addAttribute("windowsSupport", "true");
+                // event.addAttribute("applicationPath",
+                // "cmd /c start/wait C:\\Projekte\\workspace\\noteof\\util\\applStartTest.bat"
+                // );
+                event.addAttribute("applicationType", "JAVA");
+                System.out.println("Kontrolle applicationPath: " + event.getAttribute("applicationPath"));
+                appl.sendEvent(event);
+            }
 
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            try {
+                Thread.sleep(30);
+            } catch (InterruptedException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
         }
-
         // int counter = 0;
         // while (true) {
         // mail = new NotEOFMail("Kopf", "Counter: " + counter++,

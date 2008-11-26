@@ -15,6 +15,7 @@ import de.happtick.configuration.EventConfiguration;
 import de.happtick.core.MasterTable;
 import de.happtick.core.events.ChainStoppedEvent;
 import de.happtick.core.exception.HapptickException;
+import de.happtick.core.util.ExternalCalls;
 import de.happtick.core.util.Scheduling;
 import de.notEOF.configuration.LocalConfiguration;
 import de.notEOF.core.enumeration.EventType;
@@ -28,6 +29,7 @@ import de.notEOF.core.server.Server;
 import de.notEOF.core.util.ArgsParser;
 import de.notEOF.core.util.Util;
 import de.notIOC.configuration.ConfigurationManager;
+import de.notIOC.exception.NotIOCException;
 
 /**
  * The scheduler is not available from outside exept the start method.
@@ -59,8 +61,21 @@ public class Scheduler {
             if (useChain) {
                 startAllChainSchedulers();
             }
+
+            if (!(useTimer || useChain)) {
+                LocalLog.warn("Happtick Scheduler: Weder applications noch chains sind aktiv. Scheduler wird beendet.");
+                System.out.println("Happtick Scheduler: Weder applications noch chains sind aktiv. Scheduler wird beendet.");
+                System.exit(1);
+            }
+
+            System.out.println("Scheduler.Scheduler: useTimer = " + useTimer);
+            System.out.println("Scheduler.Scheduler: useChain = " + useChain);
+
+            // check ob zugriff auf mastertable gemeinsam ist
+            System.out.println("Anzahl registrierter Services in MasterTable: " + MasterTable.getApplicationConfigurationsAsList().size());
+
         } catch (ActionFailedException afx) {
-            LocalLog.error("Fehler bei Lesen der Konfiguration f�r Anwendungsscheduler.", afx);
+            LocalLog.error("Fehler bei Lesen der Konfiguration fuer Anwendungsscheduler.", afx);
         }
     }
 
@@ -513,6 +528,7 @@ public class Scheduler {
         }
 
         public void run() {
+            System.out.println("Scheduler.ChainScheduler.run started. chainId = " + conf.getChainId());
             try {
                 while (!stopped) {
                     Thread.sleep(10000);
@@ -556,6 +572,8 @@ public class Scheduler {
         }
 
         public void run() {
+            System.out.println("Scheduler.ApplicationScheduler.run started. applId = " + conf.getApplicationId());
+
             try {
                 while (true) {
                     // check if start allowed
@@ -610,7 +628,16 @@ public class Scheduler {
         String homeVar = "HAPPTICK_HOME";
         String baseConfFile = "happtick_master.xml";
         String baseConfDir = "conf";
+        // int port = 3000;
+        // boolean windowsSupport = false;
         ArgsParser argsParser = new ArgsParser(args);
+        // if (argsParser.containsStartsWith("--windowsSupport") ||
+        // argsParser.containsStartsWith("-w")) {
+        // windowsSupport = true;
+        // }
+        // if (argsParser.containsStartsWith("--port")) {
+        // port = Util.parseInt(argsParser.getValue("port"), 3000);
+        // }
         if (argsParser.containsStartsWith("--homeVar")) {
             homeVar = argsParser.getValue("homeVar");
         }
@@ -621,6 +648,23 @@ public class Scheduler {
             baseConfDir = argsParser.getValue("baseConfPath");
         }
         ConfigurationManager.setInitialEnvironment(homeVar, baseConfDir, baseConfFile);
+        try {
+            ConfigurationManager.getApplicationHome();
+            ConfigurationManager.addConfigurationFile(ConfigurationManager.getApplicationHome() + "\\" + baseConfDir + "\\happtick_master.xml");
+        } catch (NotIOCException e) {
+            e.printStackTrace();
+        }
+
+        ExternalCalls calls = new ExternalCalls();
+        // try {
+        LocalLog.info("!EOF Server wird als Teil des Happtick gestartet.");
+        calls.call("de.notEOF.core.server.Server", args);
+        // calls.startApplication(ConfigurationManager.getApplicationHome() +
+        // "/util/server.bat", "--port=" + port, windowsSupport);
+        // } catch (HapptickException e) {
+        // // TODO Auto-generated catch block
+        // e.printStackTrace();
+        // }
 
         Scheduler.start();
     }
