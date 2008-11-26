@@ -13,7 +13,7 @@ import de.happtick.configuration.ChainConfiguration;
 import de.happtick.configuration.ChainLink;
 import de.happtick.configuration.EventConfiguration;
 import de.happtick.core.MasterTable;
-import de.happtick.core.events.ChainStoppedEvent;
+import de.happtick.core.event.ChainStoppedEvent;
 import de.happtick.core.exception.HapptickException;
 import de.happtick.core.util.ExternalCalls;
 import de.happtick.core.util.Scheduling;
@@ -29,7 +29,6 @@ import de.notEOF.core.server.Server;
 import de.notEOF.core.util.ArgsParser;
 import de.notEOF.core.util.Util;
 import de.notIOC.configuration.ConfigurationManager;
-import de.notIOC.exception.NotIOCException;
 
 /**
  * The scheduler is not available from outside exept the start method.
@@ -38,7 +37,7 @@ import de.notIOC.exception.NotIOCException;
  * 
  */
 public class Scheduler {
-    private static Scheduler scheduler = new Scheduler();
+    private static Scheduler scheduler; // = new Scheduler();
 
     /*
      * Initialize...
@@ -204,12 +203,16 @@ public class Scheduler {
 
                 // start dependent applications
                 Long stoppedApplId = event.getApplicationId();
-                ApplicationConfiguration stoppedConf = MasterTable.getApplicationConfiguration(stoppedApplId);
-                for (Long applId : stoppedConf.getApplicationsStartAfter()) {
-                    ApplicationConfiguration afterConf = MasterTable.getApplicationConfiguration(applId);
-                    if (null != afterConf) {
-                        startApplicationScheduler(afterConf);
+                try {
+                    ApplicationConfiguration stoppedConf = MasterTable.getApplicationConfiguration(stoppedApplId);
+                    for (Long applId : stoppedConf.getApplicationsStartAfter()) {
+                        ApplicationConfiguration afterConf = MasterTable.getApplicationConfiguration(applId);
+                        if (null != afterConf) {
+                            startApplicationScheduler(afterConf);
+                        }
                     }
+                } catch (HapptickException e) {
+                    LocalLog.warn("Fehler bei Verarbeitung eines events: " + event.getEventType().name(), e);
                 }
             }
 
@@ -284,9 +287,9 @@ public class Scheduler {
     private class ChainScheduler implements Runnable, EventObserver {
         private ChainConfiguration conf;
         private Map<String, ChainAction> raisedEventActions = new HashMap<String, ChainAction>();
-        private Map<String, ChainAction> expectedEventActions;
+        private Map<String, ChainAction> expectedEventActions = new HashMap<String, ChainAction>();
         private boolean stopped = false;
-        private List<EventType> observedEvents;
+        private List<EventType> observedEvents = new ArrayList<EventType>();
         private int nextStartConfIndex = 0;
 
         /*
@@ -294,6 +297,9 @@ public class Scheduler {
          * applications or chains. Start first application.
          */
         protected ChainScheduler(ChainConfiguration conf) throws HapptickException {
+            if (Util.isEmpty(conf))
+                throw new HapptickException(403L, "Configuration des Chain ist NULL oder leer.");
+
             this.conf = conf;
             // check if there are links
             if (Util.isEmpty(conf.getChainLinkList().size())) {
@@ -464,7 +470,7 @@ public class Scheduler {
                     nextStartConfIndex = 0;
                 }
             } catch (ActionFailedException e) {
-                throw new HapptickException(502L, addresseeType, e);
+                throw new HapptickException(502L, "ChainId: " + conf.getChainId() + "; AddresseeId: " + addresseeId + "; AddresseeType: " + addresseeType, e);
             }
         }
 
@@ -582,10 +588,12 @@ public class Scheduler {
                         Scheduling.startApplication(conf);
 
                         // applications to start syncronously
-                        for (Long applId : conf.getApplicationsStartSync()) {
-                            ApplicationConfiguration syncConf = MasterTable.getApplicationConfiguration(applId);
-                            if (null != syncConf) {
-                                startApplicationScheduler(syncConf);
+                        if (!Util.isEmpty(conf.getApplicationsStartSync())) {
+                            for (Long applId : conf.getApplicationsStartSync()) {
+                                ApplicationConfiguration syncConf = MasterTable.getApplicationConfiguration(applId);
+                                if (null != syncConf) {
+                                    startApplicationScheduler(syncConf);
+                                }
                             }
                         }
 
@@ -640,6 +648,7 @@ public class Scheduler {
         // }
         if (argsParser.containsStartsWith("--homeVar")) {
             homeVar = argsParser.getValue("homeVar");
+            System.out.println("Scheduler.main: homeVar = " + homeVar);
         }
         if (argsParser.containsStartsWith("--baseConfFile")) {
             baseConfFile = argsParser.getValue("baseConfFile");
@@ -647,13 +656,8 @@ public class Scheduler {
         if (argsParser.containsStartsWith("--baseConfPath")) {
             baseConfDir = argsParser.getValue("baseConfPath");
         }
+
         ConfigurationManager.setInitialEnvironment(homeVar, baseConfDir, baseConfFile);
-        try {
-            ConfigurationManager.getApplicationHome();
-            ConfigurationManager.addConfigurationFile(ConfigurationManager.getApplicationHome() + "\\" + baseConfDir + "\\happtick_master.xml");
-        } catch (NotIOCException e) {
-            e.printStackTrace();
-        }
 
         ExternalCalls calls = new ExternalCalls();
         // try {

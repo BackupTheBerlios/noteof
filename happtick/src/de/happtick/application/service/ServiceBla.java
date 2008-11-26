@@ -2,7 +2,7 @@ package de.happtick.application.service;
 
 import de.happtick.core.application.service.ApplicationService;
 import de.happtick.core.enumeration.ApplicationTag;
-import de.happtick.core.events.AlarmEvent;
+import de.happtick.core.event.AlarmEvent;
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.interfaces.NotEOFEvent;
 import de.notEOF.core.server.Server;

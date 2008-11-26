@@ -64,12 +64,16 @@ public class Errors {
         errorList.put(400L, "Fehler bei Hinzufügen eines Service. Falscher Service-Typ.");
         errorList.put(401L, "Fehler bei Lesen der Client-Konfiguration.");
         errorList.put(402L, "Fehler bei Entfernen eines Service.");
-        errorList.put(403L, "Fehlende Konfiguration von Links (Aktionen) zu einer Chain.");
+        errorList.put(403L, "Fehlerhafte Konfiguration eines Links (Aktion) einer Chain.");
+        errorList.put(404L, "Fehlerhafte oder fehlende Konfiguration einer Applikation.");
+        errorList.put(405L, "Konfigurationsobjekt konnte nicht per Id gefunden werden.");
 
         // Scheduler faults
         errorList.put(500L, "Fehler bei Ermitteln des Startservice zur Anwendung.");
         errorList.put(501L, "Fehler bei Zuordnung eines Events zu einer Aktion.");
-        errorList.put(502L, "Start einer Anwendung oder einer Chain innerhalb einer Chain ist fehlgeschlagen");
+        errorList.put(502L, "Start einer Anwendung oder einer Chain innerhalb einer Chain ist fehlgeschlagen.");
+        errorList.put(503L, "Start einer Anwendung ist fehlgeschlagen.");
+        errorList.put(504L, "Stoppen einer Anwendung ist fehlgeschlagen.");
 
         // Mail and Event errors
         errorList.put(600L, "Fehler bei Senden einer Mail.");

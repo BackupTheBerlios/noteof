@@ -17,4 +17,8 @@
 <root>
 	<serviceTypes simpleName="ApplicationService" canonicalName="de.notEOF.application.service.ApplicationService" maxClients="3">Application</serviceTypes>
 	<serviceTypes simpleName="ConfigurationService" canonicalName="de.notEOF.configuration.service.ConfigurationService" maxClients="40">Configuration</serviceTypes>
+	<additional>
+		<classPath>de.notEOF.core.event</classPath>
+		<classPath>de.notEOF.mail.service</classPath>
+	</additional>
 </root>	

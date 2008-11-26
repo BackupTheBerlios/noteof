@@ -6,6 +6,7 @@ import de.notEOF.core.util.Util;
 
 public class ChainLink {
     private Long linkId;
+    private Long chainId;
     private Long addresseeId;
     private String addresseeType;
     private Long conditionEventId;
@@ -16,10 +17,11 @@ public class ChainLink {
     private String preventValue;
     private boolean skip;
 
-    public ChainLink(String node, NotEOFConfiguration conf) throws ActionFailedException {
+    public ChainLink(Long chainId, String node, NotEOFConfiguration conf) throws ActionFailedException {
         // sample node: scheduler.chains.chain1.link0
+        this.chainId = chainId;
         linkId = Util.parseLong(conf.getAttribute(node, "linkId"), -1);
-        addresseeId = (Util.parseLong(conf.getAttribute(node, "addresseId"), -1));
+        addresseeId = (Util.parseLong(conf.getAttribute(node, "addresseeId"), -1));
         addresseeType = conf.getAttribute(node, "addresseeType");
         conditionEventId = Util.parseLong(conf.getAttribute(node, "conditionEventId"), -1);
         conditionKey = conf.getAttribute(node, "conditionKey");
@@ -30,8 +32,9 @@ public class ChainLink {
         skip = Util.parseBoolean(conf.getAttribute(node, "skip"), false);
     }
 
-    public ChainLink(Long linkId, Long addresseId, String addresseeType, Long conditionEventId, String conditionKey, String conditionValue,
+    public ChainLink(Long chainId, Long linkId, Long addresseId, String addresseeType, Long conditionEventId, String conditionKey, String conditionValue,
             Long preventEventId, String preventKey, String preventValue, boolean skip) {
+        this.chainId = chainId;
         this.linkId = linkId;
         this.addresseeId = (addresseId);
         this.addresseeType = addresseeType;
@@ -156,5 +159,20 @@ public class ChainLink {
      */
     public Long getAddresseeId() {
         return addresseeId;
+    }
+
+    /**
+     * @param chainId
+     *            the chainId to set
+     */
+    public void setChainId(Long chainId) {
+        this.chainId = chainId;
+    }
+
+    /**
+     * @return the chainId
+     */
+    public Long getChainId() {
+        return chainId;
     }
 }

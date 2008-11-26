@@ -80,7 +80,7 @@ public class ExternalCalls {
     }
 
     public void call(String className, String[] args) {
-        LocalLog.info("Externe Anwendung wird ueber die main()-Methode gestartet: " + className);
+        LocalLog.info("Externe Anwendung wird gestartet: " + className);
         try {
             Class<?> clazz = Class.forName(className);
             Method methode = clazz.getMethod("main", new Class[] { args.getClass() });

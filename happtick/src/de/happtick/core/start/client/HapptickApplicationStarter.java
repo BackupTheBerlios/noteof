@@ -1,6 +1,6 @@
 package de.happtick.core.start.client;
 
-import de.happtick.core.events.ApplicationStartErrorEvent;
+import de.happtick.core.event.ApplicationStartErrorEvent;
 import de.happtick.core.exception.HapptickException;
 import de.happtick.core.util.ExternalCalls;
 import de.notEOF.core.interfaces.NotEOFClient;

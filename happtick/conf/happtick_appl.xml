@@ -80,6 +80,10 @@
 	    	<event>event2</event>
 	    	<event>event3</event>
 	    	<event>event4</event>
+	    	<event>event5</event>
+	    	<event>event6</event>
+	    	<event>event7</event>
+	    	<event>event8</event>
 
 			<!--
 				This configuration is made for two goals:
@@ -99,13 +103,13 @@
 			    - please note the special eventClassName 'Alias:MyOwnEvent'. If an self described event was fired it is recognized as
 			      'GenericEvent'. The notation Alias:<AliasEventName> is required here to map the incoming event to the fired event
 			-->	    	
-	    	<event1 eventId="1" eventClassName="StoppedEvent" keyName="exitCode" keyValue="9" action="start" addresseeType="application" applicationId="44" addresseeId="7"></event1>
+	    	<event1 eventId="1" eventClassName="ApplicationStartEvent" keyName="exitCode" keyValue="9" action="start" addresseeType="application" applicationId="44" addresseeId="7"></event1>
 	    	<event2 eventId="2" eventClassName="AlarmEvent" action="stop" addresseeType="application" addresseeId="55"></event2>
-	    	<event3 eventId="3" eventClassName="AlarmEvent" action="ignite" addresseeType="event" addresseeId="8"></event3>
-	    	<event4 eventId="4" eventClassName="StartedEvent"></event4>
+	    	<event3 eventId="3" eventClassName="GenericEvent" action="ignite" addresseeType="event" addresseeId="8"></event3>
+	    	<event4 eventId="4" eventClassName="ApplicationStartedEvent"></event4>
 	    	<event5 eventId="5" eventClassName="ActionEvent" keyName="clear" keyValue="chain" action="clear" addresseeType="chain" addresseeId="99"></event5>
 	    	<event6 eventId="6" eventClassName="ActionEvent" keyName="reset" keyValue="2" action="reset" addresseeType="chain"></event6>
-	    	<event7 eventId="7" eventClassName="StartedEvent" action="ignite" addresseeType="event" addresseeId="8" applicationId="8"></event7>
+	    	<event7 eventId="7" eventClassName="ApplicationStartedEvent" action="ignite" addresseeType="event" addresseeId="8" applicationId="8"></event7>
 	    	<event8 eventId="8" eventClassName="Alias:MyOwnEvent"></event8>
 	    	
 	    </events>

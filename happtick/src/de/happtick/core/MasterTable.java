@@ -10,7 +10,7 @@ import de.happtick.configuration.ApplicationConfiguration;
 import de.happtick.configuration.ChainConfiguration;
 import de.happtick.configuration.EventConfiguration;
 import de.happtick.core.application.service.ApplicationService;
-import de.happtick.core.events.ApplicationStartEvent;
+import de.happtick.core.event.ApplicationStartEvent;
 import de.happtick.core.exception.HapptickException;
 import de.notEOF.configuration.LocalConfiguration;
 import de.notEOF.core.exception.ActionFailedException;
@@ -62,6 +62,23 @@ public class MasterTable {
         if (!confUpdated) {
             NotEOFConfiguration conf = new LocalConfiguration();
 
+            // Configuration must be read in this order:
+            // 1. Applications
+            // 2. Events
+            // 3. Chains
+
+            // Events
+            // Liste der nodes
+            List<String> eventNodes = conf.getTextList("scheduler.events.event");
+            if (null != eventNodes) {
+                // for every node create object of type EventConfiguration
+                // the objects initialize themselve with configuration data
+                for (String node : eventNodes) {
+                    EventConfiguration eventConf = new EventConfiguration(node, conf);
+                    eventConfigurations.put(eventConf.getEventId(), eventConf);
+                }
+            }
+
             // processChain
             // aktiv?
             Boolean useChain = Util.parseBoolean(conf.getAttribute("scheduler.use", "chain"), false);
@@ -94,33 +111,18 @@ public class MasterTable {
                 }
             }
 
-            // Events
-            // Events nutzen?
-            Boolean useEvent = Util.parseBoolean(conf.getAttribute("scheduler.use", "event"), false);
-            if (useEvent) {
-                // Liste der nodes
-                List<String> eventNodes = conf.getTextList("scheduler.events.event");
-                if (null != eventNodes) {
-                    // for every node create object of type EventConfiguration
-                    // the objects initialize themselve with configuration data
-                    for (String node : eventNodes) {
-                        EventConfiguration eventConf = new EventConfiguration(node, conf);
-                        eventConfigurations.put(eventConf.getEventId(), eventConf);
-                    }
-                }
-                // // Liste der raise-nodes
-                // List<String> raiseNodes =
-                // conf.getTextList("scheduler.events.raise");
-                // if (null != raiseNodes) {
-                // // for every node create object of type RaiseConfiguration
-                // // the objects initialize themselve with configuration data
-                // for (String node : raiseNodes) {
-                // RaiseConfiguration raiseConf = new RaiseConfiguration(node,
-                // conf);
-                // raiseConfigurations.put(raiseConf.getRaiseId(), raiseConf);
-                // }
-                // }
-            }
+            // // Liste der raise-nodes
+            // List<String> raiseNodes =
+            // conf.getTextList("scheduler.events.raise");
+            // if (null != raiseNodes) {
+            // // for every node create object of type RaiseConfiguration
+            // // the objects initialize themselve with configuration data
+            // for (String node : raiseNodes) {
+            // RaiseConfiguration raiseConf = new RaiseConfiguration(node,
+            // conf);
+            // raiseConfigurations.put(raiseConf.getRaiseId(), raiseConf);
+            // }
+            // }
 
             confUpdated = true;
         }
@@ -192,8 +194,12 @@ public class MasterTable {
      *            The identifier of the event like stored in the configuration.
      * @return The object if found or null.
      */
-    public synchronized static EventConfiguration getEventConfiguration(Long eventId) {
-        return eventConfigurations.get(eventId);
+    public synchronized static EventConfiguration getEventConfiguration(Long eventId) throws HapptickException {
+        EventConfiguration ret = eventConfigurations.get(eventId);
+        if (Util.isEmpty(ret))
+            throw new HapptickException(405L, "EventConfiguration. Id: " + eventId);
+
+        return ret;
     }
 
     // /**
@@ -331,9 +337,9 @@ public class MasterTable {
      *            environment as long as only one happtick server is runnnig.
      * @return An ApplicationService or null if not found in master tables.
      */
-    public synchronized static ApplicationService getApplicationServiceByStartId(String startId) {
+    public synchronized static ApplicationService getApplicationServiceByStartId(String startId) throws HapptickException {
         List<ApplicationService> completeList = getApplicationServicesAsList();
-        if (completeList.size() > 0) {
+        if (!Util.isEmpty(completeList)) {
             for (ApplicationService service : completeList) {
                 if (service.getStartId().equals(startId))
                     return service;
@@ -350,8 +356,12 @@ public class MasterTable {
      * @return The ApplicationConfiguration object or null if not found in
      *         master tables.
      */
-    public synchronized static ApplicationConfiguration getApplicationConfiguration(Long applicationId) {
-        return applicationConfigurations.get(applicationId);
+    public synchronized static ApplicationConfiguration getApplicationConfiguration(Long applicationId) throws HapptickException {
+        ApplicationConfiguration ret = applicationConfigurations.get(applicationId);
+        if (Util.isEmpty(ret))
+            throw new HapptickException(405L, "ApplicationConfiguration. Id: " + applicationId);
+
+        return ret;
     }
 
     /**

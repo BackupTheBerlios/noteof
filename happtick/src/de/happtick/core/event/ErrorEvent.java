@@ -1,4 +1,4 @@
-package de.happtick.core.events;
+package de.happtick.core.event;
 
 import de.notEOF.core.enumeration.EventType;
 import de.notEOF.core.interfaces.NotEOFEvent;

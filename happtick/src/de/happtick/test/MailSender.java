@@ -1,7 +1,7 @@
 package de.happtick.test;
 
 import de.happtick.application.client.HapptickApplication;
-import de.happtick.core.events.ApplicationStartEvent;
+import de.happtick.core.event.ApplicationStartEvent;
 import de.notEOF.core.exception.ActionFailedException;
 
 public class MailSender {

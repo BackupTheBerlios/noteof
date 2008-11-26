@@ -10,7 +10,7 @@ set CLASSPATH=%CLASSPATH%;c:\Projekte\workspace\happtick\lib\happtick.jar
 
 
 echo %CLASSPATH%
-java de.happtick.core.schedule.Scheduler --homeVar=NOTEOF_HOME --port=3000
+java de.happtick.core.schedule.Scheduler --homeVar=NOTEOF_HOME --baseConfFile=noteof_master.xml --baseConfPath=conf --port=3000
 
 
 echo ============================== Scheduler ==============================

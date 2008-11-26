@@ -62,7 +62,7 @@ public class ChainConfiguration {
                 for (String linkName : linkNames) {
                     node = "scheduler.chains." + nodeNameChain + "." + linkName;
                     // scheduler.chains.chain1.link0
-                    ChainLink link = new ChainLink(node, conf);
+                    ChainLink link = new ChainLink(this.chainId, node, conf);
                     linkList.add(link);
                 }
             }

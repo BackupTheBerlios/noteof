@@ -2,9 +2,9 @@ package de.happtick.core.application.client;
 
 import de.happtick.core.application.service.ApplicationService;
 import de.happtick.core.enumeration.ApplicationTag;
-import de.happtick.core.events.ActionEvent;
-import de.happtick.core.events.AlarmEvent;
-import de.happtick.core.events.ErrorEvent;
+import de.happtick.core.event.ActionEvent;
+import de.happtick.core.event.AlarmEvent;
+import de.happtick.core.event.ErrorEvent;
 import de.happtick.core.exception.HapptickException;
 import de.happtick.core.interfaces.ClientObserver;
 import de.notEOF.core.client.BaseClient;

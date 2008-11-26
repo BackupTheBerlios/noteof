@@ -65,20 +65,21 @@ public class Errors {
 
         // Configuration
         errorList.put(30L, "Konfigurationseintrag konnte nicht gespeichert werden.");
-        errorList.put(31L, "Konfigurationseintrag konnte nicht hinzugefügt werden.");
+        errorList.put(31L, "Konfigurationseintrag konnte nicht hinzugefuegt werden.");
         errorList.put(32L, "Element konnte nicht ermittelt werden.");
-        errorList.put(33L, "Konfigurationswert konnte nicht entschlüsselt werden.");
+        errorList.put(33L, "Konfigurationswert konnte nicht entschluesselt werden.");
         errorList.put(34L, "Konfigurationswert ist leer oder existiert nicht.");
         errorList.put(35L, "Sichtbarkeit des Konfigurationswertes konnte nicht ermittelt werden.");
-        errorList.put(36L, "Fehler bei Hinzufügen einer Konfigurationsdatei.");
+        errorList.put(36L, "Fehler bei Hinzufuegen einer Konfigurationsdatei.");
 
         // Central !EOF server
         errorList.put(100L, "Initialisierung des zentralen Servers ist fehlgeschlagen.");
 
         // Services
-        errorList.put(150L, "Service konnte nicht dynamisch geladen werden.");
+        errorList.put(150L, "Klasse konnte nicht dynamisch geladen werden.");
         errorList.put(151L, "Service kennt empfangene Nachricht nicht.");
         errorList.put(152L, "Service Klasse wurde nicht gefunden. Service muss mittels CLASSPATH auffindbar sein.");
+        errorList.put(153L, "Eine Bibliothek konnte nicht nach einer Klasse durchsucht werden. Evtl. stimmt eine Pfadeinstellung nicht.");
 
         // Converting problems
         errorList.put(200L, "Fehler bei Umwandlung eines Strings in eine Zahl.");

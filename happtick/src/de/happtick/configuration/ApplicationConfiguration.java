@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
+import de.happtick.core.exception.HapptickException;
 import de.happtick.core.util.Scheduling;
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.interfaces.NotEOFConfiguration;
@@ -210,8 +211,9 @@ public class ApplicationConfiguration {
      * <p>
      * 
      * @return TRUE if yes, FALSE if not...
+     * @throws HapptickException
      */
-    public boolean startAllowed() {
+    public boolean startAllowed() throws HapptickException {
 
         // if no instance of application is running and enforce is set to true
         // the application must start immediately

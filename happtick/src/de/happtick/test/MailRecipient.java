@@ -9,12 +9,12 @@ import java.util.Set;
 import java.util.Map.Entry;
 
 import de.happtick.application.client.HapptickApplication;
-import de.happtick.core.events.ActionEvent;
-import de.happtick.core.events.AlarmEvent;
-import de.happtick.core.events.LogEvent;
-import de.happtick.core.events.ApplicationStartErrorEvent;
-import de.happtick.core.events.ApplicationStartedEvent;
-import de.happtick.core.events.ApplicationStoppedEvent;
+import de.happtick.core.event.ActionEvent;
+import de.happtick.core.event.AlarmEvent;
+import de.happtick.core.event.ApplicationStartErrorEvent;
+import de.happtick.core.event.ApplicationStartedEvent;
+import de.happtick.core.event.ApplicationStoppedEvent;
+import de.happtick.core.event.LogEvent;
 import de.happtick.core.exception.HapptickException;
 import de.notEOF.core.interfaces.NotEOFEvent;
 import de.notEOF.core.logging.LocalLog;

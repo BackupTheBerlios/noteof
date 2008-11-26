@@ -13,8 +13,9 @@ import de.happtick.configuration.ApplicationConfiguration;
 import de.happtick.configuration.ChainLink;
 import de.happtick.configuration.EventConfiguration;
 import de.happtick.core.MasterTable;
-import de.happtick.core.events.ApplicationStartEvent;
-import de.happtick.core.events.ApplicationStopEvent;
+import de.happtick.core.event.ApplicationStartEvent;
+import de.happtick.core.event.ApplicationStopEvent;
+import de.happtick.core.exception.HapptickException;
 import de.happtick.core.schedule.ChainAction;
 import de.notEOF.core.enumeration.EventType;
 import de.notEOF.core.exception.ActionFailedException;
@@ -32,24 +33,34 @@ public class Scheduling {
      * @param applConf
      * @throws ActionFailedException
      */
-    public static synchronized void startApplication(ApplicationConfiguration applConf) throws ActionFailedException {
+    public static synchronized void startApplication(ApplicationConfiguration applConf) throws HapptickException {
+        if (null == applConf)
+            throw new HapptickException(503L, "Anwendungskonfiguration fehlt.");
         ApplicationStartEvent event = new ApplicationStartEvent();
         event.setApplicationId(applConf.getApplicationId());
-        event.addAttribute("clientIp", applConf.getClientIp());
-        event.addAttribute("applicationId", String.valueOf(applConf.getApplicationId()));
-        event.addAttribute("applicationPath", applConf.getExecutablePath());
-        event.addAttribute("applicationType", applConf.getExecutableType());
-        event.addAttribute("arguments", applConf.getExecutableArgs());
-        event.addAttribute("windowsSupport", String.valueOf(applConf.isWindowsSupport()));
+        try {
+            event.addAttribute("clientIp", applConf.getClientIp());
+            event.addAttribute("applicationId", String.valueOf(applConf.getApplicationId()));
+            event.addAttribute("applicationPath", applConf.getExecutablePath());
+            event.addAttribute("applicationType", applConf.getExecutableType());
+            event.addAttribute("arguments", applConf.getExecutableArgs());
+            event.addAttribute("windowsSupport", String.valueOf(applConf.isWindowsSupport()));
+        } catch (ActionFailedException e) {
+            throw new HapptickException(503L, e);
+        }
 
         raiseEvent(event);
     }
 
-    public static synchronized void stopApplication(ApplicationConfiguration applConf) throws ActionFailedException {
+    public static synchronized void stopApplication(ApplicationConfiguration applConf) throws HapptickException {
         ApplicationStopEvent event = new ApplicationStopEvent();
-        event.addAttribute("clientIp", applConf.getClientIp());
-        event.addAttribute("applicationId", String.valueOf(applConf.getApplicationId()));
-        event.addAttribute("kill", "FALSE");
+        try {
+            event.addAttribute("clientIp", applConf.getClientIp());
+            event.addAttribute("applicationId", String.valueOf(applConf.getApplicationId()));
+            event.addAttribute("kill", "FALSE");
+        } catch (ActionFailedException e) {
+            throw new HapptickException(504L, e);
+        }
 
         raiseEvent(event);
     }
@@ -73,7 +84,7 @@ public class Scheduling {
     public static boolean mustWaitForOtherApplication(ApplicationConfiguration applConf) {
         for (Long id : applConf.getApplicationsWaitFor()) {
             // if list with found services > 0 there exists one or more service
-            if (MasterTable.getApplicationServicesByApplicationId(id).size() > 0)
+            if (!Util.isEmpty(MasterTable.getApplicationServicesByApplicationId(id)))
                 return true;
 
             if (null != MasterTable.getStartEvent(id))
@@ -89,8 +100,12 @@ public class Scheduling {
      *            Configuration of the application that is asking here.
      * @return True if the application has to wait.
      */
-    public static boolean isEqualApplicationActive(ApplicationConfiguration applConf) {
-        if (MasterTable.getApplicationServicesByApplicationId(applConf.getApplicationId()).size() > 0)
+    public static boolean isEqualApplicationActive(ApplicationConfiguration applConf) throws HapptickException {
+        if (Util.isEmpty(applConf)) {
+            throw new HapptickException(404L, "Pruefung auf aktive Anwendung im Scheduling.");
+        }
+
+        if (!(Util.isEmpty(MasterTable.getApplicationServicesByApplicationId(applConf.getApplicationId()))))
             return true;
 
         if (null != MasterTable.getStartEvent(applConf.getApplicationId()))
@@ -100,7 +115,7 @@ public class Scheduling {
         return false;
     }
 
-    public static boolean mustWaitForSameApplication(Long applId) {
+    public static boolean mustWaitForSameApplication(Long applId) throws HapptickException {
         ApplicationConfiguration conf = MasterTable.getApplicationConfiguration(applId);
 
         if (null == conf) {
@@ -291,11 +306,16 @@ public class Scheduling {
      * @param link
      *            The ChainLink contains perhaps a prevent or a condition event.
      */
-    public static void updateObservedEventsForChain(List<EventType> observedEvents, Map<String, ChainAction> chainActions, ChainLink link) {
+    public static void updateObservedEventsForChain(List<EventType> observedEvents, Map<String, ChainAction> chainActions, ChainLink link)
+            throws HapptickException {
         // Conditions
         if (null != link.getConditionEventId()) {
             try {
                 EventConfiguration conf = MasterTable.getEventConfiguration(link.getConditionEventId());
+                if (Util.isEmpty(conf)) {
+                    throw new HapptickException(403L, "Link zeigt auf unbekannte Event-Konfiguration. ChainId: " + link.getChainId() + "; LinkId: "
+                            + link.getLinkId() + "; EventId: " + link.getConditionEventId());
+                }
                 EventType type = Util.lookForEventType(conf.getEventClassName());
                 boolean alreadyExists = false;
                 for (EventType existingType : observedEvents) {

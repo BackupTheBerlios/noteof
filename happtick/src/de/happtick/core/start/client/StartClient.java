@@ -5,7 +5,7 @@ import java.util.Date;
 import java.util.List;
 
 import de.happtick.core.client.HapptickBaseClient;
-import de.happtick.core.events.ApplicationStartEvent;
+import de.happtick.core.event.ApplicationStartEvent;
 import de.happtick.core.exception.HapptickException;
 import de.happtick.core.util.ExternalCalls;
 import de.notEOF.core.enumeration.EventType;

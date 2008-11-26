@@ -135,7 +135,8 @@ public class ChainConfigurationWrapper {
                 String preventKey = map.get("preventKey_" + i);
                 String preventValue = map.get("preventKey_" + i);
 
-                ChainLink link = new ChainLink(linkId, addresseeId, addresseeType, condId, condKey, condValue, preventId, preventKey, preventValue, skip);
+                ChainLink link = new ChainLink(chainConfiguration.getChainId(), linkId, addresseeId, addresseeType, condId, condKey, condValue, preventId,
+                        preventKey, preventValue, skip);
                 chainConfiguration.addLink(link);
             }
         }
