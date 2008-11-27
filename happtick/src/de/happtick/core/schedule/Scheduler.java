@@ -581,9 +581,11 @@ public class Scheduler {
             System.out.println("Scheduler.ApplicationScheduler.run started. applId = " + conf.getApplicationId());
 
             try {
+                long waitTime = 0;
                 while (true) {
                     // check if start allowed
-                    if (conf.startAllowed()) {
+                    waitTime = conf.startAllowed();
+                    if (0 == waitTime) {
                         // start application
                         Scheduling.startApplication(conf);
 
@@ -596,17 +598,10 @@ public class Scheduler {
                                 }
                             }
                         }
-
-                        // this thread may sleep a while till next start point
-                        if (null != conf.getNextStartDate()) {
-                            long millis = conf.getNextStartDate().getTime() - new Date().getTime();
-                            if (millis > 5000) {
-                                // wake up some millis before
-                                Thread.sleep(millis - 2000);
-                            }
-                        }
+                        waitTime = conf.getNextStartDate().getTime() - new Date().getTime() - 300;
                     }
-                    Thread.sleep(300);
+                    System.out.println("Scheduler.run Schlafe jetzt " + waitTime + " Millis");
+                    Thread.sleep(waitTime);
                 }
             } catch (Exception e) {
                 LocalLog.error("Scheduling fuer Applikation mit Id " + conf.getApplicationId() + " ist ausgefallen.", e);
@@ -636,16 +631,8 @@ public class Scheduler {
         String homeVar = "HAPPTICK_HOME";
         String baseConfFile = "happtick_master.xml";
         String baseConfDir = "conf";
-        // int port = 3000;
-        // boolean windowsSupport = false;
         ArgsParser argsParser = new ArgsParser(args);
-        // if (argsParser.containsStartsWith("--windowsSupport") ||
-        // argsParser.containsStartsWith("-w")) {
-        // windowsSupport = true;
-        // }
-        // if (argsParser.containsStartsWith("--port")) {
-        // port = Util.parseInt(argsParser.getValue("port"), 3000);
-        // }
+
         if (argsParser.containsStartsWith("--homeVar")) {
             homeVar = argsParser.getValue("homeVar");
             System.out.println("Scheduler.main: homeVar = " + homeVar);
@@ -660,15 +647,8 @@ public class Scheduler {
         ConfigurationManager.setInitialEnvironment(homeVar, baseConfDir, baseConfFile);
 
         ExternalCalls calls = new ExternalCalls();
-        // try {
         LocalLog.info("!EOF Server wird als Teil des Happtick gestartet.");
         calls.call("de.notEOF.core.server.Server", args);
-        // calls.startApplication(ConfigurationManager.getApplicationHome() +
-        // "/util/server.bat", "--port=" + port, windowsSupport);
-        // } catch (HapptickException e) {
-        // // TODO Auto-generated catch block
-        // e.printStackTrace();
-        // }
 
         Scheduler.start();
     }

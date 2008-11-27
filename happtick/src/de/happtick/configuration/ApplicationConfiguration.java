@@ -4,7 +4,9 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.Locale;
 
 import de.happtick.core.exception.HapptickException;
 import de.happtick.core.util.Scheduling;
@@ -132,25 +134,26 @@ public class ApplicationConfiguration {
             node = nodeTime + ".weekdays";
             String days = conf.getText(node);
             if ("".equals(days) || "*".equals(days)) {
-                for (int i = 1; i < 8; i++) {
-                    timePlanWeekdays.add(Calendar.DAY_OF_WEEK, i);
+                for (int i = 0; i < 7; i++) {
+                    timePlanWeekdays.add(i);
                 }
-            }
-            for (String element : (List<String>) Util.getElementsOfString(node, conf)) {
-                if (element.equalsIgnoreCase("MO"))
-                    timePlanWeekdays.add(Calendar.MONDAY);
-                if (element.equalsIgnoreCase("TU"))
-                    timePlanWeekdays.add(Calendar.TUESDAY);
-                if (element.equalsIgnoreCase("WE") || element.equalsIgnoreCase("MI"))
-                    timePlanWeekdays.add(Calendar.WEDNESDAY);
-                if (element.equalsIgnoreCase("TH") || element.equalsIgnoreCase("DO"))
-                    timePlanWeekdays.add(Calendar.THURSDAY);
-                if (element.equalsIgnoreCase("FR"))
-                    timePlanWeekdays.add(Calendar.FRIDAY);
-                if (element.equalsIgnoreCase("SA"))
-                    timePlanWeekdays.add(Calendar.SATURDAY);
-                if (element.equalsIgnoreCase("SU") || element.equalsIgnoreCase("SO"))
-                    timePlanWeekdays.add(Calendar.SUNDAY);
+            } else {
+                for (String element : (List<String>) Util.getElementsOfString(node, conf)) {
+                    if (element.equalsIgnoreCase("MO"))
+                        timePlanWeekdays.add(Calendar.MONDAY);
+                    if (element.equalsIgnoreCase("TU"))
+                        timePlanWeekdays.add(Calendar.TUESDAY);
+                    if (element.equalsIgnoreCase("WE") || element.equalsIgnoreCase("MI"))
+                        timePlanWeekdays.add(Calendar.WEDNESDAY);
+                    if (element.equalsIgnoreCase("TH") || element.equalsIgnoreCase("DO"))
+                        timePlanWeekdays.add(Calendar.THURSDAY);
+                    if (element.equalsIgnoreCase("FR"))
+                        timePlanWeekdays.add(Calendar.FRIDAY);
+                    if (element.equalsIgnoreCase("SA"))
+                        timePlanWeekdays.add(Calendar.SATURDAY);
+                    if (element.equalsIgnoreCase("SU") || element.equalsIgnoreCase("SO"))
+                        timePlanWeekdays.add(Calendar.SUNDAY);
+                }
             }
             Collections.sort(timePlanWeekdays);
 
@@ -206,43 +209,73 @@ public class ApplicationConfiguration {
         }
     }
 
+    private void formatCal(String bla, Calendar cal) {
+
+        String format = cal.getDisplayName(Calendar.DAY_OF_WEEK, Calendar.LONG, Locale.GERMAN);
+        format += " der " + String.valueOf(cal.get(Calendar.DAY_OF_MONTH));
+        format += "." + cal.getDisplayName(Calendar.MONTH, Calendar.LONG, Locale.GERMAN);
+        format += "." + String.valueOf(cal.get(Calendar.YEAR));
+        format += " " + String.valueOf(cal.get(Calendar.HOUR_OF_DAY));
+        format += ":" + String.valueOf(cal.get(Calendar.MINUTE));
+        format += ":" + String.valueOf(cal.get(Calendar.SECOND));
+
+        System.out.println(bla + "... " + format);
+    }
+
     /**
      * Looks if the application has to start now.
      * <p>
      * 
-     * @return TRUE if yes, FALSE if not...
+     * @return 0 if start is allowed or the time to start in millis
      * @throws HapptickException
      */
-    public boolean startAllowed() throws HapptickException {
+    public long startAllowed() throws HapptickException {
+        long waitTime = 0;
+
+        // if program drops by here for first time calculate next start point
+        if (null == nextStartDate) {
+            nextStartDate = Scheduling.calculateNextStart(this);
+        }
+
+        Calendar cal = new GregorianCalendar();
+        cal.setTime(nextStartDate);
+        formatCal("Naechster Start ", cal);
 
         // if no instance of application is running and enforce is set to true
         // the application must start immediately
+        // but don't look to often...
         if (!Scheduling.isEqualApplicationActive(this) && enforce) {
-            return true;
+            return 5000;
+        }
+        System.out.println("ApplicationConfiguration.startAllowed... enforce: " + enforce);
+
+        long timeNow = new Date().getTime();
+        waitTime = nextStartDate.getTime() - timeNow - 500;
+        if (waitTime > 1000 || waitTime < -1000) {
+            return waitTime;
         }
 
         // Perhaps this application has to wait till other application processes
         // are stopped
         if (Scheduling.mustWaitForOtherApplication(this)) {
-            return false;
+            return waitTime;
         }
-
-        // if program drops by here for first time calculate next start point
-        if (null == this.nextStartDate)
-            nextStartDate = Scheduling.calculateNextStart(this);
+        System.out.println("ApplicationConfiguration.startAllowed... mustWaitForOthers: NEIN");
 
         // Some millis as tolerance value...
         // +- 1000 millis
-        long timeNow = new Date().getTime();
+        System.out.println("ApplicationConfiguration.startAllowed... Differenz jetzt und startTime " + (waitTime / 1000));
+
         if (nextStartDate.getTime() > timeNow - 1000 && //
                 nextStartDate.getTime() < timeNow + 1000) {
 
             // check if other instances of application are running
             // and if multiple start is allowed
-            if (!isMultipleStart() && Scheduling.isEqualApplicationActive(this))
+            if (!isMultipleStart() && Scheduling.isEqualApplicationActive(this)) {
                 // wait for ending other instances (next time point is
                 // calculated above)
-                return false;
+                return 300;
+            }
 
             // ok time point reached, application may be started now
             // calculate the next start point
@@ -251,11 +284,13 @@ public class ApplicationConfiguration {
             // ok - time point reached, no more other instances are running or
             // multiple
             // start allowed
-            return true;
+            System.out.println("ApplicationConfiguration.startAllowed... SSSSSSSSSTTTTTTTTTTTTTTAAAAAAAAAAAAAAARRRRRRRRRRRRRRRRTTTTTTTTTTTT");
+            return nextStartDate.getTime();
         }
 
         // please wait
-        return false;
+        System.out.println("ApplicationConfiguration.startAllowed... Böh");
+        return nextStartDate.getTime();
     }
 
     public Date getNextStartDate() {

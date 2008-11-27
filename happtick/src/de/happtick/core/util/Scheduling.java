@@ -71,6 +71,7 @@ public class Scheduling {
      * @param event
      */
     public static synchronized void raiseEvent(NotEOFEvent event) {
+        System.out.println("Scheduling.raiseEvent: Jetzt Müsste Was Passieren....");
         Server.getInstance().updateObservers(null, event);
     }
 
