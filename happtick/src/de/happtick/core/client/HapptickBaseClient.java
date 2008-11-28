@@ -206,12 +206,18 @@ public abstract class HapptickBaseClient {
         if (null == this.notEofClient)
             useInternalClientForSendMailsAndEvents();
 
-        try {
-            // connect with service
-            if (!notEofClient.isLinkedToService())
+        // connect with service
+        while (!notEofClient.isLinkedToService()) {
+            try {
                 notEofClient.connect(serverAddress, serverPort, null);
-        } catch (ActionFailedException e) {
-            throw new HapptickException(100L, e);
+            } catch (ActionFailedException e) {
+                LocalLog.warn("Verbindung mit Service konnte bisher nicht hergestellt werden: " + notEofClient.getClass().getCanonicalName());
+                // throw new HapptickException(100L, e);
+                try {
+                    Thread.sleep(5000);
+                } catch (InterruptedException e1) {
+                }
+            }
         }
     }
 
@@ -474,12 +480,20 @@ public abstract class HapptickBaseClient {
     private void initMailEventClient(MailAndEventRecipient mailEventRecipient) throws HapptickException {
         if (null == this.mailEventClient) {
             this.mailEventRecipient = mailEventRecipient;
-            try {
-                System.out.println("server address: " + serverAddress);
-                System.out.println("server port:    " + serverPort);
-                this.mailEventClient = new HapptickMailEventClient(serverAddress, serverPort, null, null);
-            } catch (ActionFailedException e) {
-                throw new HapptickException(601L, e);
+            System.out.println("server address: " + serverAddress);
+            System.out.println("server port:    " + serverPort);
+
+            while (null == this.mailEventClient || !this.mailEventClient.isLinkedToService()) {
+                try {
+                    this.mailEventClient = new HapptickMailEventClient(serverAddress, serverPort, null, null);
+                } catch (ActionFailedException e) {
+                    LocalLog.warn("Verbindung zum Empfang von Events konnte bisher nicht aufgebaut werden.");
+                    // throw new HapptickException(601L, e);
+                    try {
+                        Thread.sleep(5000);
+                    } catch (InterruptedException e1) {
+                    }
+                }
             }
         }
     }
