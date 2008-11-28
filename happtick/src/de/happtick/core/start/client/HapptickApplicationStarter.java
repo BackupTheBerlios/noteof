@@ -85,6 +85,7 @@ public class HapptickApplicationStarter {
                     errorEvent.addAttribute("errorDescription", errMsg);
                     errorEvent.addAttribute("errorId", String.valueOf(errNo));
                     errorEvent.addAttribute("errorLevel", "0");
+                    errorEvent.addAttribute("startIgnitionTime", String.valueOf(startEvent.getTimeStampSend()));
                     // main class now will send the event to the server
                     notEOFClient.sendEvent(errorEvent);
                 } catch (Exception e) {

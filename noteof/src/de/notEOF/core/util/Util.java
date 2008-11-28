@@ -1,10 +1,12 @@
 package de.notEOF.core.util;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -466,6 +468,16 @@ public class Util {
         if (null == eventObservers)
             return;
 
+        // set Timestamp if empty
+        // set timestamp
+        if (Util.isEmpty(event.getAttribute("internal->timeStampSend"))) {
+            String timeStamp = String.valueOf(new Date().getTime());
+            try {
+                event.addAttribute("internal->timeStampSend", timeStamp);
+            } catch (ActionFailedException e) {
+            }
+        }
+
         while (registeringObserver) {
             try {
                 Thread.sleep(50);
@@ -579,4 +591,24 @@ public class Util {
         }
         return null;
     }
+
+    /**
+     * Only for tests...
+     * 
+     * @param bla
+     * @param cal
+     */
+    public static void formatCal(String bla, Calendar cal) {
+
+        String format = cal.getDisplayName(Calendar.DAY_OF_WEEK, Calendar.LONG, Locale.GERMAN);
+        format += " der " + String.valueOf(cal.get(Calendar.DAY_OF_MONTH));
+        format += "." + cal.getDisplayName(Calendar.MONTH, Calendar.LONG, Locale.GERMAN);
+        format += "." + String.valueOf(cal.get(Calendar.YEAR));
+        format += " " + String.valueOf(cal.get(Calendar.HOUR_OF_DAY));
+        format += ":" + String.valueOf(cal.get(Calendar.MINUTE));
+        format += ":" + String.valueOf(cal.get(Calendar.SECOND));
+
+        System.out.println(bla + "... " + format);
+    }
+
 }

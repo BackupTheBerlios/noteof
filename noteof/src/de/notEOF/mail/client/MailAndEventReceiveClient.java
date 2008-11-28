@@ -152,7 +152,7 @@ public abstract class MailAndEventReceiveClient extends BaseClient {
         public void run() {
             while (getId() - 1 > workerPointer) {
                 try {
-                    Thread.sleep(30);
+                    Thread.sleep(10);
                 } catch (InterruptedException e) {
                 }
             }

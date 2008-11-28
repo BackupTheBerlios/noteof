@@ -135,4 +135,16 @@ public abstract class NotEOFBaseEvent implements NotEOFEvent {
         return Util.parseLong(getAttribute("internal->applicationId"), -1);
     }
 
+    /**
+     * Returns the time in Milliseconds when the event was wrapped to send.
+     * <p>
+     * The wrapping time is not really the exact time when the event was sent by
+     * a client or service. But it is less millis after this when the Happtick
+     * system wrapped it for sending to the recipient.
+     * 
+     * @return Milliseconds like java.util.Date Timestamps
+     */
+    public Long getTimeStampSend() {
+        return Util.parseLong(getAttribute("internal->timeStampSend"), 0);
+    }
 }

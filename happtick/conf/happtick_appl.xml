@@ -144,14 +144,14 @@
 	             ip of the client host (e.g. a pc) where the application should be started.
 	             LOCALHOST is NOT allowed here
 	        -->
-			<client clientIp="192.168.130.1"></client>
+			<client clientIp="localhost"></client>
 			<!-- executable
 			     type options are 'java' or 'unknown'. If the application was implemented for or with the Happtick framework insert 'JAVA'.
 			     path is the complete description of the executable which the start client has to start.
 			     windows set to true if a shell start script is used (don't forget 'exit' as last command within this script) 
 			     args is a calling argument
 			--> 
-			<executable type="java" path="c:/programme/blablubb.bat" windows="true">
+			<executable type="java" path="C:\Projekte\workspace\noteof\util\mail_recipient.bat" windows="true">
 				<args>--blubb="1" --blase=2</args>
 			</executable>
 			<!-- option
@@ -175,11 +175,11 @@
 			     Use blanks or comma as delimiter for textual lists here.
 			-->
 			<timeplan> 
-				<seconds>30 50</seconds> <!-- blank OR comma seperated -->
-				<minutes>30 32 41 43 47</minutes>
-				<hours>1</hours> <!-- blank OR comma seperated -->
-				<weekdays></weekdays> <!-- mixed english and german is allowed (MO, TU, DI, WE, MI, ...)  -->
-				<monthdays>27</monthdays>
+				<seconds>5 10 15 20 25 30 35 40 45 50 55 0</seconds> <!-- blank OR comma seperated -->
+				<minutes>*</minutes>
+				<hours>*</hours> <!-- blank OR comma seperated -->
+				<weekdays>*</weekdays> <!-- mixed english and german is allowed (MO, TU, DI, WE, MI, ...)  -->
+				<monthdays>28</monthdays>
 			</timeplan>
 			
 			<!-- dependencies
@@ -230,5 +230,11 @@
 			<runtime maxStartStop="300" maxStepStep="10"></runtime>
 		</application2>
 		
-	</scheduler>	
+	</scheduler>
+	
+	<additional>
+		<classPath>de.notEOF.core.event</classPath>
+		<classPath>de.notEOF.mail.service</classPath>
+	</additional>
+		
 </root>

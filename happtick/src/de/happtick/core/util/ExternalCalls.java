@@ -34,6 +34,7 @@ public class ExternalCalls {
     public void callHapptickMain(String className, String serverAddress, int serverPort, String startId, NotEOFEvent startEvent) throws HapptickException {
         String applicationId = null;
         String applicationPath = null;
+        String startIgnitionTime = null;
         String arguments = null;
         String windowsSupport = null;
 
@@ -41,24 +42,26 @@ public class ExternalCalls {
         applicationId = startEvent.getAttribute("applicationId");
         windowsSupport = startEvent.getAttribute("windowsSupport");
         arguments = startEvent.getAttribute("arguments");
+        startIgnitionTime = startEvent.getAttribute("startIgnitionTime");
 
         if (Util.isEmpty(applicationId))
             throw new HapptickException(650L, "applicationId");
         if (Util.isEmpty(applicationPath))
             throw new HapptickException(650L, "applicationPath");
 
-        int arrSize = 6;
+        int arrSize = 7;
         if (null != arguments)
-            arrSize = 7;
+            arrSize = 8;
         String[] args = new String[arrSize];
         args[0] = "--applicationPath=" + applicationPath;
         args[1] = "--applicationId=" + applicationId;
         args[2] = "--startId=" + startId;
         args[3] = "--serverAddress=" + serverAddress;
         args[4] = "--serverPort=" + String.valueOf(serverPort);
-        args[5] = "--windowsSupport=" + String.valueOf(windowsSupport);
+        args[5] = "--startIgnitionTime=" + startIgnitionTime;
+        args[6] = "--windowsSupport=" + String.valueOf(windowsSupport);
         if (null != arguments)
-            args[6] = arguments;
+            args[7] = arguments;
 
         for (String arg : args) {
             System.out.println("ExternalCalls.call ARGS... arg: " + arg);
@@ -173,6 +176,6 @@ public class ExternalCalls {
         System.out.println("ExternalCalls.startHapptickApplication: args = " + args);
 
         LocalLog.info("Happtick Application Starting. ApplicationId: " + applicationId + "; ApplicationPath: " + applicationPath + "; Arguments: " + arguments);
-        return startApplication(applicationPath, arguments, windowsSupport);
+        return startApplication(applicationPath, args, windowsSupport);
     }
 }

@@ -6,7 +6,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
-import java.util.Locale;
 
 import de.happtick.core.exception.HapptickException;
 import de.happtick.core.util.Scheduling;
@@ -100,6 +99,7 @@ public class ApplicationConfiguration {
             node = nodeTime + ".seconds";
             String seconds = conf.getText(node);
             if ("".equals(seconds) || "*".equals(seconds) || "0".equals(seconds)) {
+                timePlanSeconds = new ArrayList<Integer>();
                 timePlanSeconds.add(0);
             } else {
                 timePlanSeconds = Util.getElementsOfStringAsInt(node, conf);
@@ -110,8 +110,11 @@ public class ApplicationConfiguration {
             // * or 0 means one time per hour
             node = nodeTime + ".minutes";
             String minutes = conf.getText(node);
-            if ("".equals(minutes) || "*".equals(minutes) || "0".equals(minutes)) {
-                timePlanMinutes.add(0);
+            if ("".equals(minutes) || "*".equals(minutes)) {
+                timePlanMinutes = new ArrayList<Integer>();
+                for (int i = 0; i < 60; i++) {
+                    timePlanMinutes.add(i);
+                }
             } else {
                 timePlanMinutes = Util.getElementsOfStringAsInt(node, conf);
                 Collections.sort(timePlanMinutes);
@@ -121,6 +124,7 @@ public class ApplicationConfiguration {
             node = nodeTime + ".hours";
             String hours = conf.getText(node);
             if ("".equals(hours) || "*".equals(hours)) {
+                timePlanHours = new ArrayList<Integer>();
                 for (int i = 0; i < 24; i++) {
                     timePlanHours.add(i);
                 }
@@ -161,6 +165,7 @@ public class ApplicationConfiguration {
             node = nodeTime + ".monthdays";
             String months = conf.getText(node);
             if ("".equals(months) || "*".equals(months)) {
+                timePlanMonthdays = new ArrayList<Integer>();
                 timePlanMonthdays.add(0);
             } else {
                 timePlanMonthdays = Util.getElementsOfStringAsInt(node, conf);
@@ -209,19 +214,6 @@ public class ApplicationConfiguration {
         }
     }
 
-    private void formatCal(String bla, Calendar cal) {
-
-        String format = cal.getDisplayName(Calendar.DAY_OF_WEEK, Calendar.LONG, Locale.GERMAN);
-        format += " der " + String.valueOf(cal.get(Calendar.DAY_OF_MONTH));
-        format += "." + cal.getDisplayName(Calendar.MONTH, Calendar.LONG, Locale.GERMAN);
-        format += "." + String.valueOf(cal.get(Calendar.YEAR));
-        format += " " + String.valueOf(cal.get(Calendar.HOUR_OF_DAY));
-        format += ":" + String.valueOf(cal.get(Calendar.MINUTE));
-        format += ":" + String.valueOf(cal.get(Calendar.SECOND));
-
-        System.out.println(bla + "... " + format);
-    }
-
     /**
      * Looks if the application has to start now.
      * <p>
@@ -231,26 +223,30 @@ public class ApplicationConfiguration {
      */
     public long startAllowed() throws HapptickException {
         long waitTime = 0;
+        Calendar cal = new GregorianCalendar();
 
         // if program drops by here for first time calculate next start point
         if (null == nextStartDate) {
-            nextStartDate = Scheduling.calculateNextStart(this);
+            nextStartDate = Scheduling.calculateNextStart(this, 0);
         }
 
-        Calendar cal = new GregorianCalendar();
         cal.setTime(nextStartDate);
-        formatCal("Naechster Start ", cal);
+        Util.formatCal("ApplicationConfiguration.startAllowed: Naechster Start ", cal);
 
         // if no instance of application is running and enforce is set to true
         // the application must start immediately
         // but don't look to often...
         if (!Scheduling.isEqualApplicationActive(this) && enforce) {
-            return 5000;
+            return 0;
         }
         System.out.println("ApplicationConfiguration.startAllowed... enforce: " + enforce);
 
         long timeNow = new Date().getTime();
         waitTime = nextStartDate.getTime() - timeNow - 500;
+        if (waitTime < 0) {
+            waitTime = 0;
+        }
+
         if (waitTime > 1000 || waitTime < -1000) {
             return waitTime;
         }
@@ -258,7 +254,7 @@ public class ApplicationConfiguration {
         // Perhaps this application has to wait till other application processes
         // are stopped
         if (Scheduling.mustWaitForOtherApplication(this)) {
-            return waitTime;
+            return 5000;
         }
         System.out.println("ApplicationConfiguration.startAllowed... mustWaitForOthers: NEIN");
 
@@ -279,13 +275,13 @@ public class ApplicationConfiguration {
 
             // ok time point reached, application may be started now
             // calculate the next start point
-            nextStartDate = Scheduling.calculateNextStart(this);
+            nextStartDate = Scheduling.calculateNextStart(this, 2);
 
             // ok - time point reached, no more other instances are running or
             // multiple
             // start allowed
             System.out.println("ApplicationConfiguration.startAllowed... SSSSSSSSSTTTTTTTTTTTTTTAAAAAAAAAAAAAAARRRRRRRRRRRRRRRRTTTTTTTTTTTT");
-            return nextStartDate.getTime();
+            return 0;
         }
 
         // please wait

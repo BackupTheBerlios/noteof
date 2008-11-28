@@ -1,7 +1,9 @@
 package de.happtick.core.schedule;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -13,6 +15,7 @@ import de.happtick.configuration.ChainConfiguration;
 import de.happtick.configuration.ChainLink;
 import de.happtick.configuration.EventConfiguration;
 import de.happtick.core.MasterTable;
+import de.happtick.core.event.ApplicationStartErrorEvent;
 import de.happtick.core.event.ChainStoppedEvent;
 import de.happtick.core.exception.HapptickException;
 import de.happtick.core.util.ExternalCalls;
@@ -67,11 +70,8 @@ public class Scheduler {
                 System.exit(1);
             }
 
-            System.out.println("Scheduler.Scheduler: useTimer = " + useTimer);
-            System.out.println("Scheduler.Scheduler: useChain = " + useChain);
-
-            // check ob zugriff auf mastertable gemeinsam ist
-            System.out.println("Anzahl registrierter Services in MasterTable: " + MasterTable.getApplicationConfigurationsAsList().size());
+            // start the EventChecker
+            new Thread(new StartedEventChecker()).start();
 
         } catch (ActionFailedException afx) {
             LocalLog.error("Fehler bei Lesen der Konfiguration fuer Anwendungsscheduler.", afx);
@@ -87,6 +87,56 @@ public class Scheduler {
         }
     }
 
+    /*
+     * This class looks if there are old ApplicationStartEvents. If old events
+     * found, it raises an AlarmEvent. Old StartEvents are deleted by the
+     * scheduler! so this class doesn't deletes Events.
+     */
+    private class StartedEventChecker implements Runnable {
+
+        @Override
+        public void run() {
+            while (true) {
+                System.out.println("Scheduler.StartedEventChecker. MasterTable Grosse der startEventList: " + MasterTable.getStartEventsAsList().size());
+                for (NotEOFEvent event : MasterTable.getStartEventsAsList()) {
+                    if (EventType.EVENT_APPLICATION_START.equals(event.getEventType())) {
+                        Long timeStamp = event.getTimeStampSend();
+                        long maxWaitTime = 30000;
+                        // older than 30 seconds?
+                        if (maxWaitTime < new Date().getTime() - timeStamp) {
+                            // older - fire StartError
+                            NotEOFEvent startAlarm = new ApplicationStartErrorEvent();
+                            startAlarm.setApplicationId(event.getApplicationId());
+                            try {
+                                startAlarm.addAttribute("applicationId", String.valueOf(event.getAttribute("applicationId")));
+                                startAlarm.addAttribute("clientNetId", "Scheduler");
+                                startAlarm.addAttribute("startId", "?");
+                                startAlarm.addAttribute("errorDescription", "Scheduler Ueberpruefung: IgnitionZeit (" + Math.abs(maxWaitTime / 1000)
+                                        + ") + ueberschritten.");
+                                startAlarm.addAttribute("errorId", String.valueOf(0));
+                                startAlarm.addAttribute("errorLevel", "0");
+                                startAlarm.addAttribute("startIgnitionTime", String.valueOf(event.getTimeStampSend()));
+
+                                // send alarm
+                                Scheduling.raiseEvent(event);
+                            } catch (ActionFailedException e) {
+                            }
+                        }
+                    }
+                }
+                try {
+                    Thread.sleep(10000);
+                } catch (InterruptedException e) {
+                    LocalLog.warn("Die Klasse StartedEventChecker zur Ueberwachung nicht gestarteter Applikationen ist ausgefallen.");
+                }
+            }
+        }
+    }
+
+    /*
+     * This class processes some events independent from the schedulers to take
+     * some jobs of him
+     */
     private class EventHandler implements Runnable {
         private NotEOFEvent event;
 
@@ -99,11 +149,6 @@ public class Scheduler {
          * runners (s. below)
          */
         protected void handleEvent() {
-            // TODO wenn Generic ausgelöst werden soll, attribut 'alias'
-            // auswerten
-            // bei Versand von Generic aliasName setzen
-            // nochmal happtick_appl.xml konsultieren...
-
             // search for the configuration to this event
             List<EventConfiguration> eventConfigurations = Scheduling.getEventConfigurationsForEventType(this.event.getEventType());
             List<EventConfiguration> actionEventConfigurations = Scheduling.getEventConfigurationsForEvent(this.event, eventConfigurations);
@@ -164,6 +209,7 @@ public class Scheduler {
             // before registering add events
             observedEvents.add(EventType.EVENT_START_ERROR);
             observedEvents.add(EventType.EVENT_GENERIC);
+            observedEvents.add(EventType.EVENT_APPLICATION_START);
             observedEvents.add(EventType.EVENT_APPLICATION_STARTED);
             observedEvents.add(EventType.EVENT_APPLICATION_STOPPED);
 
@@ -190,6 +236,12 @@ public class Scheduler {
         }
 
         public void update(Service service, NotEOFEvent event) {
+            System.out.println("Scheduler.update... Event = " + event.getEventType());
+            // Application started
+            if (EventType.EVENT_APPLICATION_START.equals(event.getEventType())) {
+                MasterTable.putStartEvent(event);
+            }
+
             // Application process now running
             // Activate dependent applications
             if (EventType.EVENT_APPLICATION_STARTED.equals(event.getEventType())) {
@@ -540,7 +592,7 @@ public class Scheduler {
                     Thread.sleep(10000);
                 }
             } catch (Exception e) {
-                LocalLog.error("Scheduling fï¿½r Chain mit Id " + conf.getChainId() + " ist ausgefallen.", e);
+                LocalLog.error("Scheduling fuer Chain mit Id " + conf.getChainId() + " ist ausgefallen.", e);
             }
         }
 
@@ -599,8 +651,13 @@ public class Scheduler {
                             }
                         }
                         waitTime = conf.getNextStartDate().getTime() - new Date().getTime() - 300;
+                        if (1000 > waitTime)
+                            waitTime = 1000;
+                        System.out.println("WaitTime = " + waitTime);
                     }
-                    System.out.println("Scheduler.run Schlafe jetzt " + waitTime + " Millis");
+                    Calendar cal = new GregorianCalendar();
+                    cal.setTime(conf.getNextStartDate());
+                    Util.formatCal("Scheduler.run Schlafe jetzt bis ", cal);
                     Thread.sleep(waitTime);
                 }
             } catch (Exception e) {

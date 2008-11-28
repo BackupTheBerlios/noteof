@@ -131,6 +131,7 @@ public class StartClient extends HapptickBaseClient implements MailAndEventRecip
      */
     @Override
     public synchronized void processEvent(NotEOFEvent event) {
+        System.out.println("Event Received...");
         if (event.getEventType().equals(EventType.EVENT_APPLICATION_START)) {
             startStarter(event);
         }

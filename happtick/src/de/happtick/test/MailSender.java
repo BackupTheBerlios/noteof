@@ -1,5 +1,7 @@
 package de.happtick.test;
 
+import java.util.Date;
+
 import de.happtick.application.client.HapptickApplication;
 import de.happtick.core.event.ApplicationStartEvent;
 import de.notEOF.core.exception.ActionFailedException;
@@ -14,67 +16,52 @@ public class MailSender {
 
         ApplicationStartEvent event = new ApplicationStartEvent();
         event.addAttribute("clientIp", "192.168.0.2");
-        int counter = -1;
-        while (true) {
-            counter++;
-            appl.sendActionEvent(String.valueOf(counter), String.valueOf(counter));
-            appl.sendAlarm(String.valueOf(counter), String.valueOf(counter), String.valueOf(counter));
+
+        System.gc();
+
+        for (int i = 0; i < 25; i++) {
+            event.setApplicationId(new Long(77));
+            event.addAttribute("applicationId", "77");
+            // event.addAttribute("applicationPath",
+            // "cmd /c start/wait C:\\Projekte\\workspace\\noteof\\util\\applStartTest.bat"
+            // );
+            // event.addAttribute("applicationPath",
+            // "C:/Projekte/workspace/noteof/util/applStartTest.bat");
+            event.addAttribute("applicationPath", "C:/Projekte/workspace/noteof/util/mail_recipient.bat");
+            event.addAttribute("windowsSupport", "true");
+            // event.addAttribute("applicationPath",
+            // "cmd /c start/wait C:\\Projekte\\workspace\\noteof\\util\\applStartTest.bat"
+            // );
+            event.addAttribute("applicationType", "JAVA");
+            appl.sendEvent(event);
+        }
+
+        try {
+            Thread.sleep(30000);
+        } catch (InterruptedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+        long startTime = new Date().getTime();
+        for (int i = 0; i < 1000; i++) {
+            System.out.println("Versende Event Nr. " + i);
+            appl.sendActionEvent(String.valueOf(i), String.valueOf(i));
+            appl.sendAlarm(String.valueOf(i), String.valueOf(i), String.valueOf(i));
             try {
-                Thread.sleep(50);
+                Thread.sleep(0);
             } catch (InterruptedException e) {
             }
             if (false)
                 break;
-
-            // event.addAttribute("applicationId", "99");
-            // event.addAttribute("applicationPath", "calc.exe");
-            // event.addAttribute("applicationType", "UNKNOWN");
-            // event.addAttribute("arguments", "123 :m");
-            // System.out.println("Kontrolle applicationPath: " +
-            // event.getAttribute("applicationPath"));
-            // appl.sendEvent(event);
-            // }
-
-            // try {
-            // Thread.sleep(150);
-            // } catch (InterruptedException e) {
-            // // TODO Auto-generated catch block
-            // e.printStackTrace();
-            // }
-
-            if (counter < 30) {
-                event.setApplicationId(new Long(77));
-                event.addAttribute("applicationId", "77");
-                // event.addAttribute("applicationPath",
-                // "cmd /c start/wait C:\\Projekte\\workspace\\noteof\\util\\applStartTest.bat"
-                // );
-                // event.addAttribute("applicationPath",
-                // "C:/Projekte/workspace/noteof/util/applStartTest.bat");
-                event.addAttribute("applicationPath", "C:/Projekte/workspace/noteof/util/mail_recipient.bat");
-                event.addAttribute("windowsSupport", "true");
-                // event.addAttribute("applicationPath",
-                // "cmd /c start/wait C:\\Projekte\\workspace\\noteof\\util\\applStartTest.bat"
-                // );
-                event.addAttribute("applicationType", "JAVA");
-                System.out.println("Kontrolle applicationPath: " + event.getAttribute("applicationPath"));
-                appl.sendEvent(event);
-            }
-
-            try {
-                Thread.sleep(30);
-            } catch (InterruptedException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
         }
-        // int counter = 0;
-        // while (true) {
-        // mail = new NotEOFMail("Kopf", "Counter: " + counter++,
-        // String.valueOf(counter));
-        // appl.sendMail(mail);
-        // }
-        // } catch (ActionFailedException e) {
-        // throw new HapptickException(600L, "Anlegen einer Mail.", e);
-        // }
+        long duration = (new Date().getTime() - startTime) / 1000;
+        System.out.println("Duration: " + duration);
+        try {
+            Thread.sleep(60000);
+        } catch (InterruptedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     }
 }

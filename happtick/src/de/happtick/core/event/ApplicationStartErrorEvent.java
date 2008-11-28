@@ -19,6 +19,8 @@ import de.notEOF.core.interfaces.NotEOFEvent;
  * <li>errorDescription -> Exact description of the Error.</li>
  * <li>errorId -> Id specified by implementations.</li>
  * <li>errorLevel -> Numeric value which indicates the level of the error.</li>
+ * <li>startIgnitionTime -> Timepoint when the application start was initialized
+ * in Millis like java.util.Date.</>
  * </ul>
  * 
  * @see NotEOFEvent
@@ -35,6 +37,7 @@ public class ApplicationStartErrorEvent extends HapptickEvent implements NotEOFE
         descriptions.put("errorDescription", "Exact description of the Error.");
         descriptions.put("errorId", "Id specified by implementations.");
         descriptions.put("errorLevel", "Numeric value which indicates the level of the error.");
+        descriptions.put("startIgnitionTime", "Timepoint when the application start was initialized in Millis like java.util.Date.");
     }
 
     @Override

@@ -71,7 +71,6 @@ public class Scheduling {
      * @param event
      */
     public static synchronized void raiseEvent(NotEOFEvent event) {
-        System.out.println("Scheduling.raiseEvent: Jetzt Müsste Was Passieren....");
         Server.getInstance().updateObservers(null, event);
     }
 
@@ -144,10 +143,13 @@ public class Scheduling {
      * @return Date when the application should run only depending to the
      *         configuration, ignoring other active processes etc.
      */
-    public static Date calculateNextStart(ApplicationConfiguration applConf) {
+    public static Date calculateNextStart(ApplicationConfiguration applConf, int offsetSeconds) {
 
         // Mit aktueller Systemzeit beginnen...
         Calendar calcDate = new GregorianCalendar();
+        calcDate.add(Calendar.SECOND, offsetSeconds);
+
+        Util.formatCal("Scheduling.calc 1", calcDate);
 
         // ermittle den ersten gueltigen Tag, ohne die Wochentage zu
         // beruecksichtigen
@@ -168,6 +170,7 @@ public class Scheduling {
                     }
                 }
             }
+            Util.formatCal("Scheduling.calc 2", calcDate);
             // Tag folgt in diesem Monat nicht mehr, also auf den kleinsten des
             // naechsten Monats setzen.
             if (!timeValueFound) {
@@ -179,6 +182,7 @@ public class Scheduling {
             }
         }
 
+        Util.formatCal("Scheduling.calc 3", calcDate);
         // pruefe, ob Wochentag passt
         if (!Util.isEmpty(applConf.getTimePlanWeekdays())) {
             timeValueFound = applConf.getTimePlanWeekdays().contains(calcDate.get(Calendar.DAY_OF_WEEK));
@@ -192,20 +196,24 @@ public class Scheduling {
             }
         }
 
+        Util.formatCal("Scheduling.calc 4", calcDate);
         // Solange suchen, bis Wochentag und Tag im Monat passen...
         while (!timeValueFound) {
-            calcDate.add(Calendar.DATE, 1);
 
             // vergleiche Wochentage
             // wenn Wochentag nicht passt direkt naechsten Tag
             if (!Util.isEmpty(applConf.getTimePlanWeekdays()) && //
-                    !applConf.getTimePlanWeekdays().contains(calcDate.get(Calendar.DAY_OF_WEEK)))
+                    !applConf.getTimePlanWeekdays().contains(calcDate.get(Calendar.DAY_OF_WEEK))) {
+                calcDate.add(Calendar.DATE, 1);
                 continue;
+            }
 
             // vergleiche Tag des Monats
             timeValueFound = !Util.isEmpty(applConf.getTimePlanMonthdays()) && //
                     applConf.getTimePlanMonthdays().contains(calcDate.get(Calendar.DAY_OF_MONTH));
         }
+
+        Util.formatCal("Scheduling.calc 5", calcDate);
 
         // Jetzt auf Uhrzeit pruefen
         // Sekunden

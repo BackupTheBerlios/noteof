@@ -32,8 +32,8 @@ public class ExternalApplicationStarter extends HapptickApplication {
      * @param applArgs
      * @throws HapptickException
      */
-    public ExternalApplicationStarter(long applicationId, String startId, String applicationPath, String serverAddress, int serverPort, boolean windowsSupport,
-            String applArgs) throws HapptickException {
+    public ExternalApplicationStarter(long applicationId, String startId, String applicationPath, String serverAddress, int serverPort,
+            String startIgnitionTime, boolean windowsSupport, String applArgs) throws HapptickException {
         super(applicationId, serverAddress, serverPort, applArgs);
 
         if (Util.isEmpty(applicationId))
@@ -41,7 +41,7 @@ public class ExternalApplicationStarter extends HapptickApplication {
         if (Util.isEmpty(applicationPath))
             throw new HapptickException(650L, "applicationPath");
 
-        WorkerProcess worker = new WorkerProcess(applicationId, applicationPath, startId, windowsSupport, applArgs);
+        WorkerProcess worker = new WorkerProcess(applicationId, applicationPath, startId, startIgnitionTime, windowsSupport, applArgs);
         Thread workerThread = new Thread(worker);
         workerThread.start();
 
@@ -77,13 +77,15 @@ public class ExternalApplicationStarter extends HapptickApplication {
         private Long applicationId = null;
         private String startId = null;
         private String applArgs = null;
+        private String startIgnitionTime = null;
         private boolean windowsSupport = false;
 
-        protected WorkerProcess(Long applicationId, String applicationPath, String startId, boolean windowsSupport, String applArgs) {
+        protected WorkerProcess(Long applicationId, String applicationPath, String startId, String startIgnitionTime, boolean windowsSupport, String applArgs) {
             this.applicationPath = applicationPath;
             this.applArgs = applArgs;
             this.startId = startId;
             this.applicationId = applicationId;
+            this.startIgnitionTime = startIgnitionTime;
             this.windowsSupport = windowsSupport;
         }
 
@@ -126,6 +128,7 @@ public class ExternalApplicationStarter extends HapptickApplication {
                     errorEvent.addAttribute("errorDescription", errMsg);
                     errorEvent.addAttribute("errorId", String.valueOf(errNo));
                     errorEvent.addAttribute("errorLevel", "0");
+                    errorEvent.addAttribute("startIgnitionTime", startIgnitionTime);
                     // main class now will send the event to the server
                     callBackForWorker(errorEvent);
                 } catch (Exception e) {
@@ -200,6 +203,7 @@ public class ExternalApplicationStarter extends HapptickApplication {
         String applicationPath = argsParser.getValue("applicationPath");
         String serverAddress = argsParser.getValue("serverAddress");
         String serverPort = argsParser.getValue("serverPort");
+        String startIgnitionTime = argsParser.getValue("startIgnitionTime");
         String windowsSupport = argsParser.getValue("windowsSupport");
 
         // Remove Happtick arguments
@@ -208,6 +212,7 @@ public class ExternalApplicationStarter extends HapptickApplication {
         argsParser.removeParameterAll("--applicationPath");
         argsParser.removeParameterAll("--serverAddress");
         argsParser.removeParameterAll("--serverPort");
+        argsParser.removeParameterAll("--startIgnitionTime");
         argsParser.removeParameterAll("--windowsSupport");
 
         // build argument string for the external application
@@ -242,7 +247,7 @@ public class ExternalApplicationStarter extends HapptickApplication {
         }
 
         // use class to start application
-        new ExternalApplicationStarter(Util.parseLong(applicationId, 0), startId, applicationPath, serverAddress, Util.parseInt(serverPort, 0), Util
-                .parseBoolean(windowsSupport, false), arguments);
+        new ExternalApplicationStarter(Util.parseLong(applicationId, 0), startId, applicationPath, serverAddress, Util.parseInt(serverPort, 0),
+                startIgnitionTime, Util.parseBoolean(windowsSupport, false), arguments);
     }
 }

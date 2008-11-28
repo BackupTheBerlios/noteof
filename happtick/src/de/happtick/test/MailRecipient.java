@@ -107,21 +107,23 @@ public class MailRecipient extends HapptickApplication implements MailAndEventRe
     public synchronized void processEvent(NotEOFEvent event) {
         try {
             if (null != event) {
-                System.out.println("=====================================");
-                System.out.println("Event ist eingetroffen: " + event.getEventType());
+                // System.out.println("=====================================");
+                // System.out.println("Event ist eingetroffen: " +
+                // event.getEventType());
                 Map<String, String> attributeMap = event.getAttributes();
                 Set<Entry<String, String>> set = attributeMap.entrySet();
                 Iterator<Entry<String, String>> it = set.iterator();
-                System.out.println("________________________________");
-                System.out.println("*QueueId: " + event.getQueueId());
+                // System.out.println("________________________________");
+                // System.out.println("*QueueId: " + event.getQueueId());
                 while (it.hasNext()) {
                     Entry<String, String> entry = it.next();
-                    System.out.println("________________________________");
-                    System.out.println("Attribute: " + entry.getKey());
+                    // System.out.println("________________________________");
+                    // System.out.println("Attribute: " + entry.getKey());
                     System.out.println("Value:     " + entry.getValue());
-                    System.out.println("________________________________");
+                    // System.out.println("________________________________");
+                    break;
                 }
-                System.out.println("=====================================");
+                // System.out.println("=====================================");
             }
         } catch (Exception e) {
             LocalLog.error("Fehler bei Anlegen oder Versand des Events.", e);

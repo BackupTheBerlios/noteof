@@ -443,7 +443,7 @@ public class MasterTable {
         if (null != startEvent) {
             startEvents.remove(startEvent.getApplicationId());
         }
-        setStartEvent(event);
+        putStartEvent(event);
     }
 
     /**
@@ -465,7 +465,7 @@ public class MasterTable {
      * 
      * @param event
      */
-    public static synchronized void setStartEvent(NotEOFEvent event) {
+    public static synchronized void putStartEvent(NotEOFEvent event) {
         startEvents.put(event.getApplicationId(), event);
     }
 
@@ -477,6 +477,13 @@ public class MasterTable {
      */
     public static NotEOFEvent getStartEvent(Long applicationId) {
         return startEvents.get(applicationId);
+    }
+
+    public static List<NotEOFEvent> getStartEventsAsList() {
+        List<NotEOFEvent> events = new ArrayList<NotEOFEvent>();
+        events.addAll(startEvents.values());
+        return events;
+
     }
 
     /**
