@@ -46,11 +46,9 @@ public class MasterTable {
     // nicht erlaubt ist.
     private static Map<Long, NotEOFEvent> startEvents = new HashMap<Long, NotEOFEvent>();
 
-    // private static List<EventObserver> eventObservers = new
-    // ArrayList<EventObserver>();
-
     private static boolean inAction = false;
     private static boolean confUpdated = false;
+    private static long maxDelay = 10000;
 
     private static Server server;
 
@@ -63,9 +61,13 @@ public class MasterTable {
             NotEOFConfiguration conf = new LocalConfiguration();
 
             // Configuration must be read in this order:
+            // 0. Global settings
             // 1. Applications
             // 2. Events
             // 3. Chains
+
+            // Global settings
+            maxDelay = Util.parseLong(conf.getText("scheduler.maxDelay"), 10000);
 
             // Events
             // Liste der nodes
@@ -513,5 +515,9 @@ public class MasterTable {
             startDate = new Date();
         long endTime = startDate.getTime() + waitTimeForStartApplicationService();
         return new Date(endTime);
+    }
+
+    public static long getMaxDelay() {
+        return maxDelay;
     }
 }

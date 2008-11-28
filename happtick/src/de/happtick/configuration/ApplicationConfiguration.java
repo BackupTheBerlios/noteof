@@ -4,9 +4,9 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.List;
 
+import de.happtick.core.MasterTable;
 import de.happtick.core.exception.HapptickException;
 import de.happtick.core.util.Scheduling;
 import de.notEOF.core.exception.ActionFailedException;
@@ -223,26 +223,28 @@ public class ApplicationConfiguration {
      */
     public long startAllowed() throws HapptickException {
         long waitTime = 0;
-        Calendar cal = new GregorianCalendar();
+        long timeNow = new Date().getTime();
 
         // if program drops by here for first time calculate next start point
         if (null == nextStartDate) {
             nextStartDate = Scheduling.calculateNextStart(this, 0);
         }
 
-        cal.setTime(nextStartDate);
-        Util.formatCal("ApplicationConfiguration.startAllowed: Naechster Start ", cal);
+        // check if the max. delay between the calculated time and the time now
+        // has exceeded
+        // it last starttime is to old calc new one
+        if (timeNow - MasterTable.getMaxDelay() > nextStartDate.getTime()) {
+            nextStartDate = Scheduling.calculateNextStart(this, 0);
+        }
 
         // if no instance of application is running and enforce is set to true
         // the application must start immediately
         // but don't look to often...
-        if (!Scheduling.isEqualApplicationActive(this) && enforce) {
+        if ((!Scheduling.isEqualApplicationActive(this)) && enforce) {
             return 0;
         }
-        System.out.println("ApplicationConfiguration.startAllowed... enforce: " + enforce);
 
-        long timeNow = new Date().getTime();
-        waitTime = nextStartDate.getTime() - timeNow - 500;
+        waitTime = nextStartDate.getTime() - timeNow - 300;
         if (waitTime < 0) {
             waitTime = 0;
         }
@@ -256,14 +258,11 @@ public class ApplicationConfiguration {
         if (Scheduling.mustWaitForOtherApplication(this)) {
             return 5000;
         }
-        System.out.println("ApplicationConfiguration.startAllowed... mustWaitForOthers: NEIN");
 
         // Some millis as tolerance value...
-        // +- 1000 millis
-        System.out.println("ApplicationConfiguration.startAllowed... Differenz jetzt und startTime " + (waitTime / 1000));
-
-        if (nextStartDate.getTime() > timeNow - 1000 && //
-                nextStartDate.getTime() < timeNow + 1000) {
+        // +- 500 millis
+        if (waitTime > -100 && //
+                waitTime < +500) {
 
             // check if other instances of application are running
             // and if multiple start is allowed

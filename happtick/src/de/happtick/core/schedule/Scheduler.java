@@ -1,9 +1,7 @@
 package de.happtick.core.schedule;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -97,7 +95,6 @@ public class Scheduler {
         @Override
         public void run() {
             while (true) {
-                System.out.println("Scheduler.StartedEventChecker. MasterTable Grosse der startEventList: " + MasterTable.getStartEventsAsList().size());
                 for (NotEOFEvent event : MasterTable.getStartEventsAsList()) {
                     if (EventType.EVENT_APPLICATION_START.equals(event.getEventType())) {
                         Long timeStamp = event.getTimeStampSend();
@@ -118,7 +115,7 @@ public class Scheduler {
                                 startAlarm.addAttribute("startIgnitionTime", String.valueOf(event.getTimeStampSend()));
 
                                 // send alarm
-                                Scheduling.raiseEvent(event);
+                                Scheduling.raiseEvent(startAlarm);
                             } catch (ActionFailedException e) {
                             }
                         }
@@ -236,7 +233,6 @@ public class Scheduler {
         }
 
         public void update(Service service, NotEOFEvent event) {
-            System.out.println("Scheduler.update... Event = " + event.getEventType());
             // Application started
             if (EventType.EVENT_APPLICATION_START.equals(event.getEventType())) {
                 MasterTable.putStartEvent(event);
@@ -630,8 +626,6 @@ public class Scheduler {
         }
 
         public void run() {
-            System.out.println("Scheduler.ApplicationScheduler.run started. applId = " + conf.getApplicationId());
-
             try {
                 long waitTime = 0;
                 while (true) {
@@ -650,14 +644,14 @@ public class Scheduler {
                                 }
                             }
                         }
-                        waitTime = conf.getNextStartDate().getTime() - new Date().getTime() - 300;
-                        if (1000 > waitTime)
-                            waitTime = 1000;
+                        waitTime = conf.getNextStartDate().getTime() - new Date().getTime() - 100;
+                        if (waitTime < 0)
+                            waitTime = 0;
                         System.out.println("WaitTime = " + waitTime);
                     }
-                    Calendar cal = new GregorianCalendar();
-                    cal.setTime(conf.getNextStartDate());
-                    Util.formatCal("Scheduler.run Schlafe jetzt bis ", cal);
+                    // Calendar cal = new GregorianCalendar();
+                    // cal.setTime(conf.getNextStartDate());
+                    // Util.formatCal("Scheduler.run Schlafe jetzt bis ", cal);
                     Thread.sleep(waitTime);
                 }
             } catch (Exception e) {

@@ -1,5 +1,6 @@
 package de.notEOF.core.event;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -146,5 +147,21 @@ public abstract class NotEOFBaseEvent implements NotEOFEvent {
      */
     public Long getTimeStampSend() {
         return Util.parseLong(getAttribute("internal->timeStampSend"), 0);
+    }
+
+    /**
+     * Set timestamp to the event.
+     * <p>
+     * The timestamp cannot be changed! That means if it was set before this
+     * method does nothing.
+     */
+    public void setTimeStampSend() {
+        if (Util.isEmpty(getAttribute("internal->timeStampSend"))) {
+            try {
+                this.descriptions.put("internal->timeStampSend", "basic attribute 'timeStampSend' of !EOF");
+                addAttribute("internal->timeStampSend", String.valueOf(new Date().getTime()));
+            } catch (ActionFailedException e) {
+            }
+        }
     }
 }

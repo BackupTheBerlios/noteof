@@ -402,10 +402,7 @@ public class TalkLine implements Observer {
      */
     public synchronized void sendBaseEvent(NotEOFEvent event) throws ActionFailedException {
         // set timestamp
-        if (Util.isEmpty(event.getAttribute("internal->timeStampSend"))) {
-            String timeStamp = String.valueOf(new Date().getTime());
-            event.addAttribute("internal->timeStampSend", timeStamp);
-        }
+        event.setTimeStampSend();
 
         // send className and eventType as ordinal value
         Map<String, String> infos = new HashMap<String, String>();

@@ -469,14 +469,7 @@ public class Util {
             return;
 
         // set Timestamp if empty
-        // set timestamp
-        if (Util.isEmpty(event.getAttribute("internal->timeStampSend"))) {
-            String timeStamp = String.valueOf(new Date().getTime());
-            try {
-                event.addAttribute("internal->timeStampSend", timeStamp);
-            } catch (ActionFailedException e) {
-            }
-        }
+        event.setTimeStampSend();
 
         while (registeringObserver) {
             try {

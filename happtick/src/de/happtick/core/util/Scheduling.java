@@ -149,8 +149,6 @@ public class Scheduling {
         Calendar calcDate = new GregorianCalendar();
         calcDate.add(Calendar.SECOND, offsetSeconds);
 
-        Util.formatCal("Scheduling.calc 1", calcDate);
-
         // ermittle den ersten gueltigen Tag, ohne die Wochentage zu
         // beruecksichtigen
         boolean timeValueFound = true;
@@ -170,7 +168,6 @@ public class Scheduling {
                     }
                 }
             }
-            Util.formatCal("Scheduling.calc 2", calcDate);
             // Tag folgt in diesem Monat nicht mehr, also auf den kleinsten des
             // naechsten Monats setzen.
             if (!timeValueFound) {
@@ -182,7 +179,6 @@ public class Scheduling {
             }
         }
 
-        Util.formatCal("Scheduling.calc 3", calcDate);
         // pruefe, ob Wochentag passt
         if (!Util.isEmpty(applConf.getTimePlanWeekdays())) {
             timeValueFound = applConf.getTimePlanWeekdays().contains(calcDate.get(Calendar.DAY_OF_WEEK));
@@ -196,7 +192,6 @@ public class Scheduling {
             }
         }
 
-        Util.formatCal("Scheduling.calc 4", calcDate);
         // Solange suchen, bis Wochentag und Tag im Monat passen...
         while (!timeValueFound) {
 
@@ -212,8 +207,6 @@ public class Scheduling {
             timeValueFound = !Util.isEmpty(applConf.getTimePlanMonthdays()) && //
                     applConf.getTimePlanMonthdays().contains(calcDate.get(Calendar.DAY_OF_MONTH));
         }
-
-        Util.formatCal("Scheduling.calc 5", calcDate);
 
         // Jetzt auf Uhrzeit pruefen
         // Sekunden

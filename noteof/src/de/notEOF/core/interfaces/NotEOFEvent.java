@@ -99,4 +99,6 @@ public interface NotEOFEvent {
     public void setRequestQueueId(Long queueId);
 
     public Long getTimeStampSend();
+
+    public void setTimeStampSend();
 }

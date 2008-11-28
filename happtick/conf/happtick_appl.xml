@@ -10,6 +10,11 @@
 <root>
 	<scheduler>
 	   	<use chain="true" timer="true" ></use>
+	   	<!-- 
+	   		 max. milliseconds from calculated start point until real start point
+	   		 for slow server or very high used capacity of the server 
+	   	-->
+	   	<maxDelay>10000</maxDelay>
 	
 	    <!-- ============================================== Chain Configuration ====================================
 	         With chains it is possible to define process chains depending to events or other chains.
@@ -127,7 +132,7 @@
 		-->
 		<applications>
 			<application>application1</application>
-			<application>application2</application>
+		<!--  	<application>application2</application> -->
 		</applications>
 	
 		<!-- Complex configurations of applications.
