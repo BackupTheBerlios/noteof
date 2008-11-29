@@ -34,6 +34,12 @@ public class MailRecipient extends HapptickApplication implements MailAndEventRe
     public MailRecipient(long applicationId, String serverAddress, int serverPort, String... args) throws HapptickException {
         super(applicationId, serverAddress, serverPort, args);
 
+        reconnection();
+    }
+
+    private void reconnection() throws HapptickException {
+        reconnect();
+
         // Anwendung will selbst mails oder events verarbeiten
         useMailsAndEvents(this);
 
@@ -62,8 +68,7 @@ public class MailRecipient extends HapptickApplication implements MailAndEventRe
 
         System.out.println("Jetzt gilts!");
         ready = true;
-        // testMail();
-        // processEvent(null);
+
     }
 
     public boolean isReady() {
@@ -132,6 +137,18 @@ public class MailRecipient extends HapptickApplication implements MailAndEventRe
 
     public void processEventException(Exception e) {
         LocalLog.error("Event-Empfang verursachte Fehler: ", e);
+        boolean retry = true;
+        while (retry) {
+            try {
+                reconnection();
+                retry = false;
+            } catch (HapptickException e1) {
+                try {
+                    Thread.sleep(5000);
+                } catch (InterruptedException e2) {
+                }
+            }
+        }
     }
 
     public static void main(String... args) throws HapptickException {

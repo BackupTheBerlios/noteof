@@ -36,9 +36,19 @@ import de.notEOF.mail.interfaces.MailAndEventRecipient;
  */
 public class StartClient extends HapptickBaseClient implements MailAndEventRecipient {
 
+    private String serverAddress;
+    private int port;
+    private String[] args;
     private boolean stopped = false;
 
     public StartClient(String serverAddress, int port, String[] args) throws HapptickException {
+        this.serverAddress = serverAddress;
+        this.port = port;
+        this.args = args;
+        doWork();
+    }
+
+    private void doWork() throws HapptickException {
         // must be called before useMailsAndEvents()
         connect(serverAddress, port, args, false);
 
@@ -143,6 +153,20 @@ public class StartClient extends HapptickBaseClient implements MailAndEventRecip
     @Override
     public void processEventException(Exception e) {
         LocalLog.error("Fehler wurde durch die Event-Schnittstelle ausgeloest.", e);
+        boolean err = true;
+        while (err)
+            try {
+                doWork();
+                err = false;
+            } catch (HapptickException e1) {
+                try {
+                    Thread.sleep(3000);
+                } catch (InterruptedException e2) {
+                    // TODO Auto-generated catch block
+                    e2.printStackTrace();
+                }
+                e1.printStackTrace();
+            }
 
     }
 

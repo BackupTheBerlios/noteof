@@ -19,7 +19,7 @@ public class HapptickApplication extends HapptickBaseClient {
 
     private Long applicationId;
     private boolean isWorkAllowed = false;
-    private ApplicationClient applicationClient = new ApplicationClient();
+    private ApplicationClient applicationClient;
 
     /**
      * Constructor with connection informations.
@@ -38,10 +38,19 @@ public class HapptickApplication extends HapptickBaseClient {
      *            --startId=<value>.
      */
     public HapptickApplication(long applicationId, String serverAddress, int serverPort, String... args) throws HapptickException {
+        this.applicationId = applicationId;
+        this.serverAddress = serverAddress;
+        this.serverPort = serverPort;
+        this.args = args;
+        reconnect();
+    }
+
+    public void reconnect() throws HapptickException {
+        applicationClient = new ApplicationClient();
+
         // TODO Wenn dipatched getestet, kann der letzte Parameter auch nach
         // oben frei gegeben werden...
         connect(serverAddress, serverPort, args, applicationClient, false);
-        this.applicationId = applicationId;
         applicationClient.applicationIdToService(applicationId);
         applicationClient.startIdToService(args);
     }

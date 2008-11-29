@@ -20,6 +20,7 @@ public abstract class MailAndEventReceiveClient extends BaseClient {
     private MailAndEventAcceptor acceptor;
     private MailAndEventRecipient recipient;
     private long workerPointer = 0;
+    private boolean acceptorStopped = true;
 
     private List<String> ignoredClientNetIds = new ArrayList<String>();
 
@@ -63,32 +64,33 @@ public abstract class MailAndEventReceiveClient extends BaseClient {
     }
 
     private class MailAndEventAcceptor implements Runnable {
-        private boolean stopped = true;
         public long workerCounter = 0;
 
         public boolean isStopped() {
-            return stopped;
+            return acceptorStopped;
         }
 
         public void stop() {
-            stopped = true;
+            acceptorStopped = true;
         }
 
         public void run() {
             boolean isEvent = false;
-            int errCounter = 0;
+            boolean isMail = false;
+            // int errCounter = 0;
             try {
                 // Tell the service that now the client is ready to accept mails
                 // and events
                 if (MailTag.VAL_OK.name().equals(requestTo(MailTag.INFO_READY_FOR_EVENTS, MailTag.VAL_OK))) {
-                    stopped = false;
+                    acceptorStopped = false;
                 }
 
-                while (!stopped) {
+                while (!acceptorStopped) {
                     try {
                         awaitRequest(MailTag.REQ_READY_FOR_ACTION);
                         String action = readMsg();
                         if (MailTag.VAL_ACTION_MAIL.name().equals(action)) {
+                            isMail = true;
                             NotEOFMail mail = getTalkLine().receiveMail();
                             MailWorker worker = new MailWorker(recipient, mail);
                             Thread workerThread = new Thread(worker);
@@ -105,21 +107,34 @@ public abstract class MailAndEventReceiveClient extends BaseClient {
                             workerThread.start();
                         }
                     } catch (Exception e) {
-                        if (5 < errCounter++)
-                            stopped = true;
-                        if (!isEvent) {
+                        // if (5 < errCounter++)
+                        acceptorStopped = true;
+                        if (isMail) {
                             recipient.processMailException(e);
-                        } else {
+                        }
+                        if (isEvent) {
+                            recipient.processEventException(e);
+                        }
+                        if (!(isMail || isEvent)) {
                             recipient.processEventException(e);
                         }
                     }
+
+                    isMail = false;
+                    isEvent = false;
                 }
                 close();
             } catch (Exception e) {
-                if (!stopped) {
-                    if (!isEvent) {
+                if (!acceptorStopped) {
+                    acceptorStopped = true;
+                    if (isMail) {
                         recipient.processMailException(e);
-                    } else {
+                    }
+                    if (isEvent) {
+                        recipient.processEventException(e);
+                    }
+
+                    if (!(isMail || isEvent)) {
                         recipient.processEventException(e);
                     }
                 }

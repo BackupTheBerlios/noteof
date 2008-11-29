@@ -83,12 +83,25 @@ public class Util {
         return intList;
     }
 
+    public static List<Integer> getElementsOfStringAsInt(String elements) throws ActionFailedException {
+        List<String> elementList = getElementsOfString(elements);
+        List<Integer> intList = new ArrayList<Integer>();
+        for (String element : elementList) {
+            intList.add(Util.parseInt(element, -1));
+        }
+        return intList;
+    }
+
     /*
      * delivers elements of a text string comma separated or blank separated
      */
     public static List<String> getElementsOfString(String node, NotEOFConfiguration conf) throws ActionFailedException {
-        List<String> elementList;
         String elements = conf.getText(node);
+        return getElementsOfString(elements);
+    }
+
+    public static List<String> getElementsOfString(String elements) throws ActionFailedException {
+        List<String> elementList;
         elements = elements.replace(" ", ",");
         elements = elements.replace(",,", ",");
         elementList = Util.stringToList(elements, ",");

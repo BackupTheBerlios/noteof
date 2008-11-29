@@ -30,9 +30,9 @@
 		    <!-- The list of chains.
 		    	 Chains can be chained to...
 		    	 Here also the order within the list is the order how the scheduler starts chains.
-		     -->
 	    	<chain>chain1</chain>
 	    	<chain>chain2</chain>
+		     -->
 	    	<!-- 
 	    		 - depends if true the chain ends with the end of the last application or chain
 	    		                   loop will be ignored then
@@ -184,7 +184,7 @@
 				<minutes>*</minutes>
 				<hours>*</hours> <!-- blank OR comma seperated -->
 				<weekdays>*</weekdays> <!-- mixed english and german is allowed (MO, TU, DI, WE, MI, ...)  -->
-				<monthdays>28</monthdays>
+				<monthdays>29</monthdays>
 			</timeplan>
 			
 			<!-- dependencies

@@ -53,21 +53,25 @@ public class Scheduler {
         try {
             Boolean useTimer = Util.parseBoolean(conf.getAttribute("scheduler.use", "timer"), false);
             if (useTimer) {
+                System.out.println("HHHHHHHiiier 1");
                 startAllApplicationSchedulers();
             }
 
             // process chain is active
             Boolean useChain = Util.parseBoolean(conf.getAttribute("scheduler.use", "chain"), false);
             if (useChain) {
+                System.out.println("HHHHHHHiiier 2");
                 startAllChainSchedulers();
             }
 
             if (!(useTimer || useChain)) {
+                System.out.println("HHHHHHHiiier 3");
                 LocalLog.warn("Happtick Scheduler: Weder applications noch chains sind aktiv. Scheduler wird beendet.");
                 System.out.println("Happtick Scheduler: Weder applications noch chains sind aktiv. Scheduler wird beendet.");
                 System.exit(1);
             }
 
+            System.out.println("HHHHHHHiiier 4");
             // start the EventChecker
             new Thread(new StartedEventChecker()).start();
 
@@ -626,6 +630,7 @@ public class Scheduler {
         }
 
         public void run() {
+            System.out.println("asklasjklasdfjklösdjkl");
             try {
                 long waitTime = 0;
                 while (true) {
@@ -652,6 +657,7 @@ public class Scheduler {
                     // Calendar cal = new GregorianCalendar();
                     // cal.setTime(conf.getNextStartDate());
                     // Util.formatCal("Scheduler.run Schlafe jetzt bis ", cal);
+                    System.out.println("WaitTime = " + waitTime);
                     Thread.sleep(waitTime);
                 }
             } catch (Exception e) {

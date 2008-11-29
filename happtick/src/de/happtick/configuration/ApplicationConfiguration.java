@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
 
 import de.happtick.core.MasterTable;
@@ -102,7 +103,7 @@ public class ApplicationConfiguration {
                 timePlanSeconds = new ArrayList<Integer>();
                 timePlanSeconds.add(0);
             } else {
-                timePlanSeconds = Util.getElementsOfStringAsInt(node, conf);
+                timePlanSeconds = Util.getElementsOfStringAsInt(seconds);
                 Collections.sort(timePlanSeconds);
             }
 
@@ -116,7 +117,7 @@ public class ApplicationConfiguration {
                     timePlanMinutes.add(i);
                 }
             } else {
-                timePlanMinutes = Util.getElementsOfStringAsInt(node, conf);
+                timePlanMinutes = Util.getElementsOfStringAsInt(minutes);
                 Collections.sort(timePlanMinutes);
             }
 
@@ -129,7 +130,7 @@ public class ApplicationConfiguration {
                     timePlanHours.add(i);
                 }
             } else {
-                timePlanHours = Util.getElementsOfStringAsInt(node, conf);
+                timePlanHours = Util.getElementsOfStringAsInt(hours);
                 Collections.sort(timePlanHours);
             }
 
@@ -138,11 +139,11 @@ public class ApplicationConfiguration {
             node = nodeTime + ".weekdays";
             String days = conf.getText(node);
             if ("".equals(days) || "*".equals(days)) {
-                for (int i = 0; i < 7; i++) {
+                for (int i = 1; i < 8; i++) {
                     timePlanWeekdays.add(i);
                 }
             } else {
-                for (String element : (List<String>) Util.getElementsOfString(node, conf)) {
+                for (String element : (List<String>) Util.getElementsOfString(days)) {
                     if (element.equalsIgnoreCase("MO"))
                         timePlanWeekdays.add(Calendar.MONDAY);
                     if (element.equalsIgnoreCase("TU"))
@@ -168,7 +169,7 @@ public class ApplicationConfiguration {
                 timePlanMonthdays = new ArrayList<Integer>();
                 timePlanMonthdays.add(0);
             } else {
-                timePlanMonthdays = Util.getElementsOfStringAsInt(node, conf);
+                timePlanMonthdays = Util.getElementsOfStringAsInt(months);
                 Collections.sort(timePlanMonthdays);
             }
 
@@ -230,6 +231,10 @@ public class ApplicationConfiguration {
             nextStartDate = Scheduling.calculateNextStart(this, 0);
         }
 
+        Calendar cal = new GregorianCalendar();
+        cal.setTime(nextStartDate);
+        Util.formatCal("ApplicationConfiguration.startAllowed. nextStartDate", cal);
+
         // check if the max. delay between the calculated time and the time now
         // has exceeded
         // it last starttime is to old calc new one
@@ -285,7 +290,7 @@ public class ApplicationConfiguration {
 
         // please wait
         System.out.println("ApplicationConfiguration.startAllowed... Böh");
-        return nextStartDate.getTime();
+        return waitTime;
     }
 
     public Date getNextStartDate() {

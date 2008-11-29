@@ -384,6 +384,7 @@ public abstract class HapptickBaseClient {
         if (Util.isEmpty(this.notEofClient))
             throw new HapptickException(605, "Vor Aufruf dieser Methode muss die Method connect() aufgerufen werden.");
 
+        mailEventClient = null;
         initMailEventClient(mailEventRecipient);
         if (!acceptOwnMails) {
             try {

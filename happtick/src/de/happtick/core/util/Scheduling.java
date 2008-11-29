@@ -137,6 +137,18 @@ public class Scheduling {
         return true;
     }
 
+    // private static List<Integer> transformTimePlanSeconds(String seconds) {
+    // List<Integer>timePlanSeconds = new ArrayList<Integer>();
+    // if ("".equals(seconds) || "*".equals(seconds) || "0".equals(seconds)) {
+    // timePlanSeconds = new ArrayList<Integer>();
+    // timePlanSeconds.add(0);
+    // } else {
+    // timePlanSeconds = Util.getElementsOfStringAsInt(node, conf);
+    // Collections.sort(timePlanSeconds);
+    // }
+    // return timePlanSeconds;
+    // }
+
     /**
      * Calculates the next start point up from now
      * 
@@ -194,9 +206,9 @@ public class Scheduling {
 
         // Solange suchen, bis Wochentag und Tag im Monat passen...
         while (!timeValueFound) {
-
             // vergleiche Wochentage
             // wenn Wochentag nicht passt direkt naechsten Tag
+
             if (!Util.isEmpty(applConf.getTimePlanWeekdays()) && //
                     !applConf.getTimePlanWeekdays().contains(calcDate.get(Calendar.DAY_OF_WEEK))) {
                 calcDate.add(Calendar.DATE, 1);
@@ -247,6 +259,7 @@ public class Scheduling {
                 break;
             }
         }
+
         if (!timeValueFound) {
             calcDate.add(Calendar.DATE, 1);
             calcDate.set(Calendar.HOUR_OF_DAY, applConf.getTimePlanHours().get(0));
