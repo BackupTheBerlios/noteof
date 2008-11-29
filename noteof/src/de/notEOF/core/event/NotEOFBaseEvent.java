@@ -44,6 +44,10 @@ public abstract class NotEOFBaseEvent implements NotEOFEvent {
         attributes.put(key, value);
     }
 
+    public void addAttributeDescription(String key, String description) {
+        descriptions.put(key, description);
+    }
+
     public Map<String, String> getAttributes() {
         return this.attributes;
     }

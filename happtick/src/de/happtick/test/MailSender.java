@@ -4,7 +4,9 @@ import java.util.Date;
 
 import de.happtick.application.client.HapptickApplication;
 import de.happtick.core.event.ApplicationStartEvent;
+import de.notEOF.core.event.GenericEvent;
 import de.notEOF.core.exception.ActionFailedException;
+import de.notEOF.core.interfaces.NotEOFEvent;
 
 public class MailSender {
 
@@ -33,7 +35,6 @@ public class MailSender {
             // "cmd /c start/wait C:\\Projekte\\workspace\\noteof\\util\\applStartTest.bat"
             // );
             event.addAttribute("applicationType", "JAVA");
-            System.out.println("Versende StartEvent sfljasdfjklasdfjklöasdf");
             appl.sendEvent(event);
         }
 
@@ -45,10 +46,12 @@ public class MailSender {
         }
 
         long startTime = new Date().getTime();
-        for (int i = 0; i < 1000; i++) {
+        for (int i = 0; i < 999000; i++) {
             System.out.println("Versende Event Nr. " + i);
-            appl.sendActionEvent(String.valueOf(i), String.valueOf(i));
-            appl.sendAlarm(String.valueOf(i), String.valueOf(i), String.valueOf(i));
+            NotEOFEvent gEvent = new GenericEvent();
+            gEvent.addAttributeDescription("counter", "bla");
+            gEvent.addAttribute("counter", String.valueOf(i));
+            appl.sendEvent(gEvent);
             try {
                 Thread.sleep(0);
             } catch (InterruptedException e) {

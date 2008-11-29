@@ -9,7 +9,7 @@
 
 <root>
 	<scheduler>
-	   	<use chain="true" timer="true" ></use>
+	   	<use chain="false" timer="true" ></use>
 	   	<!-- 
 	   		 max. milliseconds from calculated start point until real start point
 	   		 for slow server or very high used capacity of the server 
@@ -30,9 +30,9 @@
 		    <!-- The list of chains.
 		    	 Chains can be chained to...
 		    	 Here also the order within the list is the order how the scheduler starts chains.
+		     -->
 	    	<chain>chain1</chain>
 	    	<chain>chain2</chain>
-		     -->
 	    	<!-- 
 	    		 - depends if true the chain ends with the end of the last application or chain
 	    		                   loop will be ignored then
@@ -57,7 +57,7 @@
 				<link0 linkId="1" addresseeType="application" addresseeId="2"></link0>
 				<link1 linkId="2" addresseeType="chain"       addresseeId="2"></link1>
 				<link2 linkId="0" addresseeType="application" addresseeId="1"
-				                  conditionEventId="1" conditionKeyName="exitCode" conditionKeyValue="0"
+				                  conditionEventId="1" conditionKeyName="applicationId" conditionKeyValue="1"
 				                  preventEventId="2"   preventKeyName="exitCode"   preventKeyValue="0" skip="false"></link2>
 		    </chain1>
 		    
@@ -132,7 +132,7 @@
 		-->
 		<applications>
 			<application>application1</application>
-		<!--  	<application>application2</application> -->
+		  	<application>application2</application> 
 		</applications>
 	
 		<!-- Complex configurations of applications.

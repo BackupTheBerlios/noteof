@@ -199,7 +199,6 @@ public class Scheduling {
         while (!timeValueFound) {
             // vergleiche Wochentage
             // wenn Wochentag nicht passt direkt naechsten Tag
-
             if (!Util.isEmpty(weekDays) && //
                     !weekDays.contains(calcDate.get(Calendar.DAY_OF_WEEK))) {
                 calcDate.add(Calendar.DATE, 1);
@@ -207,9 +206,18 @@ public class Scheduling {
             }
 
             // vergleiche Tag des Monats
-            timeValueFound = !Util.isEmpty(monthDays) && //
-                    monthDays.contains(calcDate.get(Calendar.DAY_OF_MONTH));
+            timeValueFound = Util.isEmpty(monthDays) || //
+                    (!Util.isEmpty(monthDays) && monthDays.contains(calcDate.get(Calendar.DAY_OF_MONTH)));
+
+            if (!timeValueFound)
+                calcDate.add(Calendar.DATE, 1);
         }
+
+        // // afjklasfljköasfölsadfklsdfklöasdf
+        // calcDate.add(Calendar.SECOND, 5);
+        // if (true)
+        // return calcDate.getTime();
+        // // asfjasfjklö ljkasdfjklaslksafjklöasdfjklf
 
         // Jetzt auf Uhrzeit pruefen
         // Sekunden

@@ -146,6 +146,7 @@ public class Scheduler {
          * runners (s. below)
          */
         protected void handleEvent() {
+            System.out.println("Scheduler.EventHandler.handleEvent...");
             // search for the configuration to this event
             List<EventConfiguration> eventConfigurations = Scheduling.getEventConfigurationsForEventType(this.event.getEventType());
             List<EventConfiguration> actionEventConfigurations = Scheduling.getEventConfigurationsForEvent(this.event, eventConfigurations);
@@ -252,6 +253,7 @@ public class Scheduler {
                 // start dependent applications
                 Long stoppedApplId = event.getApplicationId();
                 try {
+                    System.out.println("Scheduler.update. applsAfter");
                     ApplicationConfiguration stoppedConf = MasterTable.getApplicationConfiguration(stoppedApplId);
                     for (Long applId : stoppedConf.getApplicationsStartAfter()) {
                         ApplicationConfiguration afterConf = MasterTable.getApplicationConfiguration(applId);
@@ -375,12 +377,6 @@ public class Scheduler {
             // Events are filtered - now register as observer
             Server.getInstance().registerForEvents(this);
 
-            // Ignition
-            try {
-                startAddressee();
-            } catch (HapptickException e) {
-                LocalLog.error("Fehler bei Initialisierung eines ChainSchedulers.", e);
-            }
         }
 
         protected void setEvent(NotEOFEvent event) {
@@ -498,6 +494,7 @@ public class Scheduler {
 
             try {
                 // application
+                System.out.println("Scheduler.startAddressee. Typ: " + addresseeType);
                 if ("application".equalsIgnoreCase(addresseeType)) {
                     // Start application
                     ApplicationConfiguration applConf = MasterTable.getApplicationConfiguration(addresseeId);
@@ -527,27 +524,37 @@ public class Scheduler {
          * application or chain
          */
         private boolean conditionsValid(ChainLink link) {
+            System.out.println("Scheduler.conditionsValid. Beginn der Prüfung.");
+            System.out.println("Link.. id: " + link.getAddresseeId());
+            System.out.println("Link.. type: " + link.getAddresseeType());
+            System.out.println("Link.. cKey: " + link.getConditionKey());
+            System.out.println("Link.. pKey: " + link.getPreventKey());
             String reason = "";
             boolean conditionEventFound = true;
             boolean preventEventFound = false;
             if (!Util.isEmpty(link.getConditionKey())) {
+                System.out.println("Scheduler.conditionsValid. ConditionKey ist gesetzt.");
                 conditionEventFound = false;
+                reason = "Condition Event wurde bisher nicht gefeuert.";
                 for (EventType type : this.observedEvents) {
                     String typeName = type.name();
                     String actionKey = typeName + link.getConditionKey() + link.getConditionValue();
+                    System.out.println("Scheduler.conditionsValid. ActionKey: " + actionKey);
 
                     ChainAction action = raisedEventActions.get(actionKey);
                     if (!Util.isEmpty(action)) {
                         // suche starterlaubnis
-                        if ("prevent".equalsIgnoreCase(action.getAction())) {
-                            reason = "Condition Event wurde bisher nicht gefeuert.";
+                        if ("condition".equalsIgnoreCase(action.getAction())) {
                             conditionEventFound = true;
+                            break;
                         }
                     }
                 }
             }
 
+            System.out.println("Scheduler.conditionsValid. Vor Prüfen auf Prevent.");
             if (!Util.isEmpty(link.getPreventKey())) {
+                System.out.println("Scheduler.conditionsValid. PreventKey ist gesetzt.");
                 preventEventFound = false;
                 for (EventType type : this.observedEvents) {
                     String typeName = type.name();
@@ -559,6 +566,7 @@ public class Scheduler {
                         if ("prevent".equalsIgnoreCase(action.getAction())) {
                             reason = "Prevent Event wurde gefeuert.";
                             preventEventFound = true;
+                            break;
                         }
                     }
                 }
@@ -573,6 +581,7 @@ public class Scheduler {
                 return false;
             }
 
+            System.out.println("Scheduler.conditionsValid. Und nü? " + (!preventEventFound && conditionEventFound));
             // alle Bedingungen erfuellt
             return true;
         }
@@ -584,6 +593,9 @@ public class Scheduler {
         public void run() {
             System.out.println("Scheduler.ChainScheduler.run started. chainId = " + conf.getChainId());
             try {
+                // Ignition
+                System.out.println("Scheduler.Construction: Ignition!");
+                startAddressee();
                 while (!stopped) {
                     Thread.sleep(10000);
                 }
@@ -647,7 +659,6 @@ public class Scheduler {
                         waitTime = conf.getNextStartDate().getTime() - new Date().getTime() - 100;
                         if (waitTime < 0)
                             waitTime = 0;
-                        // System.out.println("WaitTime = " + waitTime);
                     }
                     // Calendar cal = new GregorianCalendar();
                     // cal.setTime(conf.getNextStartDate());

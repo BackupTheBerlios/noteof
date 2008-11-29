@@ -2,11 +2,7 @@ package de.happtick.test;
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Map.Entry;
 
 import de.happtick.application.client.HapptickApplication;
 import de.happtick.core.event.ActionEvent;
@@ -16,6 +12,8 @@ import de.happtick.core.event.ApplicationStartedEvent;
 import de.happtick.core.event.ApplicationStoppedEvent;
 import de.happtick.core.event.LogEvent;
 import de.happtick.core.exception.HapptickException;
+import de.notEOF.core.enumeration.EventType;
+import de.notEOF.core.event.GenericEvent;
 import de.notEOF.core.interfaces.NotEOFEvent;
 import de.notEOF.core.logging.LocalLog;
 import de.notEOF.mail.MailHeaders;
@@ -61,6 +59,7 @@ public class MailRecipient extends HapptickApplication implements MailAndEventRe
         events.add(new ApplicationStoppedEvent());
         events.add(new LogEvent());
         events.add(new ApplicationStartErrorEvent());
+        events.add(new GenericEvent());
         addInterestingEvents(events);
 
         // jetzt geht's los
@@ -111,24 +110,8 @@ public class MailRecipient extends HapptickApplication implements MailAndEventRe
 
     public synchronized void processEvent(NotEOFEvent event) {
         try {
-            if (null != event) {
-                // System.out.println("=====================================");
-                // System.out.println("Event ist eingetroffen: " +
-                // event.getEventType());
-                Map<String, String> attributeMap = event.getAttributes();
-                Set<Entry<String, String>> set = attributeMap.entrySet();
-                Iterator<Entry<String, String>> it = set.iterator();
-                // System.out.println("________________________________");
-                // System.out.println("*QueueId: " + event.getQueueId());
-                while (it.hasNext()) {
-                    Entry<String, String> entry = it.next();
-                    // System.out.println("________________________________");
-                    // System.out.println("Attribute: " + entry.getKey());
-                    System.out.println("Value:     " + entry.getValue());
-                    // System.out.println("________________________________");
-                    break;
-                }
-                // System.out.println("=====================================");
+            if (null != event && EventType.EVENT_GENERIC.equals(event.getEventType())) {
+                System.out.println("Aktuell: " + event.getAttribute("counter"));
             }
         } catch (Exception e) {
             LocalLog.error("Fehler bei Anlegen oder Versand des Events.", e);

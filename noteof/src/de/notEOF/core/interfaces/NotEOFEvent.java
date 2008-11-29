@@ -80,6 +80,8 @@ public interface NotEOFEvent {
      */
     public void addAttribute(String key, String value) throws ActionFailedException;
 
+    public void addAttributeDescription(String key, String description) throws ActionFailedException;
+
     public void setAttributes(Map<String, String> attributes);
 
     public void setDescriptions(Map<String, String> descriptions);
