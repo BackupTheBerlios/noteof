@@ -481,8 +481,6 @@ public abstract class HapptickBaseClient {
     private void initMailEventClient(MailAndEventRecipient mailEventRecipient) throws HapptickException {
         if (null == this.mailEventClient) {
             this.mailEventRecipient = mailEventRecipient;
-            System.out.println("server address: " + serverAddress);
-            System.out.println("server port:    " + serverPort);
 
             while (null == this.mailEventClient || !this.mailEventClient.isLinkedToService()) {
                 try {

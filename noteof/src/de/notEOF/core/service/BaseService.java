@@ -222,8 +222,6 @@ public abstract class BaseService extends BaseClientOrService implements Service
         }
 
         protected synchronized void addAction(Service service, NotEOFEvent event) {
-            System.out.println("BaseService.EventProcesser: addAction()");
-
             if (workerCounter > 999999999)
                 workerCounter = 0;
             EventWorker worker = new EventWorker(mainClass, service, event);

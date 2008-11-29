@@ -31,9 +31,6 @@ public abstract class BaseClient extends BaseClientOrService {
     private String clientNetId;
     private String[] args;
 
-    // private Socket socketToServer = null;
-    // private TimeOut timeOut = null;
-
     /**
      * The server decides which service is the compatible one to this client by
      * using the classname. <br>
@@ -88,9 +85,7 @@ public abstract class BaseClient extends BaseClientOrService {
         if (null == timeout) {
             timeout = getTimeOutObject();
         }
-
         setTalkLine(new TalkLine(ip, port, timeout.getMillisCommunication()));
-        // this.socketToServer = getTalkLine().getSocketToPartner();
         registerAtServer(getTalkLine(), timeout, this.args);
         implementationFirstSteps();
     }
@@ -107,12 +102,6 @@ public abstract class BaseClient extends BaseClientOrService {
         implementationFirstSteps();
     }
 
-    // private void connect(Socket socketToServer, TimeOut timeout, boolean
-    // force) throws ActionFailedException {
-    // linkedToService = false;
-    // connect(socketToServer, timeout);
-    // }
-
     /**
      * Standard construction of the clients. <br>
      * At first they should initialize the communication with server and
@@ -127,27 +116,9 @@ public abstract class BaseClient extends BaseClientOrService {
      */
     public BaseClient(Socket socketToServer, TimeOut timeout, String... args) throws ActionFailedException {
         this.args = args;
-        // this.socketToServer = socketToServer;
-        // this.timeOut = timeout;
         connect(socketToServer, timeout);
     }
 
-    // private void reconnect() {
-    // boolean success = false;
-    // while (!success) {
-    // try {
-    // connect(this.socketToServer, this.timeOut, true);
-    // success = true;
-    // } catch (ActionFailedException e) {
-    // e.printStackTrace();
-    // try {
-    // Thread.sleep(3000);
-    // } catch (InterruptedException e1) {
-    // }
-    // }
-    // }
-    // }
-    //
     /**
      * Standard construction of the clients. <br>
      * At first they should initialize the communication with server and

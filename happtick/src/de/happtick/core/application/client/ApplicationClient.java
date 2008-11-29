@@ -322,7 +322,6 @@ public class ApplicationClient extends BaseClient implements NotEOFClient {
         }
 
         try {
-            System.out.println("ApplicationClient - sendEvent: super.sendEvent()");
             event.setApplicationId(this.applicationId);
             super.sendEvent(event);
         } catch (ActionFailedException e) {

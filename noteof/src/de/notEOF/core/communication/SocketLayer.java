@@ -276,6 +276,7 @@ public class SocketLayer {
     // @SuppressWarnings("unchecked")
     @SuppressWarnings("unchecked")
     protected DataObject receiveDataObject() throws ActionFailedException {
+        // writeInt(0);
         // dataTypes:
         // 0 = short
         // 1 = int
@@ -409,6 +410,7 @@ public class SocketLayer {
     }
 
     protected void sendDataObject(DataObject dataObject) throws ActionFailedException {
+        // readInt();
         // dataTypes:
         // 0 = short
         // 1 = int

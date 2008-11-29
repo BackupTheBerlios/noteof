@@ -131,6 +131,7 @@ public class HapptickApplication extends HapptickBaseClient {
                 applicationClient.sendEvent(event);
                 success = true;
             } catch (Exception e) {
+                e.printStackTrace();
                 try {
                     Thread.sleep(3000);
                 } catch (InterruptedException e1) {

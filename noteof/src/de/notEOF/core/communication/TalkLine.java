@@ -335,7 +335,6 @@ public class TalkLine implements Observer {
                 // class couldn't be loaded. So use default one.
                 event = new TransportEvent(eventType, attributes, descriptions);
             }
-            writeMsg("OK");
             return event;
         } catch (Exception e) {
             throw new ActionFailedException(1151L, "Generieren des TransportEvents", e);
@@ -426,9 +425,6 @@ public class TalkLine implements Observer {
         mapData.setMap(event.getAttributeDescriptions());
         sendDataObject(mapData);
 
-        if (!"OK".equals(readMsg())) {
-            throw new ActionFailedException(23L, "Keine Empfangsbestaetigung erhalten");
-        }
     }
 
     /**

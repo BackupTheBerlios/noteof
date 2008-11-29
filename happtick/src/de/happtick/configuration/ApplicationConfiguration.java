@@ -177,7 +177,6 @@ public class ApplicationConfiguration {
 
         Calendar cal = new GregorianCalendar();
         cal.setTime(nextStartDate);
-        Util.formatCal("ApplicationConfiguration.startAllowed. nextStartDate", cal);
 
         // check if the max. delay between the calculated time and the time now
         // has exceeded

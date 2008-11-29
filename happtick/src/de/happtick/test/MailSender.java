@@ -33,6 +33,7 @@ public class MailSender {
             // "cmd /c start/wait C:\\Projekte\\workspace\\noteof\\util\\applStartTest.bat"
             // );
             event.addAttribute("applicationType", "JAVA");
+            System.out.println("Versende StartEvent sfljasdfjklasdfjklöasdf");
             appl.sendEvent(event);
         }
 
