@@ -37,6 +37,7 @@ public enum EventType {
     EVENT_APPLICATION_START,
     EVENT_APPLICATION_STOP,
     EVENT_CHAIN_STOP,
+    EVENT_SERVICE_STOP,
     /**
      * If an error occured while starting an event, application or something
      * else

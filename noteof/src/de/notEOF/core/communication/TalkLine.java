@@ -28,6 +28,7 @@ import de.notEOF.mail.NotEOFMail;
 public class TalkLine implements Observer {
 
     private SocketLayer socketLayer;
+    private Socket socketToPartner = null;
 
     /**
      * Construction of a new notEOF communication (normally with a client) using
@@ -47,6 +48,8 @@ public class TalkLine implements Observer {
     public TalkLine(Socket socketToPartner, int timeOutMillis) throws ActionFailedException {
         if (null == socketToPartner)
             throw new ActionFailedException(10L, "Socket zu Kommunikationspartner ist NULL");
+
+        this.socketToPartner = socketToPartner;
         try {
             socketLayer = new SocketLayer(socketToPartner);
             if (0 < timeOutMillis)
@@ -84,6 +87,7 @@ public class TalkLine implements Observer {
     public TalkLine(String ip, int port, int timeOutMillis) throws ActionFailedException {
         try {
             Socket socket = new Socket(ip, port);
+            this.socketToPartner = socket;
             socketLayer = new SocketLayer(socket);
             if (0 < timeOutMillis)
                 socketLayer.setTimeOut(timeOutMillis);
@@ -331,6 +335,7 @@ public class TalkLine implements Observer {
                 // class couldn't be loaded. So use default one.
                 event = new TransportEvent(eventType, attributes, descriptions);
             }
+            writeMsg("OK");
             return event;
         } catch (Exception e) {
             throw new ActionFailedException(1151L, "Generieren des TransportEvents", e);
@@ -420,5 +425,16 @@ public class TalkLine implements Observer {
         mapData = new DataObject();
         mapData.setMap(event.getAttributeDescriptions());
         sendDataObject(mapData);
+
+        if (!"OK".equals(readMsg())) {
+            throw new ActionFailedException(23L, "Keine Empfangsbestaetigung erhalten");
+        }
+    }
+
+    /**
+     * @return the socketToPartner
+     */
+    public Socket getSocketToPartner() {
+        return socketToPartner;
     }
 }

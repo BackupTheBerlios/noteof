@@ -4,6 +4,7 @@ import de.happtick.core.application.client.ApplicationClient;
 import de.happtick.core.client.HapptickBaseClient;
 import de.happtick.core.exception.HapptickException;
 import de.happtick.core.interfaces.ClientObserver;
+import de.notEOF.core.interfaces.NotEOFEvent;
 
 /**
  * This class is the connector between the application and an application
@@ -122,6 +123,23 @@ public class HapptickApplication extends HapptickBaseClient {
         applicationClient.observeForWorkAllowance(clientObserver);
     }
 
+    public void sendEvent(NotEOFEvent event) throws HapptickException {
+        checkClientInitialized();
+        boolean success = false;
+        while (!success) {
+            try {
+                applicationClient.sendEvent(event);
+                success = true;
+            } catch (Exception e) {
+                try {
+                    Thread.sleep(3000);
+                } catch (InterruptedException e1) {
+                }
+                reconnect();
+            }
+        }
+    }
+
     /**
      * Errors can be shown within the happtick monitoring tool or written to
      * logfiles.
@@ -138,7 +156,19 @@ public class HapptickApplication extends HapptickBaseClient {
      */
     public void sendError(String errorId, String description, String level) throws HapptickException {
         checkClientInitialized();
-        applicationClient.sendError(errorId, description, level);
+        boolean success = false;
+        while (!success) {
+            try {
+                applicationClient.sendError(errorId, description, level);
+                success = true;
+            } catch (Exception e) {
+                try {
+                    Thread.sleep(3000);
+                } catch (InterruptedException e1) {
+                }
+                reconnect();
+            }
+        }
     }
 
     /**
@@ -155,7 +185,19 @@ public class HapptickApplication extends HapptickBaseClient {
      */
     public void sendActionEvent(String eventId, String information) throws HapptickException {
         checkClientInitialized();
-        applicationClient.sendActionEvent(eventId, information);
+        boolean success = false;
+        while (!success) {
+            try {
+                applicationClient.sendActionEvent(eventId, information);
+                success = true;
+            } catch (Exception e) {
+                try {
+                    Thread.sleep(3000);
+                } catch (InterruptedException e1) {
+                }
+                reconnect();
+            }
+        }
     }
 
     /**
@@ -172,7 +214,19 @@ public class HapptickApplication extends HapptickBaseClient {
      */
     public void sendAlarm(String type, String description, String level) throws HapptickException {
         checkClientInitialized();
-        applicationClient.sendAlarm(type, description, level);
+        boolean success = false;
+        while (!success) {
+            try {
+                applicationClient.sendAlarm(type, description, level);
+                success = true;
+            } catch (Exception e) {
+                try {
+                    Thread.sleep(3000);
+                } catch (InterruptedException e1) {
+                }
+                reconnect();
+            }
+        }
     }
 
     /**
@@ -185,7 +239,19 @@ public class HapptickApplication extends HapptickBaseClient {
      */
     public void sendLog(String information) throws HapptickException {
         checkClientInitialized();
-        applicationClient.sendLog(information);
+        boolean success = false;
+        while (!success) {
+            try {
+                applicationClient.sendLog(information);
+                success = true;
+            } catch (Exception e) {
+                try {
+                    Thread.sleep(3000);
+                } catch (InterruptedException e1) {
+                }
+                reconnect();
+            }
+        }
     }
 
     /**

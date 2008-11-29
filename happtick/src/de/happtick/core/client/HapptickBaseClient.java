@@ -505,6 +505,21 @@ public abstract class HapptickBaseClient {
     protected void checkClientInitialized() throws HapptickException {
         if (Util.isEmpty(notEofClient))
             throw new HapptickException(50L, "Client ist nicht initialisiert. Vermutlich wurde kein connect durchgeführt.");
-    }
 
+        if (!notEofClient.isLinkedToService()) {
+            // connect with service
+            while (!notEofClient.isLinkedToService()) {
+                try {
+                    notEofClient.connect(serverAddress, serverPort, null);
+                } catch (ActionFailedException e) {
+                    LocalLog.warn("Verbindung mit Service konnte bisher nicht hergestellt werden: " + notEofClient.getClass().getCanonicalName());
+                    // throw new HapptickException(100L, e);
+                    try {
+                        Thread.sleep(5000);
+                    } catch (InterruptedException e1) {
+                    }
+                }
+            }
+        }
+    }
 }

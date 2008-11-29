@@ -144,18 +144,26 @@ public abstract class BaseService extends BaseClientOrService implements Service
      *            detected by the service.
      */
     public final void update(Service service, NotEOFEvent event) {
-        try {
-            // Prozessor zur Abarbeitung der Events ist eine eigene Klasse
-            // Nur des Handlings halber...
-            if (null == processor) {
-                processor = new EventProcessor(this);
+        // Stop Event kill the service
+        if (EventType.EVENT_SERVICE_STOP.equals(event.getEventType()) && //
+                (event.getAttribute("serviceId").equals(this.getServiceId()) || //
+                event.getAttribute("allServices").equalsIgnoreCase("TRUE"))) {
+            this.stopService();
+        } else {
+
+            try {
+                // Prozessor zur Abarbeitung der Events ist eine eigene Klasse
+                // Nur des Handlings halber...
+                if (null == processor) {
+                    processor = new EventProcessor(this);
+                }
+                // Dem Prozessor wird das Event zur Verarbeitung vor die Fuesse
+                // geworfen
+                processor.addAction(service, event);
+            } catch (Exception e) {
+                System.out.println("im Update abgefangen, weil sonst der Server kaputt geht...");
+                e.printStackTrace();
             }
-            // Dem Prozessor wird das Event zur Verarbeitung vor die Fuesse
-            // geworfen
-            processor.addAction(service, event);
-        } catch (Exception e) {
-            System.out.println("im Update abgefangen, weil sonst der Server kaputt geht...");
-            e.printStackTrace();
         }
     }
 
@@ -214,6 +222,8 @@ public abstract class BaseService extends BaseClientOrService implements Service
         }
 
         protected synchronized void addAction(Service service, NotEOFEvent event) {
+            System.out.println("BaseService.EventProcesser: addAction()");
+
             if (workerCounter > 999999999)
                 workerCounter = 0;
             EventWorker worker = new EventWorker(mainClass, service, event);

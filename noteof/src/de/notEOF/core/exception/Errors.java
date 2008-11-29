@@ -44,7 +44,7 @@ public class Errors {
 
         // Communication connection and transport problems
         errorList.put(10L, "Basiskommunikation konnte nicht initialisiert werden.");
-        errorList.put(11L, "Timeout der Kommunikation konnte nicht verändert werden.");
+        errorList.put(11L, "Timeout der Kommunikation konnte nicht veraendert werden.");
         errorList.put(12L, "Timeout der Kommunikation konnte nicht gelesen werden.");
         errorList.put(13L, "Wert des DataObject konnte nicht korrekt belegt werden.");
         errorList.put(14L, "Wert des DataObject konnte nicht korrekt gelesen werden.");

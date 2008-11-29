@@ -16,6 +16,7 @@ import de.notEOF.core.communication.TalkLine;
 import de.notEOF.core.enumeration.BaseCommTag;
 import de.notEOF.core.event.NewMailEvent;
 import de.notEOF.core.event.NewServiceEvent;
+import de.notEOF.core.event.ServiceStopEvent;
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.interfaces.EventObservable;
 import de.notEOF.core.interfaces.EventObserver;
@@ -108,6 +109,16 @@ public class Server implements EventObservable, Runnable {
             } catch (IOException ex) {
                 LocalLog.error("Fehler bei Warten auf Connect durch n�chsten Client", ex);
             }
+        }
+        stopAllServices();
+    }
+
+    private void stopAllServices() {
+        ServiceStopEvent event = new ServiceStopEvent();
+        try {
+            event.addAttribute("allServices", "TRUE");
+            updateObservers(null, event);
+        } catch (ActionFailedException e) {
         }
     }
 
@@ -360,6 +371,10 @@ public class Server implements EventObservable, Runnable {
      */
     public void mailToService(NotEOFMail mail, MailAndEventReceiveService service) throws ActionFailedException {
         service.mailToClient(mail);
+    }
+
+    public void finalize() {
+        stopAllServices();
     }
 
     /**

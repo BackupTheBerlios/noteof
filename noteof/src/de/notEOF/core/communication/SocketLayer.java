@@ -606,7 +606,8 @@ public class SocketLayer {
     protected synchronized boolean isConnected() {
         if (null == socketToPartner)
             return false;
-        return socketToPartner.isConnected() && socketToPartner.isBound();
+
+        return !socketToPartner.isClosed() && socketToPartner.isConnected() && socketToPartner.isBound();
     }
 
     protected synchronized boolean lifeSignSucceeded() {
