@@ -137,23 +137,12 @@ public class Scheduling {
         return true;
     }
 
-    // private static List<Integer> transformTimePlanSeconds(String seconds) {
-    // List<Integer>timePlanSeconds = new ArrayList<Integer>();
-    // if ("".equals(seconds) || "*".equals(seconds) || "0".equals(seconds)) {
-    // timePlanSeconds = new ArrayList<Integer>();
-    // timePlanSeconds.add(0);
-    // } else {
-    // timePlanSeconds = Util.getElementsOfStringAsInt(node, conf);
-    // Collections.sort(timePlanSeconds);
-    // }
-    // return timePlanSeconds;
-    // }
-
     /**
      * Calculates the next start point up from now
      * 
      * @return Date when the application should run only depending to the
      *         configuration, ignoring other active processes etc.
+     * @throws ActionFailedException
      */
     public static Date calculateNextStart(ApplicationConfiguration applConf, int offsetSeconds) {
 
@@ -164,11 +153,12 @@ public class Scheduling {
         // ermittle den ersten gueltigen Tag, ohne die Wochentage zu
         // beruecksichtigen
         boolean timeValueFound = true;
-        if (!Util.isEmpty(applConf.getTimePlanMonthdays())) {
-            timeValueFound = applConf.getTimePlanMonthdays().contains(calcDate.get(Calendar.DAY_OF_MONTH));
+        List<Integer> monthDays = ApplicationConfiguration.transformTimePlanMonthDays(applConf.getTimePlanMonthdays());
+        if (!Util.isEmpty(monthDays)) {
+            timeValueFound = monthDays.contains(calcDate.get(Calendar.DAY_OF_MONTH));
 
             if (!timeValueFound) {
-                for (Integer day : applConf.getTimePlanMonthdays()) {
+                for (Integer day : monthDays) {
                     // Tag kommt noch in diesem Monat
                     if (calcDate.get(Calendar.DAY_OF_MONTH) < day) {
                         calcDate.set(Calendar.DAY_OF_MONTH, day);
@@ -183,7 +173,7 @@ public class Scheduling {
             // Tag folgt in diesem Monat nicht mehr, also auf den kleinsten des
             // naechsten Monats setzen.
             if (!timeValueFound) {
-                calcDate.set(Calendar.DAY_OF_MONTH, applConf.getTimePlanMonthdays().get(0));
+                calcDate.set(Calendar.DAY_OF_MONTH, monthDays.get(0));
                 calcDate.add(Calendar.MONTH, 1);
                 calcDate.set(Calendar.HOUR_OF_DAY, 0);
                 calcDate.set(Calendar.MINUTE, 0);
@@ -192,8 +182,9 @@ public class Scheduling {
         }
 
         // pruefe, ob Wochentag passt
-        if (!Util.isEmpty(applConf.getTimePlanWeekdays())) {
-            timeValueFound = applConf.getTimePlanWeekdays().contains(calcDate.get(Calendar.DAY_OF_WEEK));
+        List<Integer> weekDays = ApplicationConfiguration.transformTimePlanWeekDays(applConf.getTimePlanWeekdays());
+        if (!Util.isEmpty(weekDays)) {
+            timeValueFound = weekDays.contains(calcDate.get(Calendar.DAY_OF_WEEK));
 
             // Tag passt nicht... Zeit erst mal auf 0
             if (!timeValueFound) {
@@ -209,22 +200,23 @@ public class Scheduling {
             // vergleiche Wochentage
             // wenn Wochentag nicht passt direkt naechsten Tag
 
-            if (!Util.isEmpty(applConf.getTimePlanWeekdays()) && //
-                    !applConf.getTimePlanWeekdays().contains(calcDate.get(Calendar.DAY_OF_WEEK))) {
+            if (!Util.isEmpty(weekDays) && //
+                    !weekDays.contains(calcDate.get(Calendar.DAY_OF_WEEK))) {
                 calcDate.add(Calendar.DATE, 1);
                 continue;
             }
 
             // vergleiche Tag des Monats
-            timeValueFound = !Util.isEmpty(applConf.getTimePlanMonthdays()) && //
-                    applConf.getTimePlanMonthdays().contains(calcDate.get(Calendar.DAY_OF_MONTH));
+            timeValueFound = !Util.isEmpty(monthDays) && //
+                    monthDays.contains(calcDate.get(Calendar.DAY_OF_MONTH));
         }
 
         // Jetzt auf Uhrzeit pruefen
         // Sekunden
         timeValueFound = false;
+        List<Integer> seconds = ApplicationConfiguration.transformTimePlanSeconds(applConf.getTimePlanSeconds());
         for (int sec = calcDate.get(Calendar.SECOND); sec < 60; sec++) {
-            if (applConf.getTimePlanSeconds().contains(sec)) {
+            if (seconds.contains(sec)) {
                 calcDate.set(Calendar.SECOND, sec);
                 timeValueFound = true;
                 break;
@@ -232,13 +224,14 @@ public class Scheduling {
         }
         if (!timeValueFound) {
             calcDate.add(Calendar.MINUTE, 1);
-            calcDate.set(Calendar.SECOND, applConf.getTimePlanSeconds().get(0));
+            calcDate.set(Calendar.SECOND, seconds.get(0));
         }
 
         // Minuten
         timeValueFound = false;
+        List<Integer> minutes = ApplicationConfiguration.transformTimePlanMinutes(applConf.getTimePlanMinutes());
         for (int minute = calcDate.get(Calendar.MINUTE); minute < 60; minute++) {
-            if (applConf.getTimePlanMinutes().contains(minute)) {
+            if (minutes.contains(minute)) {
                 calcDate.set(Calendar.MINUTE, minute);
                 timeValueFound = true;
                 break;
@@ -246,14 +239,15 @@ public class Scheduling {
         }
         if (!timeValueFound) {
             calcDate.add(Calendar.HOUR_OF_DAY, 1);
-            calcDate.set(Calendar.MINUTE, applConf.getTimePlanMinutes().get(0));
-            calcDate.set(Calendar.SECOND, applConf.getTimePlanSeconds().get(0));
+            calcDate.set(Calendar.MINUTE, minutes.get(0));
+            calcDate.set(Calendar.SECOND, seconds.get(0));
         }
 
         // Stunden
         timeValueFound = false;
+        List<Integer> hours = ApplicationConfiguration.transformTimePlanHours(applConf.getTimePlanHours());
         for (int hour = calcDate.get(Calendar.HOUR_OF_DAY); hour < 24; hour++) {
-            if (applConf.getTimePlanHours().contains(hour)) {
+            if (hours.contains(hour)) {
                 calcDate.set(Calendar.HOUR_OF_DAY, hour);
                 timeValueFound = true;
                 break;
@@ -262,9 +256,9 @@ public class Scheduling {
 
         if (!timeValueFound) {
             calcDate.add(Calendar.DATE, 1);
-            calcDate.set(Calendar.HOUR_OF_DAY, applConf.getTimePlanHours().get(0));
-            calcDate.set(Calendar.MINUTE, applConf.getTimePlanMinutes().get(0));
-            calcDate.set(Calendar.SECOND, applConf.getTimePlanSeconds().get(0));
+            calcDate.set(Calendar.HOUR_OF_DAY, hours.get(0));
+            calcDate.set(Calendar.MINUTE, minutes.get(0));
+            calcDate.set(Calendar.SECOND, seconds.get(0));
         }
         return calcDate.getTime();
     }

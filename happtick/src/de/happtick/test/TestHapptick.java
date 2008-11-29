@@ -51,16 +51,16 @@ public class TestHapptick {
                     System.out.println("appConf... Name: " + appConf.getNodeNameApplication());
                     System.out.println("appConf... Id:   " + appConf.getApplicationId());
 
-                    for (Integer integer : appConf.getTimePlanSeconds()) {
+                    for (Integer integer : ApplicationConfiguration.transformTimePlanSeconds(appConf.getTimePlanSeconds())) {
                         System.out.println("Sekunden... :" + integer);
                     }
-                    for (Integer integer : appConf.getTimePlanMinutes()) {
+                    for (Integer integer : ApplicationConfiguration.transformTimePlanMinutes(appConf.getTimePlanMinutes())) {
                         System.out.println("Minuten... :" + integer);
                     }
-                    for (Integer integer : appConf.getTimePlanMonthdays()) {
+                    for (Integer integer : ApplicationConfiguration.transformTimePlanMonthDays(appConf.getTimePlanMonthdays())) {
                         System.out.println("MonthDays... :" + integer);
                     }
-                    for (Integer integer : appConf.getTimePlanWeekdays()) {
+                    for (Integer integer : ApplicationConfiguration.transformTimePlanWeekDays(appConf.getTimePlanWeekdays())) {
                         System.out.println("WeekDays... :" + integer);
                     }
                 }

@@ -93,61 +93,12 @@ public class ApplicationConfigurationWrapper {
         map.put("maxStepStep", String.valueOf(applicationConfiguration.getMaxStepStep()));
         map.put("executableArgs", String.valueOf(applicationConfiguration.getExecutableArgs()));
 
+        map.put("timePlanSeconds", String.valueOf(applicationConfiguration.getTimePlanSeconds()));
+        map.put("timePlanMinutes", String.valueOf(applicationConfiguration.getTimePlanMinutes()));
+        map.put("timePlanHours", String.valueOf(applicationConfiguration.getTimePlanHours()));
+        map.put("timePlanWeekdays", String.valueOf(applicationConfiguration.getTimePlanWeekdays()));
+        map.put("timePlanMonthdays", String.valueOf(applicationConfiguration.getTimePlanMonthdays()));
         // time values comma separated
-        // seconds
-        String timePlanString = "";
-        if (null != applicationConfiguration.getTimePlanSeconds()) {
-            for (Integer timeValue : applicationConfiguration.getTimePlanSeconds()) {
-                timePlanString += timeValue + ",";
-            }
-            if (timePlanString.endsWith(","))
-                timePlanString = timePlanString.substring(0, timePlanString.length() - 1);
-        }
-        map.put("timePlanSeconds", timePlanString);
-
-        // minutes
-        timePlanString = "";
-        if (null != applicationConfiguration.getTimePlanMinutes()) {
-            for (Integer timeValue : applicationConfiguration.getTimePlanMinutes()) {
-                timePlanString = timePlanString + timeValue + ",";
-            }
-            if (timePlanString.endsWith(","))
-                timePlanString = timePlanString.substring(0, timePlanString.length() - 1);
-        }
-        map.put("timePlanMinutes", timePlanString);
-
-        // hours
-        timePlanString = "";
-        if (null != applicationConfiguration.getTimePlanHours()) {
-            for (Integer timeValue : applicationConfiguration.getTimePlanHours()) {
-                timePlanString = timePlanString + timeValue + ",";
-            }
-            if (timePlanString.endsWith(","))
-                timePlanString = timePlanString.substring(0, timePlanString.length() - 1);
-        }
-        map.put("timePlanHours", timePlanString);
-
-        // weekdays
-        timePlanString = "";
-        if (null != applicationConfiguration.getTimePlanWeekdays()) {
-            for (Integer timeValue : applicationConfiguration.getTimePlanWeekdays()) {
-                timePlanString = timePlanString + timeValue + ",";
-            }
-            if (timePlanString.endsWith(","))
-                timePlanString = timePlanString.substring(0, timePlanString.length() - 1);
-        }
-        map.put("timePlanWeekdays", timePlanString);
-
-        // days of month
-        timePlanString = "";
-        if (null != applicationConfiguration.getTimePlanMonthdays()) {
-            for (Integer timeValue : applicationConfiguration.getTimePlanMonthdays()) {
-                timePlanString = timePlanString + timeValue + ",";
-            }
-            if (timePlanString.endsWith(","))
-                timePlanString = timePlanString.substring(0, timePlanString.length() - 1);
-        }
-        map.put("timePlanMonthdays", timePlanString);
 
         // dependencies also as comma separated lists
         // applications to wait for
@@ -203,34 +154,16 @@ public class ApplicationConfigurationWrapper {
         applicationConfiguration.setMaxStepStep(Util.parseInt(map.get("maxStepStep"), 0));
         applicationConfiguration.setExecutableArgs(map.get("executableArgs"));
 
-        // timeplan values as list are formatted like csv (comma
-        // separated)
-        applicationConfiguration.setTimePlanSeconds(csv2ListInteger(map, "timePlanSeconds"));
-        applicationConfiguration.setTimePlanMinutes(csv2ListInteger(map, "timePlanMinutes"));
-        applicationConfiguration.setTimePlanHours(csv2ListInteger(map, "timePlanHours"));
-        applicationConfiguration.setTimePlanWeekdays(csv2ListInteger(map, "timePlanWeekdays"));
-        applicationConfiguration.setTimePlanMonthdays(csv2ListInteger(map, "timePlanMonthdays"));
+        applicationConfiguration.setTimePlanSeconds(map.get("timePlanSeconds"));
+        applicationConfiguration.setTimePlanMinutes(map.get("timePlanMinutes"));
+        applicationConfiguration.setTimePlanHours(map.get("timePlanHours"));
+        applicationConfiguration.setTimePlanWeekdays(map.get("timePlanWeekdays"));
+        applicationConfiguration.setTimePlanMonthdays(map.get("timePlanMonthdays"));
 
         // dependency lists also are transported as csv strings
         applicationConfiguration.setApplicationsWaitFor(csv2ListLong(map, "applicationsWaitFor"));
         applicationConfiguration.setApplicationsStartAfter(csv2ListLong(map, "applicationsStartAfter"));
         applicationConfiguration.setApplicationsStartSync(csv2ListLong(map, "applicationsStartSync"));
-    }
-
-    /*
-     * Transformation of comma separated Strings to lists
-     */
-    private List<Integer> csv2ListInteger(Map<String, String> confVars, String key) {
-        String csvString = confVars.get(key);
-        if (null == csvString)
-            return null;
-
-        List<String> stringList = Util.stringToList(csvString, ",");
-        List<Integer> intList = new ArrayList<Integer>();
-        for (String element : stringList) {
-            intList.add(Util.parseInt(element, -1));
-        }
-        return intList;
     }
 
     /*

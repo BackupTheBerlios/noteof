@@ -33,11 +33,11 @@ public class ApplicationConfiguration {
     private boolean windowsSupport;
     private boolean partOfChain;
     private String executableArgs;
-    private List<Integer> timePlanSeconds;
-    private List<Integer> timePlanMinutes;
-    private List<Integer> timePlanHours;
-    private List<Integer> timePlanWeekdays;
-    private List<Integer> timePlanMonthdays;
+    private String timePlanSeconds;
+    private String timePlanMinutes;
+    private String timePlanHours;
+    private String timePlanWeekdays;
+    private String timePlanMonthdays;
     private List<Long> applicationsWaitFor;
     private List<Long> applicationsStartAfter;
     private List<Long> applicationsStartSync;
@@ -98,80 +98,24 @@ public class ApplicationConfiguration {
             // seconds
             // * or 0 means one time per minute
             node = nodeTime + ".seconds";
-            String seconds = conf.getText(node);
-            if ("".equals(seconds) || "*".equals(seconds) || "0".equals(seconds)) {
-                timePlanSeconds = new ArrayList<Integer>();
-                timePlanSeconds.add(0);
-            } else {
-                timePlanSeconds = Util.getElementsOfStringAsInt(seconds);
-                Collections.sort(timePlanSeconds);
-            }
+            timePlanSeconds = conf.getText(node);
 
             // minutes
             // * or 0 means one time per hour
             node = nodeTime + ".minutes";
-            String minutes = conf.getText(node);
-            if ("".equals(minutes) || "*".equals(minutes)) {
-                timePlanMinutes = new ArrayList<Integer>();
-                for (int i = 0; i < 60; i++) {
-                    timePlanMinutes.add(i);
-                }
-            } else {
-                timePlanMinutes = Util.getElementsOfStringAsInt(minutes);
-                Collections.sort(timePlanMinutes);
-            }
+            timePlanMinutes = conf.getText(node);
 
             // hours
             node = nodeTime + ".hours";
-            String hours = conf.getText(node);
-            if ("".equals(hours) || "*".equals(hours)) {
-                timePlanHours = new ArrayList<Integer>();
-                for (int i = 0; i < 24; i++) {
-                    timePlanHours.add(i);
-                }
-            } else {
-                timePlanHours = Util.getElementsOfStringAsInt(hours);
-                Collections.sort(timePlanHours);
-            }
+            timePlanHours = conf.getText(node);
 
             // days of week
-            timePlanWeekdays = new ArrayList<Integer>();
             node = nodeTime + ".weekdays";
-            String days = conf.getText(node);
-            if ("".equals(days) || "*".equals(days)) {
-                for (int i = 1; i < 8; i++) {
-                    timePlanWeekdays.add(i);
-                }
-            } else {
-                for (String element : (List<String>) Util.getElementsOfString(days)) {
-                    if (element.equalsIgnoreCase("MO"))
-                        timePlanWeekdays.add(Calendar.MONDAY);
-                    if (element.equalsIgnoreCase("TU"))
-                        timePlanWeekdays.add(Calendar.TUESDAY);
-                    if (element.equalsIgnoreCase("WE") || element.equalsIgnoreCase("MI"))
-                        timePlanWeekdays.add(Calendar.WEDNESDAY);
-                    if (element.equalsIgnoreCase("TH") || element.equalsIgnoreCase("DO"))
-                        timePlanWeekdays.add(Calendar.THURSDAY);
-                    if (element.equalsIgnoreCase("FR"))
-                        timePlanWeekdays.add(Calendar.FRIDAY);
-                    if (element.equalsIgnoreCase("SA"))
-                        timePlanWeekdays.add(Calendar.SATURDAY);
-                    if (element.equalsIgnoreCase("SU") || element.equalsIgnoreCase("SO"))
-                        timePlanWeekdays.add(Calendar.SUNDAY);
-                }
-            }
-            Collections.sort(timePlanWeekdays);
+            timePlanWeekdays = conf.getText(node);
 
             // days of month
             node = nodeTime + ".monthdays";
-            String months = conf.getText(node);
-            if ("".equals(months) || "*".equals(months)) {
-                timePlanMonthdays = new ArrayList<Integer>();
-                timePlanMonthdays.add(0);
-            } else {
-                timePlanMonthdays = Util.getElementsOfStringAsInt(months);
-                Collections.sort(timePlanMonthdays);
-            }
+            timePlanMonthdays = conf.getText(node);
 
             // applications to wait for
             node = "scheduler." + nodeNameApplication + ".dependencies.waitfor";
@@ -293,6 +237,108 @@ public class ApplicationConfiguration {
         return waitTime;
     }
 
+    public static List<Integer> transformTimePlanSeconds(String seconds) {
+        List<Integer> timePlanSeconds = null;
+        if ("".equals(seconds) || "*".equals(seconds) || "0".equals(seconds)) {
+            timePlanSeconds = new ArrayList<Integer>();
+            timePlanSeconds.add(0);
+        } else {
+            try {
+                timePlanSeconds = Util.getElementsOfStringAsInt(seconds);
+                Collections.sort(timePlanSeconds);
+            } catch (ActionFailedException e) {
+                LocalLog.warn("Fehler bei Aufsplitten des Zeitplans: " + "Sekunden. Konfiguration: " + seconds);
+            }
+        }
+        return timePlanSeconds;
+    }
+
+    public static List<Integer> transformTimePlanMinutes(String minutes) {
+        List<Integer> timePlanMinutes = null;
+        if ("".equals(minutes) || "*".equals(minutes)) {
+            timePlanMinutes = new ArrayList<Integer>();
+            for (int i = 0; i < 60; i++) {
+                timePlanMinutes.add(i);
+            }
+        } else {
+            try {
+                timePlanMinutes = Util.getElementsOfStringAsInt(minutes);
+                Collections.sort(timePlanMinutes);
+            } catch (ActionFailedException e) {
+                LocalLog.warn("Fehler bei Aufsplitten des Zeitplans: " + "Minuten. Konfiguration: " + minutes);
+            }
+        }
+        return timePlanMinutes;
+    }
+
+    public static List<Integer> transformTimePlanHours(String hours) {
+        List<Integer> timePlanHours = null;
+        if ("".equals(hours) || "*".equals(hours)) {
+            timePlanHours = new ArrayList<Integer>();
+            for (int i = 0; i < 24; i++) {
+                timePlanHours.add(i);
+            }
+        } else {
+            try {
+                timePlanHours = Util.getElementsOfStringAsInt(hours);
+                Collections.sort(timePlanHours);
+            } catch (ActionFailedException e) {
+                LocalLog.warn("Fehler bei Aufsplitten des Zeitplans: " + "Stunden. Konfiguration: " + hours);
+            }
+        }
+        return timePlanHours;
+    }
+
+    public static List<Integer> transformTimePlanWeekDays(String weekdays) {
+        List<Integer> timePlanWeekdays = null;
+        if ("".equals(weekdays) || "*".equals(weekdays)) {
+            timePlanWeekdays = new ArrayList<Integer>();
+            for (int i = 1; i < 8; i++) {
+                timePlanWeekdays.add(i);
+            }
+        } else {
+            timePlanWeekdays = new ArrayList<Integer>();
+            try {
+                for (String element : (List<String>) Util.getElementsOfString(weekdays)) {
+                    if (element.equalsIgnoreCase("MO"))
+                        timePlanWeekdays.add(Calendar.MONDAY);
+                    if (element.equalsIgnoreCase("TU"))
+                        timePlanWeekdays.add(Calendar.TUESDAY);
+                    if (element.equalsIgnoreCase("WE") || element.equalsIgnoreCase("MI"))
+                        timePlanWeekdays.add(Calendar.WEDNESDAY);
+                    if (element.equalsIgnoreCase("TH") || element.equalsIgnoreCase("DO"))
+                        timePlanWeekdays.add(Calendar.THURSDAY);
+                    if (element.equalsIgnoreCase("FR"))
+                        timePlanWeekdays.add(Calendar.FRIDAY);
+                    if (element.equalsIgnoreCase("SA"))
+                        timePlanWeekdays.add(Calendar.SATURDAY);
+                    if (element.equalsIgnoreCase("SU") || element.equalsIgnoreCase("SO"))
+                        timePlanWeekdays.add(Calendar.SUNDAY);
+                }
+            } catch (ActionFailedException e) {
+                LocalLog.warn("Fehler bei Aufsplitten des Zeitplans: " + "Wochentage. Konfiguration: " + weekdays);
+            }
+        }
+        Collections.sort(timePlanWeekdays);
+        return timePlanWeekdays;
+    }
+
+    public static List<Integer> transformTimePlanMonthDays(String monthdays) {
+        List<Integer> timePlanMonthdays = null;
+        if ("".equals(monthdays) || "*".equals(monthdays)) {
+            timePlanMonthdays = new ArrayList<Integer>();
+            timePlanMonthdays.add(0);
+        } else {
+            try {
+                timePlanMonthdays = Util.getElementsOfStringAsInt(monthdays);
+                Collections.sort(timePlanMonthdays);
+            } catch (ActionFailedException e) {
+                LocalLog.warn("Fehler bei Aufsplitten des Zeitplans: " + "Monate. Konfiguration: " + monthdays);
+            }
+        }
+        return timePlanMonthdays;
+    }
+
     public Date getNextStartDate() {
         return nextStartDate;
     }
@@ -321,15 +367,15 @@ public class ApplicationConfiguration {
         return executableArgs;
     }
 
-    public List<Integer> getTimePlanSeconds() {
+    public String getTimePlanSeconds() {
         return timePlanSeconds;
     }
 
-    public List<Integer> getTimePlanMinutes() {
+    public String getTimePlanMinutes() {
         return timePlanMinutes;
     }
 
-    public List<Integer> getTimePlanHours() {
+    public String getTimePlanHours() {
         return timePlanHours;
     }
 
@@ -341,7 +387,7 @@ public class ApplicationConfiguration {
      * 
      * @return
      */
-    public List<Integer> getTimePlanWeekdays() {
+    public String getTimePlanWeekdays() {
         return timePlanWeekdays;
     }
 
@@ -350,7 +396,7 @@ public class ApplicationConfiguration {
      * 
      * @return
      */
-    public List<Integer> getTimePlanMonthdays() {
+    public String getTimePlanMonthdays() {
         return timePlanMonthdays;
     }
 
@@ -410,23 +456,23 @@ public class ApplicationConfiguration {
         this.executableArgs = executableArgs;
     }
 
-    public void setTimePlanSeconds(List<Integer> timePlanSeconds) {
+    public void setTimePlanSeconds(String timePlanSeconds) {
         this.timePlanSeconds = timePlanSeconds;
     }
 
-    public void setTimePlanMinutes(List<Integer> timePlanMinutes) {
+    public void setTimePlanMinutes(String timePlanMinutes) {
         this.timePlanMinutes = timePlanMinutes;
     }
 
-    public void setTimePlanHours(List<Integer> timePlanHours) {
+    public void setTimePlanHours(String timePlanHours) {
         this.timePlanHours = timePlanHours;
     }
 
-    public void setTimePlanWeekdays(List<Integer> timePlanWeekdays) {
+    public void setTimePlanWeekdays(String timePlanWeekdays) {
         this.timePlanWeekdays = timePlanWeekdays;
     }
 
-    public void setTimePlanMonthdays(List<Integer> timePlanMonthdays) {
+    public void setTimePlanMonthdays(String timePlanMonthdays) {
         this.timePlanMonthdays = timePlanMonthdays;
     }
 
