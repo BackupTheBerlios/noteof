@@ -145,7 +145,7 @@ public class ApplicationConfiguration {
             } catch (ActionFailedException e) {
                 LocalLog.warn("Fehler bei Lesen der Applikationen die gleichzeitig gestartet werden sollen.", e);
             }
-            applicationsStartAfter = Util.stringListToLongList(ids);
+            applicationsStartSync = Util.stringListToLongList(ids);
 
             // maxStartStop
             node = "scheduler." + nodeNameApplication + ".runtime";
@@ -157,6 +157,22 @@ public class ApplicationConfiguration {
             LocalLog.error("Konfiguration der Applikation konnte nicht fehlerfrei gelesen werden. Applikation: " + nodeNameApplication, ex);
             throw new ActionFailedException(401, "Initialisierung ApplicationConfiguration", ex);
         }
+    }
+
+    /**
+     * Applications can exist without a time plan. For example to use only in
+     * chains or in dependency to other applications.
+     * 
+     * @return TRUE if there is a plan, otherwise FALSE
+     */
+    public boolean hasTimePlan() {
+        System.out.println("ApplicationConfiguration.hasTimePlan: _"
+                + (timePlanHours + timePlanMinutes + timePlanSeconds + timePlanMonthdays + timePlanWeekdays) + "_");
+        return (!(Util.isEmpty(timePlanHours) && //
+                Util.isEmpty(timePlanMinutes) && //
+                Util.isEmpty(timePlanSeconds) && //
+                Util.isEmpty(timePlanMonthdays) && //
+        Util.isEmpty(timePlanWeekdays)));
     }
 
     /**

@@ -84,11 +84,14 @@ public class Scheduling {
         for (Long id : applConf.getApplicationsWaitFor()) {
             // if list with found services > 0 there exists one or more service
             if (!Util.isEmpty(MasterTable.getApplicationServicesByApplicationId(id)))
+                // true => must wait!
                 return true;
 
             if (null != MasterTable.getStartEvent(id))
+                // true => must wait!
                 return true;
         }
+        // false => ok - has not to wait
         return false;
     }
 

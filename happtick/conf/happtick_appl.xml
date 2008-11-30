@@ -133,6 +133,7 @@
 		<applications>
 			<application>application1</application>
 		  	<application>application2</application> 
+		  	<application>application3</application> 
 		</applications>
 	
 		<!-- Complex configurations of applications.
@@ -195,23 +196,21 @@
 			-->
 			<dependencies>
 				<waitfor applicationId="55"></waitfor>
-				<waitfor applicationId="66"></waitfor>
-				<startafter applicationId="77"></startafter>
 				<startafter applicationId="88"></startafter>
-				<startsync applicationId="99"></startsync>
+				<startsync applicationId="2"></startsync>
 			</dependencies>
 			
 			<!-- maxStartStop, maxStepStep
 				 +++ For later use. +++
 				 Values will be evaluated for controlling the processes.
-				 maxStartStop is the time which the complete application has time to run.
-				 maxStepStep is the time which may elapse between the single Steps (e.g. ActionEvents)
+				 maxStartStop is the time in seconds which the complete application has time to run.
+				 maxStepStep is the time in seconds which may elapse between the single Steps (e.g. ActionEvents)
 			 -->
 			<runtime maxStartStop="300" maxStepStep="10"></runtime>
 		</application1>
 		
 		<application2 applicationId="2">
-			<client clientIp="192.168.130.1"></client>
+			<client clientIp="localhost"></client>
 			<executable type="JAVA" path="c:/programme/holterdipolter.bat">
 				<args>--xxx="10" --yyy=20</args>
 			</executable>
@@ -223,17 +222,17 @@
 				<weekdays>TU MI FR SU</weekdays>
 				<monthdays>13</monthdays>
 			</timeplan>
-			
-			<dependencies>
-				<waitfor applicationId="55"></waitfor>
-				<waitfor applicationId="66"></waitfor>
-				<startafter applicationId="77"></startafter>
-				<startafter applicationId="88"></startafter>
-				<startsync applicationId="99"></startsync>
-			</dependencies>
-			
+
 			<runtime maxStartStop="300" maxStepStep="10"></runtime>
 		</application2>
+		
+		<application3 applicationId="88">
+			<client clientIp="localhost"></client>
+			<executable type="UNKNOWN" path="calc.exe" windows="true">
+				<args>--xxx="10" --yyy=20</args>
+			</executable>
+			<option multiplestart="true" enforce="true"></option>
+		</application3>
 		
 	</scheduler>
 	

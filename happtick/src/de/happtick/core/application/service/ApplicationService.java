@@ -79,7 +79,6 @@ public class ApplicationService extends HapptickBaseService implements Service {
         // Application Id
         if (incomingMsgEnum.equals(ApplicationTag.PROCESS_APPLICATION_ID)) {
             Long applicationId = new Long(requestTo(ApplicationTag.REQ_APPLICATION_ID, ApplicationTag.RESP_APPLICATION_ID));
-            System.out.println("ApplicationService.processClientMsg. PROCESS_APPLICATION_ID:applicationId: " + applicationId);
             this.applicationId = applicationId;
             // now it is a good time point to register at master tables
             MasterTable.addService(this);
@@ -92,7 +91,6 @@ public class ApplicationService extends HapptickBaseService implements Service {
         // Start Id given by StartClient
         if (incomingMsgEnum.equals(ApplicationTag.PROCESS_START_ID)) {
             String startId = requestTo(ApplicationTag.REQ_START_ID, ApplicationTag.RESP_START_ID);
-            System.out.println("ApplicationService.processClientMsg. PROCESS_START_ID:startId: " + startId);
             this.startId = startId;
         }
 
@@ -107,7 +105,6 @@ public class ApplicationService extends HapptickBaseService implements Service {
 
         // START
         if (incomingMsgEnum.equals(ApplicationTag.PROCESS_START_WORK)) {
-            System.out.println("ApplicationService: incomingMsg = START_...");
             this.clientIsActive = true;
             writeMsg(ApplicationTag.INFO_TRUE);
         }

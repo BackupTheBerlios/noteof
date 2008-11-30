@@ -243,17 +243,13 @@ public class Scheduler {
             // Application process now running
             // Activate dependent applications
             if (EventType.EVENT_APPLICATION_STARTED.equals(event.getEventType())) {
-                System.out.println("Scheduler.SchedulerObserver.update. EventApplicationStarted eingetroffen: " + event.getApplicationId());
                 MasterTable.replaceStartEvent(event);
-                System.out.println("Scheduler.SchedulerObserver.update. StartEvent entfernt: " + event.getApplicationId());
             }
 
             // Application process stopped
             // Service removes itself from the MasterTable
             if (EventType.EVENT_APPLICATION_STOPPED.equals(event.getEventType())) {
-                System.out.println("Scheduler.SchedulerObserver.update. EventApplicationStopped eingetroffen: " + event.getApplicationId());
                 Long stoppedApplId = event.getApplicationId();
-                System.out.println("Scheduler.SchedulerObserver.update. 1 applicationId: " + stoppedApplId);
                 MasterTable.removeStartEvent(event);
 
                 // start dependent applications
@@ -265,7 +261,7 @@ public class Scheduler {
                     for (Long applId : stoppedConf.getApplicationsStartAfter()) {
                         ApplicationConfiguration afterConf = MasterTable.getApplicationConfiguration(applId);
                         if (null != afterConf) {
-                            startApplicationScheduler(afterConf);
+                            Scheduling.startApplication(afterConf);
                         }
                     }
                 } catch (HapptickException e) {
@@ -301,13 +297,14 @@ public class Scheduler {
     // schickt ein observe an MasterTable? ???
 
     /*
-     * For each configured application start a runner. The runner observes the
-     * start point.
+     * For each configured application which is started by timeplan! start a
+     * runner. The runner observes the start point.
      */
     private void startAllApplicationSchedulers() {
         try {
             for (ApplicationConfiguration conf : MasterTable.getApplicationConfigurationsAsList()) {
-                startApplicationScheduler(conf);
+                if (conf.hasTimePlan())
+                    startApplicationScheduler(conf);
             }
         } catch (ActionFailedException afx) {
             LocalLog.error("Fehler bei Start der Anwendungs-Scheduler.", afx);
@@ -657,6 +654,7 @@ public class Scheduler {
                         // applications to start syncronously
                         if (!Util.isEmpty(conf.getApplicationsStartSync())) {
                             for (Long applId : conf.getApplicationsStartSync()) {
+                                System.out.println("Scheduler$ApplicationScheduler.run. synchronouse applId: " + applId);
                                 ApplicationConfiguration syncConf = MasterTable.getApplicationConfiguration(applId);
                                 if (null != syncConf) {
                                     Scheduling.startApplication(syncConf);
