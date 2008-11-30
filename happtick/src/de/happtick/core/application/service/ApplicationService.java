@@ -33,6 +33,7 @@ public class ApplicationService extends HapptickBaseService implements Service {
 
     public void implementationLastSteps() {
         raiseStoppedEvent(this.applicationId, this.startId, 0);
+        super.implementationLastSteps();
     }
 
     /**

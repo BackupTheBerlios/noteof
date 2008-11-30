@@ -234,7 +234,7 @@ public class Scheduler {
             return this.observedEvents;
         }
 
-        public void update(Service service, NotEOFEvent event) {
+        public synchronized void update(Service service, NotEOFEvent event) {
             // Application started
             if (EventType.EVENT_APPLICATION_START.equals(event.getEventType())) {
                 MasterTable.putStartEvent(event);
@@ -254,7 +254,6 @@ public class Scheduler {
 
                 // start dependent applications
                 stoppedApplId = event.getApplicationId();
-                System.out.println("Scheduler.SchedulerObserver.update. 2 applicationId: " + stoppedApplId);
                 try {
                     System.out.println("Scheduler.update. applsAfter");
                     ApplicationConfiguration stoppedConf = MasterTable.getApplicationConfiguration(stoppedApplId);

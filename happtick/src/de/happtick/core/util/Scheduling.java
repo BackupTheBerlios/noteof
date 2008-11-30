@@ -107,11 +107,13 @@ public class Scheduling {
             throw new HapptickException(404L, "Pruefung auf aktive Anwendung im Scheduling.");
         }
 
-        if (!(Util.isEmpty(MasterTable.getApplicationServicesByApplicationId(applConf.getApplicationId()))))
+        if (!(Util.isEmpty(MasterTable.getApplicationServicesByApplicationId(applConf.getApplicationId())))) {
             return true;
+        }
 
-        if (null != MasterTable.getStartEvent(applConf.getApplicationId()))
+        if (null != MasterTable.getStartEvent(applConf.getApplicationId())) {
             return true;
+        }
 
         // nothing found
         return false;

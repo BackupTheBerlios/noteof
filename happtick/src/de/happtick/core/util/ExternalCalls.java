@@ -123,7 +123,7 @@ public class ExternalCalls {
             cmdLine.trim();
             proc = runtime.exec(cmdLine);
         } catch (IOException ioEx) {
-            throw new HapptickException(651L, "Application: " + applicationPath);
+            throw new HapptickException(651L, "Application: " + applicationPath, ioEx);
         }
         return proc;
     }

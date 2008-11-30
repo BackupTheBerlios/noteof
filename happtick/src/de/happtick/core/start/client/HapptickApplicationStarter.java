@@ -75,7 +75,7 @@ public class HapptickApplicationStarter {
             }
 
             if (!started) {
-                LocalLog.error("Applikation konnte nicht gestartet werden.", th);
+                LocalLog.error("Applikation konnte nicht gestartet werden: " + applicationPath, th);
                 try {
                     ApplicationStartErrorEvent errorEvent = new ApplicationStartErrorEvent();
                     errorEvent.setApplicationId(startEvent.getApplicationId());
