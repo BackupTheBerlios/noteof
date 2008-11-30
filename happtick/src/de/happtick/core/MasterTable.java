@@ -10,7 +10,6 @@ import de.happtick.configuration.ApplicationConfiguration;
 import de.happtick.configuration.ChainConfiguration;
 import de.happtick.configuration.EventConfiguration;
 import de.happtick.core.application.service.ApplicationService;
-import de.happtick.core.event.ApplicationStartEvent;
 import de.happtick.core.exception.HapptickException;
 import de.notEOF.configuration.LocalConfiguration;
 import de.notEOF.core.exception.ActionFailedException;
@@ -359,6 +358,7 @@ public class MasterTable {
      *         master tables.
      */
     public synchronized static ApplicationConfiguration getApplicationConfiguration(Long applicationId) throws HapptickException {
+        System.out.println("MasterTable.getApplicationConfiguration(). applicationId = " + applicationId);
         ApplicationConfiguration ret = applicationConfigurations.get(applicationId);
         if (Util.isEmpty(ret))
             throw new HapptickException(405L, "ApplicationConfiguration. Id: " + applicationId);
@@ -434,17 +434,11 @@ public class MasterTable {
      * @param startedEvent
      */
     public static synchronized void removeStartEvent(NotEOFEvent event) {
-        ApplicationStartEvent startEvent = (ApplicationStartEvent) startEvents.get(event.getApplicationId());
-        if (null != startEvent) {
-            startEvents.remove(startEvent.getApplicationId());
-        }
+        startEvents.remove(event.getApplicationId());
     }
 
     public static synchronized void replaceStartEvent(NotEOFEvent event) {
-        ApplicationStartEvent startEvent = (ApplicationStartEvent) startEvents.get(event.getApplicationId());
-        if (null != startEvent) {
-            startEvents.remove(startEvent.getApplicationId());
-        }
+        startEvents.remove(event.getApplicationId());
         putStartEvent(event);
     }
 

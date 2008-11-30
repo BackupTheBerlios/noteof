@@ -2,11 +2,14 @@ package de.happtick.core.application.service;
 
 import de.happtick.core.MasterTable;
 import de.happtick.core.enumeration.ApplicationTag;
+import de.happtick.core.event.ApplicationStartedEvent;
+import de.happtick.core.event.ApplicationStoppedEvent;
 import de.happtick.core.service.HapptickBaseService;
 import de.happtick.core.util.Scheduling;
-import de.notEOF.core.enumeration.EventType;
 import de.notEOF.core.exception.ActionFailedException;
+import de.notEOF.core.interfaces.NotEOFEvent;
 import de.notEOF.core.interfaces.Service;
+import de.notEOF.core.logging.LocalLog;
 import de.notEOF.core.util.Util;
 
 public class ApplicationService extends HapptickBaseService implements Service {
@@ -16,6 +19,8 @@ public class ApplicationService extends HapptickBaseService implements Service {
 
     private int exitCode = 0;
     private boolean clientIsActive = false;
+    private boolean startedEventSent = false;
+    private boolean stoppedEventSent = false;
 
     /**
      * Overwrite HapptickBaseService because the service mustn't be added to the
@@ -23,7 +28,11 @@ public class ApplicationService extends HapptickBaseService implements Service {
      */
     public void implementationFirstSteps() {
         // don't delete this method...
-        addObservedEvent(EventType.EVENT_ANY_TYPE);
+        // addObservedEvent(EventType.EVENT_ANY_TYPE);
+    }
+
+    public void implementationLastSteps() {
+        raiseStoppedEvent(this.applicationId, this.startId, 0);
     }
 
     /**
@@ -70,14 +79,20 @@ public class ApplicationService extends HapptickBaseService implements Service {
         // Application Id
         if (incomingMsgEnum.equals(ApplicationTag.PROCESS_APPLICATION_ID)) {
             Long applicationId = new Long(requestTo(ApplicationTag.REQ_APPLICATION_ID, ApplicationTag.RESP_APPLICATION_ID));
+            System.out.println("ApplicationService.processClientMsg. PROCESS_APPLICATION_ID:applicationId: " + applicationId);
             this.applicationId = applicationId;
             // now it is a good time point to register at master tables
             MasterTable.addService(this);
+
+            if (!Util.isEmpty(this.startId)) {
+                raiseStartedEvent(this.applicationId, this.startId);
+            }
         }
 
         // Start Id given by StartClient
         if (incomingMsgEnum.equals(ApplicationTag.PROCESS_START_ID)) {
             String startId = requestTo(ApplicationTag.REQ_START_ID, ApplicationTag.RESP_START_ID);
+            System.out.println("ApplicationService.processClientMsg. PROCESS_START_ID:startId: " + startId);
             this.startId = startId;
         }
 
@@ -86,6 +101,8 @@ public class ApplicationService extends HapptickBaseService implements Service {
             this.exitCode = Util.parseInt(requestTo(ApplicationTag.REQ_EXIT_CODE, ApplicationTag.RESP_EXIT_CODE), -1);
             this.clientIsActive = false;
             writeMsg(ApplicationTag.INFO_TRUE);
+            // send Stop Event
+            raiseStoppedEvent(this.applicationId, this.startId, exitCode);
         }
 
         // START
@@ -120,5 +137,39 @@ public class ApplicationService extends HapptickBaseService implements Service {
      */
     public boolean isClientActive() {
         return this.clientIsActive;
+    }
+
+    protected void raiseStartedEvent(Long applicationId, String startId) {
+        if (!startedEventSent) {
+            NotEOFEvent event = new ApplicationStartedEvent();
+            try {
+                event.setApplicationId(applicationId);
+                // event.addAttribute("applicationId",
+                // String.valueOf(applicationId));
+                event.addAttribute("startId", String.valueOf(startId));
+                getServer().updateObservers(this, event);
+                startedEventSent = true;
+            } catch (Exception e) {
+                LocalLog.warn("StartEvent konnte nicht versendet werden. ApplicationId: " + applicationId);
+            }
+        }
+    }
+
+    protected void raiseStoppedEvent(Long applicationId, String startId, int exitCode) {
+        if (!stoppedEventSent) {
+            NotEOFEvent event = new ApplicationStoppedEvent();
+            try {
+                event.setApplicationId(applicationId);
+                event.addAttribute("serviceId", String.valueOf(this.serviceId));
+                // event.addAttribute("applicationId",
+                // String.valueOf(applicationId));
+                event.addAttribute("startId", String.valueOf(startId));
+                event.addAttribute("exitCode", String.valueOf(exitCode));
+                getServer().updateObservers(this, event);
+                stoppedEventSent = true;
+            } catch (Exception e) {
+                LocalLog.warn("StopEvent konnte nicht versendet werden. ApplicationId: " + applicationId);
+            }
+        }
     }
 }

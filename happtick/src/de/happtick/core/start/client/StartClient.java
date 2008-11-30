@@ -99,7 +99,7 @@ public class StartClient extends HapptickBaseClient implements MailAndEventRecip
                 String applId = null;
                 if (!Util.isEmpty(startEvent))
                     try {
-                        applId = startEvent.getAttribute("applicationId");
+                        applId = String.valueOf(startEvent.getApplicationId());
                     } catch (Exception ex) {
                         LocalLog.error("Fehler bei Verarbeitung eines StartEvents. Das Event ist nicht korrekt initialisiert.", ex);
                     }

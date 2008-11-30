@@ -122,7 +122,6 @@ public class ExternalApplicationStarter extends HapptickApplication {
                 try {
                     ApplicationStartErrorEvent errorEvent = new ApplicationStartErrorEvent();
                     errorEvent.setApplicationId(applicationId);
-                    errorEvent.addAttribute("applicationId", String.valueOf(applicationId));
                     errorEvent.addAttribute("clientNetId", getClientNetId());
                     errorEvent.addAttribute("startId", startId);
                     errorEvent.addAttribute("errorDescription", errMsg);
@@ -140,7 +139,6 @@ public class ExternalApplicationStarter extends HapptickApplication {
                     // send StartedEvent
                     ApplicationStartedEvent startedEvent = new ApplicationStartedEvent();
                     startedEvent.setApplicationId(applicationId);
-                    startedEvent.addAttribute("applicationId", String.valueOf(applicationId));
                     startedEvent.addAttribute("clientNetId", getClientNetId());
                     startedEvent.addAttribute("startId", startId);
                     // main class now will send the event to the server
@@ -163,7 +161,6 @@ public class ExternalApplicationStarter extends HapptickApplication {
                     stoppedEvent.setApplicationId(applicationId);
                     stoppedEvent.addAttribute("exitCode", String.valueOf(exitCode));
                     stoppedEvent.addAttribute("serviceId", "");
-                    stoppedEvent.addAttribute("applicationId", String.valueOf(applicationId));
                     stoppedEvent.addAttribute("clientNetId", getClientNetId());
                     stoppedEvent.addAttribute("startId", startId);
 

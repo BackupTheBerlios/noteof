@@ -98,14 +98,14 @@ public class Scheduler {
                 for (NotEOFEvent event : MasterTable.getStartEventsAsList()) {
                     if (EventType.EVENT_APPLICATION_START.equals(event.getEventType())) {
                         Long timeStamp = event.getTimeStampSend();
-                        long maxWaitTime = 30000;
+                        long maxWaitTime = MasterTable.getMaxDelay();
                         // older than 30 seconds?
                         if (maxWaitTime < new Date().getTime() - timeStamp) {
                             // older - fire StartError
                             NotEOFEvent startAlarm = new ApplicationStartErrorEvent();
                             startAlarm.setApplicationId(event.getApplicationId());
                             try {
-                                startAlarm.addAttribute("applicationId", String.valueOf(event.getAttribute("applicationId")));
+                                startAlarm.setApplicationId(event.getApplicationId());
                                 startAlarm.addAttribute("clientNetId", "Scheduler");
                                 startAlarm.addAttribute("startId", "?");
                                 startAlarm.addAttribute("errorDescription", "Scheduler Ueberpruefung: IgnitionZeit (" + Math.abs(maxWaitTime / 1000)
@@ -166,6 +166,7 @@ public class Scheduler {
                                 Scheduling.startApplication(applConf);
                             }
                             if ("stop".equals(action)) {
+                                System.out.println("Scheduler$EventHandler.handleEvent. action = stop");
                                 Scheduling.stopApplication(applConf);
                             }
                         }
@@ -242,16 +243,22 @@ public class Scheduler {
             // Application process now running
             // Activate dependent applications
             if (EventType.EVENT_APPLICATION_STARTED.equals(event.getEventType())) {
+                System.out.println("Scheduler.SchedulerObserver.update. EventApplicationStarted eingetroffen: " + event.getApplicationId());
                 MasterTable.replaceStartEvent(event);
+                System.out.println("Scheduler.SchedulerObserver.update. StartEvent entfernt: " + event.getApplicationId());
             }
 
             // Application process stopped
             // Service removes itself from the MasterTable
             if (EventType.EVENT_APPLICATION_STOPPED.equals(event.getEventType())) {
+                System.out.println("Scheduler.SchedulerObserver.update. EventApplicationStopped eingetroffen: " + event.getApplicationId());
+                Long stoppedApplId = event.getApplicationId();
+                System.out.println("Scheduler.SchedulerObserver.update. 1 applicationId: " + stoppedApplId);
                 MasterTable.removeStartEvent(event);
 
                 // start dependent applications
-                Long stoppedApplId = event.getApplicationId();
+                stoppedApplId = event.getApplicationId();
+                System.out.println("Scheduler.SchedulerObserver.update. 2 applicationId: " + stoppedApplId);
                 try {
                     System.out.println("Scheduler.update. applsAfter");
                     ApplicationConfiguration stoppedConf = MasterTable.getApplicationConfiguration(stoppedApplId);
@@ -405,7 +412,7 @@ public class Scheduler {
                 }
 
                 if (EventType.EVENT_APPLICATION_STOPPED.equals(event.getEventType())) {
-                    if (String.valueOf(conf.getChainLinkList().get(index).getAddresseeId()).equals(event.getAttribute("applicationId"))) {
+                    if (String.valueOf(conf.getChainLinkList().get(index).getAddresseeId()).equals(event.getApplicationId())) {
                         executeNext = true;
                     }
                 }
@@ -652,7 +659,7 @@ public class Scheduler {
                             for (Long applId : conf.getApplicationsStartSync()) {
                                 ApplicationConfiguration syncConf = MasterTable.getApplicationConfiguration(applId);
                                 if (null != syncConf) {
-                                    startApplicationScheduler(syncConf);
+                                    Scheduling.startApplication(syncConf);
                                 }
                             }
                         }

@@ -14,8 +14,6 @@ import de.notEOF.core.interfaces.NotEOFEvent;
  * Attributes: <br>
  * <ul>
  * <li>clientIp -> Ip where the application must be started.</>
- * <li>applicationId -> Unique identifier which is fix given by the happtick
- * configuration. </>
  * <li>applicationPath -> Physical path of the executable application. Normally
  * stored in the configuration.</>
  * <li>arguments -> All arguments and their values are transported within this
@@ -34,7 +32,9 @@ public class ApplicationStartEvent extends HapptickEvent implements NotEOFEvent 
 
     protected void initDescriptions() {
         descriptions.put("clientIp", "Ip where the application must be started.");
-        descriptions.put("applicationId", "Unique identifier which is fix given by the happtick configuration.");
+        // descriptions.put("applicationId",
+        // "Unique identifier which is fix given by the happtick configuration."
+        // );
         descriptions.put("applicationPath", "Physical path of the executable application. Normally stored in the configuration.");
         descriptions.put("arguments", "All arguments and their values are transported within this one string.");
         descriptions.put("applicationType", "The type of application. Options are 'JAVA' or 'UNKNOWN'.");

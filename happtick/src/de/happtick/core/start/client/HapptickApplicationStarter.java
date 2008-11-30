@@ -48,7 +48,7 @@ public class HapptickApplicationStarter {
         public void run() {
             String applicationId = null;
             String applicationPath = null;
-            applicationId = this.startEvent.getAttribute("applicationId");
+            applicationId = String.valueOf(this.startEvent.getApplicationId());
             applicationPath = this.startEvent.getAttribute("applicationPath");
 
             if (Util.isEmpty(applicationId))
@@ -79,7 +79,6 @@ public class HapptickApplicationStarter {
                 try {
                     ApplicationStartErrorEvent errorEvent = new ApplicationStartErrorEvent();
                     errorEvent.setApplicationId(startEvent.getApplicationId());
-                    errorEvent.addAttribute("applicationId", String.valueOf(startEvent.getAttribute("applicationId")));
                     errorEvent.addAttribute("clientNetId", this.notEOFClient.getClientNetId());
                     errorEvent.addAttribute("startId", startId);
                     errorEvent.addAttribute("errorDescription", errMsg);

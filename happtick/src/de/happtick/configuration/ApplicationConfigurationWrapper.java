@@ -80,7 +80,8 @@ public class ApplicationConfigurationWrapper {
         // all data except the map of calling arguments (parameters)
         // as one big list
         map = new HashMap<String, String>();
-        map.put("applicationId", String.valueOf(applicationConfiguration.getApplicationId()));
+        // map.put("applicationId",
+        // String.valueOf(applicationConfiguration.getApplicationId()));
         map.put("nodeNameApplication", String.valueOf(applicationConfiguration.getNodeNameApplication()));
         map.put("clientIp", String.valueOf(applicationConfiguration.getClientIp()));
         map.put("executableType", String.valueOf(applicationConfiguration.getExecutableType()));
@@ -139,7 +140,7 @@ public class ApplicationConfigurationWrapper {
      * wrap map to object
      */
     private void createApplicationConfiguration() {
-        applicationConfiguration = new ApplicationConfiguration(Long.valueOf(map.get("applicationId")));
+        applicationConfiguration = new ApplicationConfiguration(Long.valueOf(map.get("internal->applicationId")));
 
         // atomize the vars to class attributes
         applicationConfiguration.setNodeNameApplication(map.get("nodeNameApplication"));

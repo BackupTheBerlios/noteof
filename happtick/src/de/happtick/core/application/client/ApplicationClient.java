@@ -32,6 +32,7 @@ public class ApplicationClient extends BaseClient implements NotEOFClient {
     private AllowanceWaiter allowanceWaiter;
     private ClientObserver clientObserver;
     private Long applicationId;
+    private boolean stopped = false;
 
     @Override
     public Class<?> serviceForClientByClass() {
@@ -47,6 +48,15 @@ public class ApplicationClient extends BaseClient implements NotEOFClient {
         stop(0);
     }
 
+    public final void implementationLastSteps() {
+        if (!stopped) {
+            try {
+                stop(0);
+            } catch (HapptickException e) {
+            }
+        }
+    }
+
     /**
      * Send stop event to service.
      * 
@@ -55,6 +65,7 @@ public class ApplicationClient extends BaseClient implements NotEOFClient {
      * @throws HapptickException
      */
     public void stop(int exitCode) throws HapptickException {
+        stopped = true;
         if (null != allowanceWaiter)
             allowanceWaiter.stop();
 
@@ -205,14 +216,15 @@ public class ApplicationClient extends BaseClient implements NotEOFClient {
             if (argsParser.containsStartsWith("--startId")) {
                 startId = argsParser.getValue("startId");
             }
+            if (Util.isEmpty(startId)) {
+                startId = "XXX";
+            }
 
-            if (!Util.isEmpty(startId)) {
-                try {
-                    writeMsg(ApplicationTag.PROCESS_START_ID);
-                    awaitRequestAnswerImmediate(ApplicationTag.REQ_START_ID, ApplicationTag.RESP_START_ID, startId);
-                } catch (ActionFailedException e) {
-                    throw new HapptickException(206L, e);
-                }
+            try {
+                writeMsg(ApplicationTag.PROCESS_START_ID);
+                awaitRequestAnswerImmediate(ApplicationTag.REQ_START_ID, ApplicationTag.RESP_START_ID, startId);
+            } catch (ActionFailedException e) {
+                throw new HapptickException(206L, e);
             }
         }
     }

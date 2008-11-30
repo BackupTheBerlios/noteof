@@ -32,11 +32,13 @@ public class MailRecipient extends HapptickApplication implements MailAndEventRe
     public MailRecipient(long applicationId, String serverAddress, int serverPort, String... args) throws HapptickException {
         super(applicationId, serverAddress, serverPort, args);
 
+        System.out.println("MailRecipient.Construction. applicationId = " + this.getApplicationId());
+
         reconnection();
     }
 
     private void reconnection() throws HapptickException {
-        reconnect();
+        // reconnect();
 
         // Anwendung will selbst mails oder events verarbeiten
         useMailsAndEvents(this);
@@ -137,18 +139,18 @@ public class MailRecipient extends HapptickApplication implements MailAndEventRe
     public static void main(String... args) throws HapptickException {
 
         // MailRecipient x = new MailRecipient(args);
-        new MailRecipient(0, "localhost", 3000, args);
+        new MailRecipient(77, "localhost", 3000, args);
 
-        while (true) {
-            try {
-                Thread.sleep(10000);
-            } catch (Exception e) {
-                System.out.println("HUPS - jetzt bin ich aber am Ende...");
-                System.out.println("HUPS - jetzt bin ich aber am Ende...");
-                e.printStackTrace();
-                break;
-            }
-        }
+        // while (true) {
+        // try {
+        // Thread.sleep(10000);
+        // } catch (Exception e) {
+        // System.out.println("HUPS - jetzt bin ich aber am Ende...");
+        // System.out.println("HUPS - jetzt bin ich aber am Ende...");
+        // e.printStackTrace();
+        // break;
+        // }
+        // }
         System.out.println("HUPS - jetzt bin ich aber am Ende...");
     }
 

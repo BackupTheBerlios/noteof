@@ -30,7 +30,9 @@ import de.notEOF.core.interfaces.NotEOFEvent;
 public class ApplicationStartErrorEvent extends HapptickEvent implements NotEOFEvent {
 
     protected void initDescriptions() {
-        descriptions.put("applicationId", "Unique identifier which is fix given by the happtick configuration.");
+        // descriptions.put("applicationId",
+        // "Unique identifier which is fix given by the happtick configuration."
+        // );
         descriptions.put("clientNetId",
                          "Unique identifier of the client during the complete !NotEOF system is running. This id is generated when the client was started.");
         descriptions.put("startId", "Identifier which the client gets by the process which started the client.");

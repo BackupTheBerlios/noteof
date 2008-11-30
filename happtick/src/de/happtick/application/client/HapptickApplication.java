@@ -5,6 +5,8 @@ import de.happtick.core.client.HapptickBaseClient;
 import de.happtick.core.exception.HapptickException;
 import de.happtick.core.interfaces.ClientObserver;
 import de.notEOF.core.interfaces.NotEOFEvent;
+import de.notEOF.core.util.ArgsParser;
+import de.notEOF.core.util.Util;
 
 /**
  * This class is the connector between the application and an application
@@ -16,7 +18,7 @@ import de.notEOF.core.interfaces.NotEOFEvent;
  * @author dirk
  * 
  */
-public class HapptickApplication extends HapptickBaseClient {
+public abstract class HapptickApplication extends HapptickBaseClient {
 
     private Long applicationId;
     private boolean isWorkAllowed = false;
@@ -39,6 +41,20 @@ public class HapptickApplication extends HapptickBaseClient {
      *            --startId=<value>.
      */
     public HapptickApplication(long applicationId, String serverAddress, int serverPort, String... args) throws HapptickException {
+
+        // Verify the hard coded applicationId and the applicationId which is
+        // used by the StartClient which got it from the central scheduler.
+        ArgsParser parser = new ArgsParser(args);
+        if (parser.containsStartsWith("--applicationId")) {
+            Long receivedId = Util.parseLong(parser.getValue("applicationId"), -1);
+
+            System.out.println("HapptickApplication.Construction. Check receivedId: " + receivedId);
+            System.out.println("HapptickApplication.Construction. Check applicationId: " + applicationId);
+
+            if (applicationId != receivedId)
+                throw new HapptickException(404L, "Empfangene applicationId und hart codierte applicationId sind nicht identisch.");
+        }
+
         this.applicationId = applicationId;
         this.serverAddress = serverAddress;
         this.serverPort = serverPort;
@@ -52,8 +68,8 @@ public class HapptickApplication extends HapptickBaseClient {
         // TODO Wenn dipatched getestet, kann der letzte Parameter auch nach
         // oben frei gegeben werden...
         connect(serverAddress, serverPort, args, applicationClient, false);
-        applicationClient.applicationIdToService(applicationId);
         applicationClient.startIdToService(args);
+        applicationClient.applicationIdToService(applicationId);
     }
 
     /**

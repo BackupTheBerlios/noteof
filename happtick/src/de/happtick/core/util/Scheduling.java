@@ -40,7 +40,6 @@ public class Scheduling {
         event.setApplicationId(applConf.getApplicationId());
         try {
             event.addAttribute("clientIp", applConf.getClientIp());
-            event.addAttribute("applicationId", String.valueOf(applConf.getApplicationId()));
             event.addAttribute("applicationPath", applConf.getExecutablePath());
             event.addAttribute("applicationType", applConf.getExecutableType());
             event.addAttribute("arguments", applConf.getExecutableArgs());
@@ -54,9 +53,9 @@ public class Scheduling {
 
     public static synchronized void stopApplication(ApplicationConfiguration applConf) throws HapptickException {
         ApplicationStopEvent event = new ApplicationStopEvent();
+        event.setApplicationId(applConf.getApplicationId());
         try {
             event.addAttribute("clientIp", applConf.getClientIp());
-            event.addAttribute("applicationId", String.valueOf(applConf.getApplicationId()));
             event.addAttribute("kill", "FALSE");
         } catch (ActionFailedException e) {
             throw new HapptickException(504L, e);
