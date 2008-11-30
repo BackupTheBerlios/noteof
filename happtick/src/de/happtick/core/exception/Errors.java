@@ -52,7 +52,7 @@ public class Errors {
         // Client lifecycle faults
         errorList.put(200L, "Fehler bei Beenden der Verbindung mit Service.");
         errorList.put(201L, "Fehler bei Anfrage der Start-Erlaubnis beim Service.");
-        errorList.put(202L, "Fehelr bei Senden eines Events an den Service.");
+        errorList.put(202L, "Fehler bei Senden eines Events an den Service.");
         errorList.put(206L, "Fehler bei Senden der Client-ID an den Service.");
         errorList.put(207L, "Fehler bei Senden der Beendigung des Clients an den Service.");
         errorList.put(208L, "Fehler bei Verwendung des Clients. Die Anwendung hat noch keine Starterlaubnis.");

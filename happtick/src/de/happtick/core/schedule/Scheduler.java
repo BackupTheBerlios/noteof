@@ -146,7 +146,6 @@ public class Scheduler {
          * runners (s. below)
          */
         protected void handleEvent() {
-            System.out.println("Scheduler.EventHandler.handleEvent...");
             // search for the configuration to this event
             List<EventConfiguration> eventConfigurations = Scheduling.getEventConfigurationsForEventType(this.event.getEventType());
             List<EventConfiguration> actionEventConfigurations = Scheduling.getEventConfigurationsForEvent(this.event, eventConfigurations);
@@ -255,7 +254,6 @@ public class Scheduler {
                 // start dependent applications
                 stoppedApplId = event.getApplicationId();
                 try {
-                    System.out.println("Scheduler.update. applsAfter");
                     ApplicationConfiguration stoppedConf = MasterTable.getApplicationConfiguration(stoppedApplId);
                     for (Long applId : stoppedConf.getApplicationsStartAfter()) {
                         ApplicationConfiguration afterConf = MasterTable.getApplicationConfiguration(applId);
@@ -330,11 +328,8 @@ public class Scheduler {
         }
     }
 
-    private ChainScheduler startChainScheduler(ChainConfiguration conf) throws HapptickException {
-        ChainScheduler chainSched = new ChainScheduler(conf);
-        Thread thread = new Thread(chainSched);
-        thread.start();
-        return chainSched;
+    private void startChainScheduler(ChainConfiguration conf) throws HapptickException {
+        new Thread(new ChainScheduler(conf)).start();
     }
 
     private class ChainScheduler implements Runnable, EventObserver {
@@ -367,6 +362,7 @@ public class Scheduler {
 
                 // filter events and configurations which the chain is
                 // interested in
+                System.out.println("Scheduler$ChainScheduler.Construction. vor observedEvents = ...");
                 this.observedEvents = Scheduling.filterObservedEventsForChain(conf.getChainId(), expectedEventActions, MasterTable
                         .getEventConfigurationsAsList());
                 // Hinzufügen der events, die als condition oder prevent in
@@ -438,7 +434,7 @@ public class Scheduler {
                         }
 
                         // OK - next chain or application please
-                        startAddressee();
+                        startChainAddressee();
                         // RETURN!
                         // Code below will not be used!
                         return;
@@ -487,13 +483,45 @@ public class Scheduler {
             clear();
         }
 
-        /*
-         * Startet eine Anwendung oder eine Chain
-         */
-        private void startAddressee() throws HapptickException {
+        protected void stop() {
+            stopped = true;
+        }
+
+        public void run() {
+            System.out.println("Scheduler.ChainScheduler.run started. chainId = " + conf.getChainId());
+            try {
+                // Ignition
+                System.out.println("Scheduler$ChainScheduler.Construction. Ignition!");
+                startChainAddressee();
+                while (!stopped) {
+                    Thread.sleep(10000);
+                }
+            } catch (Exception e) {
+                LocalLog.error("Scheduling fuer Chain mit Id " + conf.getChainId() + " ist ausgefallen.", e);
+            }
+        }
+
+        @Override
+        public String getName() {
+            return this.getClass().getCanonicalName();
+        }
+
+        @Override
+        public List<EventType> getObservedEvents() {
+            return this.observedEvents;
+        }
+
+        @Override
+        public void update(Service arg0, NotEOFEvent event) {
+            this.setEvent(event);
+        }
+
+        private void startChainAddressee() throws HapptickException {
             Long addresseeId = conf.getChainLinkList().get(nextStartConfIndex).getAddresseeId();
             String addresseeType = conf.getChainLinkList().get(nextStartConfIndex).getAddresseeType();
             ChainLink link = conf.getChainLinkList().get(nextStartConfIndex);
+
+            System.out.println("Scheduler.ChainScheduler.startAddressee. nextStartConfIndex = " + nextStartConfIndex);
 
             try {
                 // application
@@ -518,7 +546,8 @@ public class Scheduler {
                     nextStartConfIndex = 0;
                 }
             } catch (ActionFailedException e) {
-                throw new HapptickException(502L, "ChainId: " + conf.getChainId() + "; AddresseeId: " + addresseeId + "; AddresseeType: " + addresseeType, e);
+                LocalLog.warn("Start einer Anwendung oder einer Chain innerhalb einer Chain ist fehlgeschlagen. ChainId: " + conf.getChainId()
+                        + "; AddresseeId: " + addresseeId + "; AddresseeType: " + addresseeType, e);
             }
         }
 
@@ -539,7 +568,7 @@ public class Scheduler {
                 System.out.println("Scheduler.conditionsValid. ConditionKey ist gesetzt.");
                 conditionEventFound = false;
                 reason = "Condition Event wurde bisher nicht gefeuert.";
-                for (EventType type : this.observedEvents) {
+                for (EventType type : observedEvents) {
                     String typeName = type.name();
                     String actionKey = typeName + link.getConditionKey() + link.getConditionValue();
                     System.out.println("Scheduler.conditionsValid. ActionKey: " + actionKey);
@@ -559,7 +588,7 @@ public class Scheduler {
             if (!Util.isEmpty(link.getPreventKey())) {
                 System.out.println("Scheduler.conditionsValid. PreventKey ist gesetzt.");
                 preventEventFound = false;
-                for (EventType type : this.observedEvents) {
+                for (EventType type : observedEvents) {
                     String typeName = type.name();
                     String actionKey = typeName + link.getPreventKey() + link.getPreventValue();
 
@@ -587,39 +616,6 @@ public class Scheduler {
             System.out.println("Scheduler.conditionsValid. Und nü? " + (!preventEventFound && conditionEventFound));
             // alle Bedingungen erfuellt
             return true;
-        }
-
-        protected void stop() {
-            stopped = true;
-        }
-
-        public void run() {
-            System.out.println("Scheduler.ChainScheduler.run started. chainId = " + conf.getChainId());
-            try {
-                // Ignition
-                System.out.println("Scheduler.Construction: Ignition!");
-                startAddressee();
-                while (!stopped) {
-                    Thread.sleep(10000);
-                }
-            } catch (Exception e) {
-                LocalLog.error("Scheduling fuer Chain mit Id " + conf.getChainId() + " ist ausgefallen.", e);
-            }
-        }
-
-        @Override
-        public String getName() {
-            return this.getClass().getCanonicalName();
-        }
-
-        @Override
-        public List<EventType> getObservedEvents() {
-            return this.observedEvents;
-        }
-
-        @Override
-        public void update(Service arg0, NotEOFEvent event) {
-            this.setEvent(event);
         }
     }
 
@@ -653,7 +649,6 @@ public class Scheduler {
                         // applications to start syncronously
                         if (!Util.isEmpty(conf.getApplicationsStartSync())) {
                             for (Long applId : conf.getApplicationsStartSync()) {
-                                System.out.println("Scheduler$ApplicationScheduler.run. synchronouse applId: " + applId);
                                 ApplicationConfiguration syncConf = MasterTable.getApplicationConfiguration(applId);
                                 if (null != syncConf) {
                                     Scheduling.startApplication(syncConf);

@@ -166,8 +166,6 @@ public class ApplicationConfiguration {
      * @return TRUE if there is a plan, otherwise FALSE
      */
     public boolean hasTimePlan() {
-        System.out.println("ApplicationConfiguration.hasTimePlan: _"
-                + (timePlanHours + timePlanMinutes + timePlanSeconds + timePlanMonthdays + timePlanWeekdays) + "_");
         return (!(Util.isEmpty(timePlanHours) && //
                 Util.isEmpty(timePlanMinutes) && //
                 Util.isEmpty(timePlanSeconds) && //

@@ -251,7 +251,6 @@ public abstract class MailAndEventReceiveService extends BaseService {
         responseTo(MailTag.RESP_READY_FOR_EVENTLIST, MailTag.VAL_OK.name());
         DataObject dataObject = receiveDataObject();
         if (null != dataObject && null != dataObject.getList() && dataObject.getList().size() > 0) {
-            System.out.println("MailAndEventReceiveService.addEvents: Liste wird ergänzt");
             addInterestingEventNames((List<String>) dataObject.getList());
         }
     }

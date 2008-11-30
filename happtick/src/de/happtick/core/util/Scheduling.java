@@ -26,6 +26,37 @@ import de.notEOF.core.util.Util;
 
 public class Scheduling {
 
+    private static class ApplicationStarter implements Runnable {
+        private ApplicationConfiguration applConf;
+
+        protected ApplicationStarter(ApplicationConfiguration applConf) {
+            this.applConf = applConf;
+        }
+
+        public void run() {
+            // Check if the StartClient for the IP-Address is active
+            while (Util.isEmpty(MasterTable.getStartClientEvent(applConf.getClientIp()))) {
+                try {
+                    Thread.sleep(3000);
+                } catch (InterruptedException e) {
+                }
+            }
+            ApplicationStartEvent event = new ApplicationStartEvent();
+            event.setApplicationId(applConf.getApplicationId());
+            try {
+                event.addAttribute("clientIp", applConf.getClientIp());
+                event.addAttribute("applicationPath", applConf.getExecutablePath());
+                event.addAttribute("applicationType", applConf.getExecutableType());
+                event.addAttribute("arguments", applConf.getExecutableArgs());
+                event.addAttribute("windowsSupport", String.valueOf(applConf.isWindowsSupport()));
+            } catch (ActionFailedException e) {
+                LocalLog.error("Start einer Anwendung ist fehlgeschlagen.", e);
+            }
+
+            raiseEvent(event);
+        }
+    }
+
     /**
      * Uses the UpdateObserver functionality to inform the StartClients about
      * the start ignition.
@@ -36,19 +67,8 @@ public class Scheduling {
     public static synchronized void startApplication(ApplicationConfiguration applConf) throws HapptickException {
         if (null == applConf)
             throw new HapptickException(503L, "Anwendungskonfiguration fehlt.");
-        ApplicationStartEvent event = new ApplicationStartEvent();
-        event.setApplicationId(applConf.getApplicationId());
-        try {
-            event.addAttribute("clientIp", applConf.getClientIp());
-            event.addAttribute("applicationPath", applConf.getExecutablePath());
-            event.addAttribute("applicationType", applConf.getExecutableType());
-            event.addAttribute("arguments", applConf.getExecutableArgs());
-            event.addAttribute("windowsSupport", String.valueOf(applConf.isWindowsSupport()));
-        } catch (ActionFailedException e) {
-            throw new HapptickException(503L, e);
-        }
 
-        raiseEvent(event);
+        new Thread(new ApplicationStarter(applConf)).start();
     }
 
     public static synchronized void stopApplication(ApplicationConfiguration applConf) throws HapptickException {
@@ -80,7 +100,7 @@ public class Scheduling {
      * @param applConf
      * @return
      */
-    public static boolean mustWaitForOtherApplication(ApplicationConfiguration applConf) {
+    public static synchronized boolean mustWaitForOtherApplication(ApplicationConfiguration applConf) {
         for (Long id : applConf.getApplicationsWaitFor()) {
             // if list with found services > 0 there exists one or more service
             if (!Util.isEmpty(MasterTable.getApplicationServicesByApplicationId(id)))
@@ -102,7 +122,7 @@ public class Scheduling {
      *            Configuration of the application that is asking here.
      * @return True if the application has to wait.
      */
-    public static boolean isEqualApplicationActive(ApplicationConfiguration applConf) throws HapptickException {
+    public static synchronized boolean isEqualApplicationActive(ApplicationConfiguration applConf) throws HapptickException {
         if (Util.isEmpty(applConf)) {
             throw new HapptickException(404L, "Pruefung auf aktive Anwendung im Scheduling.");
         }
@@ -119,7 +139,7 @@ public class Scheduling {
         return false;
     }
 
-    public static boolean mustWaitForSameApplication(Long applId) throws HapptickException {
+    public static synchronized boolean mustWaitForSameApplication(Long applId) throws HapptickException {
         ApplicationConfiguration conf = MasterTable.getApplicationConfiguration(applId);
 
         if (null == conf) {
@@ -148,7 +168,7 @@ public class Scheduling {
      *         configuration, ignoring other active processes etc.
      * @throws ActionFailedException
      */
-    public static Date calculateNextStart(ApplicationConfiguration applConf, int offsetSeconds) {
+    public static synchronized Date calculateNextStart(ApplicationConfiguration applConf, int offsetSeconds) {
 
         // Mit aktueller Systemzeit beginnen...
         Calendar calcDate = new GregorianCalendar();
@@ -287,7 +307,7 @@ public class Scheduling {
      *            Complete List of all EventConfigurations (MasterTable)
      * @return Filtered EventTypes - matching to the conditions above.
      */
-    public static List<EventType> filterObservedEventsForChain(Long addresseeId, Map<String, ChainAction> chainActions,
+    public static synchronized List<EventType> filterObservedEventsForChain(Long addresseeId, Map<String, ChainAction> chainActions,
             List<EventConfiguration> eventConfigurations) {
         // only one entry for the different event types is needed...
         // so a map simplifies filtering that
@@ -302,6 +322,8 @@ public class Scheduling {
                     // action merken
                     ChainAction action = new ChainAction(conf.getAction(), conf.getAddresseeType(), conf.getAddresseeId(), true);
                     String typeName = type.name();
+                    System.out.println("Scheduling.filterObservedEventsForChain. chainActions.put: " + typeName + conf.getKeyName() + conf.getKeyValue()
+                            + action.getAction());
                     chainActions.put(typeName + conf.getKeyName() + conf.getKeyValue(), action);
                 }
             }
@@ -310,6 +332,11 @@ public class Scheduling {
         }
         Set<EventType> typeSet = types.keySet();
         List<EventType> typeList = new ArrayList<EventType>();
+
+        for (EventType type : typeSet) {
+            System.out.println("Scheduling.filterObservedEventsForChain. typeList.Add: " + type.name());
+        }
+
         typeList.addAll(typeSet);
 
         return typeList;
@@ -327,7 +354,7 @@ public class Scheduling {
      * @param link
      *            The ChainLink contains perhaps a prevent or a condition event.
      */
-    public static void updateObservedEventsForChain(List<EventType> observedEvents, Map<String, ChainAction> chainActions, ChainLink link)
+    public static synchronized void updateObservedEventsForChain(List<EventType> observedEvents, Map<String, ChainAction> chainActions, ChainLink link)
             throws HapptickException {
         // Conditions
         if (null != link.getConditionEventId()) {
@@ -351,6 +378,8 @@ public class Scheduling {
                 // action merken
                 ChainAction action = new ChainAction("condition", link.getAddresseeType(), link.getAddresseeId(), link.isSkip());
                 String typeName = type.name();
+                System.out.println("Scheduling.updateObservedEventsForChain. Conditions... chainActions.put: " + typeName + link.getConditionKey()
+                        + link.getConditionValue() + action.getAction());
                 chainActions.put(typeName + link.getConditionKey() + link.getConditionValue(), action);
             } catch (ActionFailedException e) {
                 LocalLog.warn("ChainLink konnte nicht auf Condition untersucht werden.", e);
@@ -375,6 +404,8 @@ public class Scheduling {
                 // action merken
                 ChainAction action = new ChainAction("prevent", link.getAddresseeType(), link.getAddresseeId(), link.isSkip());
                 String typeName = type.name();
+                System.out.println("Scheduling.updateObservedEventsForChain. Prevents... chainActions.put: " + typeName + link.getConditionKey()
+                        + link.getConditionValue() + action.getAction());
                 chainActions.put(typeName + link.getPreventKey() + link.getPreventValue(), action);
             } catch (ActionFailedException e) {
                 LocalLog.warn("ChainLink konnte nicht auf Prevent untersucht werden.", e);

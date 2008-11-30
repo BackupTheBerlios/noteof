@@ -52,6 +52,7 @@ public class ChainConfiguration {
             chainId = Util.parseLong(conf.getAttribute(node, "chainId", "-1"), -1);
             // dependency
             depends = Util.parseBoolean(conf.getAttribute(node, "depends"), false);
+            System.out.println("ChainConfiguration.Construction. chainId: " + chainId + "; depends: " + depends);
             // loop
             loop = Util.parseBoolean(conf.getAttribute(node, "loop"), false);
 

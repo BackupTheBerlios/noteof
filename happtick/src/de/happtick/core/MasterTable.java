@@ -12,6 +12,7 @@ import de.happtick.configuration.EventConfiguration;
 import de.happtick.core.application.service.ApplicationService;
 import de.happtick.core.exception.HapptickException;
 import de.notEOF.configuration.LocalConfiguration;
+import de.notEOF.core.enumeration.EventType;
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.interfaces.NotEOFConfiguration;
 import de.notEOF.core.interfaces.NotEOFEvent;
@@ -34,16 +35,9 @@ public class MasterTable {
     private static Map<Long, ApplicationConfiguration> applicationConfigurations = new HashMap<Long, ApplicationConfiguration>();
     private static Map<Long, ChainConfiguration> chainConfigurations = new HashMap<Long, ChainConfiguration>();
     private static Map<Long, EventConfiguration> eventConfigurations = new HashMap<Long, EventConfiguration>();
-    // private static Map<String, RaiseConfiguration> raiseConfigurations = new
-    // HashMap<String, RaiseConfiguration>();
     private static Map<String, Service> services = new HashMap<String, Service>();
-    // Liste der gestarteten oder aktiven Applications. Hier spielt die Anzahl
-    // der Applications keine Rolle. Es kann auch sein, dass eine Anwendung, die
-    // mehrfach gestartet werden darf, nicht mehr in dieser Liste auftaucht.
-    // Weil sie mit dem ersten Stopp wieder entfernt wird. Das macht aber nix.
-    // Die Liste ist also nur wichtig zum Vereiteln des Mehrfachstarts, wenn der
-    // nicht erlaubt ist.
     private static Map<Long, NotEOFEvent> startEvents = new HashMap<Long, NotEOFEvent>();
+    private static Map<String, NotEOFEvent> startClientEvents = new HashMap<String, NotEOFEvent>();
 
     private static boolean inAction = false;
     private static boolean confUpdated = false;
@@ -358,7 +352,6 @@ public class MasterTable {
      *         master tables.
      */
     public synchronized static ApplicationConfiguration getApplicationConfiguration(Long applicationId) throws HapptickException {
-        System.out.println("MasterTable.getApplicationConfiguration(). applicationId = " + applicationId);
         ApplicationConfiguration ret = applicationConfigurations.get(applicationId);
         if (Util.isEmpty(ret))
             throw new HapptickException(405L, "ApplicationConfiguration. Id: " + applicationId);
@@ -513,5 +506,40 @@ public class MasterTable {
 
     public static long getMaxDelay() {
         return maxDelay;
+    }
+
+    /**
+     * StartClients send START and STOP signals by StartClienEvent.
+     * <p>
+     * This signals are used by the scheduler to allow or prevent the start of
+     * applications.
+     * 
+     * @param ipAddress
+     *            The server-address of the StartClient
+     * @return The last fired event of the StartClient or NULL
+     */
+    public static NotEOFEvent getStartClientEvent(String ipAddress) {
+        return startClientEvents.get(ipAddress);
+    }
+
+    /**
+     * StartClients send START and STOP signals by StartClienEvent.
+     * <p>
+     * This START signal must be stored in the MasterTables. When the STOP
+     * signal arrives the START must be deleted.
+     * 
+     * @param event
+     *            The last fired StartClienEvent of the StartClient
+     */
+    public static void updateStartClientEvent(NotEOFEvent event) {
+        if (EventType.EVENT_START_CLIENT.equals(event.getEventType())) {
+
+            if (event.getAttribute("state").equals("START")) {
+                startClientEvents.put(event.getAttribute("clientIp"), event);
+            }
+            if (event.getAttribute("state").equals("STOP")) {
+                startClientEvents.remove(event.getAttribute("clientIp"));
+            }
+        }
     }
 }

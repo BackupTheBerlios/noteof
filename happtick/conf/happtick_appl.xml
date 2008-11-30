@@ -9,7 +9,7 @@
 
 <root>
 	<scheduler>
-	   	<use chain="false" timer="true" ></use>
+	   	<use chain="true" timer="true" ></use>
 	   	<!-- 
 	   		 max. milliseconds from calculated start point until real start point
 	   		 for slow server or very high used capacity of the server 
@@ -54,18 +54,18 @@
 		    	      - preventKeyName, preventKeyValue Attribute and Value which the preventEvent mus have (optional)
 		    	      - skip is optional, default is false.
 		    	-->
-				<link0 linkId="1" addresseeType="application" addresseeId="2"></link0>
+				<link0 linkId="1" addresseeType="application" addresseeId="88"></link0>
 				<link1 linkId="2" addresseeType="chain"       addresseeId="2"></link1>
-				<link2 linkId="0" addresseeType="application" addresseeId="1"
-				                  conditionEventId="1" conditionKeyName="applicationId" conditionKeyValue="1"
+				<link2 linkId="0" addresseeType="application" addresseeId="77"
+				                  conditionEventId="1" conditionKeyName="internal->applicationId" conditionKeyValue="88"
 				                  preventEventId="2"   preventKeyName="exitCode"   preventKeyValue="0" skip="false"></link2>
 		    </chain1>
 		    
 		    <chain2 depends="true" loop="false" chainId="2">
 		    	<link>link0</link>
 		    	<link>link1</link>
-				<link0 linkId="0" addresseeType="application" addresseeId="1"></link0>
-				<link1 linkId="1" addresseeType="application" addresseeId="2"></link1>
+				<link0 linkId="0" addresseeType="application" addresseeId="88"></link0>
+				<link1 linkId="1" addresseeType="application" addresseeId="88"></link1>
 		    </chain2>
 		    
 	    </chains>
@@ -108,7 +108,7 @@
 			    - please note the special eventClassName 'Alias:MyOwnEvent'. If an self described event was fired it is recognized as
 			      'GenericEvent'. The notation Alias:<AliasEventName> is required here to map the incoming event to the fired event
 			-->	    	
-	    	<event1 eventId="1" eventClassName="ApplicationStartEvent" keyName="exitCode" keyValue="9" action="start" addresseeType="application" applicationId="44" addresseeId="77"></event1>
+	    	<event1 eventId="1" eventClassName="ApplicationStoppedEvent" keyName="exitCode" keyValue="9" action="start" addresseeType="application" applicationId="88" addresseeId="77"></event1>
 	    	<event2 eventId="2" eventClassName="AlarmEvent" action="stop" addresseeType="application" addresseeId="55"></event2>
 	    	<event3 eventId="3" eventClassName="GenericEvent" action="ignite" addresseeType="event" addresseeId="8"></event3>
 	    	<event4 eventId="4" eventClassName="ApplicationStartedEvent"></event4>
@@ -211,7 +211,7 @@
 		
 		<application2 applicationId="2">
 			<client clientIp="localhost"></client>
-			<executable type="JAVA" path="c:/programme/holterdipolter.bat">
+			<executable type="UNKNOWN" path="write.exe" windows="true">
 				<args>--xxx="10" --yyy=20</args>
 			</executable>
 			<option multiplestart="true" enforce="true"></option>

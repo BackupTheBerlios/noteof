@@ -24,11 +24,11 @@ public class ChainLink {
         addresseeId = (Util.parseLong(conf.getAttribute(node, "addresseeId"), -1));
         addresseeType = conf.getAttribute(node, "addresseeType");
         conditionEventId = Util.parseLong(conf.getAttribute(node, "conditionEventId"), -1);
-        conditionKey = conf.getAttribute(node, "conditionKey");
-        conditionValue = conf.getAttribute(node, "conditionValue");
+        conditionKey = conf.getAttribute(node, "conditionKeyName");
+        conditionValue = conf.getAttribute(node, "conditionKeyValue");
         preventEventId = Util.parseLong(conf.getAttribute(node, "preventEventId"), -1);
-        preventKey = conf.getAttribute(node, "preventKey");
-        preventValue = conf.getAttribute(node, "preventValue");
+        preventKey = conf.getAttribute(node, "preventKeyName");
+        preventValue = conf.getAttribute(node, "preventKeyValue");
         skip = Util.parseBoolean(conf.getAttribute(node, "skip"), false);
     }
 

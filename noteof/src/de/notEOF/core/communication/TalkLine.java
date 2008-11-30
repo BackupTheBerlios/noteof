@@ -106,6 +106,10 @@ public class TalkLine implements Observer {
         return socketLayer.getSocketToPartner().getInetAddress().getHostAddress();
     }
 
+    public String getLocalAddress() {
+        return socketLayer.getSocketToPartner().getLocalAddress().getHostAddress();
+    }
+
     public boolean isConnected() {
         return socketLayer.isConnected();
     }

@@ -6,9 +6,11 @@ import java.util.List;
 
 import de.happtick.core.client.HapptickBaseClient;
 import de.happtick.core.event.ApplicationStartEvent;
+import de.happtick.core.event.StartClientEvent;
 import de.happtick.core.exception.HapptickException;
 import de.happtick.core.util.ExternalCalls;
 import de.notEOF.core.enumeration.EventType;
+import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.interfaces.NotEOFClient;
 import de.notEOF.core.interfaces.NotEOFEvent;
 import de.notEOF.core.logging.LocalLog;
@@ -62,13 +64,31 @@ public class StartClient extends HapptickBaseClient implements MailAndEventRecip
         // Before this the method useMailsAndEvents() must be called
         startAcceptingMailsEvents();
 
+        // tell scheduler that at this computer a StartClient is active
+        NotEOFEvent event = new StartClientEvent();
+        try {
+            event.addAttribute("state", "START");
+            event.addAttribute("clientIp", getSimpleClient().getTalkLine().getSocketToPartner().getLocalAddress().getHostName());
+            sendEvent(event);
+        } catch (ActionFailedException e) {
+            LocalLog.error("Fehler bei Senden des StartEvent an den Scheduler. Scheduler kann Anwendungen fuer diesen Client nicht beruecksichtigen.", e);
+        }
+
         while (!stopped) {
             try {
                 Thread.sleep(10000);
             } catch (InterruptedException e) {
-                System.out.println("StartClient wurde beendet.\n" + e);
+                System.out.println("StartClient wird beendet.\n" + e);
                 break;
             }
+        }
+        event = new StartClientEvent();
+        try {
+            event.addAttribute("state", "STOP");
+            event.addAttribute("clientIp", getSimpleClient().getTalkLine().getLocalAddress());
+            sendEvent(event);
+        } catch (ActionFailedException e) {
+            LocalLog.error("Fehler bei Senden des StopEvent an den Scheduler. Scheduler wird Anwendungen fuer diesen Client weiter beruecksichtigen.", e);
         }
     }
 
@@ -141,7 +161,6 @@ public class StartClient extends HapptickBaseClient implements MailAndEventRecip
      */
     @Override
     public synchronized void processEvent(NotEOFEvent event) {
-        System.out.println("Event Received...");
         if (event.getEventType().equals(EventType.EVENT_APPLICATION_START)) {
             startStarter(event);
         }
