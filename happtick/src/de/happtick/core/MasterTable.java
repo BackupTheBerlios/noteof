@@ -76,47 +76,38 @@ public class MasterTable {
 
             // processChain
             // aktiv?
-            Boolean useChain = Util.parseBoolean(conf.getAttribute("scheduler.use", "chain"), false);
-            if (useChain) {
-                // Liste der nodes
-                List<String> nodes = conf.getTextList("scheduler.chains.chain");
-                if (null != nodes) {
-                    // for every node create object of type ChainConfiguration
-                    // the objects initialize themselve with configuration data
-                    for (String node : nodes) {
-                        ChainConfiguration chainConf = new ChainConfiguration(node, conf);
-                        chainConfigurations.put(chainConf.getChainId(), chainConf);
-                    }
+            // Boolean useChain =
+            // Util.parseBoolean(conf.getAttribute("scheduler.use", "chain"),
+            // false);
+            // if (useChain) {
+            // Liste der nodes
+            List<String> chainNodes = conf.getTextList("scheduler.chains.chain");
+            if (null != chainNodes) {
+                // for every node create object of type ChainConfiguration
+                // the objects initialize themselve with configuration data
+                for (String node : chainNodes) {
+                    ChainConfiguration chainConf = new ChainConfiguration(node, conf);
+                    chainConfigurations.put(chainConf.getChainId(), chainConf);
                 }
             }
+            // }
 
             // ApplicationConfigurations
             // timer gesteuert?
-            Boolean useTimer = Util.parseBoolean(conf.getAttribute("scheduler.use", "timer"), false);
-            if (useTimer) {
-                // Liste der nodes
-                List<String> nodes = conf.getTextList("scheduler.applications.application");
-                if (null != nodes) {
-                    // for every node create Object ApplicationConfiguration
-                    // the Objects read the configuration by themselve
-                    for (String node : nodes) {
-                        ApplicationConfiguration applConf = new ApplicationConfiguration(node, conf);
-                        applicationConfigurations.put(applConf.getApplicationId(), applConf);
-                    }
+            // Boolean useTimer =
+            // Util.parseBoolean(conf.getAttribute("scheduler.use", "timer"),
+            // false);
+            // if (useTimer) {
+            // Liste der nodes
+            List<String> applNodes = conf.getTextList("scheduler.applications.application");
+            if (null != applNodes) {
+                // for every node create Object ApplicationConfiguration
+                // the Objects read the configuration by themselve
+                for (String node : applNodes) {
+                    ApplicationConfiguration applConf = new ApplicationConfiguration(node, conf);
+                    applicationConfigurations.put(applConf.getApplicationId(), applConf);
                 }
             }
-
-            // // Liste der raise-nodes
-            // List<String> raiseNodes =
-            // conf.getTextList("scheduler.events.raise");
-            // if (null != raiseNodes) {
-            // // for every node create object of type RaiseConfiguration
-            // // the objects initialize themselve with configuration data
-            // for (String node : raiseNodes) {
-            // RaiseConfiguration raiseConf = new RaiseConfiguration(node,
-            // conf);
-            // raiseConfigurations.put(raiseConf.getRaiseId(), raiseConf);
-            // }
             // }
 
             confUpdated = true;

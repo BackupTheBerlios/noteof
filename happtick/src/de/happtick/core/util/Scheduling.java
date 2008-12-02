@@ -307,23 +307,23 @@ public class Scheduling {
      *            Complete List of all EventConfigurations (MasterTable)
      * @return Filtered EventTypes - matching to the conditions above.
      */
-    public static synchronized List<EventType> filterObservedEventsForChain(Long addresseeId, Map<String, ChainAction> chainActions,
+    public static synchronized void filterObservedEventsForChain(Long addresseeId, List<EventType> typeList, Map<String, ChainAction> chainActions,
             List<EventConfiguration> eventConfigurations) {
         // only one entry for the different event types is needed...
         // so a map simplifies filtering that
         Map<EventType, EventType> types = new HashMap<EventType, EventType>();
         try {
             for (EventConfiguration conf : eventConfigurations) {
-                if (Util.isEmpty(conf.getAddresseeId()) || //
-                        conf.getAddresseeId().equals(addresseeId)) {
+                if ("chain".equalsIgnoreCase(conf.getAddresseeType()) && //
+                        (Util.isEmpty(conf.getAddresseeId()) || //
+                                -1 == conf.getAddresseeId() || //
+                        conf.getAddresseeId() == addresseeId)) {
                     EventType type = Util.lookForEventType(conf.getEventClassName());
                     types.put(type, type);
 
                     // action merken
                     ChainAction action = new ChainAction(conf.getAction(), conf.getAddresseeType(), conf.getAddresseeId(), true);
                     String typeName = type.name();
-                    System.out.println("Scheduling.filterObservedEventsForChain. chainActions.put: " + typeName + conf.getKeyName() + conf.getKeyValue()
-                            + action.getAction());
                     chainActions.put(typeName + conf.getKeyName() + conf.getKeyValue(), action);
                 }
             }
@@ -331,15 +331,11 @@ public class Scheduling {
             LocalLog.warn("Event konnte der Chain nicht zugeordnet werden.", e);
         }
         Set<EventType> typeSet = types.keySet();
-        List<EventType> typeList = new ArrayList<EventType>();
-
-        for (EventType type : typeSet) {
-            System.out.println("Scheduling.filterObservedEventsForChain. typeList.Add: " + type.name());
-        }
+        // List<EventType> typeList = new ArrayList<EventType>();
 
         typeList.addAll(typeSet);
 
-        return typeList;
+        // return typeList;
     }
 
     /**

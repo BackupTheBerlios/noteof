@@ -9,7 +9,12 @@
 
 <root>
 	<scheduler>
-	   	<use chain="true" timer="true" ></use>
+		<!-- activating/deactivating the scheduler functionalities
+			 - chain Chains are processed
+			 - timer Applications will be scheduled by timing
+			 - event Applications, chains, events are processed by incoming events
+		-->
+	   	<use chain="true" timer="false" event="false"></use>
 	   	<!-- 
 	   		 max. milliseconds from calculated start point until real start point
 	   		 for slow server or very high used capacity of the server 
@@ -32,7 +37,7 @@
 		    	 Here also the order within the list is the order how the scheduler starts chains.
 		     -->
 	    	<chain>chain1</chain>
-	    	<chain>chain2</chain>
+ 	    	<chain>chain2</chain> 
 	    	<!-- 
 	    		 - depends if true the chain ends with the end of the last application or chain
 	    		                   loop will be ignored then
@@ -54,17 +59,18 @@
 		    	      - preventKeyName, preventKeyValue Attribute and Value which the preventEvent mus have (optional)
 		    	      - skip is optional, default is false.
 		    	-->
-				<link0 linkId="1" addresseeType="application" addresseeId="88"></link0>
+				<link0 linkId="1" addresseeType="application" addresseeId="33"></link0>
 				<link1 linkId="2" addresseeType="chain"       addresseeId="2"></link1>
-				<link2 linkId="0" addresseeType="application" addresseeId="77"
-				                  conditionEventId="1" conditionKeyName="internal->applicationId" conditionKeyValue="77"
+				<link2 linkId="0" addresseeType="application" addresseeId="77"></link2>
+<!-- 				                  conditionEventId="1" conditionKeyName="internal->applicationId" conditionKeyValue="77"
 				                  preventEventId="2"   preventKeyName="exitCode"   preventKeyValue="0" skip="false"></link2>
+-->				                  
 		    </chain1>
 		    
 		    <chain2 depends="true" loop="false" chainId="2">
 		    	<link>link0</link>
 		    	<link>link1</link>
-				<link0 linkId="0" addresseeType="application" addresseeId="33"></link0>
+				<link0 linkId="0" addresseeType="application" addresseeId="88"></link0>
 				<link1 linkId="1" addresseeType="application" addresseeId="2"></link1>
 		    </chain2>
 		    
@@ -108,7 +114,7 @@
 			    - please note the special eventClassName 'Alias:MyOwnEvent'. If an self described event was fired it is recognized as
 			      'GenericEvent'. The notation Alias:<AliasEventName> is required here to map the incoming event to the fired event
 			-->	    	
-	    	<event1 eventId="1" eventClassName="ApplicationStoppedEvent" keyName="exitCode" keyValue="9" action="start" addresseeType="application" applicationId="88" addresseeId="77"></event1>
+	    	<event1 eventId="1" eventClassName="ApplicationStoppedEvent" keyName="exitCode" keyValue="9" action="start" addresseeType="application" applicationId="33" addresseeId="77"></event1>
 	    	<event2 eventId="2" eventClassName="AlarmEvent" action="stop" addresseeType="application" addresseeId="55"></event2>
 	    	<event3 eventId="3" eventClassName="GenericEvent" action="ignite" addresseeType="event" addresseeId="8"></event3>
 	    	<event4 eventId="4" eventClassName="ApplicationStartedEvent"></event4>
@@ -183,11 +189,11 @@
 			     Use blanks or comma as delimiter for textual lists here.
 			-->
 			<timeplan> 
-				<seconds>10 30 50</seconds> <!-- blank OR comma seperated -->
+				<seconds>0 30</seconds> <!-- blank OR comma seperated -->
 				<minutes>*</minutes>
 				<hours>*</hours> <!-- blank OR comma seperated -->
 				<weekdays>*</weekdays> <!-- mixed english and german is allowed (MO, TU, DI, WE, MI, ...)  -->
-				<monthdays>11</monthdays>
+				<monthdays>2</monthdays>
 			</timeplan>
 			
 			<!-- dependencies
@@ -239,7 +245,7 @@
 		<application4 applicationId="33">
 			<client clientIp="localhost"></client>
 			<executable type="UNKNOWN" path="notepad.exe" windows="true">
-				<args>--xxx="10" --yyy=20</args>
+				<args></args>
 			</executable>
 			<option multiplestart="true" enforce="false"></option>
 		</application4>

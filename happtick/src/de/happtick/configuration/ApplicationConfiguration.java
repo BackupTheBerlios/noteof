@@ -202,9 +202,11 @@ public class ApplicationConfiguration {
         // if no instance of application is running and enforce is set to true
         // the application must start immediately
         // but don't look to often...
+        System.out.println("ApplicationConfiguration.startAllowed. isEqualApplicationActive ?" + Scheduling.isEqualApplicationActive(this));
         if ((!Scheduling.isEqualApplicationActive(this)) && enforce) {
             return 0;
         }
+        System.out.println("ApplicationConfiguration.startAllowed. isEqualApplicationActive ?" + Scheduling.isEqualApplicationActive(this));
 
         waitTime = nextStartDate.getTime() - timeNow - 300;
         if (waitTime < 0) {
@@ -218,6 +220,7 @@ public class ApplicationConfiguration {
         // Perhaps this application has to wait till other application processes
         // are stopped
         if (Scheduling.mustWaitForOtherApplication(this)) {
+            System.out.println("ApplicationConfiguration.startAllowed. mustWaitForOtherApplication");
             return 5000;
         }
 
@@ -229,6 +232,7 @@ public class ApplicationConfiguration {
             // check if other instances of application are running
             // and if multiple start is allowed
             if (!isMultipleStart() && Scheduling.isEqualApplicationActive(this)) {
+                System.out.println("ApplicationConfiguration.startAllowed. equalApplicationActive");
                 // wait for ending other instances (next time point is
                 // calculated above)
                 return 300;

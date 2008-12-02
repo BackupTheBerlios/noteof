@@ -454,12 +454,34 @@ public class Util {
             }
 
             try {
+                System.out.println("===============   Util.unregisterFromEvents. Observer: " + eventObserver.getName());
                 eventObservers.remove(eventObserver.getName());
             } catch (Exception e) {
                 LocalLog.warn("EventObserver konnte nicht entfernt werden: " + eventObserver.getName(), e);
             }
             registeringObserver = false;
         }
+    }
+
+    // the object which sends the event would stand still till the observers all
+    // have processed the event.
+    // so the updating is processed within a thread.
+    private static class ObserverUpdater implements Runnable {
+        private EventObserver observer;
+        private Service service;
+        private NotEOFEvent event;
+
+        protected ObserverUpdater(EventObserver observer, Service service, NotEOFEvent event) {
+            this.observer = observer;
+            this.service = service;
+            this.event = event;
+        }
+
+        @Override
+        public void run() {
+            observer.update(service, event);
+        }
+
     }
 
     /**
@@ -516,7 +538,7 @@ public class Util {
                     for (EventType type : eventObserver.getObservedEvents()) {
                         if (type.equals(EventType.EVENT_ANY_TYPE) || type.equals(event.getEventType())) {
                             try {
-                                eventObserver.update(service, event);
+                                new Thread(new ObserverUpdater(eventObserver, service, event)).start();
                             } catch (Exception e) {
                                 LocalLog.error("Fehler bei Weiterleitung eines Events an einen Observer. Observer: " + eventObserver.getName(), e);
                             }
