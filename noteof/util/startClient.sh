@@ -1,4 +1,4 @@
-echo ============================== Scheduler ==============================
+echo ========================== StartClient ==============================
 
 export NOTEOF_HOME=/home/dgo01/workspace/noteof
 export CLASSPATH=$CLASSPATH:$NOTEOF_HOME/lib/noteof.jar
@@ -10,9 +10,8 @@ export CLASSPATH=$CLASSPATH:/home/dgo01/workspace/happtick/lib/happtick.jar
 export JAVA_HOME=/usr/java/jdk1.6.0_11/jre
 
 echo $CLASSPATH
-$JAVA_HOME/bin/java -version
 
-$JAVA_HOME/bin/java de.happtick.core.schedule.Scheduler --homeVar=NOTEOF_HOME --baseConfFile=noteof_master.xml --baseConfPath=conf --port=3000
+$JAVA_HOME/bin/java de.happtick.core.start.client.StartClient --serverIp=localhost --serverPort=3000
 
+echo ========================== StartClient ==============================
 
-echo ============================== Scheduler ==============================

@@ -11,7 +11,7 @@ export JAVA_HOME=/usr/java/jdk1.6.0_11/jre
 
 echo $CLASSPATH
 echo $LIB_PATH
-echo $JAVA_HOME/bin/java -version
+$JAVA_HOME/bin/java -version
 
 
 $JAVA_HOME/bin/java de.notEOF.core.server.Server --port=3000 --homeVar=NOTEOF_HOME
