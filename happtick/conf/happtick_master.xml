@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <root>
 	<configuration>
-	  	<xml fileName="happtick_appl.xml"/>
+	  	<xml fileName="happtick_appl_linux.xml"/>
 	  	<xml fileName="events.xml"/>
 		<section sectionName="noteof_root"/>
 	</configuration>

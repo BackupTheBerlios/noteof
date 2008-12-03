@@ -165,7 +165,7 @@
 			     windows set to true if a shell start script is used (don't forget 'exit' as last command within this script) 
 			     args is a calling argument
 			--> 
-			<executable type="java" path="C:\Projekte\workspace\noteof\util\mail_recipient.bat" windows="true">
+			<executable type="java" path="C:\Projekte\workspace\noteof\util\mail_recipient.bat" windows="false">
 				<args>--blubb="1" --blase=2</args>
 			</executable>
 			<!-- option
@@ -219,8 +219,8 @@
 		
 		<application2 applicationId="2">
 			<client clientIp="localhost"></client>
-			<executable type="UNKNOWN" path="write.exe" windows="true">
-				<args>--xxx="10" --yyy=20</args>
+			<executable type="UNKNOWN" path="kate" windows="false">
+				<args></args>
 			</executable>
 			<option multiplestart="true" enforce="false"></option>
 			<timeplan> 
@@ -236,15 +236,15 @@
 		
 		<application3 applicationId="88">
 			<client clientIp="localhost"></client>
-			<executable type="UNKNOWN" path="calc.exe" windows="true">
-				<args>--xxx="10" --yyy=20</args>
+			<executable type="UNKNOWN" path="kcalc">
+				<args></args>
 			</executable>
 			<option multiplestart="true" enforce="false"></option>
 		</application3>
 		
 		<application4 applicationId="33">
 			<client clientIp="localhost"></client>
-			<executable type="UNKNOWN" path="notepad.exe" windows="true">
+			<executable type="UNKNOWN" path="kpat">
 				<args></args>
 			</executable>
 			<option multiplestart="true" enforce="false"></option>
@@ -252,8 +252,8 @@
 		
 		<application5 applicationId="15">
 			<client clientIp="localhost"></client>
-			<executable type="UNKNOWN" path="freecell.exe" windows="true">
-				<args>--xxx="10" --yyy=20</args>
+			<executable type="UNKNOWN" path="kclock.kss">
+				<args></args>
 			</executable>
 			<option multiplestart="true" enforce="false"></option>
 		</application5>
