@@ -114,6 +114,7 @@ public class Scheduler {
                                 // send alarm
                                 Scheduling.raiseEvent(startAlarm);
                             } catch (ActionFailedException e) {
+                                e.printStackTrace();
                             }
                         }
                     }
@@ -169,6 +170,7 @@ public class Scheduler {
                         }
 
                         if ("event".equalsIgnoreCase(eConf.getAddresseeType())) {
+                            System.out.println("Scheduler$EventHandler.handleEvent. start von " + eConf.getAddresseeId());
                             EventConfiguration eventConf = MasterTable.getEventConfiguration(eConf.getAddresseeId());
                             if ("ignite".equals(action)) {
                                 String eventClassName = eventConf.getEventClassName();
@@ -181,7 +183,6 @@ public class Scheduler {
                                 }
                             }
                         }
-
                     } catch (ActionFailedException e) {
                         e.printStackTrace();
                     }
@@ -224,7 +225,7 @@ public class Scheduler {
         }
 
         public String getName() {
-            return hashCode() + String.valueOf(Thread.currentThread().getId());
+            return hashCode() + ":" + this.getClass().getSimpleName();
         }
 
         public List<EventType> getObservedEvents() {
@@ -281,6 +282,7 @@ public class Scheduler {
                 try {
                     Thread.sleep(10000);
                 } catch (InterruptedException e) {
+                    e.printStackTrace();
                 }
             }
         }
@@ -346,7 +348,7 @@ public class Scheduler {
     }
 
     public String getName() {
-        return hashCode() + String.valueOf(Thread.currentThread().getId());
+        return hashCode() + ":" + this.getClass().getSimpleName();
     }
 
     /**

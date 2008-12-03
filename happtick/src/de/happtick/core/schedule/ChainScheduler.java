@@ -70,125 +70,126 @@ public class ChainScheduler implements EventObserver, Runnable {
 
     }
 
-    protected void setEvent(NotEOFEvent event) {
-        conf.getChainLinkList().get(0).getAddresseeId();
-        conf.getChainLinkList().get(0).getAddresseeType();
+    protected synchronized void setEvent(NotEOFEvent event) {
 
         System.out.println("Scheduler$ChainScheduler.setEvent. event: " + event.getEventType());
         // wenn gestoppt - keine weitere Verarbeitung von events
         if (stopped) {
             System.out.println("ChainScheduler.setEvent. chainId: " + conf.getChainId() + "STOPPED");
-            return;
         }
 
         // Sonderfall StopEvent
         if (EventType.EVENT_CHAIN_STOP.equals(event.getEventType()) && //
                 String.valueOf(conf.getChainId()).equals(event.getAttribute("addresseeId"))) {
             stop();
-            // this chain may not do anything more...
-            return;
         }
 
-        // Sonderfall StoppedEvent
-        // Pruefen, ob das der Vorgaenger war
-        if (EventType.EVENT_APPLICATION_STOPPED.equals(event.getEventType()) || //
-                EventType.EVENT_CHAIN_STOPPED.equals(event.getEventType())) {
-            boolean executeNext = false;
-            System.out.println("Scheduler$ChainScheduler.setEvent anzahl = " + conf.getChainLinkList().size());
-            System.out.println("Scheduler$ChainScheduler.setEvent index  = " + nextStartConfIndex);
-            int lastStartedIndex = nextStartConfIndex - 1;
-            if (lastStartedIndex < 0)
-                lastStartedIndex = conf.getChainLinkList().size() - 1;
+        if (!stopped) {
+            // Sonderfall StoppedEvent
+            // Pruefen, ob das der Vorgaenger war
+            if (EventType.EVENT_APPLICATION_STOPPED.equals(event.getEventType()) || //
+                    EventType.EVENT_CHAIN_STOPPED.equals(event.getEventType())) {
+                boolean executeNext = false;
+                System.out.println("Scheduler$ChainScheduler.setEvent anzahl = " + conf.getChainLinkList().size());
+                System.out.println("Scheduler$ChainScheduler.setEvent index  = " + nextStartConfIndex);
+                int lastStartedIndex = nextStartConfIndex - 1;
+                if (lastStartedIndex < 0)
+                    lastStartedIndex = conf.getChainLinkList().size() - 1;
 
-            System.out.println("Scheduler$ChainScheduler.setEvent zuvor id:     "
-                    + String.valueOf(conf.getChainLinkList().get(lastStartedIndex).getAddresseeId()));
-            System.out.println("Scheduler$ChainScheduler.setEvent zuvor type:     " + conf.getChainLinkList().get(lastStartedIndex).getAddresseeType());
-            System.out.println("Scheduler$ChainScheduler.setEvent event id: " + event.getApplicationId());
-            System.out.println("Scheduler$ChainScheduler.setEvent event type: " + event.getEventType());
+                System.out.println("Scheduler$ChainScheduler.setEvent zuvor id:     "
+                        + String.valueOf(conf.getChainLinkList().get(lastStartedIndex).getAddresseeId()));
+                System.out.println("Scheduler$ChainScheduler.setEvent zuvor type:     " + conf.getChainLinkList().get(lastStartedIndex).getAddresseeType());
+                System.out.println("Scheduler$ChainScheduler.setEvent event id: " + event.getApplicationId());
+                System.out.println("Scheduler$ChainScheduler.setEvent event type: " + event.getEventType());
 
-            if (EventType.EVENT_APPLICATION_STOPPED.equals(event.getEventType()) && //
-                    "application".equalsIgnoreCase(conf.getChainLinkList().get(lastStartedIndex).getAddresseeType())) {
-                System.out.println("Scheduler$ChainScheduler.setEvent EVENT_APPLICATION_STOPPED von applicationId: " + event.getApplicationId());
-                if (conf.getChainLinkList().get(lastStartedIndex).getAddresseeId().equals(event.getApplicationId())) {
-                    executeNext = true;
-                }
-            }
-            if (EventType.EVENT_CHAIN_STOPPED.equals(event.getEventType()) && //
-                    "chain".equalsIgnoreCase(conf.getChainLinkList().get(lastStartedIndex).getAddresseeType())) {
-                System.out.println("Scheduler$ChainScheduler.setEvent EVENT_CHAIN_STOPPED von chainId: " + event.getAttribute("chainId"));
-                if (conf.getChainLinkList().get(lastStartedIndex).getAddresseeId().equals(Util.parseLong(event.getAttribute("chainId"), -1))) {
-                    executeNext = true;
-                }
-            }
-
-            System.out.println("Scheduler$ChainScheduler.setEvent executeNex: " + executeNext);
-            if (executeNext) {
-                // application or sub-chain of this chain was stopped
-                try {
-                    // if sub-chain or loop is not allowed and the stopped
-                    // application/ chain was the last of the chain then
-                    // stop this chain
-                    if ((conf.isDepends() || !conf.isLoop()) && chainEndReached) {
-                        // Ende-Event losschicken
-                        ChainStoppedEvent stoppedEvent = new ChainStoppedEvent();
-                        try {
-                            this.stop();
-                            Server.getInstance().unregisterFromEvents(this);
-                            stoppedEvent.addAttribute("chainId", String.valueOf(conf.getChainId()));
-                            System.out.println("Scheduler$ChainScheduler.setEvent sende ChainStoppedEvent");
-                            Server.getInstance().updateObservers(null, stoppedEvent);
-                            // keine weitere Verarbeitung!
-                            return;
-                        } catch (ActionFailedException e) {
-                        }
+                if (EventType.EVENT_APPLICATION_STOPPED.equals(event.getEventType()) && //
+                        "application".equalsIgnoreCase(conf.getChainLinkList().get(lastStartedIndex).getAddresseeType())) {
+                    System.out.println("Scheduler$ChainScheduler.setEvent EVENT_APPLICATION_STOPPED von applicationId: " + event.getApplicationId());
+                    if (conf.getChainLinkList().get(lastStartedIndex).getAddresseeId().equals(event.getApplicationId())) {
+                        executeNext = true;
                     }
+                }
+                if (EventType.EVENT_CHAIN_STOPPED.equals(event.getEventType()) && //
+                        "chain".equalsIgnoreCase(conf.getChainLinkList().get(lastStartedIndex).getAddresseeType())) {
+                    System.out.println("Scheduler$ChainScheduler.setEvent EVENT_CHAIN_STOPPED von chainId: " + event.getAttribute("chainId"));
+                    if (conf.getChainLinkList().get(lastStartedIndex).getAddresseeId().equals(Util.parseLong(event.getAttribute("chainId"), -1))) {
+                        executeNext = true;
+                    }
+                }
 
-                    // OK - next chain or application please
-                    startChainAddressee();
-                    // RETURN!
-                    // Code below will not be used!
-                    return;
-                } catch (HapptickException e) {
-                    LocalLog.error("Fehler bei Start nach Erhalt eines Stopp-Events des Vorgaengers.", e);
+                System.out.println("Scheduler$ChainScheduler.setEvent executeNext: " + executeNext);
+                if (executeNext) {
+                    // application or sub-chain of this chain was stopped
+                    try {
+                        // if sub-chain or loop is not allowed and the stopped
+                        // application/ chain was the last of the chain then
+                        // stop this chain
+                        if ((conf.isDepends() || !conf.isLoop()) && chainEndReached) {
+                            System.out.println("ChainScheduler.setEvent chainId: " + event.getAttribute("chainId") + " setzt jetzt das stoppedEvent ab");
+                            // Ende-Event losschicken
+                            ChainStoppedEvent stoppedEvent = new ChainStoppedEvent();
+                            Server.getInstance().unregisterFromEvents(this);
+                            try {
+                                stoppedEvent.addAttribute("chainId", String.valueOf(conf.getChainId()));
+                                System.out.println("ChainScheduler.setEvent sende ChainStoppedEvent");
+                                Server.getInstance().updateObservers(null, stoppedEvent);
+                                this.stop();
+                            } catch (ActionFailedException e) {
+                                e.printStackTrace();
+                            }
+                        }
+
+                        if (!stopped) {
+                            // OK - next chain or application please
+                            startChainAddressee();
+                        }
+                    } catch (HapptickException e) {
+                        LocalLog.error("Fehler bei Start nach Erhalt eines Stopp-Events des Vorgaengers.", e);
+                    }
                 }
             }
         }
 
-        // Next code only will be executed if before there was no exit by
-        // return!
-        // typ + alle key-value paare durchforsten
-        String eventTypeName = event.getEventType().name();
-        Set<String> keySet = event.getAttributes().keySet();
-        Iterator<String> it = keySet.iterator();
-        while (it.hasNext()) {
-            String key = it.next();
-            String value = event.getAttribute(key);
+        if (!stopped) {
+            // Next code only will be executed if before there was no exit by
+            // return!
+            // typ + alle key-value paare durchforsten
+            String eventTypeName = event.getEventType().name();
+            Set<String> keySet = event.getAttributes().keySet();
+            Iterator<String> it = keySet.iterator();
+            while (it.hasNext()) {
+                String key = it.next();
+                String value = event.getAttribute(key);
 
-            String actionKey = eventTypeName + key + value;
-            ChainAction action = expectedEventActions.get(actionKey);
-            if (null != action) {
-                // was ist mit der action zu tun?
-                if ("reset".equalsIgnoreCase(action.getAction())) {
-                    // wieder mit der ersten Anwendung starten, alle
-                    // eingetroffen events loeschen
-                    reset();
-                }
-                if ("clear".equalsIgnoreCase(action.getAction())) {
-                    clear();
-                }
-                if ("prevent".equalsIgnoreCase(action.getAction()) || //
-                        "condition".equalsIgnoreCase(action.getAction())) {
-                    raisedEventActions.put(actionKey, action);
+                String actionKey = eventTypeName + key + value;
+                ChainAction action = expectedEventActions.get(actionKey);
+                if (null != action) {
+                    // was ist mit der action zu tun?
+                    if ("reset".equalsIgnoreCase(action.getAction())) {
+                        // wieder mit der ersten Anwendung starten, alle
+                        // eingetroffen events loeschen
+                        reset();
+                    }
+                    if ("clear".equalsIgnoreCase(action.getAction())) {
+                        clear();
+                    }
+                    if ("prevent".equalsIgnoreCase(action.getAction()) || //
+                            "condition".equalsIgnoreCase(action.getAction())) {
+                        raisedEventActions.put(actionKey, action);
+                    }
                 }
             }
         }
+        System.out.println("ChainScheduler.setEvent KOMME BIS ZUM ENDE. chainId: " + conf.getChainId());
     }
 
     private void clear() {
+        System.out.println("ChainScheduler.clear. CLEAR!!!!!!! ");
         raisedEventActions.clear();
     }
 
     private void reset() {
+        System.out.println("ChainScheduler.reset. RESET!!!!!!!! ");
         nextStartConfIndex = 0;
         clear();
     }
@@ -213,7 +214,8 @@ public class ChainScheduler implements EventObserver, Runnable {
 
     @Override
     public String getName() {
-        return hashCode() + String.valueOf(Thread.currentThread().getId());
+        System.out.println("Chain " + conf.getChainId() + "   MEIN NAME: " + hashCode() + ":" + this.getClass().getSimpleName());
+        return hashCode() + ":" + this.getClass().getSimpleName();
     }
 
     @Override
@@ -223,15 +225,11 @@ public class ChainScheduler implements EventObserver, Runnable {
 
     @Override
     public void update(Service arg0, NotEOFEvent event) {
+        System.out.println("update..............");
         this.setEvent(event);
     }
 
-    // TODO !!!
-    // diesen teil in thread
-    // dann kann hier auf das fehlende conditionevent gewartet werden
-    // oder auf das loeschen des preventevent.
-
-    private void startChainAddressee() throws HapptickException {
+    private synchronized void startChainAddressee() throws HapptickException {
         Long addresseeId = conf.getChainLinkList().get(nextStartConfIndex).getAddresseeId();
         String addresseeType = conf.getChainLinkList().get(nextStartConfIndex).getAddresseeType();
         ChainLink link = conf.getChainLinkList().get(nextStartConfIndex);
@@ -244,24 +242,37 @@ public class ChainScheduler implements EventObserver, Runnable {
             if ("application".equalsIgnoreCase(addresseeType)) {
                 // Start application
                 ApplicationConfiguration applConf = MasterTable.getApplicationConfiguration(addresseeId);
-                // TODO auslagern der gesamten methode in thread
                 while (!conditionsValid(link)) {
                     try {
                         Thread.sleep(3000);
                     } catch (InterruptedException e) {
+                        e.printStackTrace();
                     }
                 }
+
+                System.out.println("ChainScheduler.startChainAddressee. 10 sec. vor startApplication");
+                try {
+                    Thread.sleep(10000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
                 Scheduling.startApplication(applConf);
+                try {
+                    Thread.sleep(10000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                System.out.println("ChainScheduler.startChainAddressee. 10 sec. nach startApplication");
             }
             // chain
             if ("chain".equalsIgnoreCase(addresseeType)) {
                 // Start application
                 ChainConfiguration chainConf = MasterTable.getChainConfiguration(addresseeId);
-                // TODO auslagern der gesamten methode in thread
                 while (!conditionsValid(link)) {
                     try {
                         Thread.sleep(3000);
                     } catch (InterruptedException e) {
+                        e.printStackTrace();
                     }
                 }
                 System.out.println("Scheduler$ChainScheduler.startChainAddressee. Chain wird gestartet...");
@@ -311,9 +322,9 @@ public class ChainScheduler implements EventObserver, Runnable {
             }
         }
 
-        System.out.println("Scheduler.conditionsValid. Vor Prüfen auf Prevent.");
+        System.out.println("ChainScheduler.conditionsValid. Vor Prüfen auf Prevent.");
         if (!Util.isEmpty(link.getPreventKey())) {
-            System.out.println("Scheduler.conditionsValid. PreventKey ist gesetzt.");
+            System.out.println("ChainScheduler.conditionsValid. PreventKey ist gesetzt.");
             preventEventFound = false;
             for (EventType type : observedEvents) {
                 String typeName = type.name();
@@ -340,7 +351,6 @@ public class ChainScheduler implements EventObserver, Runnable {
             return false;
         }
 
-        System.out.println("Scheduler.conditionsValid. Und nü? " + (!preventEventFound && conditionEventFound));
         // alle Bedingungen erfuellt
         return true;
     }

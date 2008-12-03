@@ -436,6 +436,7 @@ public class Util {
             try {
                 Thread.sleep(100);
             } catch (InterruptedException e) {
+                e.printStackTrace();
             }
         }
         eventObservers.put(eventObserver.getName(), eventObserver);
@@ -450,11 +451,10 @@ public class Util {
                 try {
                     Thread.sleep(55);
                 } catch (InterruptedException e) {
+                    e.printStackTrace();
                 }
             }
-
             try {
-                System.out.println("===============   Util.unregisterFromEvents. Observer: " + eventObserver.getName());
                 eventObservers.remove(eventObserver.getName());
             } catch (Exception e) {
                 LocalLog.warn("EventObserver konnte nicht entfernt werden: " + eventObserver.getName(), e);
@@ -479,9 +479,10 @@ public class Util {
 
         @Override
         public void run() {
+            System.out.println("Util$ObserverUpdater.run  ... vor update");
             observer.update(service, event);
+            System.out.println("Util$ObserverUpdater.run  ... nach update");
         }
-
     }
 
     /**
@@ -510,6 +511,7 @@ public class Util {
             try {
                 Thread.sleep(50);
             } catch (InterruptedException e) {
+                e.printStackTrace();
             }
         }
 
@@ -520,6 +522,7 @@ public class Util {
             try {
                 Thread.sleep(5);
             } catch (InterruptedException e) {
+                e.printStackTrace();
             }
         }
         queueId = new Date().getTime();

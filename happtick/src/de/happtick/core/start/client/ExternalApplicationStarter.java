@@ -150,9 +150,12 @@ public class ExternalApplicationStarter extends HapptickApplication {
                     try {
                         exitCode = process.waitFor();
                     } catch (InterruptedException ix) {
-                        if (null != process)
+                        ix.printStackTrace();
+                        if (null != process) {
                             // maybe process was killed or something else
                             exitCode = process.exitValue();
+                            System.out.println("ExternalApplicationStarter.run. Interrupted... exitValue = " + exitCode);
+                        }
                     }
 
                     // create Event for inform other processes (clients,

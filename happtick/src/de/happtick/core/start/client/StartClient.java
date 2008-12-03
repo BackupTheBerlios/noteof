@@ -142,9 +142,11 @@ public class StartClient extends HapptickBaseClient implements MailAndEventRecip
             // create unique identifier for the application process
             String startId = getServerAddress() + String.valueOf(Thread.currentThread().getId()) + String.valueOf(new Date().getTime());
 
-            // if type is 'java' the application start the application itself
-            // if type is 'unknown' start the special Happtick application which
-            // controls 'foreign' processess
+            // if type is 'java' the application will be started 'directly' by
+            // it's name
+            // if type is 'unknown' an instance of the
+            // ExternalApplicationStarter will be build and the he starts and
+            // controls the 'foreign' process
             if ("JAVA".equalsIgnoreCase(applicationType)) {
                 new HapptickApplicationStarter(client, getServerAddress(), getServerPort(), startId, startEvent);
             } else if ("UNKNOWN".equalsIgnoreCase(applicationType)) {

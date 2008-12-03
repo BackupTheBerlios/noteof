@@ -181,6 +181,7 @@ public class ApplicationConfiguration {
      * @throws HapptickException
      */
     public long startAllowed() throws HapptickException {
+        System.out.println("ApplicationConfiguration.startAllowed. ???????");
         long waitTime = 0;
         long timeNow = new Date().getTime();
 

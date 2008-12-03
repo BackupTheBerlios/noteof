@@ -118,7 +118,7 @@ public class ExternalCalls {
             String cmdLine = applicationPath + " " + arguments;
 
             if (windowsSupport)
-                cmdLine = "cmd /c start/wait " + cmdLine;
+                cmdLine = "cmd /c start /wait \"\" " + cmdLine;
 
             cmdLine.trim();
             proc = runtime.exec(cmdLine);
