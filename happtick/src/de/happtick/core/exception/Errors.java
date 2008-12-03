@@ -67,6 +67,7 @@ public class Errors {
         errorList.put(403L, "Fehlerhafte Konfiguration eines Links (Aktion) einer Chain.");
         errorList.put(404L, "Fehlerhafte oder fehlende Konfiguration einer Applikation.");
         errorList.put(405L, "Konfigurationsobjekt konnte nicht per Id gefunden werden.");
+        errorList.put(406L, "Fehler bei Zugriff auf selbstdefiniertes Event per Alias-Name.");
 
         // Scheduler faults
         errorList.put(500L, "Fehler bei Ermitteln des Startservice zur Anwendung.");

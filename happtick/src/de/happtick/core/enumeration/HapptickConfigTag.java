@@ -1,4 +1,4 @@
-package de.happtick.configuration.enumeration;
+package de.happtick.core.enumeration;
 
 public enum HapptickConfigTag {
 

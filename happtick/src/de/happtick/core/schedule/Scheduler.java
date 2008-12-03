@@ -155,7 +155,10 @@ public class Scheduler {
                             if ("ignite".equals(action)) {
                                 String eventClassName = eventConf.getEventClassName();
                                 if (eventClassName.startsWith("Alias:")) {
-                                    NotEOFEvent newEvent = Util.getGenericEvent(eventClassName, false);
+                                    // NotEOFEvent newEvent =
+                                    // Util.getGenericEvent(eventClassName,
+                                    // false);
+                                    NotEOFEvent newEvent = MasterTable.getOwnEvent(eventClassName);
                                     Scheduling.raiseEvent(newEvent);
                                 } else {
                                     LocalLog
@@ -164,7 +167,7 @@ public class Scheduler {
                             }
                         }
                     } catch (ActionFailedException e) {
-                        e.printStackTrace();
+                        LocalLog.error("Fehler bei Bearbeitung eintreffender Events.", e);
                     }
                 }
             }

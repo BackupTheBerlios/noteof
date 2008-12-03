@@ -153,7 +153,7 @@ public class MasterTable {
                         }
                     }
                     // add generated event to list
-                    ownEvents.put(derivedClassName, event);
+                    ownEvents.put("Alias:" + derivedClassName, event);
                 }
                 System.out.println("Anzahl generische Events: " + ownEvents.size());
             }
@@ -396,6 +396,27 @@ public class MasterTable {
             throw new HapptickException(405L, "ApplicationConfiguration. Id: " + applicationId);
 
         return ret;
+    }
+
+    /**
+     * Delivers a self described (configured) event.
+     * <p>
+     * Selfdescribed events are raised by the prefix 'Alias:' + configuration
+     * name.
+     * 
+     * @param eventClassName
+     *            The complete Aliasname like Alias:EventName.
+     * @return A new NotEOFEvent.
+     * @throws HapptickException
+     *             Is thrown if the event cannot be identified by the
+     *             eventClassName.
+     */
+    public synchronized static NotEOFEvent getOwnEvent(String eventClassName) throws HapptickException {
+        NotEOFEvent event = ownEvents.get(eventClassName);
+        if (Util.isEmpty(event)) {
+            throw new HapptickException(406L, "Aliasname: " + eventClassName);
+        }
+        return event;
     }
 
     /**

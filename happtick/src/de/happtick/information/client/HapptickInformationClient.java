@@ -11,7 +11,7 @@ import de.happtick.configuration.ChainConfiguration;
 import de.happtick.configuration.ChainConfigurationWrapper;
 import de.happtick.configuration.EventConfiguration;
 import de.happtick.configuration.EventConfigurationWrapper;
-import de.happtick.configuration.enumeration.HapptickConfigTag;
+import de.happtick.core.enumeration.HapptickConfigTag;
 import de.notEOF.core.client.BaseClient;
 import de.notEOF.core.communication.DataObject;
 import de.notEOF.core.exception.ActionFailedException;
