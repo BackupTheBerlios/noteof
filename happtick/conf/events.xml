@@ -8,13 +8,13 @@
 		<event>MyOwnEvent</event>
 		<event>YourOwnEvent</event>
 
-		<MyOwnEvent>
+		<MyOwnEvent derived="AlarmEvent">
 			<!-- An Happtick event mus have attributes -->
 			<attribute>attribute0</attribute>
 			<attribute>attribute1</attribute>
 			<!-- All properties are mandatory (keyName, keyValue, descriptionKey, descriptionValue -->
 			<attribute0 keyName="firstName" keyValue="Dirk" descriptionKey="firstName" descriptionValue="Vorname"></attribute0>
-			<attribute1 keyName="lastName" keyValue="Goldbach" descriptionKey="LastName" descriptionValue="Nachname"></attribute1>
+			<attribute1 keyName="lastName" keyValue="Goldbach" descriptionKey="lastName" descriptionValue="Nachname"></attribute1>
 		</MyOwnEvent>
 
 		<YourOwnEvent>

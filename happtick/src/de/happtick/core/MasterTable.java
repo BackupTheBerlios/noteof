@@ -13,6 +13,8 @@ import de.happtick.core.application.service.ApplicationService;
 import de.happtick.core.exception.HapptickException;
 import de.notEOF.configuration.LocalConfiguration;
 import de.notEOF.core.enumeration.EventType;
+import de.notEOF.core.event.EventFinder;
+import de.notEOF.core.event.GenericEvent;
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.interfaces.NotEOFConfiguration;
 import de.notEOF.core.interfaces.NotEOFEvent;
@@ -20,6 +22,7 @@ import de.notEOF.core.interfaces.Service;
 import de.notEOF.core.logging.LocalLog;
 import de.notEOF.core.server.Server;
 import de.notEOF.core.util.Util;
+import de.notIOC.configuration.ConfigurationManager;
 
 /**
  * This static class contains central informations
@@ -38,6 +41,8 @@ public class MasterTable {
     private static Map<String, Service> services = new HashMap<String, Service>();
     private static Map<Long, NotEOFEvent> startEvents = new HashMap<Long, NotEOFEvent>();
     private static Map<String, NotEOFEvent> startClientEvents = new HashMap<String, NotEOFEvent>();
+
+    private static Map<String, NotEOFEvent> ownEvents = new HashMap<String, NotEOFEvent>();
 
     private static boolean inAction = false;
     private static boolean confUpdated = false;
@@ -62,6 +67,7 @@ public class MasterTable {
             // 1. Applications
             // 2. Events
             // 3. Chains
+            // 4. Self Build Events
 
             // Global settings
             maxDelay = Util.parseLong(conf.getText("scheduler.maxDelay"), 10000);
@@ -82,11 +88,6 @@ public class MasterTable {
             }
 
             // processChain
-            // aktiv?
-            // Boolean useChain =
-            // Util.parseBoolean(conf.getAttribute("scheduler.use", "chain"),
-            // false);
-            // if (useChain) {
             // Liste der nodes
             List<String> chainNodes = conf.getTextList("scheduler.chains.chain");
             if (null != chainNodes) {
@@ -97,14 +98,8 @@ public class MasterTable {
                     chainConfigurations.put(chainConf.getChainId(), chainConf);
                 }
             }
-            // }
 
             // ApplicationConfigurations
-            // timer gesteuert?
-            // Boolean useTimer =
-            // Util.parseBoolean(conf.getAttribute("scheduler.use", "timer"),
-            // false);
-            // if (useTimer) {
             // Liste der nodes
             List<String> applNodes = conf.getTextList("scheduler.applications.application");
             if (null != applNodes) {
@@ -115,7 +110,53 @@ public class MasterTable {
                     applicationConfigurations.put(applConf.getApplicationId(), applConf);
                 }
             }
-            // }
+
+            // Self build events
+            List<String> ownEventNodes = conf.getTextList("ownEvents.event");
+            if (null != ownEventNodes) {
+                // for every node create Object ApplicationConfiguration
+                // the Objects read the configuration by themselve
+                for (String eventNode : ownEventNodes) {
+                    String node = "ownEvents." + eventNode;
+                    System.out.println("node " + node);
+                    // derived?
+                    String derivedClassName = conf.getAttribute(node, "derived");
+                    System.out.println("derivedClassName " + derivedClassName);
+                    NotEOFEvent event;
+                    if (!Util.isEmpty(derivedClassName)) {
+                        event = EventFinder.getNotEOFEvent(ConfigurationManager.getApplicationHome(), derivedClassName);
+                    } else {
+                        event = new GenericEvent();
+                    }
+                    System.out.println("ClassType: " + event.getEventType());
+
+                    // attributes
+                    List<String> attributes = conf.getTextList(node + ".attribute");
+                    if (null != attributes) {
+                        // for every node create Object ApplicationConfiguration
+                        // the Objects read the configuration by themselve
+                        for (String attribute : attributes) {
+                            System.out.println("attribute " + attribute);
+                            String attNode = node + "." + attribute;
+                            String descriptionKey = conf.getAttribute(attNode, "descriptionKey");
+                            String descriptionValue = conf.getAttribute(attNode, "descriptionValue");
+                            String keyName = conf.getAttribute(attNode, "keyName");
+                            String keyValue = conf.getAttribute(attNode, "keyValue");
+
+                            System.out.println("descKey " + descriptionKey);
+                            System.out.println("descVal " + descriptionValue);
+                            System.out.println("keyName " + keyName);
+                            System.out.println("keyValue " + keyValue);
+
+                            event.addAttributeDescription(descriptionKey, descriptionValue);
+                            event.addAttribute(keyName, keyValue);
+                        }
+                    }
+                    // add generated event to list
+                    ownEvents.put(derivedClassName, event);
+                }
+                System.out.println("Anzahl generische Events: " + ownEvents.size());
+            }
 
             confUpdated = true;
         }

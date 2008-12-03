@@ -1,8 +1,6 @@
 package de.happtick.core.schedule;
 
-import java.util.Calendar;
 import java.util.Date;
-import java.util.GregorianCalendar;
 
 import de.happtick.configuration.ApplicationConfiguration;
 import de.happtick.core.MasterTable;
@@ -40,9 +38,9 @@ public class ApplicationScheduler implements Runnable {
                     if (waitTime < 0)
                         waitTime = 0;
                 }
-                Calendar cal = new GregorianCalendar();
-                cal.setTime(conf.getNextStartDate());
-                Util.formatCal("Scheduler.run Schlafe jetzt bis ", cal);
+                // Calendar cal = new GregorianCalendar();
+                // cal.setTime(conf.getNextStartDate());
+                // Util.formatCal("Scheduler.run Schlafe jetzt bis ", cal);
                 Thread.sleep(waitTime);
             }
         } catch (Exception e) {
