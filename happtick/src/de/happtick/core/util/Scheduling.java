@@ -375,8 +375,6 @@ public class Scheduling {
                 // action merken
                 ChainAction action = new ChainAction("condition", link.getAddresseeType(), link.getAddresseeId(), link.isSkip());
                 String typeName = type.name();
-                System.out.println("Scheduling.updateObservedEventsForChain. Conditions... chainActions.put: " + typeName + link.getConditionKey()
-                        + link.getConditionValue() + action.getAction());
                 chainActions.put(typeName + link.getConditionKey() + link.getConditionValue(), action);
             } catch (ActionFailedException e) {
                 LocalLog.warn("ChainLink konnte nicht auf Condition untersucht werden.", e);
@@ -401,8 +399,6 @@ public class Scheduling {
                 // action merken
                 ChainAction action = new ChainAction("prevent", link.getAddresseeType(), link.getAddresseeId(), link.isSkip());
                 String typeName = type.name();
-                System.out.println("Scheduling.updateObservedEventsForChain. Prevents... chainActions.put: " + typeName + link.getConditionKey()
-                        + link.getConditionValue() + action.getAction());
                 chainActions.put(typeName + link.getPreventKey() + link.getPreventValue(), action);
             } catch (ActionFailedException e) {
                 LocalLog.warn("ChainLink konnte nicht auf Prevent untersucht werden.", e);

@@ -63,10 +63,6 @@ public class ExternalCalls {
         if (null != arguments)
             args[7] = arguments;
 
-        for (String arg : args) {
-            System.out.println("ExternalCalls.call ARGS... arg: " + arg);
-        }
-
         // call the main method of the class with evaluated arguments
         LocalLog.info("External Application Starting. ApplicationId: " + applicationId + "; ApplicationPath: " + applicationPath + "; Arguments: " + arguments);
         try {
@@ -171,9 +167,6 @@ public class ExternalCalls {
         args += " " + arguments;
 
         boolean windowsSupport = Util.parseBoolean(startEvent.getAttribute("windowsSupport"), false);
-
-        System.out.println("ExternalCalls.startHapptickApplication: applicationPath = " + applicationPath);
-        System.out.println("ExternalCalls.startHapptickApplication: args = " + args);
 
         LocalLog.info("Happtick Application Starting. ApplicationId: " + applicationId + "; ApplicationPath: " + applicationPath + "; Arguments: " + arguments);
         return startApplication(applicationPath, args, windowsSupport);

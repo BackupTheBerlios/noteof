@@ -364,12 +364,13 @@ public class MasterTable {
         if (null == server)
             server = service.getServer();
 
-        while (inAction)
+        while (inAction) {
             try {
                 Thread.sleep(100);
             } catch (InterruptedException e) {
                 break;
             }
+        }
         inAction = true;
 
         // if (service.getClass().isAssignableFrom(ApplicationService.class)) {
@@ -393,12 +394,13 @@ public class MasterTable {
      */
     public synchronized static void removeService(Service service) {
         LocalLog.info("MasterTable releasing service: " + service.getClass().getCanonicalName() + " (clientNetId = " + service.getClientNetId() + ")");
-        while (inAction)
+        while (inAction) {
             try {
                 Thread.sleep(100);
             } catch (InterruptedException e) {
                 break;
             }
+        }
         inAction = true;
         services.remove(service.getServiceId());
         if (service.getClass().isAssignableFrom(ApplicationService.class)) {

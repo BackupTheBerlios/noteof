@@ -43,7 +43,6 @@ public class ApplicationScheduler implements Runnable {
                 Calendar cal = new GregorianCalendar();
                 cal.setTime(conf.getNextStartDate());
                 Util.formatCal("Scheduler.run Schlafe jetzt bis ", cal);
-                // System.out.println("WaitTime = " + waitTime);
                 Thread.sleep(waitTime);
             }
         } catch (Exception e) {

@@ -47,10 +47,6 @@ public abstract class HapptickApplication extends HapptickBaseClient {
         ArgsParser parser = new ArgsParser(args);
         if (parser.containsStartsWith("--applicationId")) {
             Long receivedId = Util.parseLong(parser.getValue("applicationId"), -1);
-
-            System.out.println("HapptickApplication.Construction. Check receivedId: " + receivedId);
-            System.out.println("HapptickApplication.Construction. Check applicationId: " + applicationId);
-
             if (applicationId != receivedId)
                 throw new HapptickException(404L, "Empfangene applicationId und hart codierte applicationId sind nicht identisch.");
         }

@@ -127,8 +127,6 @@ public class SocketLayer {
         try {
             initPrintWriter();
             if (null == msg || "".equals(msg)) {
-                System.out.println("!!!!!!!!!!!!!!!   MESSAGE IST ZIEMLICH LEER");
-
                 Error err = new Error();
                 err.printStackTrace();
                 msg = "";
@@ -197,6 +195,7 @@ public class SocketLayer {
         while (!lifeSign && //
                 (BaseCommTag.REQ_LIFE_SIGN.name().equals(msg) || //
                 respLifeSign.equals(msg))) {
+            // System.out.println("SocketLayer.readMsg  aaaa");
 
             if (BaseCommTag.REQ_LIFE_SIGN.name().equals(msg)) {
                 System.out.println("==========================================");
@@ -240,15 +239,20 @@ public class SocketLayer {
         String msg = "";
         initBufferedReader(false);
         try {
-            while (null == msg || "".equals(msg.trim())) {
-                if (10 < readCounter++) {
-                    initBufferedReader(true);
-
-                    // throw new ActionFailedException(16L,
-                    // "Abbruch nach ungültigen Nachrichten: " + readCounter);
-                }
+            while (Util.isEmpty(msg) && readCounter++ < 10) {
+                // if (10 < readCounter++) {
+                // initBufferedReader(true);
+                //
+                // // throw new ActionFailedException(16L,
+                // // "Abbruch nach ungültigen Nachrichten: " + readCounter);
+                // }
                 msg = bufferedReader.readLine();
             }
+
+            if (Util.isEmpty(msg)) {
+                throw new ActionFailedException(23L, "Lesepuffer leer.");
+            }
+
             if (!Util.isEmpty(msg)) {
                 if (msg.startsWith("#")) {
                     msg = msg.substring(1);

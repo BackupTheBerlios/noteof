@@ -195,7 +195,6 @@ public abstract class BaseService extends BaseClientOrService implements Service
             try {
                 while (getId() - 1 > workerPointer) {
                     Thread.sleep(50);
-                    System.out.println("BaseService$EventWorker.run...");
                 }
                 processEvent(service, event);
                 workerPointer = getId();

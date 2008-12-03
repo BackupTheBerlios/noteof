@@ -60,8 +60,8 @@
 		    	      - skip is optional, default is false.
 		    	-->
 				<link0 linkId="1" addresseeType="application" addresseeId="33"></link0>
-				<link1 linkId="2" addresseeType="application"       addresseeId="2"></link1>
-				<link2 linkId="0" addresseeType="application" addresseeId="15"></link2>
+				<link1 linkId="2" addresseeType="chain"       addresseeId="2"></link1>
+				<link2 linkId="0" addresseeType="application" addresseeId="77"></link2>
 <!-- 				                  conditionEventId="1" conditionKeyName="internal->applicationId" conditionKeyValue="77"
 				                  preventEventId="2"   preventKeyName="exitCode"   preventKeyValue="0" skip="false"></link2>
 -->				                  

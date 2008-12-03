@@ -478,9 +478,7 @@ public class Util {
         }
 
         public void run() {
-            System.out.println("Util$ObserverUpdater.run  ... vor update");
             observer.update(service, event);
-            System.out.println("Util$ObserverUpdater.run  ... nach update");
         }
     }
 
@@ -498,12 +496,10 @@ public class Util {
      *            Implementation of Type ClientEvent.
      */
     public synchronized static void updateAllObserver(Map<String, EventObserver> eventObservers, Service service, NotEOFEvent event) {
-        if (null == event){
-            System.out.println("Util.updateAllObserver...");
+        if (null == event) {
             return;
         }
         if (null == eventObservers) {
-            System.out.println("Util.updateAllObserver...");
             return;
         }
 

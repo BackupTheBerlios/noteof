@@ -63,7 +63,6 @@ public class ExternalApplicationStarter extends HapptickApplication {
     // This callback is called by worker. So the sleep within the loop above can
     // use a relative long time.
     private synchronized void callBackForWorker(NotEOFEvent event) {
-        System.out.println("ExternalApplication.callBackForWorker..........");
         try {
             sendEvent(event);
         } catch (HapptickException e) {
@@ -154,7 +153,7 @@ public class ExternalApplicationStarter extends HapptickApplication {
                         if (null != process) {
                             // maybe process was killed or something else
                             exitCode = process.exitValue();
-                            System.out.println("ExternalApplicationStarter.run. Interrupted... exitValue = " + exitCode);
+                            LocalLog.warn("ExternalApplicationStarter.run. Interrupted... exitValue = " + exitCode);
                         }
                     }
 

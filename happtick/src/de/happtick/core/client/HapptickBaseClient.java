@@ -253,9 +253,7 @@ public abstract class HapptickBaseClient {
     public void sendEvent(NotEOFEvent event) throws HapptickException {
         checkClientInitialized();
         try {
-            System.out.println("HapptickBaseClient.sendEvent. Sende jetzt");
             notEofClient.sendEvent(event);
-            System.out.println("HapptickBaseClient.sendEvent. Habe gesendet");
         } catch (ActionFailedException e) {
             throw new HapptickException(202L, "Event: " + event.getClass().getSimpleName(), e);
         }

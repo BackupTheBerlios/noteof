@@ -61,7 +61,6 @@ public class Scheduler {
 
             if (!(useTimer || useChain)) {
                 LocalLog.warn("Happtick Scheduler: Weder applications noch chains sind aktiv. Scheduler wird beendet.");
-                System.out.println("Happtick Scheduler: Weder applications noch chains sind aktiv. Scheduler wird beendet.");
                 System.exit(1);
             }
 
@@ -160,17 +159,14 @@ public class Scheduler {
                             ApplicationConfiguration applConf = MasterTable.getApplicationConfiguration(eConf.getAddresseeId());
 
                             if ("start".equals(action)) {
-                                System.out.println("Scheduler$EventHandler.handleEvent. start von " + applConf.getExecutablePath());
                                 Scheduling.startApplication(applConf);
                             }
                             if ("stop".equals(action)) {
-                                System.out.println("Scheduler$EventHandler.handleEvent. action = stop");
                                 Scheduling.stopApplication(applConf);
                             }
                         }
 
                         if ("event".equalsIgnoreCase(eConf.getAddresseeType())) {
-                            System.out.println("Scheduler$EventHandler.handleEvent. start von " + eConf.getAddresseeId());
                             EventConfiguration eventConf = MasterTable.getEventConfiguration(eConf.getAddresseeId());
                             if ("ignite".equals(action)) {
                                 String eventClassName = eventConf.getEventClassName();
@@ -319,7 +315,6 @@ public class Scheduler {
                 // start only if this chain is not part of another chain
                 try {
                     if (!conf.isDepends()) {
-                        System.out.println("Scheduler.startAllChainScheduler. chainId: " + conf.getChainId());
                         startChainScheduler(conf);
                     }
                 } catch (ActionFailedException afx) {
@@ -332,9 +327,7 @@ public class Scheduler {
     }
 
     protected void startChainScheduler(ChainConfiguration conf) throws HapptickException {
-        System.out.println("Scheduler.startChainScheduler. vor start chainId= " + conf.getChainId());
         new Thread(new ChainScheduler(conf, this)).start();
-        System.out.println("Scheduler.startChainScheduler. nach start chainId= " + conf.getChainId());
     }
 
     /*
