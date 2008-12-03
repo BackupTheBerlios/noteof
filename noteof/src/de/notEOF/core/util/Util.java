@@ -477,7 +477,6 @@ public class Util {
             this.event = event;
         }
 
-        @Override
         public void run() {
             System.out.println("Util$ObserverUpdater.run  ... vor update");
             observer.update(service, event);
@@ -499,10 +498,14 @@ public class Util {
      *            Implementation of Type ClientEvent.
      */
     public synchronized static void updateAllObserver(Map<String, EventObserver> eventObservers, Service service, NotEOFEvent event) {
-        if (null == event)
+        if (null == event){
+            System.out.println("Util.updateAllObserver...");
             return;
-        if (null == eventObservers)
+        }
+        if (null == eventObservers) {
+            System.out.println("Util.updateAllObserver...");
             return;
+        }
 
         // set Timestamp if empty
         event.setTimeStampSend();

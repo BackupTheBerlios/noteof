@@ -77,6 +77,7 @@ public class ApplicationService extends HapptickBaseService implements Service {
      */
     @Override
     public void processClientMsg(Enum<?> incomingMsgEnum) throws ActionFailedException {
+        System.out.println("ApplicationService.processClientMsg...");
         // Application Id
         if (incomingMsgEnum.equals(ApplicationTag.PROCESS_APPLICATION_ID)) {
             Long applicationId = new Long(requestTo(ApplicationTag.REQ_APPLICATION_ID, ApplicationTag.RESP_APPLICATION_ID));
