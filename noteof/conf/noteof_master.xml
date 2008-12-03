@@ -3,7 +3,7 @@
 	<configuration>
 	  	<xml fileName="noteof_server.xml"/>
 	  	<xml fileName="noteof_services.xml"/>
-	  	<xml fileName="../../happtick/conf/happtick_appl_linux.xml"/>
+	  	<xml fileName="../../happtick/conf/happtick_appl.xml"/>
 	  	<xml fileName="../../happtick/conf/events.xml"/>
 		<section sectionName="noteof_root"/>
 <!--		<xml fileName="happtick_appl.xml"/> -->
