@@ -45,6 +45,10 @@ public class MasterTable {
 
     private static Server server;
 
+    private static boolean chainsUsed = false;
+    private static boolean eventsUsed = false;
+    private static boolean schedulerUsed = false;
+
     /*
      * Liest die Konfiguration, initialisiert processChain und
      * applicationConfigurations
@@ -61,6 +65,9 @@ public class MasterTable {
 
             // Global settings
             maxDelay = Util.parseLong(conf.getText("scheduler.maxDelay"), 10000);
+            eventsUsed = Util.parseBoolean(conf.getAttribute("scheduler.use", "event"), false);
+            schedulerUsed = Util.parseBoolean(conf.getAttribute("scheduler.use", "timer"), false);
+            chainsUsed = Util.parseBoolean(conf.getAttribute("scheduler.use", "chain"), false);
 
             // Events
             // Liste der nodes
@@ -534,5 +541,26 @@ public class MasterTable {
                 startClientEvents.remove(event.getAttribute("clientIp"));
             }
         }
+    }
+
+    /**
+     * @return the chainsUsed
+     */
+    public static boolean isChainsUsed() {
+        return chainsUsed;
+    }
+
+    /**
+     * @return the eventsUsed
+     */
+    public static boolean isEventsUsed() {
+        return eventsUsed;
+    }
+
+    /**
+     * @return the schedulerUsed
+     */
+    public static boolean isSchedulerUsed() {
+        return schedulerUsed;
     }
 }

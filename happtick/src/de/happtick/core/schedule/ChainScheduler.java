@@ -51,16 +51,18 @@ public class ChainScheduler implements EventObserver, Runnable {
 
         try {
             // standard event 'stopped'
-            this.observedEvents.add(EventType.EVENT_APPLICATION_STOPPED);
-            this.observedEvents.add(EventType.EVENT_CHAIN_STOPPED);
+            observedEvents.add(EventType.EVENT_APPLICATION_STOPPED);
+            observedEvents.add(EventType.EVENT_CHAIN_STOPPED);
 
             // filter events and configurations which the chain is
             // interested in
-            Scheduling.filterObservedEventsForChain(conf.getChainId(), observedEvents, expectedEventActions, MasterTable.getEventConfigurationsAsList());
-            // Hinzufügen der events, die als condition oder prevent in
-            // den chain-konfigurationen sind
-            for (ChainLink link : conf.getChainLinkList()) {
-                Scheduling.updateObservedEventsForChain(this.observedEvents, expectedEventActions, link);
+            if (MasterTable.isEventsUsed()) {
+                Scheduling.filterObservedEventsForChain(conf.getChainId(), observedEvents, expectedEventActions, MasterTable.getEventConfigurationsAsList());
+                // Hinzufügen der events, die als condition oder prevent in
+                // den chain-konfigurationen sind
+                for (ChainLink link : conf.getChainLinkList()) {
+                    Scheduling.updateObservedEventsForChain(observedEvents, expectedEventActions, link);
+                }
             }
         } catch (ActionFailedException e) {
             LocalLog.warn("Scheduling für Chain konnte nicht aktiviert werden.", e);
@@ -75,64 +77,63 @@ public class ChainScheduler implements EventObserver, Runnable {
         if (EventType.EVENT_CHAIN_STOP.equals(event.getEventType()) && //
                 String.valueOf(conf.getChainId()).equals(event.getAttribute("addresseeId"))) {
             stop();
+            return;
         }
 
-        if (!stopped) {
-            // Sonderfall StoppedEvent
-            // Pruefen, ob das der Vorgaenger war
-            if (EventType.EVENT_APPLICATION_STOPPED.equals(event.getEventType()) || //
-                    EventType.EVENT_CHAIN_STOPPED.equals(event.getEventType())) {
-                boolean executeNext = false;
-                int lastStartedIndex = nextStartConfIndex - 1;
-                if (lastStartedIndex < 0)
-                    lastStartedIndex = conf.getChainLinkList().size() - 1;
+        // Sonderfall StoppedEvent
+        // Pruefen, ob das der Vorgaenger war
+        if (EventType.EVENT_APPLICATION_STOPPED.equals(event.getEventType()) || //
+                EventType.EVENT_CHAIN_STOPPED.equals(event.getEventType())) {
+            boolean executeNext = false;
+            int lastStartedIndex = nextStartConfIndex - 1;
+            if (lastStartedIndex < 0)
+                lastStartedIndex = conf.getChainLinkList().size() - 1;
 
-                if (EventType.EVENT_APPLICATION_STOPPED.equals(event.getEventType()) && //
-                        "application".equalsIgnoreCase(conf.getChainLinkList().get(lastStartedIndex).getAddresseeType())) {
-                    if (conf.getChainLinkList().get(lastStartedIndex).getAddresseeId().equals(event.getApplicationId())) {
-                        executeNext = true;
-                    }
+            if (EventType.EVENT_APPLICATION_STOPPED.equals(event.getEventType()) && //
+                    "application".equalsIgnoreCase(conf.getChainLinkList().get(lastStartedIndex).getAddresseeType())) {
+                if (conf.getChainLinkList().get(lastStartedIndex).getAddresseeId().equals(event.getApplicationId())) {
+                    executeNext = true;
                 }
-                if (EventType.EVENT_CHAIN_STOPPED.equals(event.getEventType()) && //
-                        "chain".equalsIgnoreCase(conf.getChainLinkList().get(lastStartedIndex).getAddresseeType())) {
-                    if (conf.getChainLinkList().get(lastStartedIndex).getAddresseeId().equals(Util.parseLong(event.getAttribute("chainId"), -1))) {
-                        executeNext = true;
-                    }
+            }
+            if (EventType.EVENT_CHAIN_STOPPED.equals(event.getEventType()) && //
+                    "chain".equalsIgnoreCase(conf.getChainLinkList().get(lastStartedIndex).getAddresseeType())) {
+                if (conf.getChainLinkList().get(lastStartedIndex).getAddresseeId().equals(Util.parseLong(event.getAttribute("chainId"), -1))) {
+                    executeNext = true;
                 }
+            }
 
-                if (executeNext) {
-                    // application or sub-chain of this chain was stopped
-                    try {
-                        // if sub-chain or loop is not allowed and the stopped
-                        // application/ chain was the last of the chain then
-                        // stop this chain
-                        if ((conf.isDepends() || !conf.isLoop()) && chainEndReached) {
-                            // Ende-Event losschicken
-                            ChainStoppedEvent stoppedEvent = new ChainStoppedEvent();
-                            Server.getInstance().unregisterFromEvents(this);
-                            try {
-                                stoppedEvent.addAttribute("chainId", String.valueOf(conf.getChainId()));
-                                Server.getInstance().updateObservers(null, stoppedEvent);
-                                this.stop();
-                            } catch (ActionFailedException e) {
-                                e.printStackTrace();
-                            }
+            if (executeNext) {
+                // application or sub-chain of this chain was stopped
+                try {
+                    // if sub-chain or loop is not allowed and the stopped
+                    // application/ chain was the last of the chain then
+                    // stop this chain
+                    if ((conf.isDepends() || !conf.isLoop()) && chainEndReached) {
+                        // Ende-Event losschicken
+                        ChainStoppedEvent stoppedEvent = new ChainStoppedEvent();
+                        Server.getInstance().unregisterFromEvents(this);
+                        try {
+                            stoppedEvent.addAttribute("chainId", String.valueOf(conf.getChainId()));
+                            Server.getInstance().updateObservers(null, stoppedEvent);
+                            this.stop();
+                            return;
+                        } catch (ActionFailedException e) {
+                            e.printStackTrace();
                         }
-
-                        if (!stopped) {
-                            // OK - next chain or application please
-                            startChainAddressee();
-                        }
-                    } catch (HapptickException e) {
-                        LocalLog.error("Fehler bei Start nach Erhalt eines Stopp-Events des Vorgaengers.", e);
                     }
+
+                    // OK - next chain or application please
+                    startChainAddressee();
+                    return;
+                } catch (HapptickException e) {
+                    LocalLog.error("Fehler bei Start nach Erhalt eines Stopp-Events des Vorgaengers.", e);
                 }
             }
         }
 
-        if (!stopped) {
+        if (MasterTable.isEventsUsed()) {
             // Next code only will be executed if before there was no exit by
-            // return!
+            // return! and the event system is used
             // typ + alle key-value paare durchforsten
             String eventTypeName = event.getEventType().name();
             Set<String> keySet = event.getAttributes().keySet();
@@ -155,6 +156,7 @@ public class ChainScheduler implements EventObserver, Runnable {
                     }
                     if ("prevent".equalsIgnoreCase(action.getAction()) || //
                             "condition".equalsIgnoreCase(action.getAction())) {
+                        System.out.println("ChainScheduler.setEven. Action wurde gesetzt: " + action.getAction());
                         raisedEventActions.put(actionKey, action);
                     }
                 }

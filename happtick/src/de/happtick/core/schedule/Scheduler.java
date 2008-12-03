@@ -12,11 +12,9 @@ import de.happtick.core.event.ApplicationStartErrorEvent;
 import de.happtick.core.exception.HapptickException;
 import de.happtick.core.util.ExternalCalls;
 import de.happtick.core.util.Scheduling;
-import de.notEOF.configuration.LocalConfiguration;
 import de.notEOF.core.enumeration.EventType;
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.interfaces.EventObserver;
-import de.notEOF.core.interfaces.NotEOFConfiguration;
 import de.notEOF.core.interfaces.NotEOFEvent;
 import de.notEOF.core.interfaces.Service;
 import de.notEOF.core.logging.LocalLog;
@@ -33,43 +31,30 @@ import de.notIOC.configuration.ConfigurationManager;
  */
 public class Scheduler {
     private static Scheduler scheduler; // = new Scheduler();
-    private boolean eventHandling = false;
 
     /*
      * Initialize...
      */
     private Scheduler() {
-        NotEOFConfiguration conf = new LocalConfiguration();
+        // Start Observer who gets all fired Events
+        new Thread(new SchedulerObserver()).start();
 
-        // Standard via timer
-        try {
-            eventHandling = Util.parseBoolean(conf.getAttribute("scheduler.use", "event"), false);
-
-            // Start Observer who gets all fired Events
-            new Thread(new SchedulerObserver()).start();
-
-            Boolean useTimer = Util.parseBoolean(conf.getAttribute("scheduler.use", "timer"), false);
-            if (useTimer) {
-                startAllApplicationSchedulers();
-            }
-
-            // process chain is active
-            Boolean useChain = Util.parseBoolean(conf.getAttribute("scheduler.use", "chain"), false);
-            if (useChain) {
-                startAllChainSchedulers();
-            }
-
-            if (!(useTimer || useChain)) {
-                LocalLog.warn("Happtick Scheduler: Weder applications noch chains sind aktiv. Scheduler wird beendet.");
-                System.exit(1);
-            }
-
-            // start the EventChecker
-            new Thread(new StartedEventChecker()).start();
-
-        } catch (ActionFailedException afx) {
-            LocalLog.error("Fehler bei Lesen der Konfiguration fuer Anwendungsscheduler.", afx);
+        if (MasterTable.isSchedulerUsed()) {
+            startAllApplicationSchedulers();
         }
+
+        // process chain is active
+        if (MasterTable.isChainsUsed()) {
+            startAllChainSchedulers();
+        }
+
+        if (!(MasterTable.isSchedulerUsed() || MasterTable.isChainsUsed())) {
+            LocalLog.warn("Happtick Scheduler: Weder applications noch chains sind aktiv. Scheduler wird beendet.");
+            System.exit(1);
+        }
+
+        // start the EventChecker
+        new Thread(new StartedEventChecker()).start();
     }
 
     /**
@@ -128,8 +113,7 @@ public class Scheduler {
     }
 
     /*
-     * This class processes some events independent from the schedulers to take
-     * some jobs of him
+     * This class processes the events
      */
     private class EventHandler implements Runnable {
         private NotEOFEvent event;
@@ -269,8 +253,9 @@ public class Scheduler {
 
             // EventHandler Threads process all events independent to the
             // observer
-            if (eventHandling)
+            if (MasterTable.isEventsUsed()) {
                 new Thread(new EventHandler(event)).start();
+            }
         }
 
         public void run() {

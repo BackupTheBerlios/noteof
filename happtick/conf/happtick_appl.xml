@@ -14,7 +14,7 @@
 			 - timer Applications will be scheduled by timing
 			 - event Applications, chains, events are processed by incoming events
 		-->
-	   	<use chain="true" timer="false" event="false"></use>
+	   	<use chain="false" timer="true" event="true"></use>
 	   	<!-- 
 	   		 max. milliseconds from calculated start point until real start point
 	   		 for slow server or very high used capacity of the server 
