@@ -87,6 +87,9 @@ public class Errors {
         // Start Client
         errorList.put(650L, "Fehler bei Starten einer Anwendung. Fehlender Wert im Start-Event: ");
         errorList.put(651L, "Fehler bei Starten einer Anwendung.");
+
+        // Connection faults
+        errorList.put(700L, "Fehler bei Schliessen einer Verbindung.");
     }
 
     /*
