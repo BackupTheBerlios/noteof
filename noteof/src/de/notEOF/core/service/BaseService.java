@@ -145,7 +145,7 @@ public abstract class BaseService extends BaseClientOrService implements Service
      */
     public final void update(Service service, NotEOFEvent event) {
         // Stop Event kill the service
-        if (EventType.EVENT_SERVICE_STOP.equals(event.getEventType()) && //
+        if (event.equals(EventType.EVENT_SERVICE_STOP) && //
                 (event.getAttribute("serviceId").equals(this.getServiceId()) || //
                 event.getAttribute("allServices").equalsIgnoreCase("TRUE"))) {
             this.stopService();

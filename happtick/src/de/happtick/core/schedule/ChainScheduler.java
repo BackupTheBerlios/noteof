@@ -74,7 +74,7 @@ public class ChainScheduler implements EventObserver, Runnable {
 
     protected synchronized void setEvent(NotEOFEvent event) {
         // Sonderfall StopEvent
-        if (EventType.EVENT_CHAIN_STOP.equals(event.getEventType()) && //
+        if (event.equals(EventType.EVENT_CHAIN_STOP) && //
                 String.valueOf(conf.getChainId()).equals(event.getAttribute("addresseeId"))) {
             stop();
             return;
@@ -82,20 +82,20 @@ public class ChainScheduler implements EventObserver, Runnable {
 
         // Sonderfall StoppedEvent
         // Pruefen, ob das der Vorgaenger war
-        if (EventType.EVENT_APPLICATION_STOPPED.equals(event.getEventType()) || //
-                EventType.EVENT_CHAIN_STOPPED.equals(event.getEventType())) {
+        if (event.equals(EventType.EVENT_APPLICATION_STOPPED) || //
+                event.equals(EventType.EVENT_CHAIN_STOPPED)) {
             boolean executeNext = false;
             int lastStartedIndex = nextStartConfIndex - 1;
             if (lastStartedIndex < 0)
                 lastStartedIndex = conf.getChainLinkList().size() - 1;
 
-            if (EventType.EVENT_APPLICATION_STOPPED.equals(event.getEventType()) && //
+            if (event.equals(EventType.EVENT_APPLICATION_STOPPED) && //
                     "application".equalsIgnoreCase(conf.getChainLinkList().get(lastStartedIndex).getAddresseeType())) {
                 if (conf.getChainLinkList().get(lastStartedIndex).getAddresseeId().equals(event.getApplicationId())) {
                     executeNext = true;
                 }
             }
-            if (EventType.EVENT_CHAIN_STOPPED.equals(event.getEventType()) && //
+            if (event.equals(EventType.EVENT_CHAIN_STOPPED) && //
                     "chain".equalsIgnoreCase(conf.getChainLinkList().get(lastStartedIndex).getAddresseeType())) {
                 if (conf.getChainLinkList().get(lastStartedIndex).getAddresseeId().equals(Util.parseLong(event.getAttribute("chainId"), -1))) {
                     executeNext = true;

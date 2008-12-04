@@ -4,7 +4,7 @@ import java.net.Socket;
 import java.util.List;
 
 import de.happtick.core.exception.HapptickException;
-import de.happtick.mail.client.HapptickMailEventClient;
+import de.happtick.mail.client.HapptickEventClient;
 import de.notEOF.core.client.BaseClient;
 import de.notEOF.core.communication.BaseTimeOut;
 import de.notEOF.core.exception.ActionFailedException;
@@ -15,8 +15,8 @@ import de.notEOF.core.util.Util;
 import de.notEOF.dispatch.client.DispatchClient;
 import de.notEOF.mail.MailExpressions;
 import de.notEOF.mail.NotEOFMail;
-import de.notEOF.mail.client.MailAndEventReceiveClient;
-import de.notEOF.mail.interfaces.MailAndEventRecipient;
+import de.notEOF.mail.client.EventReceiveClient;
+import de.notEOF.mail.interfaces.EventRecipient;
 import de.notEOF.mail.interfaces.MailMatchExpressions;
 
 /**
@@ -38,8 +38,8 @@ public abstract class HapptickBaseClient {
     protected int serverPort;
     protected String[] args;
     protected NotEOFClient notEofClient;
-    private MailAndEventReceiveClient mailEventClient;
-    private MailAndEventRecipient mailEventRecipient;
+    private EventReceiveClient eventClient;
+    private EventRecipient eventRecipient;
 
     /*
      * Internal class for sending mails and events. Used if the
@@ -231,9 +231,9 @@ public abstract class HapptickBaseClient {
      * <p>
      * For sending mails or events this steps are NOT required.
      */
-    public void startAcceptingMailsEvents() throws HapptickException {
+    public void startAcceptingEvents() throws HapptickException {
         try {
-            mailEventClient.awaitMailOrEvent(this.mailEventRecipient);
+            eventClient.awaitMailOrEvent(this.eventRecipient);
         } catch (ActionFailedException e) {
             throw new HapptickException(601L, e);
         }
@@ -300,14 +300,14 @@ public abstract class HapptickBaseClient {
      *             Is raised when the connection with service could not be
      *             established or other problems occured.
      */
-    public void useMailsAndEvents(MailAndEventRecipient mailEventRecipient, MailExpressions expressions, List<NotEOFEvent> events, boolean acceptOwnMails)
+    public void useEvents(EventRecipient eventRecipient, MailExpressions expressions, List<NotEOFEvent> events, boolean acceptOwnMails)
             throws HapptickException {
-        initMailEventClient(mailEventRecipient);
+        initEventClient(eventRecipient);
         addInterestingMailExpressions(expressions);
         addInterestingEvents(events);
         if (!acceptOwnMails) {
             try {
-                mailEventClient.addIgnoredClientNetId(this.notEofClient.getClientNetId());
+                eventClient.addIgnoredClientNetId(this.notEofClient.getClientNetId());
             } catch (ActionFailedException e) {
                 throw new HapptickException(605L, "Der Empfang eigener Mails konnte nicht unterdrueckt werden", e);
             }
@@ -335,7 +335,7 @@ public abstract class HapptickBaseClient {
      * use the same named function with the additional boolean argument
      * 'acceptOwnMails'.
      * 
-     * @param mailEventRecipient
+     * @param eventRecipient
      *            The application which uses this method and wants to be
      *            informed about mails or events must implement this interface.
      *            To use the function call it by putting in the class itself as
@@ -344,8 +344,8 @@ public abstract class HapptickBaseClient {
      *             Is raised when the connection with service could not be
      *             established or other problems occured.
      */
-    public void useMailsAndEvents(MailAndEventRecipient mailEventRecipient) throws HapptickException {
-        useMailsAndEvents(mailEventRecipient, false);
+    public void useEvents(EventRecipient eventRecipient) throws HapptickException {
+        useEvents(eventRecipient, false);
     }
 
     /**
@@ -366,7 +366,7 @@ public abstract class HapptickBaseClient {
      * For sending mails or events this steps are NOT required.
      * <p>
      * 
-     * @param mailEventRecipient
+     * @param eventRecipient
      *            The application which uses this method and wants to be
      *            informed about mails or events must implement this interface.
      *            To use the function call it by putting in the class itself as
@@ -380,15 +380,15 @@ public abstract class HapptickBaseClient {
      *             Is raised when the connection with service could not be
      *             established or other problems occured.
      */
-    public void useMailsAndEvents(MailAndEventRecipient mailEventRecipient, boolean acceptOwnMails) throws HapptickException {
+    public void useEvents(EventRecipient eventRecipient, boolean acceptOwnMails) throws HapptickException {
         if (Util.isEmpty(this.notEofClient))
             throw new HapptickException(605, "Vor Aufruf dieser Methode muss die Method connect() aufgerufen werden.");
 
-        mailEventClient = null;
-        initMailEventClient(mailEventRecipient);
+        eventClient = null;
+        initEventClient(eventRecipient);
         if (!acceptOwnMails) {
             try {
-                mailEventClient.addIgnoredClientNetId(this.notEofClient.getClientNetId());
+                eventClient.addIgnoredClientNetId(this.notEofClient.getClientNetId());
             } catch (ActionFailedException e) {
                 throw new HapptickException(605L, "Der Empfang eigener Mails konnte nicht unterdrueckt werden", e);
             }
@@ -417,11 +417,11 @@ public abstract class HapptickBaseClient {
      *             If the list couldn't be transmitted to the service.
      */
     public void addInterestingMailExpressions(MailMatchExpressions expressions) throws HapptickException {
-        if (null == mailEventClient)
+        if (null == eventClient)
             throw new HapptickException(604L, "Empfang von Mails oder Events ist noch nicht aktiviert.");
         if (null != expressions) {
             try {
-                mailEventClient.addInterestingMailExpressions(expressions);
+                eventClient.addInterestingMailExpressions(expressions);
             } catch (ActionFailedException e) {
                 throw new HapptickException(602L, expressions.getClass().getName() + ".", e);
             }
@@ -445,11 +445,11 @@ public abstract class HapptickBaseClient {
      * @throws HapptickException
      */
     public void addInterestingEvents(List<NotEOFEvent> events) throws HapptickException {
-        if (null == mailEventClient)
+        if (null == eventClient)
             throw new HapptickException(604L, "Empfang von Mails oder Events ist noch nicht aktiviert.");
         if (null != events) {
             try {
-                mailEventClient.addInterestingEvents(events);
+                eventClient.addInterestingEvents(events);
             } catch (ActionFailedException e) {
                 throw new HapptickException(603L, e);
             }
@@ -478,13 +478,13 @@ public abstract class HapptickBaseClient {
         }
     }
 
-    private void initMailEventClient(MailAndEventRecipient mailEventRecipient) throws HapptickException {
-        if (null == this.mailEventClient) {
-            this.mailEventRecipient = mailEventRecipient;
+    private void initEventClient(EventRecipient eventRecipient) throws HapptickException {
+        if (null == this.eventClient) {
+            this.eventRecipient = eventRecipient;
 
-            while (null == this.mailEventClient || !this.mailEventClient.isLinkedToService()) {
+            while (null == this.eventClient || !this.eventClient.isLinkedToService()) {
                 try {
-                    this.mailEventClient = new HapptickMailEventClient(serverAddress, serverPort, null, null);
+                    this.eventClient = new HapptickEventClient(serverAddress, serverPort, null, null);
                 } catch (ActionFailedException e) {
                     LocalLog.warn("Verbindung zum Empfang von Events konnte bisher nicht aufgebaut werden.");
                     // throw new HapptickException(601L, e);

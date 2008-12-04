@@ -19,9 +19,9 @@ import de.notEOF.core.logging.LocalLog;
 import de.notEOF.mail.MailHeaders;
 import de.notEOF.mail.MailToken;
 import de.notEOF.mail.NotEOFMail;
-import de.notEOF.mail.interfaces.MailAndEventRecipient;
+import de.notEOF.mail.interfaces.EventRecipient;
 
-public class MailRecipient extends HapptickApplication implements MailAndEventRecipient {
+public class MailRecipient extends HapptickApplication implements EventRecipient {
 
     private int counter = 0;
     private int complete = 0;
@@ -41,7 +41,7 @@ public class MailRecipient extends HapptickApplication implements MailAndEventRe
         // reconnect();
 
         // Anwendung will selbst mails oder events verarbeiten
-        useMailsAndEvents(this);
+        useEvents(this);
 
         // Hinzufuegen von interessanten Nachrichteninhalten
         MailToken tokens = new MailToken();
@@ -65,7 +65,7 @@ public class MailRecipient extends HapptickApplication implements MailAndEventRe
         addInterestingEvents(events);
 
         // jetzt geht's los
-        startAcceptingMailsEvents();
+        startAcceptingEvents();
 
         System.out.println("Jetzt gilts!");
         ready = true;

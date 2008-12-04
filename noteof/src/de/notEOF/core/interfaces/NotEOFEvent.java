@@ -103,4 +103,6 @@ public interface NotEOFEvent {
     public Long getTimeStampSend();
 
     public void setTimeStampSend();
+
+    public boolean equals(EventType eventType);
 }

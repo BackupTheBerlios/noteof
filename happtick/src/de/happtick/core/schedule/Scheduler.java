@@ -77,7 +77,7 @@ public class Scheduler {
         public void run() {
             while (true) {
                 for (NotEOFEvent event : MasterTable.getStartEventsAsList()) {
-                    if (EventType.EVENT_APPLICATION_START.equals(event.getEventType())) {
+                    if (event.equals(EventType.EVENT_APPLICATION_START)) {
                         Long timeStamp = event.getTimeStampSend();
                         long maxWaitTime = MasterTable.getMaxDelay();
                         // older than 30 seconds?
@@ -217,19 +217,19 @@ public class Scheduler {
 
         public synchronized void update(Service service, NotEOFEvent event) {
             // Application started
-            if (EventType.EVENT_APPLICATION_START.equals(event.getEventType())) {
+            if (event.equals(EventType.EVENT_APPLICATION_START)) {
                 MasterTable.putStartEvent(event);
             }
 
             // Application process now running
             // Activate dependent applications
-            if (EventType.EVENT_APPLICATION_STARTED.equals(event.getEventType())) {
+            if (event.equals(EventType.EVENT_APPLICATION_STARTED)) {
                 MasterTable.replaceStartEvent(event);
             }
 
             // Application process stopped
             // Service removes itself from the MasterTable
-            if (EventType.EVENT_APPLICATION_STOPPED.equals(event.getEventType())) {
+            if (event.equals(EventType.EVENT_APPLICATION_STOPPED)) {
                 Long stoppedApplId = event.getApplicationId();
                 MasterTable.removeStartEvent(event);
 
@@ -250,7 +250,7 @@ public class Scheduler {
 
             // Application process could not be started
             // Remove StartEvent
-            if (EventType.EVENT_START_ERROR.equals(event.getEventType())) {
+            if (event.equals(EventType.EVENT_START_ERROR)) {
                 MasterTable.removeStartEvent(event);
             }
 

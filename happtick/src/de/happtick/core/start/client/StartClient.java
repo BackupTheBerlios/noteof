@@ -17,7 +17,7 @@ import de.notEOF.core.logging.LocalLog;
 import de.notEOF.core.util.ArgsParser;
 import de.notEOF.core.util.Util;
 import de.notEOF.mail.NotEOFMail;
-import de.notEOF.mail.interfaces.MailAndEventRecipient;
+import de.notEOF.mail.interfaces.EventRecipient;
 
 /**
  * This client awaits StartEvents by the StartService. It is needed to start
@@ -36,7 +36,7 @@ import de.notEOF.mail.interfaces.MailAndEventRecipient;
  * 
  * @author Dirk
  */
-public class StartClient extends HapptickBaseClient implements MailAndEventRecipient {
+public class StartClient extends HapptickBaseClient implements EventRecipient {
 
     private String serverAddress;
     private int port;
@@ -55,14 +55,14 @@ public class StartClient extends HapptickBaseClient implements MailAndEventRecip
         connect(serverAddress, port, args, false);
 
         // Activate EventSystem
-        useMailsAndEvents(this, false);
+        useEvents(this, false);
 
         // Catching important events is defined here
         List<NotEOFEvent> events = new ArrayList<NotEOFEvent>();
         events.add(new ApplicationStartEvent());
         addInterestingEvents(events);
         // Before this the method useMailsAndEvents() must be called
-        startAcceptingMailsEvents();
+        startAcceptingEvents();
 
         // tell scheduler that at this computer a StartClient is active
         NotEOFEvent event = new StartClientEvent();
@@ -163,7 +163,7 @@ public class StartClient extends HapptickBaseClient implements MailAndEventRecip
      */
     @Override
     public synchronized void processEvent(NotEOFEvent event) {
-        if (event.getEventType().equals(EventType.EVENT_APPLICATION_START)) {
+        if (event.equals(EventType.EVENT_APPLICATION_START)) {
             startStarter(event);
         }
     }

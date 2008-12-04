@@ -25,7 +25,7 @@ public class HapptickSimpleService extends SimpleService {
      * <p>
      */
     public synchronized void processEvent(Service service, NotEOFEvent event) throws ActionFailedException {
-        if (EventType.EVENT_START_CLIENT.equals(event.getEventType())) {
+        if (event.equals(EventType.EVENT_START_CLIENT)) {
             MasterTable.updateStartClientEvent(event);
         }
     }

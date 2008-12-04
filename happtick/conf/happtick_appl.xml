@@ -189,11 +189,11 @@
 			     Use blanks or comma as delimiter for textual lists here.
 			-->
 			<timeplan> 
-				<seconds>0 30</seconds> <!-- blank OR comma seperated -->
+				<seconds>0 10 20 30 40</seconds> <!-- blank OR comma seperated -->
 				<minutes>*</minutes>
 				<hours>*</hours> <!-- blank OR comma seperated -->
 				<weekdays>*</weekdays> <!-- mixed english and german is allowed (MO, TU, DI, WE, MI, ...)  -->
-				<monthdays>3</monthdays>
+				<monthdays>4</monthdays>
 			</timeplan>
 			
 			<!-- dependencies

@@ -168,4 +168,8 @@ public abstract class NotEOFBaseEvent implements NotEOFEvent {
             }
         }
     }
+
+    public boolean equals(EventType eventType) {
+        return this.eventType.equals(eventType);
+    }
 }

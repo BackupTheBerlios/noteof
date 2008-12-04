@@ -11,24 +11,24 @@ import de.notEOF.core.interfaces.NotEOFEvent;
 import de.notEOF.core.interfaces.TimeOut;
 import de.notEOF.mail.NotEOFMail;
 import de.notEOF.mail.enumeration.MailTag;
-import de.notEOF.mail.interfaces.MailAndEventRecipient;
+import de.notEOF.mail.interfaces.EventRecipient;
 import de.notEOF.mail.interfaces.MailMatchExpressions;
 import de.notIOC.configuration.ConfigurationManager;
 
-public abstract class MailAndEventReceiveClient extends BaseClient {
+public abstract class EventReceiveClient extends BaseClient {
 
     private MailAndEventAcceptor acceptor;
-    private MailAndEventRecipient recipient;
+    private EventRecipient recipient;
     private long workerPointer = 0;
     private boolean acceptorStopped = true;
 
     private List<String> ignoredClientNetIds = new ArrayList<String>();
 
-    public MailAndEventReceiveClient(Socket socketToServer, TimeOut timeout, String[] args) throws ActionFailedException {
+    public EventReceiveClient(Socket socketToServer, TimeOut timeout, String[] args) throws ActionFailedException {
         super(socketToServer, timeout, args);
     }
 
-    public MailAndEventReceiveClient(String ip, int port, TimeOut timeout, String... args) throws ActionFailedException {
+    public EventReceiveClient(String ip, int port, TimeOut timeout, String... args) throws ActionFailedException {
         super(ip, port, timeout, args);
     }
 
@@ -39,7 +39,7 @@ public abstract class MailAndEventReceiveClient extends BaseClient {
         acceptor.stop();
     }
 
-    public void awaitMailOrEvent(MailAndEventRecipient recipient) throws ActionFailedException {
+    public void awaitMailOrEvent(EventRecipient recipient) throws ActionFailedException {
         if (null == this.recipient)
             this.recipient = recipient;
         activateAccepting();
@@ -147,11 +147,11 @@ public abstract class MailAndEventReceiveClient extends BaseClient {
      * than a list...
      */
     private class EventWorker implements Runnable {
-        protected MailAndEventRecipient recipient;
+        protected EventRecipient recipient;
         protected NotEOFEvent event;
         protected long id;
 
-        protected EventWorker(MailAndEventRecipient recipient, NotEOFEvent event) {
+        protected EventWorker(EventRecipient recipient, NotEOFEvent event) {
             this.recipient = recipient;
             this.event = event;
         }
@@ -181,10 +181,10 @@ public abstract class MailAndEventReceiveClient extends BaseClient {
      * than a list...
      */
     private class MailWorker implements Runnable {
-        protected MailAndEventRecipient recipient;
+        protected EventRecipient recipient;
         protected NotEOFMail mail;
 
-        protected MailWorker(MailAndEventRecipient recipient, NotEOFMail mail) {
+        protected MailWorker(EventRecipient recipient, NotEOFMail mail) {
             this.recipient = recipient;
             this.mail = mail;
         }

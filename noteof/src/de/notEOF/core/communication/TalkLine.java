@@ -334,10 +334,10 @@ public class TalkLine implements Observer {
                 event = EventFinder.getNotEOFEvent(applicationHome, canonicalName);
                 event.setAttributes(attributes);
                 event.setDescriptions(descriptions);
-                // event.setEventType(eventType);
+                event.setEventType(eventType);
             } catch (Exception e) {
                 // class couldn't be loaded. So use default one.
-                event = new TransportEvent(eventType, attributes, descriptions);
+                event = new TransportEvent(EventType.EVENT_DEFAULT, attributes, descriptions);
             }
             return event;
         } catch (Exception e) {

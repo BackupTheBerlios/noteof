@@ -3,7 +3,7 @@ package de.notEOF.mail.interfaces;
 import de.notEOF.core.interfaces.NotEOFEvent;
 import de.notEOF.mail.NotEOFMail;
 
-public interface MailAndEventRecipient {
+public interface EventRecipient {
 
     /**
      * Callback method to process received mails. You should synchronize this.

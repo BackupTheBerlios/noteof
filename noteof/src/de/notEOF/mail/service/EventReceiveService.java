@@ -23,7 +23,7 @@ import de.notEOF.mail.enumeration.MailTag;
  * 
  * @author Dirk
  */
-public abstract class MailAndEventReceiveService extends BaseService {
+public abstract class EventReceiveService extends BaseService {
 
     private MailToken mailDestinations;
     private MailHeaders mailHeaders;
@@ -102,7 +102,7 @@ public abstract class MailAndEventReceiveService extends BaseService {
         }
 
         try {
-            if (EventType.EVENT_MAIL.equals(event.getEventType())) {
+            if (event.equals(EventType.EVENT_MAIL)) {
                 // check if interesting for this service
                 if (((NewMailEvent) event).getMail().getToClientNetId().equals(getClientNetId()) || //
                         interestedInMail(((NewMailEvent) event).getMail())) {

@@ -594,8 +594,7 @@ public class MasterTable {
      *            The last fired StartClienEvent of the StartClient
      */
     public static void updateStartClientEvent(NotEOFEvent event) {
-        if (EventType.EVENT_START_CLIENT.equals(event.getEventType())) {
-
+        if (event.equals(EventType.EVENT_START_CLIENT)) {
             if (event.getAttribute("state").equals("START")) {
                 startClientEvents.put(event.getAttribute("clientIp"), event);
             }

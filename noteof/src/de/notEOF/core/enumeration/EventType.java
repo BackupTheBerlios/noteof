@@ -65,5 +65,9 @@ public enum EventType {
      * 
      */
     EVENT_EMPTY,
-    EVENT_ANY_TYPE;
+    EVENT_ANY_TYPE,
+
+    // Die muessen hier wieder raus!!!
+    EVENT_SOUND;
+
 }
