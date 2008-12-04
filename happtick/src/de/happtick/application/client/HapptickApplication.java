@@ -40,14 +40,20 @@ public abstract class HapptickApplication extends HapptickBaseClient {
      *            A HapptickApplication must be called with the parameter
      *            --startId=<value>.
      */
-    public HapptickApplication(long applicationId, String serverAddress, int serverPort, String... args) throws HapptickException {
+    public HapptickApplication(Long applicationId, String serverAddress, int serverPort, String... args) throws HapptickException {
 
         // Verify the hard coded applicationId and the applicationId which is
         // used by the StartClient which got it from the central scheduler.
         ArgsParser parser = new ArgsParser(args);
+        Long receivedId;
         if (parser.containsStartsWith("--applicationId")) {
-            Long receivedId = Util.parseLong(parser.getValue("applicationId"), -1);
-            if (applicationId != receivedId)
+            receivedId = Util.parseLong(parser.getValue("applicationId"), -1);
+            if (Util.isEmpty(applicationId) && Util.isEmpty(receivedId)) {
+                throw new HapptickException(404L, "Empfangene applicationId und hart codierte applicationId sind leer.");
+            }
+            if (Util.isEmpty(applicationId) && !Util.isEmpty(receivedId)) {
+                applicationId = receivedId;
+            } else if (!Util.isEmpty(applicationId) && applicationId != receivedId)
                 throw new HapptickException(404L, "Empfangene applicationId und hart codierte applicationId sind nicht identisch.");
         }
 
@@ -300,6 +306,7 @@ public abstract class HapptickApplication extends HapptickBaseClient {
         if (null != applicationClient) {
             applicationClient.stop(exitCode);
         }
+        // super.close();
     }
 
     public void startWork() throws HapptickException {
