@@ -9,82 +9,25 @@
 
 <root>
 	<scheduler>
-		<!-- activating/deactivating the scheduler functionalities
-			 - chain Chains are processed
-			 - timer Applications will be scheduled by timing
-			 - event Applications, chains, events are processed by incoming events
-		-->
-	   	<use chain="false" timer="true" event="true"></use>
-	   	<!-- 
-	   		 max. milliseconds from calculated start point until real start point
-	   		 for slow server or very high used capacity of the server 
-	   	-->
+	   	<use chain="false" timer="true" event="false"></use>
 	   	<maxDelay>10000</maxDelay>
 	
-	    <!-- ============================================== Chain Configuration ====================================
-	         With chains it is possible to define process chains depending to events or other chains.
-	         The scheduler tries to start the applications in the order like they are configured within a chain.
-	    
-	         If loop is true the chain will start again. For a chain which must be started depending to another chain it make
-	         no sense setting loop to true.
-	         Application start can depend to one event or prevented by one event.
-	         When the skip flag is set to false the chain waits for the end of the application.
-	         If skip = true and the preventEvent for a application is fired the chain overleaps this application and starts the next one.
-	     -->
 	    <chains>
-		    <!-- The list of chains.
-		    	 Chains can be chained to...
-		    	 Here also the order within the list is the order how the scheduler starts chains.
-		     -->
 	    	<chain>chain1</chain>
- 	    	<chain>chain2</chain> 
-	    	<!-- 
-	    		 - depends if true the chain ends with the end of the last application or chain
-	    		                   loop will be ignored then
-	    		 - loop if true the chain starts again with the first application or chain (endless loop)
-	    	 -->
 		    <chain1 depends="false" loop="true" chainId="1">
 		    	<!-- The order for start applications and ...chains -->
 		    	<link>link0</link>
 		    	<link>link2</link>
 		    	<link>link1</link>
 		    	
-		    	<!-- The applications and chains to start
-		    	      Note that addresseeId's here can be used as id for an application or a chain.
-		    	      - addresseeType Indicates if the runnable is an application or a chain
-		    	      - addresseeId is the id of the application or the chain
-		    	      - conditionEventId Event which must be raised of the application before enabling this application
-	          	      - conditionKeyName, conditionKeyValue Attribute and Value the conditionEvent mus have (optional)
-		    	      - preventEventId When this event was raised by the application before the application will not be activated
-		    	      - preventKeyName, preventKeyValue Attribute and Value which the preventEvent mus have (optional)
-		    	      - skip is optional, default is false.
-		    	-->
 				<link0 linkId="1" addresseeType="application" addresseeId="33"></link0>
-				<link1 linkId="2" addresseeType="chain"       addresseeId="2"></link1>
 				<link2 linkId="0" addresseeType="application" addresseeId="77"></link2>
 <!-- 				                  conditionEventId="1" conditionKeyName="internal->applicationId" conditionKeyValue="77"
 				                  preventEventId="2"   preventKeyName="exitCode"   preventKeyValue="0" skip="false"></link2>
 -->				                  
 		    </chain1>
-		    
-		    <chain2 depends="true" loop="false" chainId="2">
-		    	<link>link0</link>
-		    	<link>link1</link>
-				<link0 linkId="0" addresseeType="application" addresseeId="88"></link0>
-				<link1 linkId="1" addresseeType="application" addresseeId="2"></link1>
-		    </chain2>
-		    
 	    </chains>
 	    
-	    <!-- ============================================== Event Configuration ====================================
-	    	 Please note that Raised Events should be configured in another file (e.g. events.xml)
-	    	 
-	    	 Events are raised by ApplicationClients and identified by the eventId or eventClassName.
-	    	 The actions after an event can differ for every client.
-	    	 If the event is essential for every client, the key 'applicationId' can be omitted
-	    	 or the value of 'firedByApplicationId' must be empty.
-	    	 With events applications and chains can be started or stopped and the state of chains can be cleared.
-	    -->
 	    <events>
 	    	<!-- List of FIRED events and the following actions-->
 	    	<event>event1</event>
@@ -95,25 +38,7 @@
 	    	<event>event6</event>
 	    	<event>event7</event>
 	    	<event>event8</event>
-
-			<!--
-				This configuration is made for two goals:
-				1. Building a relation between the eventId and the eventClassName
-				2. Defining actions with some conditions and raising applications
 				
-			    - eventClassName the class name of the fired event
-			    - keyName attribute of the event which must be present as condition for the actions (optional)
-			    - keyValue value of the attribute which is condition for the actions (optional)
-			    - applicationId additional filter to ensure that the event was raised by the application with given id (optional)
-			    - adresseeId additional information for which application or chain the event is appointed to.
-			    - action what to do with the application/chain/event - 'start', 'stop', 'clear', 'reset', 'ignite' is possible here.
-				      'clear' means that the chain forgets the received events and continues it's work.
-				      'ignite' is only possible to self configured events (Alias:<EventName>). Other events are fired by applications directly 
-			    - addresseeType kind of receiver 'application' or 'chain' or 'event' is possible here.
-			    
-			    - please note the special eventClassName 'Alias:MyOwnEvent'. If an self described event was fired it is recognized as
-			      'GenericEvent'. The notation Alias:<AliasEventName> is required here to map the incoming event to the fired event
-			-->	    	
 	    	<event1 eventId="1" eventClassName="ApplicationStoppedEvent" keyName="exitCode" keyValue="9" action="start" addresseeType="application" applicationId="33" addresseeId="77"></event1>
 	    	<event2 eventId="2" eventClassName="AlarmEvent" action="stop" addresseeType="application" addresseeId="55"></event2>
 	    	<event3 eventId="3" eventClassName="GenericEvent" action="ignite" addresseeType="event" addresseeId="8"></event3>
@@ -125,139 +50,37 @@
 	    	
 	    </events>
 	
-	    <!-- ============================================== Application Configuration ====================================
-	    	 The main goal of Happtick: Start, Stop, Observe Applications.
-	    -->
-	    
-		<!-- List of applications.
-		     Beneath of this list the configurations of the different applications follows.
-		     The simple text of the applications here are the node names of the application configurations.
-		     To 'disable' an application (ignored by Happtick) without loose or change the complex configuration surround it with comments here.
-
-	         Applications which are started by application configuration here (partOfChain=false) cannot be started within the chain configuration.  
-		-->
 		<applications>
 			<application>application1</application>
 		  	<application>application2</application> 
-		  	<application>application3</application> 
-		  	<application>application4</application> 
-		  	<application>application5</application> 
 		</applications>
 	
-		<!-- Complex configurations of applications.
-		     Here informations about the applications and the scheduling is defined.
-		-->
-
-		<!--
-			- application1 is the referenced nodename (see above)
-		    - applicationId is the id which is used by programmers to identify the applications type
-		                    the id is referenced here on several parts 
-		-->
-		<application1 applicationId="77">
-	        <!-- client
-	             ip of the client host (e.g. a pc) where the application should be started.
-	             LOCALHOST is NOT allowed here
-	        -->
+		<application1 applicationId="1">
 			<client clientIp="localhost"></client>
-			<!-- executable
-			     type options are 'java' or 'unknown'. If the application was implemented for or with the Happtick framework insert 'JAVA'.
-			     path is the complete description of the executable which the start client has to start.
-			     windows set to true if a shell start script is used (don't forget 'exit' as last command within this script) 
-			     args is a calling argument
-			--> 
-			<executable type="java" path="C:\Projekte\workspace\noteof\util\mail_recipient.bat" windows="true">
-				<args>--blubb="1" --blase=2</args>
+			<executable type="java" path="C:\Projekte\workspace\happdemo\scripts\Actor.bat" windows="false">
+				<args>--soundFile=c:\Projekte\workspace\happdemo\soundfiles\a.wav</args>
 			</executable>
-			<!-- option
-			     multiplestart decides if an application may run multiple at the same time.
-			     enforce set to true if the application should run permanently.
-			             If enforce is true and the application doesn't run the scheduler tries to start it.
-			             If enforce is true waiting for other applications is ignored 
-			-->
 			<option partOfChain="false" multiplestart="false" enforce="false"></option>
-			<!-- timeplan
-			     Definition of time points when the application has to run.
-			     seconds   is a simple textual list of the seconds. For full minutes use * or 0.
-			     minutes   is a simple textual list of the minutes. For full hours use * or 0.
-			     hours     is a simple textual list of the hours. For every hour fill in * (not 0!). The day has 24 hours (setting am or pm is not possible). 
-			     weekdays  is a simple textual list of reduction to appointed weekdays.
-			               Use the first two letters of the days (e.g. TH for thursday). Use english or german shortcut. Not case sensitive
-			     monthdays is a simple textual list of reduction to appointed days of the month (15, 20).
-			     if weekday and monthday is defined the time points can be very seldom (e.g. there are not many Fridays on the 13. day in month).
-			     
-			     This lists for time informations automatically will be sorted by Happtick.
-			     Use blanks or comma as delimiter for textual lists here.
-			-->
 			<timeplan> 
-				<seconds>0 10 20 30 40</seconds> <!-- blank OR comma seperated -->
+				<seconds>0 10 30 40 50 </seconds>
 				<minutes>*</minutes>
-				<hours>*</hours> <!-- blank OR comma seperated -->
-				<weekdays>*</weekdays> <!-- mixed english and german is allowed (MO, TU, DI, WE, MI, ...)  -->
-				<monthdays>4</monthdays>
+				<hours>*</hours>
+				<weekdays>*</weekdays>
+				<monthdays>5</monthdays>
 			</timeplan>
 			
-			<!-- dependencies
-			     Here you have some facilities:
-			     - Avoid start of application as long as other applications are running but start after they have stopped.
-			     - Start another application AFTER the configured application has stopped.
-			     - Start another application SYNCHRONOUS with the configured application.  
-			-->
 			<dependencies>
-				<waitfor applicationId="55"></waitfor>
-				<startafter applicationId="15"></startafter>
-				<startsync applicationId="15"></startsync>
+				<startsync applicationId="2"></startsync>
 			</dependencies>
-			
-			<!-- maxStartStop, maxStepStep
-				 +++ For later use. +++
-				 Values will be evaluated for controlling the processes.
-				 maxStartStop is the time in seconds which the complete application has time to run.
-				 maxStepStep is the time in seconds which may elapse between the single Steps (e.g. ActionEvents)
-			 -->
-			<runtime maxStartStop="300" maxStepStep="10"></runtime>
 		</application1>
 		
 		<application2 applicationId="2">
 			<client clientIp="localhost"></client>
-			<executable type="UNKNOWN" path="write.exe" windows="true">
-				<args>--xxx="10" --yyy=20</args>
+			<executable type="java" path="C:\Projekte\workspace\happdemo\scripts\Actor.bat" windows="false">
+				<args>--soundFile=c:\Projekte\workspace\happdemo\soundfiles\b.wav</args>
 			</executable>
-			<option multiplestart="true" enforce="false"></option>
-			<timeplan> 
-				<seconds>0 30</seconds>
-				<minutes>15</minutes>
-				<hours>22,24</hours>
-				<weekdays>TU MI FR SU</weekdays>
-				<monthdays>13</monthdays>
-			</timeplan>
-
-			<runtime maxStartStop="300" maxStepStep="10"></runtime>
+			<option multiplestart="false" enforce="false"></option>
 		</application2>
-		
-		<application3 applicationId="88">
-			<client clientIp="localhost"></client>
-			<executable type="UNKNOWN" path="calc.exe" windows="true">
-				<args>--xxx="10" --yyy=20</args>
-			</executable>
-			<option multiplestart="true" enforce="false"></option>
-		</application3>
-		
-		<application4 applicationId="33">
-			<client clientIp="localhost"></client>
-			<executable type="UNKNOWN" path="notepad.exe" windows="true">
-				<args></args>
-			</executable>
-			<option multiplestart="true" enforce="false"></option>
-		</application4>
-		
-		<application5 applicationId="15">
-			<client clientIp="localhost"></client>
-			<executable type="UNKNOWN" path="freecell.exe" windows="true">
-				<args>--xxx="10" --yyy=20</args>
-			</executable>
-			<option multiplestart="true" enforce="false"></option>
-		</application5>
-		
 	</scheduler>
 	
 	<additional>
