@@ -6,6 +6,7 @@ import java.util.List;
 
 import de.notEOF.core.client.BaseClient;
 import de.notEOF.core.communication.DataObject;
+import de.notEOF.core.enumeration.EventType;
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.interfaces.NotEOFEvent;
 import de.notEOF.core.interfaces.TimeOut;
@@ -45,6 +46,10 @@ public abstract class EventReceiveClient extends BaseClient {
         activateAccepting();
     }
 
+//    public void stop() {
+//        acceptor.stop();
+//    }
+
     private void activateAccepting() throws ActionFailedException {
         // beware of multiple start!
         if (null == acceptor || acceptor.isStopped()) {
@@ -72,6 +77,8 @@ public abstract class EventReceiveClient extends BaseClient {
 
         public void stop() {
             acceptorStopped = true;
+            // getTalkLine().close();
+            // getTalkLine().notify();
         }
 
         public void run() {
@@ -171,7 +178,11 @@ public abstract class EventReceiveClient extends BaseClient {
                 } catch (InterruptedException e) {
                 }
             }
-            recipient.processEvent(event);
+            if (event.equals(EventType.EVENT_APPLICATION_STOP)) {
+                recipient.processStopEvent(event);
+            } else {
+                recipient.processEvent(event);
+            }
             workerPointer = getId();
         }
     }

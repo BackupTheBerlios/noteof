@@ -14,14 +14,20 @@ import javax.sound.sampled.LineListener;
 
 public class SoundPlayer implements LineListener {
     final int bufSize = 16384;
+    private boolean stopped = false;
     Object currentSound = null;
+    static SoundPlayer player = null;
 
     public static void playSound(String fileName) {
-        SoundPlayer player = new SoundPlayer();
+        player = new SoundPlayer();
 
         if (player.loadSound(new File(fileName))) {
             player.playSound();
         }
+    }
+
+    public static void stop() {
+        player.stopped = true;
     }
 
     private boolean loadSound(File file) {
@@ -73,7 +79,7 @@ public class SoundPlayer implements LineListener {
             Thread.sleep(99);
         } catch (Exception e) {
         }
-        while (clip.isActive()) {
+        while (clip.isActive() && !stopped) {
             try {
                 Thread.sleep(99);
             } catch (Exception e) {

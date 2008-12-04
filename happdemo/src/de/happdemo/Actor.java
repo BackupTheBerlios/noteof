@@ -4,38 +4,70 @@ import java.util.ArrayList;
 import java.util.List;
 
 import de.happtick.application.client.HapptickApplication;
+import de.happtick.core.event.ApplicationStopEvent;
 import de.happtick.core.exception.HapptickException;
 import de.notEOF.core.enumeration.EventType;
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.interfaces.NotEOFEvent;
+import de.notEOF.core.util.ArgsParser;
 import de.notEOF.core.util.Util;
 import de.notEOF.mail.NotEOFMail;
 import de.notEOF.mail.interfaces.EventRecipient;
 
 public class Actor extends HapptickApplication implements EventRecipient {
     private String errorSound = "bla";
+    private boolean stopped = false;
 
-    public Actor(long applicationId, String serverAddress, int serverPort, String[] args) throws HapptickException {
-        super(applicationId, serverAddress, serverPort, args);
-        doWork();
+    public Actor(Long applicationId, String serverAddress, int serverPort, String[] args) throws HapptickException {
+        super(null, serverAddress, serverPort, args);
+        doWork(args);
     }
 
-    private void doWork() throws HapptickException {
-
-        SoundPlayer.playSound("C:\\Dokumente und Einstellungen\\Dirk\\Eigene Dateien\\Eigene Musik\\Sven01.wav");
-
+    /**
+     * Startet die Anwendung.
+     * <p>
+     * Evtl. wird die Anwendung mit einer Sounddatei gestartet.
+     * 
+     * @param args
+     *            Kann den Namen einer Sounddatei enthalten. Das waere ein
+     *            Parameter --soundFile=soundFile
+     * @throws HapptickException
+     */
+    private void doWork(String[] args) throws HapptickException {
         // Anwendung will selbst mails oder events verarbeiten
         useEvents(this);
 
         // Hinzufuegen von interessanten Events
         List<NotEOFEvent> events = new ArrayList<NotEOFEvent>();
         events.add(new SoundEvent());
+        events.add(new ApplicationStopEvent());
         addInterestingEvents(events);
 
         // jetzt geht's los
         startAcceptingEvents();
-
         System.out.println("Wohlan!");
+
+        // mal schauen, ob es direkt was zu tun gibt (Abspielen einer
+        // Sound-Datei)
+        ArgsParser argsParser = new ArgsParser(args);
+        if (argsParser.containsStartsWith("--soundFile")) {
+            // Starten der Anwendung mit soundFile
+            String soundFile = argsParser.getValue("soundFile");
+            if (!Util.isEmpty(soundFile)) {
+                playSound(soundFile, 0);
+                stopped = true;
+            }
+        }
+
+        // wait for stop event
+        while (!stopped) {
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+            }
+        }
+        // close connection to service in usual way
+        stop();
     }
 
     /**
@@ -43,9 +75,10 @@ public class Actor extends HapptickApplication implements EventRecipient {
      * Dieses Event beinhaltet:
      * <ul>
      * <li>Die ApplicationId, die aber fester Bestandteil aller Events ist</>
-     * <li>Den Namen der zuletzt abgespielten Sounddatei</li>
-     * <li>Einen Merker, der aussagt, dass es sich um einen abgespielten Sound
-     * handelt</>
+     * <li>Den Namen der zuletzt abgespielten Sounddatei</li> <li>ODER den Namen
+     * der gerade aktiven Sounddatei</li> <li>Einen Merker, der aussagt, dass es
+     * sich um einen abgespielten Sound handelt</> <li>ODER dass gerade ein
+     * Sound gespielt wird</>
      * </ul>
      */
     private void sendSoundEvent(NotEOFEvent event) {
@@ -57,24 +90,30 @@ public class Actor extends HapptickApplication implements EventRecipient {
     }
 
     /**
-     * Steuert das Abspielen der Sounddatei an und sorgt fuer die Rueckmeldung.
+     * Steuert das Abspielen der Sounddatei an und sorgt fuer eine Rueckmeldung
+     * an alle Akteure.
      */
-    private void playSound(NotEOFEvent event) {
-        // Wie lange bis zum Abspielen warten?
-        long waitMillis = Util.parseLong(event.getAttribute("delay"), 0);
-        String soundFile = event.getAttribute("soundFile");
-
+    private void playSound(String soundFile, long waitMillis) {
         // Die verlangte Zeit bis zum Abspielen warten.
         try {
             Thread.sleep(waitMillis);
         } catch (InterruptedException e1) {
         }
 
+        // Response Event
+        SoundEvent newSoundEvent = new SoundEvent();
+        try {
+            newSoundEvent.addAttribute("soundFile", soundFile);
+            newSoundEvent.addAttribute("state", "playing");
+        } catch (ActionFailedException e) {
+            e.printStackTrace();
+        }
+
         // Spiele Sound
         SoundPlayer.playSound(soundFile);
 
         // Response Event
-        SoundEvent newSoundEvent = new SoundEvent();
+        newSoundEvent = new SoundEvent();
         try {
             newSoundEvent.addAttribute("soundFile", soundFile);
             newSoundEvent.addAttribute("state", "played");
@@ -84,6 +123,16 @@ public class Actor extends HapptickApplication implements EventRecipient {
 
         // Antworte den uebrigen Akteuren
         sendSoundEvent(newSoundEvent);
+    }
+
+    /**
+     * Loest das Abspielen der Sounddatei anhand eines Events aus.
+     */
+    private void playSound(NotEOFEvent event) {
+        // Wie lange bis zum Abspielen warten?
+        long waitMillis = Util.parseLong(event.getAttribute("delay"), 0);
+        String soundFile = event.getAttribute("soundFile");
+        playSound(soundFile, waitMillis);
     }
 
     /**
@@ -105,6 +154,10 @@ public class Actor extends HapptickApplication implements EventRecipient {
         }
     }
 
+    /**
+     * Wenn beim Versand eines Events eine Exception geworfen wurde, koennte
+     * hier ein Fehler angemeckert werden.
+     */
     @Override
     public void processEventException(Exception arg0) {
         SoundPlayer.playSound(errorSound);
@@ -117,22 +170,27 @@ public class Actor extends HapptickApplication implements EventRecipient {
     public void processMail(NotEOFMail arg0) {
     }
 
-    /**
-     * Da keine Mails versendet werden, duerfen auch keine Mail-Fehler
-     * auftauchen.
-     */
     @Override
     public void processMailException(Exception arg0) {
     }
 
+    /**
+     * Finish this process.
+     */
     @Override
     public void processStopEvent(NotEOFEvent arg0) {
-        // TODO Auto-generated method stub
+        this.stopped = true;
     }
 
+    /**
+     * Unumgaengliches main...
+     * 
+     * @param args
+     *            Kann evtl. ein --soundFile enthalten
+     */
     public static void main(String[] args) {
         try {
-            new Actor(10, "localhost", 3000, args);
+            new Actor(null, "localhost", 3000, args);
         } catch (HapptickException e) {
             e.printStackTrace();
         }
