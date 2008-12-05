@@ -123,7 +123,7 @@ public abstract class HapptickBaseClient {
     public void reconnect() throws HapptickException {
         eventClient = null;
         if (usingEvents) {
-            useMailsAndEvents();
+            useEvents();
             startAcceptingEvents();
         }
     }
@@ -270,12 +270,12 @@ public abstract class HapptickBaseClient {
      * @param events List with Events which the client is interested in.
      * @throws HapptickException Is raised when the connection with service could not be established or other problems occured.
      */
-    public void useMailsAndEvents(EventRecipient mailEventRecipient, MailExpressions expressions, List<NotEOFEvent> events, boolean acceptOwnMails) throws HapptickException {
+    public void useEvents(EventRecipient mailEventRecipient, MailExpressions expressions, List<NotEOFEvent> events, boolean acceptOwnMails) throws HapptickException {
         usingEvents = true;
         acceptingOwnMails = acceptOwnMails;
         acceptedExpressions = expressions;
         acceptedEvents = events;
-        useMailsAndEvents();
+        useEvents();
         this.eventRecipient = mailEventRecipient;
 //        initMailEventClient(mailEventRecipient);
 //        addInterestingMailExpressions(acceptedExpressions);
@@ -289,7 +289,7 @@ public abstract class HapptickBaseClient {
 //        }
     }
 
-    private void useMailsAndEvents() throws HapptickException {
+    private void useEvents() throws HapptickException {
         initMailEventClient(eventRecipient);
         addInterestingMailExpressions(acceptedExpressions);
         addInterestingEvents(acceptedEvents);
@@ -320,9 +320,9 @@ public abstract class HapptickBaseClient {
      * @param mailEventRecipient The application which uses this method and wants to be informed about mails or events must implement this interface. To use the function call it by putting in the class itself as parameter (e.g. this).
      * @throws HapptickException Is raised when the connection with service could not be established or other problems occured.
      */
-    public void useMailsAndEvents(EventRecipient mailEventRecipient) throws HapptickException {
+    public void useEvents(EventRecipient mailEventRecipient) throws HapptickException {
         this.eventRecipient = mailEventRecipient;
-        useMailsAndEvents(eventRecipient, false);
+        useEvents(eventRecipient, false);
     }
 
     /**
@@ -343,13 +343,13 @@ public abstract class HapptickBaseClient {
      * @param acceptOwnMails If the value of this argument is set to TRUE the client receives it's own sent mails. Normally you should set this parameter to FALSE or - easier - use the same named function without this argument.
      * @throws HapptickException Is raised when the connection with service could not be established or other problems occured.
      */
-    public void useMailsAndEvents(EventRecipient mailEventRecipient, boolean acceptOwnMails) throws HapptickException {
+    public void useEvents(EventRecipient mailEventRecipient, boolean acceptOwnMails) throws HapptickException {
         if (Util.isEmpty(this.notEofClient)) throw new HapptickException(605, "Vor Aufruf dieser Methode muss die Method connect() aufgerufen werden.");
 
         this.eventRecipient = mailEventRecipient;
         acceptingOwnMails = acceptOwnMails;
         eventClient = null;
-        useMailsAndEvents();
+        useEvents();
     }
 
     /**
