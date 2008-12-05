@@ -71,14 +71,14 @@ public abstract class HapptickBaseClient {
         }
     }
 
-//    public void close() throws HapptickException {
-//        try {
-//            eventClient.stop();
-//            notEofClient.close();
-//        } catch (ActionFailedException e) {
-//            throw new HapptickException(700L, "Event Client.", e);
-//        }
-//    }
+    public void close() throws HapptickException {
+        try {
+            eventClient.stop();
+            notEofClient.close();
+        } catch (ActionFailedException e) {
+            throw new HapptickException(700L, "Event Client.", e);
+        }
+    }
 
     /**
      * Delivers the internal client which is connected with the server.

@@ -315,7 +315,7 @@ public abstract class HapptickApplication extends HapptickBaseClient {
         if (null != applicationClient) {
             applicationClient.stop(exitCode);
         }
-        // super.close();
+        super.close();
     }
 
     public void startWork() throws HapptickException {
