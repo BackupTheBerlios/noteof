@@ -61,7 +61,14 @@ public abstract class HapptickApplication extends HapptickBaseClient {
         this.serverAddress = serverAddress;
         this.serverPort = serverPort;
         this.args = args;
-        reconnect();
+
+        applicationClient = new ApplicationClient();
+
+        // TODO Wenn dipatched getestet, kann der letzte Parameter auch nach
+        // oben frei gegeben werden...
+        connect(serverAddress, serverPort, args, applicationClient, false);
+        applicationClient.startIdToService(args);
+        applicationClient.applicationIdToService(applicationId);
     }
 
     public void reconnect() throws HapptickException {
@@ -72,6 +79,8 @@ public abstract class HapptickApplication extends HapptickBaseClient {
         connect(serverAddress, serverPort, args, applicationClient, false);
         applicationClient.startIdToService(args);
         applicationClient.applicationIdToService(applicationId);
+        
+        super.reconnect();
     }
 
     /**
