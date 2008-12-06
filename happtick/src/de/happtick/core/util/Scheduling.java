@@ -28,6 +28,7 @@ public class Scheduling {
 
     private static class ApplicationStarter implements Runnable {
         private ApplicationConfiguration applConf;
+        private boolean startApp = true;
 
         protected ApplicationStarter(ApplicationConfiguration applConf) {
             this.applConf = applConf;
@@ -42,19 +43,27 @@ public class Scheduling {
                     e.printStackTrace();
                 }
             }
-            ApplicationStartEvent event = new ApplicationStartEvent();
-            event.setApplicationId(applConf.getApplicationId());
             try {
-                event.addAttribute("clientIp", applConf.getClientIp());
-                event.addAttribute("applicationPath", applConf.getExecutablePath());
-                event.addAttribute("applicationType", applConf.getExecutableType());
-                event.addAttribute("arguments", applConf.getExecutableArgs());
-                event.addAttribute("windowsSupport", String.valueOf(applConf.isWindowsSupport()));
-            } catch (ActionFailedException e) {
-                LocalLog.error("Start einer Anwendung ist fehlgeschlagen.", e);
-            }
+                if (startApp && (applConf.isMultipleStart()) || !isEqualApplicationActive(applConf)) {
+                    System.out.println("Scheduling$ApplicationStarter.run. START");
 
-            raiseEvent(event);
+                    ApplicationStartEvent event = new ApplicationStartEvent();
+                    event.setApplicationId(applConf.getApplicationId());
+                    try {
+                        event.addAttribute("clientIp", applConf.getClientIp());
+                        event.addAttribute("applicationPath", applConf.getExecutablePath());
+                        event.addAttribute("applicationType", applConf.getExecutableType());
+                        event.addAttribute("arguments", applConf.getExecutableArgs());
+                        event.addAttribute("windowsSupport", String.valueOf(applConf.isWindowsSupport()));
+                    } catch (ActionFailedException e) {
+                        LocalLog.error("Start einer Anwendung ist fehlgeschlagen.", e);
+                    }
+
+                    raiseEvent(event);
+                }
+            } catch (HapptickException e) {
+                e.printStackTrace();
+            }
         }
     }
 
