@@ -9,7 +9,6 @@ import de.notEOF.core.logging.LocalLog;
 import de.notEOF.core.util.Util;
 
 public class HapptickApplicationStarter {
-    NotEOFClient notEOFClient;
 
     /**
      * 
@@ -26,8 +25,7 @@ public class HapptickApplicationStarter {
             throws HapptickException {
 
         Starter starter = new Starter(notEOFClient, serverAddress, serverPort, startId, startEvent);
-        Thread workerThread = new Thread(starter);
-        workerThread.start();
+        new Thread(starter).start();
     }
 
     private class Starter implements Runnable {

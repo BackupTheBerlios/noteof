@@ -174,21 +174,27 @@ public class StartClient extends HapptickBaseClient implements EventRecipient {
     @Override
     public void processEventException(Exception e) {
         LocalLog.error("Fehler wurde durch die Event-Schnittstelle ausgeloest.", e);
+        // try {
+        // reconnect();
+        // } catch (HapptickException e3) {
+        // e3.printStackTrace();
+        // }
+
         boolean err = true;
-        while (err)
+        while (err) {
             try {
+                // reconnect();
                 doWork();
                 err = false;
             } catch (HapptickException e1) {
                 try {
                     Thread.sleep(3000);
                 } catch (InterruptedException e2) {
-                    // TODO Auto-generated catch block
                     e2.printStackTrace();
                 }
                 e1.printStackTrace();
             }
-
+        }
     }
 
     /**

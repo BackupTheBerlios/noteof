@@ -7,6 +7,7 @@ import java.util.List;
 import de.notEOF.core.BaseClientOrService;
 import de.notEOF.core.communication.TalkLine;
 import de.notEOF.core.constant.NotEOFConstants;
+import de.notEOF.core.enumeration.BaseCommTag;
 import de.notEOF.core.enumeration.EventType;
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.interfaces.EventObserver;
@@ -167,7 +168,6 @@ public abstract class BaseService extends BaseClientOrService implements Service
         }
     }
 
-    // TODO synchronized oder nicht???
     public synchronized void processEvent(Service service, NotEOFEvent event) throws ActionFailedException {
     }
 
@@ -248,21 +248,20 @@ public abstract class BaseService extends BaseClientOrService implements Service
 
                 if (!Util.isEmpty(msg)) {
                     if (msg.equals(MailTag.REQ_READY_FOR_MAIL.name())) {
-                        // writeMsg(BaseCommTag.VAL_OK);
-                        // Mails from client are processed directly here in the
-                        // base class
                         try {
                             processClientMail();
                         } catch (Exception e) {
                             LocalLog.warn("Problem bei Verarbeitung einer Mail-Nachricht.", e);
                         }
                     } else if (msg.equals(MailTag.REQ_READY_FOR_EVENT.name())) {
-                        // writeMsg(BaseCommTag.VAL_OK);
                         try {
                             processClientEvent();
                         } catch (Exception e) {
                             LocalLog.warn("Problem bei Verarbeitung einer Event-Nachricht.", e);
                         }
+                    } else if (msg.equals(BaseCommTag.REQ_STOP.name())) {
+                        System.out.println("STOP SIGNAL erhalten");
+                        stopService();
                     } else {
                         // client/service specific messages are processed in the
                         // method processMsg() which must be implemented
@@ -275,7 +274,6 @@ public abstract class BaseService extends BaseClientOrService implements Service
                             stopped = true;
                         }
                     }
-
                 } else {
                     stopped = true;
                 }

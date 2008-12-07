@@ -15,7 +15,7 @@ import de.notEOF.mail.NotEOFMail;
 import de.notEOF.mail.interfaces.EventRecipient;
 
 public class Actor extends HapptickApplication implements EventRecipient {
-    private String errorSound = "bla";
+    // private String errorSound = "bla";
     private boolean stopped = false;
 
     public Actor(Long applicationId, String serverAddress, int serverPort, String[] args) throws HapptickException {
@@ -58,7 +58,9 @@ public class Actor extends HapptickApplication implements EventRecipient {
                 stopped = true;
             }
         }
+        System.out.println("Vor loop.");
 
+        stopped = true;
         // wait for stop event
         while (!stopped) {
             try {
@@ -67,7 +69,9 @@ public class Actor extends HapptickApplication implements EventRecipient {
             }
         }
         // close connection to service in usual way
+        System.out.println("Anwendung wird beendet.");
         stop();
+        System.out.println("Anwendung beendet.");
     }
 
     /**
@@ -160,7 +164,7 @@ public class Actor extends HapptickApplication implements EventRecipient {
      */
     @Override
     public void processEventException(Exception arg0) {
-        SoundPlayer.playSound(errorSound);
+        // SoundPlayer.playSound(errorSound);
     }
 
     /**

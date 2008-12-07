@@ -71,17 +71,18 @@ public abstract class HapptickApplication extends HapptickBaseClient {
         applicationClient.applicationIdToService(applicationId);
     }
 
-    public void reconnect() throws HapptickException {
-        applicationClient = new ApplicationClient();
-
-        // TODO Wenn dipatched getestet, kann der letzte Parameter auch nach
-        // oben frei gegeben werden...
-        connect(serverAddress, serverPort, args, applicationClient, false);
-        applicationClient.startIdToService(args);
-        applicationClient.applicationIdToService(applicationId);
-        
-        super.reconnect();
-    }
+    // public void reconnect() throws HapptickException {
+    // System.out.println("HapptickApplication.reconnect.......");
+    // applicationClient = new ApplicationClient();
+    //
+    // // TODO Wenn dipatched getestet, kann der letzte Parameter auch nach
+    // // oben frei gegeben werden...
+    // connect(serverAddress, serverPort, args, applicationClient, false);
+    // applicationClient.startIdToService(args);
+    // applicationClient.applicationIdToService(applicationId);
+    //
+    // super.reconnect();
+    // }
 
     /**
      * Sets the unique application id.
@@ -154,6 +155,7 @@ public abstract class HapptickApplication extends HapptickBaseClient {
         checkClientInitialized();
         boolean success = false;
         while (!success) {
+            success = true;
             try {
                 applicationClient.sendEvent(event);
                 success = true;
@@ -163,7 +165,8 @@ public abstract class HapptickApplication extends HapptickBaseClient {
                     Thread.sleep(3000);
                 } catch (InterruptedException e1) {
                 }
-                reconnect();
+                success = true;
+                // reconnect();
             }
         }
     }
@@ -194,7 +197,8 @@ public abstract class HapptickApplication extends HapptickBaseClient {
                     Thread.sleep(3000);
                 } catch (InterruptedException e1) {
                 }
-                reconnect();
+                success = true;
+                // reconnect();
             }
         }
     }
@@ -223,7 +227,8 @@ public abstract class HapptickApplication extends HapptickBaseClient {
                     Thread.sleep(3000);
                 } catch (InterruptedException e1) {
                 }
-                reconnect();
+                success = true;
+                // reconnect();
             }
         }
     }
@@ -252,7 +257,8 @@ public abstract class HapptickApplication extends HapptickBaseClient {
                     Thread.sleep(3000);
                 } catch (InterruptedException e1) {
                 }
-                reconnect();
+                success = true;
+                // reconnect();
             }
         }
     }
@@ -277,7 +283,8 @@ public abstract class HapptickApplication extends HapptickBaseClient {
                     Thread.sleep(3000);
                 } catch (InterruptedException e1) {
                 }
-                reconnect();
+                success = true;
+                // reconnect();
             }
         }
     }

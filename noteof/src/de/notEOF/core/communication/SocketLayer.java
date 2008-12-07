@@ -626,9 +626,10 @@ public class SocketLayer {
         if (null == socketToPartner)
             return;
         try {
-            if (socketToPartner.isConnected())
+            if (socketToPartner.isConnected()) {
                 socketToPartner.close();
-            socketToPartner = null;
+                socketToPartner = null;
+            }
         } catch (Exception ex) {
             LocalLog.error("Problem bei Schliessen der Verbindung zum Paul-Server.", ex);
         }

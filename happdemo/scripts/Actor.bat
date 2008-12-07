@@ -13,8 +13,8 @@ set CLASSPATH=%CLASSPATH%;c:\Projekte\workspace\happdemo\bin
 echo %CLASSPATH%
 java de.happdemo.Actor --serverIp=localhost --serverPort=3000 %*
 
-pause
 
 echo ========================== Actor ==============================
 @echo on
+
 

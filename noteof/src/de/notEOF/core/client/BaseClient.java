@@ -4,9 +4,11 @@ import java.net.Socket;
 
 import de.notEOF.core.BaseClientOrService;
 import de.notEOF.core.communication.TalkLine;
+import de.notEOF.core.enumeration.BaseCommTag;
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.interfaces.NotEOFEvent;
 import de.notEOF.core.interfaces.TimeOut;
+import de.notEOF.core.logging.LocalLog;
 import de.notEOF.core.util.Util;
 import de.notEOF.mail.NotEOFMail;
 import de.notEOF.mail.enumeration.MailTag;
@@ -171,6 +173,19 @@ public abstract class BaseClient extends BaseClientOrService {
     public synchronized void sendEvent(NotEOFEvent event) throws ActionFailedException {
         writeMsg(MailTag.REQ_READY_FOR_EVENT.name());
         getTalkLine().sendBaseEvent(event);
+    }
+
+    /**
+     * Hard stop message. Should only used by the framework itself.
+     * 
+     * @throws ActionFailedException
+     */
+    public synchronized void sendStopSignal() {
+        try {
+            writeMsg(BaseCommTag.REQ_STOP.name());
+        } catch (ActionFailedException e) {
+            LocalLog.warn("Stop message couldn't be send.", e);
+        }
     }
 
     /**

@@ -2,6 +2,8 @@ package de.happtick.core.util;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.util.Map;
+import java.util.Set;
 
 import de.happtick.core.exception.HapptickException;
 import de.notEOF.core.interfaces.NotEOFEvent;
@@ -107,10 +109,40 @@ public class ExternalCalls {
      * @throws HapptickException
      */
     public Process startApplication(String applicationPath, String arguments, boolean windowsSupport) throws HapptickException {
+        System.gc();
         Process proc = null;
 
+        // ProcessBuilder pb = new ProcessBuilder("java", "de.happdemo.Actor",
+        // "--serverIp=localhost", "--serverPort=3000", "--applicationId=1",
+        // "--soundFile=c:\\Projekte\\workspace\\happdemo\\soundfiles\\a.wav");
+        // Map<String, String> env = pb.environment();
+        // env.put("NOTEOF_HOME", "C:\\Projekte\\workspace\\noteof");
+        // env.put("LIB_PATH", "C:\\Projekte\\workspace\\notioc\\lib");
+        // env.put("CLASSPATH", env.get("NOTEOF_HOME") + "\\lib\\noteof.jar");
+        // env.put("CLASSPATH", env.get("CLASSPATH") + ";" + env.get("LIB_PATH")
+        // + "\\notioc.jar");
+        // env.put("CLASSPATH", env.get("CLASSPATH") + ";" + env.get("LIB_PATH")
+        // + "\\jdom.jar");
+        // env.put("CLASSPATH", env.get("CLASSPATH") +
+        // ";c:\\Projekte\\workspace\\happtick\\lib\\happtick.jar");
+        // env.put("CLASSPATH", env.get("CLASSPATH") +
+        // ";c:\\Projekte\\workspace\\happdemo\\bin");
+        //
+        // Set<String> bla = env.keySet();
+        // for (String key : bla) {
+        // System.out.println("KEY= " + key + "     VAL= " + env.get(key));
+        // }
+        //
+        // try {
+        // proc = pb.start();
+        // } catch (IOException e) {
+        // e.printStackTrace();
+        // }
+
+        System.out.println("ExternalCalls.startApplication...");
         try {
             Runtime runtime = Runtime.getRuntime();
+
             String cmdLine = applicationPath + " " + arguments;
 
             if (windowsSupport)

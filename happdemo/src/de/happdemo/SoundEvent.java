@@ -8,6 +8,9 @@ public class SoundEvent extends HapptickEvent implements NotEOFEvent {
 
     @Override
     protected void initDescriptions() {
+        descriptions.put("soundFile", "Path of SoundFile.");
+        descriptions.put("state", "State: start, playing; played.");
+        descriptions.put("delay", "Time to wait in millis.");
     }
 
     @Override

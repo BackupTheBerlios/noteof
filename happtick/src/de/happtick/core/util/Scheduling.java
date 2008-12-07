@@ -44,7 +44,7 @@ public class Scheduling {
                 }
             }
             try {
-                if (startApp && (applConf.isMultipleStart()) || !isEqualApplicationActive(applConf)) {
+                if (startApp && (applConf.isMultipleStart() || !isEqualApplicationActive(applConf))) {
                     System.out.println("Scheduling$ApplicationStarter.run. START");
 
                     ApplicationStartEvent event = new ApplicationStartEvent();

@@ -427,7 +427,7 @@ public class ApplicationClient extends BaseClient implements NotEOFClient {
 
         public void run() {
             try {
-                while (!stopped || !isWorkAllowed()) {
+                while (!stopped && !isWorkAllowed()) {
                     Thread.sleep(1000);
                 }
                 if (isWorkAllowed()) {

@@ -51,13 +51,14 @@
 	    </events>
 	
 		<applications>
+			<application>application3</application>
 			<application>application1</application>
 		  	<application>application2</application> 
 		</applications>
 	
 		<application1 applicationId="1">
-			<client clientIp="localhost"></client>
-			<executable type="java" path="C:\Projekte\workspace\happdemo\scripts\Actor.bat" windows="false">
+			<client clientIp="localhost"></client> 
+			<executable type="java" path="C:\Projekte\workspace\happdemo\scripts\Actor.bat" windows="true">
 				<args>--soundFile=c:\Projekte\workspace\happdemo\soundfiles\a.wav</args>
 			</executable>
 			<option partOfChain="false" multiplestart="false" enforce="false"></option>
@@ -66,21 +67,31 @@
 				<minutes>*</minutes>
 				<hours>*</hours>
 				<weekdays>*</weekdays>
-				<monthdays>5</monthdays>
+				<monthdays>7</monthdays>
 			</timeplan>
 			
 			<dependencies>
-				<startsync applicationId="2"></startsync>
+<!-- 				<startsync applicationId="2"></startsync>
+				<startsync applicationId="3"></startsync>
+ -->
 			</dependencies>
 		</application1>
 		
 		<application2 applicationId="2">
 			<client clientIp="localhost"></client>
-			<executable type="java" path="C:\Projekte\workspace\happdemo\scripts\Actor.bat" windows="false">
+			<executable type="java" path="C:\Projekte\workspace\happdemo\scripts\Actor.bat" windows="true">
 				<args>--soundFile=c:\Projekte\workspace\happdemo\soundfiles\b.wav</args>
 			</executable>
 			<option multiplestart="false" enforce="false"></option>
 		</application2>
+
+		<application3 applicationId="3">
+			<client clientIp="localhost"></client>
+			<executable type="java" path="C:\Projekte\workspace\noteof\util\mail_recipient.bat" windows="false">
+				<args></args>
+			</executable>
+			<option multiplestart="false" enforce="false"></option>
+		</application3>
 	</scheduler>
 	
 	<additional>

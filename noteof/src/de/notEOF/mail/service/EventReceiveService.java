@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import de.notEOF.core.communication.DataObject;
+import de.notEOF.core.enumeration.BaseCommTag;
 import de.notEOF.core.enumeration.EventType;
 import de.notEOF.core.event.NewMailEvent;
 import de.notEOF.core.exception.ActionFailedException;
@@ -85,6 +86,22 @@ public abstract class EventReceiveService extends BaseService {
         this.eventTypeNames.add(eventName);
         addObservedEvent(EventType.valueOf(eventName));
     }
+
+    // private class AliveTester implements Runnable {
+    //
+    // @Override
+    // public void run() {
+    // while (true) {
+    // try {
+    // Thread.sleep(1000);
+    // // writeMsg("bla");
+    // } catch (Exception e) {
+    // break;
+    // }
+    // }
+    // }
+    //
+    // }
 
     /**
      * Callback method to process incoming events.
@@ -220,7 +237,14 @@ public abstract class EventReceiveService extends BaseService {
             addObservedEvent(EventType.EVENT_MAIL);
             addObservedEvent(EventType.EVENT_APPLICATION_STOP);
             getServer().registerForEvents(this);
+
+            // new Thread(new AliveTester()).start();
         }
+        if (incomingMsgEnum.equals(BaseCommTag.REQ_STOP)) {
+            System.out.println("STOP SIGNAL erhalten");
+            super.stopService();
+        }
+
     }
 
     @SuppressWarnings("unchecked")

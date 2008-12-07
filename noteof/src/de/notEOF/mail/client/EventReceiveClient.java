@@ -15,6 +15,7 @@ import de.notEOF.mail.enumeration.MailTag;
 import de.notEOF.mail.interfaces.EventRecipient;
 import de.notEOF.mail.interfaces.MailMatchExpressions;
 import de.notIOC.configuration.ConfigurationManager;
+import de.notIOC.util.Util;
 
 public abstract class EventReceiveClient extends BaseClient {
 
@@ -38,6 +39,7 @@ public abstract class EventReceiveClient extends BaseClient {
      */
     public void implementationLastSteps() {
         acceptor.stop();
+        // sendStopSignal();
     }
 
     public void awaitMailOrEvent(EventRecipient recipient) throws ActionFailedException {
@@ -46,9 +48,17 @@ public abstract class EventReceiveClient extends BaseClient {
         activateAccepting();
     }
 
-//    public void stop() {
-//        acceptor.stop();
-//    }
+    public void stop() {
+        System.out.println("EventReceiveClient soll jetzt stoppen...");
+        sendStopSignal();
+        acceptor.stop();
+        System.out.println("EventReceiveClient stoppen theoretisch abgearbeitet...");
+        try {
+            close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
     private void activateAccepting() throws ActionFailedException {
         // beware of multiple start!
@@ -78,7 +88,6 @@ public abstract class EventReceiveClient extends BaseClient {
         public void stop() {
             acceptorStopped = true;
             // getTalkLine().close();
-            // getTalkLine().notify();
         }
 
         public void run() {
@@ -93,43 +102,65 @@ public abstract class EventReceiveClient extends BaseClient {
                 }
 
                 while (!acceptorStopped) {
+                    System.out.println("EventReceiveClient$MailAndEventAcceptor.run");
                     try {
-                        awaitRequest(MailTag.REQ_READY_FOR_ACTION);
-                        String action = readMsg();
-                        if (MailTag.VAL_ACTION_MAIL.name().equals(action)) {
-                            isMail = true;
-                            NotEOFMail mail = getTalkLine().receiveMail();
-                            MailWorker worker = new MailWorker(recipient, mail);
-                            Thread workerThread = new Thread(worker);
-                            workerThread.start();
+                        String awaitMsg = readMsgTimedOut(1000);
+                        if (!acceptorStopped && MailTag.REQ_READY_FOR_ACTION.name().equals(awaitMsg)) {
+                            String action = readMsg();
+
+                            // awaitRequest(MailTag.REQ_READY_FOR_ACTION);
+                            if (!Util.isEmpty(action)) {
+                                if (MailTag.VAL_ACTION_MAIL.name().equals(action)) {
+                                    isMail = true;
+                                    NotEOFMail mail = getTalkLine().receiveMail();
+                                    MailWorker worker = new MailWorker(recipient, mail);
+                                    Thread workerThread = new Thread(worker);
+                                    workerThread.start();
+                                }
+                                if (MailTag.VAL_ACTION_EVENT.name().equals(action)) {
+                                    System.out.println("Event BEGINN");
+                                    if (workerCounter == Long.MAX_VALUE - 1)
+                                        workerCounter = 0;
+                                    isEvent = true;
+                                    NotEOFEvent event = getTalkLine().receiveBaseEvent(ConfigurationManager.getApplicationHome());
+                                    EventWorker worker = new EventWorker(recipient, event);
+                                    Thread workerThread = new Thread(worker);
+                                    worker.setId(++workerCounter);
+                                    workerThread.start();
+                                    System.out.println("Event ENDE");
+                                }
+                                if ("bla".equalsIgnoreCase(action)) {
+                                    System.out.println("bla ist angekommen");
+                                }
+                            }
                         }
-                        if (MailTag.VAL_ACTION_EVENT.name().equals(action)) {
-                            if (workerCounter == Long.MAX_VALUE - 1)
-                                workerCounter = 0;
-                            isEvent = true;
-                            NotEOFEvent event = getTalkLine().receiveBaseEvent(ConfigurationManager.getApplicationHome());
-                            EventWorker worker = new EventWorker(recipient, event);
-                            Thread workerThread = new Thread(worker);
-                            worker.setId(++workerCounter);
-                            workerThread.start();
+                    } catch (ActionFailedException a) {
+                        if (24L == a.getErrNo()) {
+                            System.out.println("AHA");
+                        } else {
+                            acceptorStopped = true;
                         }
+
                     } catch (Exception e) {
+                        e.printStackTrace();
                         // if (5 < errCounter++)
                         acceptorStopped = true;
                         if (isMail) {
-                            recipient.processMailException(e);
+                            // recipient.processMailException(e);
                         }
                         if (isEvent) {
-                            recipient.processEventException(e);
+                            // recipient.processEventException(e);
                         }
                         if (!(isMail || isEvent)) {
-                            recipient.processEventException(e);
+                            // recipient.processEventException(e);
                         }
                     }
 
                     isMail = false;
                     isEvent = false;
                 }
+                System.out.println("Acceptor wurde gestoppt");
+                // sendStopSignal();
                 close();
             } catch (Exception e) {
                 if (!acceptorStopped) {
@@ -138,11 +169,11 @@ public abstract class EventReceiveClient extends BaseClient {
                         recipient.processMailException(e);
                     }
                     if (isEvent) {
-                        recipient.processEventException(e);
+                        // recipient.processEventException(e);
                     }
 
                     if (!(isMail || isEvent)) {
-                        recipient.processEventException(e);
+                        // recipient.processEventException(e);
                     }
                 }
             }
@@ -173,9 +204,15 @@ public abstract class EventReceiveClient extends BaseClient {
 
         public void run() {
             while (getId() - 1 > workerPointer) {
+                if (acceptorStopped) {
+                    System.out.println("EventReceiveClient$EventWorker.run");
+                    return;
+                }
                 try {
                     Thread.sleep(10);
                 } catch (InterruptedException e) {
+                    e.printStackTrace();
+                    break;
                 }
             }
             if (event.equals(EventType.EVENT_APPLICATION_STOP)) {
