@@ -17,7 +17,6 @@ import de.notEOF.mail.MailExpressions;
 import de.notEOF.mail.NotEOFMail;
 import de.notEOF.mail.client.EventReceiveClient;
 import de.notEOF.mail.interfaces.EventRecipient;
-import de.notEOF.mail.interfaces.MailMatchExpressions;
 
 /**
  * Simplifies the acts between application and service.
@@ -42,10 +41,9 @@ public abstract class HapptickBaseClient {
 
     List<NotEOFEvent> acceptedEvents;
     private MailExpressions acceptedExpressions;
-    // private boolean usingEvents = false;
+    private boolean usingEvents = false;
     private boolean acceptingOwnMails = false;
-
-    // private boolean useInternalClient = false;
+    private boolean useInternalClient = false;
 
     /*
      * Internal class for sending mails and events. Used if the
@@ -100,7 +98,7 @@ public abstract class HapptickBaseClient {
     }
 
     private void useInternalClientForSendMailsAndEvents() {
-        // useInternalClient = true;
+        useInternalClient = true;
         this.notEofClient = new InternalClient();
     }
 
@@ -126,24 +124,26 @@ public abstract class HapptickBaseClient {
         return this.serverAddress;
     }
 
-    // public void reconnect() throws HapptickException {
-    // System.out.println("reconnect");
-    // if (this.useInternalClient) {
-    // this.notEofClient = null;
-    // }
-    // connect(this.serverAddress, this.serverPort, this.args, false);
-    // System.out.println("Reconnect. Bin jetzt neu verbunden...");
-    //
-    // eventClient = null;
-    // System.out.println("Reconnect. Using Events? " + usingEvents);
-    // if (usingEvents) {
-    // System.out.println("Reconnect. Use Events");
-    // useEvents();
-    // System.out.println("Reconnect. StartAcceptingEvents");
-    // startAcceptingEvents();
-    // }
-    // System.out.println("reconnect Alle Aktionen abgeschlossen");
-    // }
+    public void reconnect() throws HapptickException {
+        System.out.println("reconnect");
+        System.out.println("Reconnect. Using Events? " + usingEvents);
+        System.out.println("Reconnect. Eventliste NULL? " + (null == acceptedEvents));
+
+        if (this.useInternalClient) {
+            this.notEofClient = null;
+        }
+        connect(this.serverAddress, this.serverPort, this.args, false);
+        System.out.println("Reconnect. Bin jetzt neu verbunden...");
+
+        eventClient = null;
+        if (usingEvents) {
+            System.out.println("Reconnect. Use Events");
+            useEvents();
+            System.out.println("Reconnect. StartAcceptingEvents");
+            startAcceptingEvents();
+        }
+        System.out.println("reconnect Alle Aktionen abgeschlossen");
+    }
 
     /**
      * Connect with the happtick server.
@@ -338,15 +338,12 @@ public abstract class HapptickBaseClient {
      */
     public void useEvents(EventRecipient mailEventRecipient, MailExpressions expressions, List<NotEOFEvent> events, boolean acceptOwnMails)
             throws HapptickException {
-        // usingEvents = true;
+        System.out.println("Setze usingEvents: Liste im Aufruf HapptickBaseClient.useEvents1");
         acceptingOwnMails = acceptOwnMails;
-        acceptedExpressions = expressions;
-        acceptedEvents = events;
-        // useEvents();
         this.eventRecipient = mailEventRecipient;
         initMailEventClient(mailEventRecipient);
-        addInterestingMailExpressions(acceptedExpressions);
-        addInterestingEvents(acceptedEvents);
+        addInterestingMailExpressions(expressions);
+        addInterestingEvents(events);
         if (!acceptingOwnMails) {
             try {
                 eventClient.addIgnoredClientNetId(this.notEofClient.getClientNetId());
@@ -359,20 +356,20 @@ public abstract class HapptickBaseClient {
     /*
      * For Reconnect only!
      */
-    // private void useEvents() throws HapptickException {
-    // this.usingEvents = true;
-    // initMailEventClient(eventRecipient);
-    // addInterestingMailExpressions(acceptedExpressions);
-    // addInterestingEvents(acceptedEvents);
-    // if (!acceptingOwnMails) {
-    // try {
-    // eventClient.addIgnoredClientNetId(this.notEofClient.getClientNetId());
-    // } catch (ActionFailedException e) {
-    // throw new HapptickException(605L,
-    // "Der Empfang eigener Mails konnte nicht unterdrueckt werden", e);
-    // }
-    // }
-    // }
+    private void useEvents() throws HapptickException {
+        System.out.println("Setze usingEvents: Liste mit member HapptickBaseClient.useEvents2");
+        initMailEventClient(eventRecipient);
+        addInterestingMailExpressions(acceptedExpressions);
+        addInterestingEvents(acceptedEvents);
+        if (!acceptingOwnMails) {
+            try {
+                eventClient.addIgnoredClientNetId(this.notEofClient.getClientNetId());
+            } catch (ActionFailedException e) {
+                throw new HapptickException(605L, "Der Empfang eigener Mails konnte nicht unterdrueckt werden", e);
+            }
+        }
+    }
+
     /**
      * Enables the application to receive mails and events from the server or
      * other services.
@@ -444,7 +441,7 @@ public abstract class HapptickBaseClient {
         if (Util.isEmpty(this.notEofClient))
             throw new HapptickException(605, "Vor Aufruf dieser Methode muss die Method connect() aufgerufen werden.");
 
-        // this.usingEvents = true;
+        System.out.println("Setze usingEvents: Aber ohne die Liste zu initialisieren  HapptickBaseClient.useEvents3");
         this.eventRecipient = mailEventRecipient;
         acceptingOwnMails = acceptOwnMails;
         eventClient = null;
@@ -478,10 +475,11 @@ public abstract class HapptickBaseClient {
      * @throws ActionFailedException
      *             If the list couldn't be transmitted to the service.
      */
-    public void addInterestingMailExpressions(MailMatchExpressions expressions) throws HapptickException {
+    public void addInterestingMailExpressions(MailExpressions expressions) throws HapptickException {
         if (null == eventClient)
             throw new HapptickException(604L, "Empfang von Mails oder Events ist noch nicht aktiviert.");
         if (null != expressions) {
+            acceptedExpressions = expressions;
             try {
                 eventClient.addInterestingMailExpressions(expressions);
             } catch (ActionFailedException e) {
@@ -510,8 +508,11 @@ public abstract class HapptickBaseClient {
         if (null == eventClient)
             throw new HapptickException(604L, "Empfang von Mails oder Events ist noch nicht aktiviert.");
 
+        this.usingEvents = true;
+        this.acceptedEvents = events;
         System.out.println("Events null? " + events);
         if (null != events) {
+            System.out.println("Anzahl Events: " + events.size());
             try {
                 eventClient.addInterestingEvents(events);
             } catch (ActionFailedException e) {

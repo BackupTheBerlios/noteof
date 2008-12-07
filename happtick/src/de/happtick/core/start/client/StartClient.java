@@ -65,14 +65,7 @@ public class StartClient extends HapptickBaseClient implements EventRecipient {
         startAcceptingEvents();
 
         // tell scheduler that at this computer a StartClient is active
-        NotEOFEvent event = new StartClientEvent();
-        try {
-            event.addAttribute("state", "START");
-            event.addAttribute("clientIp", getSimpleClient().getTalkLine().getSocketToPartner().getLocalAddress().getHostName());
-            sendEvent(event);
-        } catch (ActionFailedException e) {
-            LocalLog.error("Fehler bei Senden des StartEvent an den Scheduler. Scheduler kann Anwendungen fuer diesen Client nicht beruecksichtigen.", e);
-        }
+        sendStartEvent();
 
         while (!stopped) {
             try {
@@ -82,7 +75,22 @@ public class StartClient extends HapptickBaseClient implements EventRecipient {
                 break;
             }
         }
-        event = new StartClientEvent();
+        sendStopEvent();
+    }
+
+    private void sendStartEvent() {
+        NotEOFEvent event = new StartClientEvent();
+        try {
+            event.addAttribute("state", "START");
+            event.addAttribute("clientIp", getSimpleClient().getTalkLine().getSocketToPartner().getLocalAddress().getHostName());
+            sendEvent(event);
+        } catch (ActionFailedException e) {
+            LocalLog.error("Fehler bei Senden des StartEvent an den Scheduler. Scheduler kann Anwendungen fuer diesen Client nicht beruecksichtigen.", e);
+        }
+    }
+
+    private void sendStopEvent() {
+        NotEOFEvent event = new StartClientEvent();
         try {
             event.addAttribute("state", "STOP");
             event.addAttribute("clientIp", getSimpleClient().getTalkLine().getLocalAddress());
@@ -119,7 +127,7 @@ public class StartClient extends HapptickBaseClient implements EventRecipient {
                 String applId = null;
                 if (!Util.isEmpty(startEvent))
                     try {
-                        applId = String.valueOf(startEvent.getApplicationId());
+                        applId = String.valueOf(startEvent.getAttribute("workApplicationId"));
                     } catch (Exception ex) {
                         LocalLog.error("Fehler bei Verarbeitung eines StartEvents. Das Event ist nicht korrekt initialisiert.", ex);
                     }
@@ -164,6 +172,7 @@ public class StartClient extends HapptickBaseClient implements EventRecipient {
     @Override
     public synchronized void processEvent(NotEOFEvent event) {
         if (event.equals(EventType.EVENT_APPLICATION_START)) {
+            System.out.println("StartClient.processEvent: EVENT_APPLICATION_START mit ApplId: " + event.getApplicationId());
             startStarter(event);
         }
     }
@@ -183,8 +192,10 @@ public class StartClient extends HapptickBaseClient implements EventRecipient {
         boolean err = true;
         while (err) {
             try {
-                // reconnect();
-                doWork();
+                reconnect();
+                sendStartEvent();
+
+                // doWork();
                 err = false;
             } catch (HapptickException e1) {
                 try {

@@ -41,7 +41,7 @@ public class ExternalCalls {
         String windowsSupport = null;
 
         applicationPath = startEvent.getAttribute("applicationPath");
-        applicationId = String.valueOf(startEvent.getApplicationId());
+        applicationId = String.valueOf(startEvent.getAttribute("workApplicationId"));
         windowsSupport = startEvent.getAttribute("windowsSupport");
         arguments = startEvent.getAttribute("arguments");
         startIgnitionTime = startEvent.getAttribute("startIgnitionTime");
@@ -180,7 +180,7 @@ public class ExternalCalls {
         String arguments = null;
         try {
             applicationPath = startEvent.getAttribute("applicationPath");
-            applicationId = String.valueOf(startEvent.getApplicationId());
+            applicationId = String.valueOf(startEvent.getAttribute("workApplicationId"));
             arguments = startEvent.getAttribute("arguments");
         } catch (Exception ex) {
             LocalLog.error("Fehler bei Verarbeitung eines Events.", ex);

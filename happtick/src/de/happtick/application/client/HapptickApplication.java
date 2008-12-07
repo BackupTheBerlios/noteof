@@ -54,7 +54,8 @@ public abstract class HapptickApplication extends HapptickBaseClient {
             if (Util.isEmpty(applicationId) && !Util.isEmpty(receivedId)) {
                 applicationId = receivedId;
             } else if (!Util.isEmpty(applicationId) && applicationId != receivedId)
-                throw new HapptickException(404L, "Empfangene applicationId und hart codierte applicationId sind nicht identisch.");
+                throw new HapptickException(404L, "Empfangene applicationId und hart codierte applicationId sind nicht identisch. Hart codiert: "
+                        + applicationId + "; Empfangen: " + receivedId);
         }
 
         this.applicationId = applicationId;
@@ -165,8 +166,7 @@ public abstract class HapptickApplication extends HapptickBaseClient {
                     Thread.sleep(3000);
                 } catch (InterruptedException e1) {
                 }
-                success = true;
-                // reconnect();
+                reconnect();
             }
         }
     }
@@ -197,8 +197,7 @@ public abstract class HapptickApplication extends HapptickBaseClient {
                     Thread.sleep(3000);
                 } catch (InterruptedException e1) {
                 }
-                success = true;
-                // reconnect();
+                reconnect();
             }
         }
     }
@@ -227,8 +226,7 @@ public abstract class HapptickApplication extends HapptickBaseClient {
                     Thread.sleep(3000);
                 } catch (InterruptedException e1) {
                 }
-                success = true;
-                // reconnect();
+                reconnect();
             }
         }
     }
@@ -257,8 +255,7 @@ public abstract class HapptickApplication extends HapptickBaseClient {
                     Thread.sleep(3000);
                 } catch (InterruptedException e1) {
                 }
-                success = true;
-                // reconnect();
+                reconnect();
             }
         }
     }
@@ -283,8 +280,7 @@ public abstract class HapptickApplication extends HapptickBaseClient {
                     Thread.sleep(3000);
                 } catch (InterruptedException e1) {
                 }
-                success = true;
-                // reconnect();
+                reconnect();
             }
         }
     }

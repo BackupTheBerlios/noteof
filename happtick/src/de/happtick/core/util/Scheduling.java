@@ -44,12 +44,13 @@ public class Scheduling {
                 }
             }
             try {
+                System.out.println("Scheduling$ApplicationStarter.run. START ???????????");
                 if (startApp && (applConf.isMultipleStart() || !isEqualApplicationActive(applConf))) {
                     System.out.println("Scheduling$ApplicationStarter.run. START");
 
                     ApplicationStartEvent event = new ApplicationStartEvent();
-                    event.setApplicationId(applConf.getApplicationId());
                     try {
+                        event.addAttribute("workApplicationId", String.valueOf(applConf.getApplicationId()));
                         event.addAttribute("clientIp", applConf.getClientIp());
                         event.addAttribute("applicationPath", applConf.getExecutablePath());
                         event.addAttribute("applicationType", applConf.getExecutableType());
@@ -83,8 +84,8 @@ public class Scheduling {
 
     public static synchronized void stopApplication(ApplicationConfiguration applConf) throws HapptickException {
         ApplicationStopEvent event = new ApplicationStopEvent();
-        event.setApplicationId(applConf.getApplicationId());
         try {
+            event.addAttribute("workApplicationId", String.valueOf(applConf.getApplicationId()));
             event.addAttribute("clientIp", applConf.getClientIp());
             event.addAttribute("kill", "FALSE");
         } catch (ActionFailedException e) {
@@ -138,6 +139,7 @@ public class Scheduling {
         }
 
         if (!(Util.isEmpty(MasterTable.getApplicationServicesByApplicationId(applConf.getApplicationId())))) {
+            System.out.println("Scheduling.isEqualApplicationActive. Applikation ist Aktiv!!!!!!! " + applConf.getApplicationId());
             return true;
         }
 

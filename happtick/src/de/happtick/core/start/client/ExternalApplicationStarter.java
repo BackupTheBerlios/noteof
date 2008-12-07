@@ -120,7 +120,7 @@ public class ExternalApplicationStarter extends HapptickApplication {
                 LocalLog.error("Applikation konnte nicht gestartet werden.", th);
                 try {
                     ApplicationStartErrorEvent errorEvent = new ApplicationStartErrorEvent();
-                    errorEvent.setApplicationId(applicationId);
+                    errorEvent.addAttribute("workApplicationId", String.valueOf(applicationId));
                     errorEvent.addAttribute("clientNetId", getClientNetId());
                     errorEvent.addAttribute("startId", startId);
                     errorEvent.addAttribute("errorDescription", errMsg);
@@ -137,7 +137,7 @@ public class ExternalApplicationStarter extends HapptickApplication {
                 try {
                     // send StartedEvent
                     ApplicationStartedEvent startedEvent = new ApplicationStartedEvent();
-                    startedEvent.setApplicationId(applicationId);
+                    startedEvent.addAttribute("workApplicationId", String.valueOf(applicationId));
                     startedEvent.addAttribute("clientNetId", getClientNetId());
                     startedEvent.addAttribute("startId", startId);
                     // main class now will send the event to the server
@@ -160,7 +160,7 @@ public class ExternalApplicationStarter extends HapptickApplication {
                     // create Event for inform other processes (clients,
                     // services)
                     ApplicationStoppedEvent stoppedEvent = new ApplicationStoppedEvent();
-                    stoppedEvent.setApplicationId(applicationId);
+                    stoppedEvent.addAttribute("workApplicationId", String.valueOf(applicationId));
                     stoppedEvent.addAttribute("exitCode", String.valueOf(exitCode));
                     stoppedEvent.addAttribute("serviceId", "");
                     stoppedEvent.addAttribute("clientNetId", getClientNetId());

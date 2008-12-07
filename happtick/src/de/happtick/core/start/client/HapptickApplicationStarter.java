@@ -46,7 +46,7 @@ public class HapptickApplicationStarter {
         public void run() {
             String applicationId = null;
             String applicationPath = null;
-            applicationId = String.valueOf(this.startEvent.getApplicationId());
+            applicationId = String.valueOf(this.startEvent.getAttribute("workApplicationId"));
             applicationPath = this.startEvent.getAttribute("applicationPath");
 
             if (Util.isEmpty(applicationId))
@@ -76,7 +76,7 @@ public class HapptickApplicationStarter {
                 LocalLog.error("Applikation konnte nicht gestartet werden: " + applicationPath, th);
                 try {
                     ApplicationStartErrorEvent errorEvent = new ApplicationStartErrorEvent();
-                    errorEvent.setApplicationId(startEvent.getApplicationId());
+                    errorEvent.setApplicationId(Util.parseLong(startEvent.getAttribute("workApplicationId"), -1));
                     errorEvent.addAttribute("clientNetId", this.notEOFClient.getClientNetId());
                     errorEvent.addAttribute("startId", startId);
                     errorEvent.addAttribute("errorDescription", errMsg);

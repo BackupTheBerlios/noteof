@@ -122,36 +122,24 @@ public class MailRecipient extends HapptickApplication implements EventRecipient
 
     public void processEventException(Exception e) {
         LocalLog.error("Event-Empfang verursachte Fehler: ", e);
-        boolean retry = true;
-        while (retry) {
-            try {
-                reconnection();
-                retry = false;
-            } catch (HapptickException e1) {
-                try {
-                    Thread.sleep(5000);
-                } catch (InterruptedException e2) {
-                }
-            }
-        }
+        // boolean retry = true;
+        // while (retry) {
+        // try {
+        // reconnection();
+        // retry = false;
+        // } catch (HapptickException e1) {
+        // try {
+        // Thread.sleep(5000);
+        // } catch (InterruptedException e2) {
+        // }
+        // }
+        // }
     }
 
     public static void main(String... args) throws HapptickException {
 
-        // MailRecipient x = new MailRecipient(args);
-        new MailRecipient(77, "localhost", 3000, args);
+        new MailRecipient(3, "localhost", 3000, args);
 
-        // while (true) {
-        // try {
-        // Thread.sleep(10000);
-        // } catch (Exception e) {
-        // System.out.println("HUPS - jetzt bin ich aber am Ende...");
-        // System.out.println("HUPS - jetzt bin ich aber am Ende...");
-        // e.printStackTrace();
-        // break;
-        // }
-        // }
-        System.out.println("HUPS - jetzt bin ich aber am Ende...");
     }
 
     @Override

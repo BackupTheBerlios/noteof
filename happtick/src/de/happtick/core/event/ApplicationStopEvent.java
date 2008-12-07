@@ -23,10 +23,8 @@ import de.notEOF.core.interfaces.NotEOFEvent;
 public class ApplicationStopEvent extends HapptickEvent implements NotEOFEvent {
 
     protected void initDescriptions() {
+        descriptions.put("workApplicationId", "Unique identifier for the application which has to be stopped. Fix set in happtick configuration.");
         descriptions.put("clientIp", "Ip where the application must be started.");
-        // descriptions.put("applicationId",
-        // "Unique identifier which is fix given by the happtick configuration."
-        // );
         descriptions.put("kill", "If kill = 'TRUE' the application should stop without do something else. Else the application can finish it's work.");
     }
 

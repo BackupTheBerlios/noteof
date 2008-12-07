@@ -221,6 +221,7 @@ public abstract class EventReceiveService extends BaseService {
             addExpressions();
         }
         if (incomingMsgEnum.equals(MailTag.REQ_READY_FOR_EVENTLIST)) {
+            System.out.println("EventReceiveService.processClientMsg. Wurde gebeten Eventliste entgegenzunehmen.");
             addEventClientIsInterestedIn();
         }
         if (incomingMsgEnum.equals(MailTag.REQ_READY_FOR_IGNORED_CLIENTS)) {
@@ -232,13 +233,11 @@ public abstract class EventReceiveService extends BaseService {
         // during the client is still initializing. So they both would get in an
         // inconsistant state.
         if (incomingMsgEnum.equals(MailTag.INFO_READY_FOR_EVENTS)) {
-            // responseTo(MailTag.VAL_OK, MailTag.VAL_OK.name());
+            System.out.println("EventReceiveService.processClientMsg. INFO_READY_FOR_EVENTS....");
             responseTo(MailTag.VAL_OK, MailTag.VAL_OK.name());
             addObservedEvent(EventType.EVENT_MAIL);
             addObservedEvent(EventType.EVENT_APPLICATION_STOP);
             getServer().registerForEvents(this);
-
-            // new Thread(new AliveTester()).start();
         }
         if (incomingMsgEnum.equals(BaseCommTag.REQ_STOP)) {
             System.out.println("STOP SIGNAL erhalten");

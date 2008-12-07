@@ -21,19 +21,16 @@ public class MailSender extends HapptickApplication {
             System.gc();
 
             for (int i = 0; i < 25; i++) {
-                event.setApplicationId(new Long(77));
-                // event.addAttribute("applicationPath",
-                // "cmd /c start/wait C:\\Projekte\\workspace\\noteof\\util\\applStartTest.bat"
-                // );
-                // event.addAttribute("applicationPath",
-                // "C:/Projekte/workspace/noteof/util/applStartTest.bat");
+                event.addAttribute("workApplicationId", "3");
                 event.addAttribute("applicationPath", "C:/Projekte/workspace/noteof/util/mail_recipient.bat");
                 event.addAttribute("windowsSupport", "true");
-                // event.addAttribute("applicationPath",
-                // "cmd /c start/wait C:\\Projekte\\workspace\\noteof\\util\\applStartTest.bat"
-                // );
                 event.addAttribute("applicationType", "JAVA");
+                System.out.println("EVENT APPLICATIONID = " + event.getApplicationId());
                 sendEvent(event);
+                try {
+                    Thread.sleep(50);
+                } catch (InterruptedException e) {
+                }
             }
 
             try {
@@ -54,8 +51,6 @@ public class MailSender extends HapptickApplication {
                     Thread.sleep(0);
                 } catch (InterruptedException e) {
                 }
-                if (false)
-                    break;
             }
             long duration = (new Date().getTime() - startTime) / 1000;
             System.out.println("Duration: " + duration);

@@ -61,6 +61,8 @@ public abstract class EventReceiveClient extends BaseClient {
     }
 
     private void activateAccepting() throws ActionFailedException {
+        System.out.println("EventReceiveClient.activateAccepting wurde aufgerufen......");
+
         // beware of multiple start!
         if (null == acceptor || acceptor.isStopped()) {
             acceptor = new MailAndEventAcceptor();
@@ -93,16 +95,16 @@ public abstract class EventReceiveClient extends BaseClient {
         public void run() {
             boolean isEvent = false;
             boolean isMail = false;
-            // int errCounter = 0;
+            Exception thrownException = null;
             try {
                 // Tell the service that now the client is ready to accept mails
                 // and events
+                System.out.println("EventReceiveClient.MailAndEventAcceptor.    requestTo INFO_READY_FOR_EVENTS");
                 if (MailTag.VAL_OK.name().equals(requestTo(MailTag.INFO_READY_FOR_EVENTS, MailTag.VAL_OK))) {
                     acceptorStopped = false;
                 }
 
                 while (!acceptorStopped) {
-                    System.out.println("EventReceiveClient$MailAndEventAcceptor.run");
                     try {
                         String awaitMsg = readMsgTimedOut(1000);
                         if (!acceptorStopped && MailTag.REQ_READY_FOR_ACTION.name().equals(awaitMsg)) {
@@ -136,24 +138,17 @@ public abstract class EventReceiveClient extends BaseClient {
                         }
                     } catch (ActionFailedException a) {
                         if (24L == a.getErrNo()) {
-                            System.out.println("AHA");
+                            // OK !!! Timeout expected here
                         } else {
+                            thrownException = a;
                             acceptorStopped = true;
+                            break;
                         }
 
                     } catch (Exception e) {
-                        e.printStackTrace();
-                        // if (5 < errCounter++)
+                        thrownException = e;
                         acceptorStopped = true;
-                        if (isMail) {
-                            // recipient.processMailException(e);
-                        }
-                        if (isEvent) {
-                            // recipient.processEventException(e);
-                        }
-                        if (!(isMail || isEvent)) {
-                            // recipient.processEventException(e);
-                        }
+                        break;
                     }
 
                     isMail = false;
@@ -163,18 +158,17 @@ public abstract class EventReceiveClient extends BaseClient {
                 // sendStopSignal();
                 close();
             } catch (Exception e) {
-                if (!acceptorStopped) {
-                    acceptorStopped = true;
-                    if (isMail) {
-                        recipient.processMailException(e);
-                    }
-                    if (isEvent) {
-                        // recipient.processEventException(e);
-                    }
-
-                    if (!(isMail || isEvent)) {
-                        // recipient.processEventException(e);
-                    }
+                thrownException = e;
+            }
+            if (null != thrownException) {
+                if (isMail) {
+                    recipient.processMailException(thrownException);
+                }
+                if (isEvent) {
+                    recipient.processEventException(thrownException);
+                }
+                if (!(isMail || isEvent)) {
+                    recipient.processEventException(thrownException);
                 }
             }
         }
@@ -252,7 +246,9 @@ public abstract class EventReceiveClient extends BaseClient {
      * @throws ActionFailedException
      */
     public void addInterestingEvents(List<NotEOFEvent> events) throws ActionFailedException {
+        System.out.println("EventReceiveClient.addInterestingEvents. ");
         if (MailTag.VAL_OK.name().equals(requestTo(MailTag.REQ_READY_FOR_EVENTLIST, MailTag.RESP_READY_FOR_EVENTLIST))) {
+            System.out.println("EventReceiveClient.addInterestingEvents. Service ist bereit für Übertragung");
             DataObject dataObject = new DataObject();
             List<String> eventTypeNames = new ArrayList<String>();
             for (NotEOFEvent event : events) {

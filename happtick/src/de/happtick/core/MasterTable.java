@@ -493,7 +493,7 @@ public class MasterTable {
     }
 
     public static synchronized void replaceStartEvent(NotEOFEvent event) {
-        startEvents.remove(event.getApplicationId());
+        startEvents.remove(Util.parseLong(event.getAttribute("workApplicationId"), -1));
         putStartEvent(event);
     }
 
@@ -517,7 +517,7 @@ public class MasterTable {
      * @param event
      */
     public static synchronized void putStartEvent(NotEOFEvent event) {
-        startEvents.put(event.getApplicationId(), event);
+        startEvents.put(Util.parseLong(event.getAttribute("workApplicationId"), -1), event);
     }
 
     /**

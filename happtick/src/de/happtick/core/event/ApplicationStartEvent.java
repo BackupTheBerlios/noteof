@@ -32,9 +32,7 @@ public class ApplicationStartEvent extends HapptickEvent implements NotEOFEvent 
 
     protected void initDescriptions() {
         descriptions.put("clientIp", "Ip where the application must be started.");
-        // descriptions.put("applicationId",
-        // "Unique identifier which is fix given by the happtick configuration."
-        // );
+        descriptions.put("workApplicationId", "Unique identifier for the application which has to be started. Fix set in happtick configuration.");
         descriptions.put("applicationPath", "Physical path of the executable application. Normally stored in the configuration.");
         descriptions.put("arguments", "All arguments and their values are transported within this one string.");
         descriptions.put("applicationType", "The type of application. Options are 'JAVA' or 'UNKNOWN'.");

@@ -409,6 +409,6 @@ public abstract class BaseService extends BaseClientOrService implements Service
     public abstract boolean isLifeSignSystemActive();
 
     public String getName() {
-        return hashCode() + serviceId;
+        return this.getClass().getSimpleName() + ":" + hashCode() + serviceId;
     }
 }
