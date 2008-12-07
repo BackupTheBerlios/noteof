@@ -2,6 +2,7 @@ package de.happtick.test;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 import de.happtick.application.client.ApplicationTimeOut;
 import de.happtick.configuration.ApplicationConfiguration;
@@ -63,6 +64,12 @@ public class TestHapptick {
                     for (Integer integer : ApplicationConfiguration.transformTimePlanWeekDays(appConf.getTimePlanWeekdays())) {
                         System.out.println("WeekDays... :" + integer);
                     }
+
+                    Set<String> keys = appConf.getEnvironment().keySet();
+                    for (String key : keys) {
+                        System.out.println("Environment ... : key = " + key + "; value = " + appConf.getEnvironment().get(key));
+                    }
+
                 }
             }
 

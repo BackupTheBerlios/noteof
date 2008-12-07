@@ -5,7 +5,9 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import de.happtick.core.MasterTable;
 import de.happtick.core.exception.HapptickException;
@@ -41,6 +43,7 @@ public class ApplicationConfiguration {
     private List<Long> applicationsWaitFor;
     private List<Long> applicationsStartAfter;
     private List<Long> applicationsStartSync;
+    private Map<String, String> environment;
     private int maxStartStop;
     private int maxStepStep;
     private Date nextStartDate = null;
@@ -153,10 +156,61 @@ public class ApplicationConfiguration {
             // maxStepStep
             maxStepStep = conf.getAttributeInt(node, "maxStepStep", 0);
 
+            setEnvironment(readEnv(conf));
+
         } catch (Exception ex) {
             LocalLog.error("Konfiguration der Applikation konnte nicht fehlerfrei gelesen werden. Applikation: " + nodeNameApplication, ex);
             throw new ActionFailedException(401, "Initialisierung ApplicationConfiguration", ex);
         }
+    }
+
+    private Map<String, String> readEnv(NotEOFConfiguration conf) throws ActionFailedException {
+        Map<String, String> env = new HashMap<String, String>();
+        String node = "scheduler." + this.nodeNameApplication + ".executable.env";
+        System.out.println("node = " + node);
+        List<String> envKeys = conf.getAttributeList(node, "var");
+        List<String> envVals = conf.getAttributeList(node, "val");
+
+        if (!Util.isEmpty(envKeys)) {
+            for (int i = 0; i < envKeys.size(); i++) {
+                System.out.println("envVals... in die Funktion rein" + envVals.get(i));
+                String value = replaceVar(envVals.get(i), env);
+                env.put(envKeys.get(i), value);
+
+                System.out.println("Jetzt in Tabelle mit key " + envKeys.get(i) + env.get(envKeys.get(i)));
+            }
+
+            return env;
+        }
+        return null;
+    }
+
+    private String replaceVar(String str, Map<String, String> values) {
+        System.out.println("replaceVar: str = " + str);
+
+        String original = "";
+        str = str.trim();
+
+        while (str.indexOf("$") > -1) {
+            int pos1 = str.indexOf("$");
+            int pos2 = str.indexOf("$", pos1 + 1);
+            System.out.println("replaceVar: pos1 = " + pos1);
+            System.out.println("replaceVar: pos2 = " + pos2);
+            original += str.substring(0, pos1);
+            System.out.println("replaceVar: original 1= " + original);
+            String key = str.substring(pos1 + 1, pos2);
+            System.out.println("replaceVar: key = " + key);
+            original += values.get(key);
+            System.out.println("replaceVar: original 2= " + original);
+            str = str.substring(pos2 + 1);
+            System.out.println("replaceVar: am Ende ist str = " + str);
+        }
+        original += str;
+        original = original.trim();
+
+        System.out.println("replaceVar: original vor return = " + original);
+
+        return original;
     }
 
     /**
@@ -522,5 +576,20 @@ public class ApplicationConfiguration {
 
     public boolean isPartOfChain() {
         return this.partOfChain;
+    }
+
+    /**
+     * @param environment
+     *            the environment to set
+     */
+    public void setEnvironment(Map<String, String> environment) {
+        this.environment = environment;
+    }
+
+    /**
+     * @return the environment
+     */
+    public Map<String, String> getEnvironment() {
+        return environment;
     }
 }

@@ -81,6 +81,9 @@
 			<client clientIp="localhost"></client>
 			<executable type="java" path="C:\Projekte\workspace\happdemo\scripts\Actor.bat" windows="true">
 				<args>--soundFile=c:\Projekte\workspace\happdemo\soundfiles\b.wav</args>
+				<env var="LIB_PATH" val="\a"></env>
+				<env var="CLASSPATH" val="$LIB_PATH$\b"></env>
+				<env var="CLASSPATH" val="$CLASSPATH$;\c$LIB_PATH$"></env>
 			</executable>
 			<option multiplestart="false" enforce="false"></option>
 		</application2>

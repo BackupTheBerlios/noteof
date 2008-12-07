@@ -44,10 +44,7 @@ public class Scheduling {
                 }
             }
             try {
-                System.out.println("Scheduling$ApplicationStarter.run. START ???????????");
                 if (startApp && (applConf.isMultipleStart() || !isEqualApplicationActive(applConf))) {
-                    System.out.println("Scheduling$ApplicationStarter.run. START");
-
                     ApplicationStartEvent event = new ApplicationStartEvent();
                     try {
                         event.addAttribute("workApplicationId", String.valueOf(applConf.getApplicationId()));
@@ -56,6 +53,14 @@ public class Scheduling {
                         event.addAttribute("applicationType", applConf.getExecutableType());
                         event.addAttribute("arguments", applConf.getExecutableArgs());
                         event.addAttribute("windowsSupport", String.valueOf(applConf.isWindowsSupport()));
+
+                        // Environment
+                        if (!Util.isEmpty(applConf.getEnvironment())) {
+                            for (String key : applConf.getEnvironment().keySet()) {
+                                event.addAttributeDescription("internal:ENV->" + key, "Environment: " + key);
+                            }
+                        }
+
                     } catch (ActionFailedException e) {
                         LocalLog.error("Start einer Anwendung ist fehlgeschlagen.", e);
                     }

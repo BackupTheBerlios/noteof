@@ -11,5 +11,6 @@ set CLASSPATH=%CLASSPATH%;c:\Projekte\workspace\happtick\lib\happtick.jar
 echo %CLASSPATH%
 java de.happtick.test.TestHapptick
 
+pause
 @echo on
 

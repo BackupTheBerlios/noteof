@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import de.notEOF.core.util.Util;
 
@@ -80,8 +81,7 @@ public class ApplicationConfigurationWrapper {
         // all data except the map of calling arguments (parameters)
         // as one big list
         map = new HashMap<String, String>();
-        // map.put("applicationId",
-        // String.valueOf(applicationConfiguration.getApplicationId()));
+        map.put("internal->applicationId", String.valueOf(applicationConfiguration.getApplicationId()));
         map.put("nodeNameApplication", String.valueOf(applicationConfiguration.getNodeNameApplication()));
         map.put("clientIp", String.valueOf(applicationConfiguration.getClientIp()));
         map.put("executableType", String.valueOf(applicationConfiguration.getExecutableType()));
@@ -134,6 +134,17 @@ public class ApplicationConfigurationWrapper {
                 appIdString = appIdString.substring(0, appIdString.length() - 1);
         }
         map.put("applicationsStartSync", appIdString);
+
+        // environment configuration for application
+        if (!Util.isEmpty(applicationConfiguration.getEnvironment())) {
+            Set<String> envSet = applicationConfiguration.getEnvironment().keySet();
+            int i = 0;
+            for (String key : envSet) {
+                String val = applicationConfiguration.getEnvironment().get(key);
+                key = "$ENV$" + i++ + "ENV->" + key;
+                map.put(key, val);
+            }
+        }
     }
 
     /*
@@ -165,6 +176,21 @@ public class ApplicationConfigurationWrapper {
         applicationConfiguration.setApplicationsWaitFor(csv2ListLong(map, "applicationsWaitFor"));
         applicationConfiguration.setApplicationsStartAfter(csv2ListLong(map, "applicationsStartAfter"));
         applicationConfiguration.setApplicationsStartSync(csv2ListLong(map, "applicationsStartSync"));
+
+        Map<String, String> environment = new HashMap<String, String>();
+
+        Set<String> keys = map.keySet();
+        for (String key : keys) {
+            if (key.startsWith("$ENV$")) {
+                String val = map.get(key);
+                int pos = key.indexOf("ENV->") + "ENV->".length();
+                System.out.println("ApplicationConfigurationWrapper... key vorher: " + key);
+                key = key.substring(pos);
+                System.out.println("ApplicationConfigurationWrapper... key nachher: " + key);
+                environment.put(key, val);
+            }
+        }
+        applicationConfiguration.setEnvironment(environment);
     }
 
     /*
