@@ -48,7 +48,7 @@ public class MailSender extends HapptickApplication {
                 gEvent.addAttribute("counter", String.valueOf(i));
                 sendEvent(gEvent);
                 try {
-                    Thread.sleep(0);
+                    Thread.sleep(50);
                 } catch (InterruptedException e) {
                 }
             }

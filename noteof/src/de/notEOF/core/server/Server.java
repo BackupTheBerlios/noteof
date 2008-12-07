@@ -100,7 +100,6 @@ public class Server implements EventObservable, Runnable {
      */
     public void run() {
         while (!stop) {
-            System.out.println("Server.run...");
             try {
                 Socket clientSocket = serverSocket.accept();
                 ClientAcceptor acceptor = new ClientAcceptor(clientSocket, this);

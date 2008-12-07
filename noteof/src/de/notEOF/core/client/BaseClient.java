@@ -172,7 +172,6 @@ public abstract class BaseClient extends BaseClientOrService {
      */
     public synchronized void sendEvent(NotEOFEvent event) throws ActionFailedException {
         writeMsg(MailTag.REQ_READY_FOR_EVENT.name());
-        System.out.println("BASECLIENT hat das Event die ApplId: " + event.getApplicationId());
         getTalkLine().sendBaseEvent(event);
     }
 

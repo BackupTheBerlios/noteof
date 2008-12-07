@@ -534,7 +534,6 @@ public class Util {
         if (eventObservers.size() > 0) {
             Set<String> set = eventObservers.keySet();
             for (String observerName : set) {
-                System.out.println("ObserverName: " + observerName);
                 // but only inform observer, when event in his list
                 EventObserver eventObserver = eventObservers.get(observerName);
                 if (null != eventObserver && null != eventObserver.getObservedEvents()) {

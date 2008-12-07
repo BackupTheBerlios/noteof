@@ -72,19 +72,6 @@ public abstract class HapptickApplication extends HapptickBaseClient {
         applicationClient.applicationIdToService(applicationId);
     }
 
-    // public void reconnect() throws HapptickException {
-    // System.out.println("HapptickApplication.reconnect.......");
-    // applicationClient = new ApplicationClient();
-    //
-    // // TODO Wenn dipatched getestet, kann der letzte Parameter auch nach
-    // // oben frei gegeben werden...
-    // connect(serverAddress, serverPort, args, applicationClient, false);
-    // applicationClient.startIdToService(args);
-    // applicationClient.applicationIdToService(applicationId);
-    //
-    // super.reconnect();
-    // }
-
     /**
      * Sets the unique application id.
      * 

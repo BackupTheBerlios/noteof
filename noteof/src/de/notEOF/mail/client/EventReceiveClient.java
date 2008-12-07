@@ -49,10 +49,8 @@ public abstract class EventReceiveClient extends BaseClient {
     }
 
     public void stop() {
-        System.out.println("EventReceiveClient soll jetzt stoppen...");
         sendStopSignal();
         acceptor.stop();
-        System.out.println("EventReceiveClient stoppen theoretisch abgearbeitet...");
         try {
             close();
         } catch (Exception e) {
@@ -61,8 +59,6 @@ public abstract class EventReceiveClient extends BaseClient {
     }
 
     private void activateAccepting() throws ActionFailedException {
-        System.out.println("EventReceiveClient.activateAccepting wurde aufgerufen......");
-
         // beware of multiple start!
         if (null == acceptor || acceptor.isStopped()) {
             acceptor = new MailAndEventAcceptor();
@@ -99,7 +95,6 @@ public abstract class EventReceiveClient extends BaseClient {
             try {
                 // Tell the service that now the client is ready to accept mails
                 // and events
-                System.out.println("EventReceiveClient.MailAndEventAcceptor.    requestTo INFO_READY_FOR_EVENTS");
                 if (MailTag.VAL_OK.name().equals(requestTo(MailTag.INFO_READY_FOR_EVENTS, MailTag.VAL_OK))) {
                     acceptorStopped = false;
                 }
@@ -131,9 +126,6 @@ public abstract class EventReceiveClient extends BaseClient {
                                     workerThread.start();
                                     System.out.println("Event ENDE");
                                 }
-                                if ("bla".equalsIgnoreCase(action)) {
-                                    System.out.println("bla ist angekommen");
-                                }
                             }
                         }
                     } catch (ActionFailedException a) {
@@ -154,7 +146,6 @@ public abstract class EventReceiveClient extends BaseClient {
                     isMail = false;
                     isEvent = false;
                 }
-                System.out.println("Acceptor wurde gestoppt");
                 // sendStopSignal();
                 close();
             } catch (Exception e) {
