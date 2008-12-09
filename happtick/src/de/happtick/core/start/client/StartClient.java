@@ -172,7 +172,7 @@ public class StartClient extends HapptickBaseClient implements EventRecipient {
     @Override
     public synchronized void processEvent(NotEOFEvent event) {
         if (event.equals(EventType.EVENT_APPLICATION_START)) {
-            System.out.println("StartClient.processEvent: EVENT_APPLICATION_START mit ApplId: " + event.getApplicationId());
+            System.out.println("StartClient.processEvent: EVENT_APPLICATION_START mit ApplId: " + event.getAttribute("workApplicationId"));
             startStarter(event);
         }
     }

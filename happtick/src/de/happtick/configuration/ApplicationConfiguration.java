@@ -34,7 +34,6 @@ public class ApplicationConfiguration {
     private boolean enforce;
     private boolean windowsSupport;
     private boolean partOfChain;
-    private String executableArgs;
     private String timePlanSeconds;
     private String timePlanMinutes;
     private String timePlanHours;
@@ -43,6 +42,7 @@ public class ApplicationConfiguration {
     private List<Long> applicationsWaitFor;
     private List<Long> applicationsStartAfter;
     private List<Long> applicationsStartSync;
+    private List<String> arguments;
     private Map<String, String> environment;
     private int maxStartStop;
     private int maxStepStep;
@@ -85,10 +85,6 @@ public class ApplicationConfiguration {
             windowsSupport = Util.parseBoolean(conf.getAttribute(node, "windows"), false);
             // executable partOfChain
             partOfChain = Util.parseBoolean(conf.getAttribute(node, "partOfChain"), false);
-
-            // arguments of executable
-            node = "scheduler." + nodeNameApplication + ".executable.args";
-            executableArgs = conf.getText(node, "");
 
             // option multiple start
             node = "scheduler." + nodeNameApplication + ".option";
@@ -156,6 +152,15 @@ public class ApplicationConfiguration {
             // maxStepStep
             maxStepStep = conf.getAttributeInt(node, "maxStepStep", 0);
 
+            node = "scheduler." + nodeNameApplication + ".executable.arg";
+            arguments = (conf.getTextList(node));
+
+            if (null != arguments) {
+                for (String arg : arguments) {
+                    System.out.println("ARG: " + arg);
+                }
+            }
+
             setEnvironment(readEnv(conf));
 
         } catch (Exception ex) {
@@ -167,17 +172,13 @@ public class ApplicationConfiguration {
     private Map<String, String> readEnv(NotEOFConfiguration conf) throws ActionFailedException {
         Map<String, String> env = new HashMap<String, String>();
         String node = "scheduler." + this.nodeNameApplication + ".executable.env";
-        System.out.println("node = " + node);
         List<String> envKeys = conf.getAttributeList(node, "var");
         List<String> envVals = conf.getAttributeList(node, "val");
 
         if (!Util.isEmpty(envKeys)) {
             for (int i = 0; i < envKeys.size(); i++) {
-                System.out.println("envVals... in die Funktion rein" + envVals.get(i));
                 String value = replaceVar(envVals.get(i), env);
                 env.put(envKeys.get(i), value);
-
-                System.out.println("Jetzt in Tabelle mit key " + envKeys.get(i) + env.get(envKeys.get(i)));
             }
 
             return env;
@@ -186,7 +187,6 @@ public class ApplicationConfiguration {
     }
 
     private String replaceVar(String str, Map<String, String> values) {
-        System.out.println("replaceVar: str = " + str);
 
         String original = "";
         str = str.trim();
@@ -194,21 +194,13 @@ public class ApplicationConfiguration {
         while (str.indexOf("$") > -1) {
             int pos1 = str.indexOf("$");
             int pos2 = str.indexOf("$", pos1 + 1);
-            System.out.println("replaceVar: pos1 = " + pos1);
-            System.out.println("replaceVar: pos2 = " + pos2);
             original += str.substring(0, pos1);
-            System.out.println("replaceVar: original 1= " + original);
             String key = str.substring(pos1 + 1, pos2);
-            System.out.println("replaceVar: key = " + key);
             original += values.get(key);
-            System.out.println("replaceVar: original 2= " + original);
             str = str.substring(pos2 + 1);
-            System.out.println("replaceVar: am Ende ist str = " + str);
         }
         original += str;
         original = original.trim();
-
-        System.out.println("replaceVar: original vor return = " + original);
 
         return original;
     }
@@ -429,10 +421,6 @@ public class ApplicationConfiguration {
         return enforce;
     }
 
-    public String getExecutableArgs() {
-        return executableArgs;
-    }
-
     public String getTimePlanSeconds() {
         return timePlanSeconds;
     }
@@ -518,10 +506,6 @@ public class ApplicationConfiguration {
         this.enforce = enforce;
     }
 
-    public void setExecutableArgs(String executableArgs) {
-        this.executableArgs = executableArgs;
-    }
-
     public void setTimePlanSeconds(String timePlanSeconds) {
         this.timePlanSeconds = timePlanSeconds;
     }
@@ -591,5 +575,20 @@ public class ApplicationConfiguration {
      */
     public Map<String, String> getEnvironment() {
         return environment;
+    }
+
+    /**
+     * @param arguments
+     *            the arguments to set
+     */
+    public void setArguments(List<String> arguments) {
+        this.arguments = arguments;
+    }
+
+    /**
+     * @return the arguments
+     */
+    public List<String> getArguments() {
+        return arguments;
     }
 }

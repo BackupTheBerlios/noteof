@@ -92,7 +92,6 @@ public class ApplicationConfigurationWrapper {
         map.put("enforce", String.valueOf(applicationConfiguration.isEnforce()));
         map.put("maxStartStop", String.valueOf(applicationConfiguration.getMaxStartStop()));
         map.put("maxStepStep", String.valueOf(applicationConfiguration.getMaxStepStep()));
-        map.put("executableArgs", String.valueOf(applicationConfiguration.getExecutableArgs()));
 
         map.put("timePlanSeconds", String.valueOf(applicationConfiguration.getTimePlanSeconds()));
         map.put("timePlanMinutes", String.valueOf(applicationConfiguration.getTimePlanMinutes()));
@@ -145,6 +144,14 @@ public class ApplicationConfigurationWrapper {
                 map.put(key, val);
             }
         }
+
+        // arguments for application
+        int i = 0;
+        if (!Util.isEmpty(applicationConfiguration.getArguments())) {
+            for (String arg : applicationConfiguration.getArguments()) {
+                map.put("$ARG$(" + i++ + ")", arg);
+            }
+        }
     }
 
     /*
@@ -164,7 +171,6 @@ public class ApplicationConfigurationWrapper {
         applicationConfiguration.setPartOfChain(Util.parseBoolean(map.get("partOfChain"), false));
         applicationConfiguration.setMaxStartStop(Util.parseInt(map.get("maxStartStop"), 0));
         applicationConfiguration.setMaxStepStep(Util.parseInt(map.get("maxStepStep"), 0));
-        applicationConfiguration.setExecutableArgs(map.get("executableArgs"));
 
         applicationConfiguration.setTimePlanSeconds(map.get("timePlanSeconds"));
         applicationConfiguration.setTimePlanMinutes(map.get("timePlanMinutes"));
@@ -191,6 +197,18 @@ public class ApplicationConfigurationWrapper {
             }
         }
         applicationConfiguration.setEnvironment(environment);
+
+        // arguments for application
+        List<String> arguments = new ArrayList<String>();
+        for (int i = 0; i < 999; i++) {
+            String val = map.get("$ARG$(" + i + ")");
+            if (Util.isEmpty(val)) {
+                break;
+            }
+            arguments.add(val);
+        }
+        applicationConfiguration.setArguments(arguments);
+
     }
 
     /*

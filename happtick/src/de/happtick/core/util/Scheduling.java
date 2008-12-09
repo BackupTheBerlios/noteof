@@ -51,13 +51,25 @@ public class Scheduling {
                         event.addAttribute("clientIp", applConf.getClientIp());
                         event.addAttribute("applicationPath", applConf.getExecutablePath());
                         event.addAttribute("applicationType", applConf.getExecutableType());
-                        event.addAttribute("arguments", applConf.getExecutableArgs());
                         event.addAttribute("windowsSupport", String.valueOf(applConf.isWindowsSupport()));
+
+                        // Arguments
+                        if (!Util.isEmpty(applConf.getArguments())) {
+                            int i = 0;
+                            for (String arg : applConf.getArguments()) {
+                                System.out.println("KEY: " + "internal:ARG(" + i + ")");
+                                event.addAttributeDescription("internal:ARG(" + i + ")", "Argument: (" + i + ")");
+                                System.out.println("Scheduler.run. Argument: " + arg);
+                                event.addAttribute("internal:ARG(" + i + ")", arg);
+                                i++;
+                            }
+                        }
 
                         // Environment
                         if (!Util.isEmpty(applConf.getEnvironment())) {
                             for (String key : applConf.getEnvironment().keySet()) {
                                 event.addAttributeDescription("internal:ENV->" + key, "Environment: " + key);
+                                event.addAttribute("internal:ENV->" + key, applConf.getEnvironment().get(key));
                             }
                         }
 

@@ -110,59 +110,64 @@ public class ExternalCalls {
      * @return
      * @throws HapptickException
      */
-    public Process startApplication(String applicationPath, String arguments, boolean windowsSupport) throws HapptickException {
-        System.gc();
-        Process proc = null;
-
-        ProcessBuilder pb = new ProcessBuilder("java", "de.happdemo.Actor", "--serverIp=localhost", "--serverPort=3000", "--applicationId=1",
-                "--soundFile=c:\\Projekte\\workspace\\happdemo\\soundfiles\\a.wav");
-        Map<String, String> env = pb.environment();
-        env.put("NOTEOF_HOME", "C:\\Projekte\\workspace\\noteof");
-        env.put("LIB_PATH", "C:\\Projekte\\workspace\\notioc\\lib");
-        env.put("CLASSPATH", env.get("NOTEOF_HOME") + "\\lib\\noteof.jar");
-        env.put("CLASSPATH", env.get("CLASSPATH") + ";" + env.get("LIB_PATH") + "\\notioc.jar");
-        env.put("CLASSPATH", env.get("CLASSPATH") + ";" + env.get("LIB_PATH") + "\\jdom.jar");
-        env.put("CLASSPATH", env.get("CLASSPATH") + ";c:\\Projekte\\workspace\\happtick\\lib\\happtick.jar");
-        env.put("CLASSPATH", env.get("CLASSPATH") + ";c:\\Projekte\\workspace\\happdemo\\bin");
-
-        Set<String> bla = env.keySet();
-        for (String key : bla) {
-            System.out.println("KEY= " + key + "     VAL= " + env.get(key));
-        }
-
-        try {
-            proc = pb.start();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        // System.out.println("ExternalCalls.startApplication...");
-        // try {
-        // Runtime runtime = Runtime.getRuntime();
-        //
-        // String cmdLine = applicationPath + " " + arguments;
-        //
-        // if (windowsSupport)
-        // cmdLine = "cmd /c start /wait \"\" " + cmdLine;
-        //
-        // cmdLine.trim();
-        // proc = runtime.exec(cmdLine);
-        // } catch (IOException ioEx) {
-        // throw new HapptickException(651L, "Application: " + applicationPath,
-        // ioEx);
-        // }
-        return proc;
-    }
-
+    // public Process startApplication(String applicationPath, String arguments,
+    // boolean windowsSupport) throws HapptickException {
+    // System.gc();
+    // Process proc = null;
+    //
+    // ProcessBuilder pb = new ProcessBuilder("java", "de.happdemo.Actor",
+    // "--serverIp=localhost", "--serverPort=3000", "--applicationId=1",
+    // "--soundFile=c:\\Projekte\\workspace\\happdemo\\soundfiles\\a.wav");
+    // Map<String, String> env = pb.environment();
+    // env.put("NOTEOF_HOME", "C:\\Projekte\\workspace\\noteof");
+    // env.put("LIB_PATH", "C:\\Projekte\\workspace\\notioc\\lib");
+    // env.put("CLASSPATH", env.get("NOTEOF_HOME") + "\\lib\\noteof.jar");
+    // env.put("CLASSPATH", env.get("CLASSPATH") + ";" + env.get("LIB_PATH") +
+    // "\\notioc.jar");
+    // env.put("CLASSPATH", env.get("CLASSPATH") + ";" + env.get("LIB_PATH") +
+    // "\\jdom.jar");
+    // env.put("CLASSPATH", env.get("CLASSPATH") +
+    // ";c:\\Projekte\\workspace\\happtick\\lib\\happtick.jar");
+    // env.put("CLASSPATH", env.get("CLASSPATH") +
+    // ";c:\\Projekte\\workspace\\happdemo\\bin");
+    //
+    // Set<String> bla = env.keySet();
+    // for (String key : bla) {
+    // System.out.println("KEY= " + key + "     VAL= " + env.get(key));
+    // }
+    //
+    // for (String arg : pb.command()) {
+    // System.out.println("arg: " + arg);
+    // }
+    //
+    // try {
+    // proc = pb.start();
+    // } catch (IOException e) {
+    // e.printStackTrace();
+    // }
+    // System.out.println("ExternalCalls.startApplication...");
+    // try {
+    // Runtime runtime = Runtime.getRuntime();
+    //
+    // String cmdLine = applicationPath + " " + arguments;
+    //
+    // if (windowsSupport)
+    // cmdLine = "cmd /c start /wait \"\" " + cmdLine;
+    //
+    // cmdLine.trim();
+    // proc = runtime.exec(cmdLine);
+    // } catch (IOException ioEx) {
+    // throw new HapptickException(651L, "Application: " + applicationPath,
+    // ioEx);
+    // }
+    // return proc;
+    // }
     public Process startHapptickApplication(String serverAddress, int serverPort, String startId, NotEOFEvent event) throws HapptickException {
         String applicationId = null;
         String applicationPath = null;
-        String procName = null;
-        String arguments = null;
         try {
             applicationPath = event.getAttribute("applicationPath");
             applicationId = String.valueOf(event.getAttribute("workApplicationId"));
-            arguments = event.getAttribute("arguments");
         } catch (Exception ex) {
             LocalLog.error("Fehler bei Verarbeitung eines Events.", ex);
         }
@@ -172,17 +177,33 @@ public class ExternalCalls {
         if (Util.isEmpty(applicationPath))
             throw new HapptickException(650L, "applicationPath");
 
-        List<String> callArgs = new ArrayList<String>();
-        if (Util.parseBoolean(event.getAttribute("windowsSupport"), false)) {
-            procName = "cmd /c start /wait \"\" ";
-            callArgs.add(procName);
+        Set<String> keys = event.getAttributes().keySet();
+        for (String key : keys) {
+            System.out.println("Key: " + key + "; Val: " + event.getAttributes().get(key));
         }
+
+        List<String> arguments = new ArrayList<String>();
+        for (int i = 0; i < 999; i++) {
+            System.out.println("Suchkey ist: " + "internal:ARG(" + i + ")");
+            String arg = event.getAttribute("internal:ARG(" + i + ")");
+            if (Util.isEmpty(arg)) {
+                System.out.println("ExternalCalls ...............  " + i);
+                break;
+            }
+            arguments.add(arg);
+        }
+
+        List<String> callArgs = new ArrayList<String>();
+        // if (Util.parseBoolean(event.getAttribute("windowsSupport"), false)) {
+        // // callArgs.add("cmd");
+        // callArgs.add("cmd /c start /wait \"\" " + applicationPath);
+        // }
         callArgs.add(applicationPath);
+        callArgs.addAll(arguments);
         callArgs.add("--startId=" + startId.trim());
-        callArgs.add(" --applicationId=" + applicationId.trim());
-        callArgs.add(" --serverAddress=" + serverAddress.trim());
-        callArgs.add(" --serverPort=" + String.valueOf(serverPort));
-        callArgs.add(arguments);
+        callArgs.add("--applicationId=" + applicationId.trim());
+        callArgs.add("--serverAddress=" + serverAddress.trim());
+        callArgs.add("--serverPort=" + String.valueOf(serverPort));
 
         ProcessBuilder pb = new ProcessBuilder(callArgs);
         Map<String, String> env = pb.environment();
@@ -190,11 +211,18 @@ public class ExternalCalls {
             if (key.startsWith("internal:ENV->")) {
                 String val = event.getAttributes().get(key);
                 int pos = key.indexOf("internal:ENV->") + "internal:ENV->".length();
-                System.out.println("ExternalCalls... key vorher: " + key);
                 key = key.substring(pos);
-                System.out.println("ExternalCalls... key nachher: " + key);
                 env.put(key, val);
             }
+        }
+
+        for (String arg : pb.command()) {
+            System.out.println(arg);
+        }
+
+        Set<String> envSet = env.keySet();
+        for (String key : envSet) {
+            System.out.println("KEY= " + key + "     VAL= " + env.get(key));
         }
 
         System.gc();

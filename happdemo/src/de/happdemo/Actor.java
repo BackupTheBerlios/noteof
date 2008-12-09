@@ -34,6 +34,9 @@ public class Actor extends HapptickApplication implements EventRecipient {
      * @throws HapptickException
      */
     private void doWork(String[] args) throws HapptickException {
+
+        System.out.println("asljasdfjlasdflöasdfklöasdfljkös");
+
         // Anwendung will selbst mails oder events verarbeiten
         useEvents(this);
 
