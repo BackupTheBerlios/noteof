@@ -15,6 +15,7 @@ import de.notEOF.core.interfaces.NotEOFEvent;
 import de.notEOF.core.util.ArgsParser;
 import de.notEOF.core.util.Util;
 import de.notEOF.mail.NotEOFMail;
+import de.notEOF.mail.interfaces.EventRecipient;
 
 /**
  * This client has less business logic and more connection / communication
@@ -26,13 +27,14 @@ import de.notEOF.mail.NotEOFMail;
  * 
  * @author dirk
  */
-public class ApplicationClient extends BaseClient implements NotEOFClient {
+public class ApplicationClient extends BaseClient implements NotEOFClient, EventRecipient {
 
     private boolean isWorkAllowed = false;
     private AllowanceWaiter allowanceWaiter;
     private ClientObserver clientObserver;
     private Long applicationId;
     private boolean stopped = false;
+    private EventRecipient eventRecipient = null;
 
     @Override
     public Class<?> serviceForClientByClass() {
@@ -55,6 +57,16 @@ public class ApplicationClient extends BaseClient implements NotEOFClient {
             } catch (HapptickException e) {
             }
         }
+    }
+
+    public void processEvent(NotEOFEvent event) {
+        if (!Util.isEmpty(this.eventRecipient)) {
+            eventRecipient.processEvent(event);
+        }
+    }
+
+    public void setEventRecipient(EventRecipient eventRecipient) {
+        this.eventRecipient = eventRecipient;
     }
 
     /**

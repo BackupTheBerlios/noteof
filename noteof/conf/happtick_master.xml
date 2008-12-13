@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root>
+	<configuration>
+	  	<xml fileName="c:\projekte\workspace\happtick\conf\happtick_appl.xml"/>
+	  	<xml fileName="c:\projekte\workspace\happtick\conf\events.xml"/>
+		<section sectionName="happtick_root"/>
+	</configuration>
+</root>

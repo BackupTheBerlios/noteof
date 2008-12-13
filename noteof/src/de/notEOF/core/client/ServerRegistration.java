@@ -104,6 +104,8 @@ public class ServerRegistration {
 
         // Register at the server and ask for a service
         protected String register(String serviceClassName, TalkLine talkLine, String... args) throws ActionFailedException {
+            talkLine.awaitRequestAnswerImmediate(BaseCommTag.REQ_CLIENT_TYPE, BaseCommTag.RESP_CLIENT_TYPE, "COMPLEX_CLIENT");
+
             // First step: Say hello to the server
             if (!Util.equalsToString(talkLine.requestTo(BaseCommTag.REQ_REGISTRATION, BaseCommTag.RESP_REGISTRATION), BaseCommTag.VAL_OK.name())) {
                 throw new ActionFailedException(22L, "Anmeldung vom Server abgelehnt.");

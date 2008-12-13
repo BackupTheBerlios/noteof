@@ -153,8 +153,13 @@ public class Server implements EventObservable, Runnable {
                 // weil der die clientId hat, die ich dann hier verwende
                 String clientNetId = talkLine.requestTo(BaseCommTag.REQ_CLIENT_ID, BaseCommTag.RESP_CLIENT_ID);
                 EventReceiveService service = new EventReceiveService(talkLine, clientNetId);
-                registerForEvents(service);
+                ((BaseService) service).initializeConnection(clientSocket, generateServiceId());
+                service.setServer(getInstance());
                 addEventReceiveService(service);
+                Thread serviceThread = new Thread((Runnable) service);
+                service.setThread(serviceThread);
+                serviceThread.start();
+                // registerForEvents(service);
 
             } else {
                 // COMPLEX Client

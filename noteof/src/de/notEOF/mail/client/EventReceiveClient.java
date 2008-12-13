@@ -40,6 +40,17 @@ public class EventReceiveClient {
         }
     }
 
+    public void startAccepting() throws ActionFailedException {
+        talkLine.writeMsg(MailTag.INFO_READY_FOR_EVENTS.name());
+
+        String antwort = talkLine.readMsg();
+        if ((MailTag.VAL_OK.name() + "=" + MailTag.VAL_OK.name()).equals(antwort)) {
+            // if (MailTag.VAL_OK.name().equals(talkLine.readMsg())) {
+            System.out.println("Ab jetzt sollte eigentlich der Acceptor laufen.");
+            new Thread(new MailAndEventAcceptor()).start();
+        }
+    }
+
     private class MailAndEventAcceptor implements Runnable {
         public long workerCounter = 0;
         private boolean acceptorStopped = false;
@@ -66,7 +77,7 @@ public class EventReceiveClient {
                             break;
                         }
                         if (MailTag.REQ_READY_FOR_ACTION.name().equals(awaitMsg)) {
-                            String action = talkLine.readMsgTimedOut(1000);
+                            String action = talkLine.readMsgTimedOut(5000);
 
                             // awaitRequest(MailTag.REQ_READY_FOR_ACTION);
                             if (!Util.isEmpty(action)) {
@@ -166,6 +177,7 @@ public class EventReceiveClient {
             if (event.equals(EventType.EVENT_APPLICATION_STOP)) {
                 recipient.processStopEvent(event);
             } else {
+                System.out.println("EventReceiveClient.EventWorker.run.   Rufe jetzt den Recipienten auf...");
                 recipient.processEvent(event);
             }
             workerPointer = getId();

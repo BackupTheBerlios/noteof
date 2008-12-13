@@ -1,12 +1,17 @@
 package de.happtick.application.client;
 
+import java.util.List;
+
 import de.happtick.core.application.client.ApplicationClient;
 import de.happtick.core.client.HapptickBaseClient;
 import de.happtick.core.exception.HapptickException;
 import de.happtick.core.interfaces.ClientObserver;
+import de.happtick.core.service.HapptickSimpleService;
+import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.interfaces.NotEOFEvent;
 import de.notEOF.core.util.ArgsParser;
 import de.notEOF.core.util.Util;
+import de.notEOF.mail.interfaces.EventRecipient;
 
 /**
  * This class is the connector between the application and an application
@@ -18,11 +23,14 @@ import de.notEOF.core.util.Util;
  * @author dirk
  * 
  */
-public abstract class HapptickApplication extends HapptickBaseClient {
+public abstract class HapptickApplication extends HapptickBaseClient implements EventRecipient {
 
     private Long applicationId;
     private boolean isWorkAllowed = false;
     private ApplicationClient applicationClient;
+    String serverAddress;
+    int serverPort;
+    String[] args;
 
     /**
      * Constructor with connection informations.
@@ -75,6 +83,22 @@ public abstract class HapptickApplication extends HapptickBaseClient {
         connect(serverAddress, serverPort, args, applicationClient, false);
         applicationClient.startIdToService(args);
         applicationClient.applicationIdToService(applicationId);
+    }
+
+    public void setEventRecipient(EventRecipient eventRecipient) {
+        applicationClient.setEventRecipient(eventRecipient);
+    }
+
+    public void addInterestingEvents(List<NotEOFEvent> events) throws ActionFailedException {
+        applicationClient.addInterestingEvents(events);
+    }
+
+    public void startAcceptingEvents() {
+        try {
+            applicationClient.startAcceptingEvents();
+        } catch (ActionFailedException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -328,5 +352,15 @@ public abstract class HapptickApplication extends HapptickBaseClient {
      */
     public void stopObservingForStartAllowance() {
         applicationClient.stopObservingForStartAllowance();
+    }
+
+    @Override
+    public Class<?> serviceForClientByClass() {
+        return HapptickSimpleService.class;
+    }
+
+    @Override
+    public String serviceForClientByName() {
+        return null;
     }
 }

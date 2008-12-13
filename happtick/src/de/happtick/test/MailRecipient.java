@@ -14,6 +14,7 @@ import de.happtick.core.event.LogEvent;
 import de.happtick.core.exception.HapptickException;
 import de.notEOF.core.enumeration.EventType;
 import de.notEOF.core.event.GenericEvent;
+import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.interfaces.NotEOFEvent;
 import de.notEOF.core.logging.LocalLog;
 import de.notEOF.mail.MailHeaders;
@@ -31,6 +32,7 @@ public class MailRecipient extends HapptickApplication implements EventRecipient
 
     public MailRecipient(long applicationId, String serverAddress, int serverPort, String... args) throws HapptickException {
         super(applicationId, serverAddress, serverPort, args);
+        setEventRecipient(this);
 
         System.out.println("MailRecipient.Construction. applicationId = " + this.getApplicationId());
 
@@ -38,20 +40,15 @@ public class MailRecipient extends HapptickApplication implements EventRecipient
     }
 
     private void reconnection() throws HapptickException {
-        // reconnect();
-
-        // Anwendung will selbst mails oder events verarbeiten
-        useEvents(this);
-
         // Hinzufuegen von interessanten Nachrichteninhalten
         MailToken tokens = new MailToken();
         tokens.add("Begriff");
-        addInterestingMailExpressions(tokens);
+        // addInterestingMailExpressions(tokens);
 
         // Hinzufuegen von interessanten Nachrichtenheadern
         MailHeaders headers = new MailHeaders();
         headers.add("Kopf");
-        addInterestingMailExpressions(headers);
+        // addInterestingMailExpressions(headers);
 
         // Hinzufuegen von interessanten Events
         List<NotEOFEvent> events = new ArrayList<NotEOFEvent>();
@@ -62,12 +59,24 @@ public class MailRecipient extends HapptickApplication implements EventRecipient
         events.add(new LogEvent());
         events.add(new ApplicationStartErrorEvent());
         events.add(new GenericEvent());
-        addInterestingEvents(events);
+        try {
+            addInterestingEvents(events);
+        } catch (ActionFailedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
 
-        // jetzt geht's los
+        System.out.println("Starte AcceptingEvents!");
         startAcceptingEvents();
 
         System.out.println("Jetzt gilts!");
+        while (true) {
+            try {
+                Thread.sleep(10000);
+            } catch (InterruptedException e) {
+                break;
+            }
+        }
         ready = true;
 
     }
@@ -111,6 +120,8 @@ public class MailRecipient extends HapptickApplication implements EventRecipient
     }
 
     public synchronized void processEvent(NotEOFEvent event) {
+        System.out.println("HEY!  " + event.getEventType());
+
         try {
             if (null != event && EventType.EVENT_GENERIC.equals(event.getEventType())) {
                 System.out.println("Aktuell: " + event.getAttribute("counter"));

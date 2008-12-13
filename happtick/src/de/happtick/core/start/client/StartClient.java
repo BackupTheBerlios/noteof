@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import de.happtick.core.client.HapptickBaseClient;
+import de.happtick.application.client.HapptickApplication;
 import de.happtick.core.event.ApplicationStartEvent;
 import de.happtick.core.event.StartClientEvent;
 import de.happtick.core.exception.HapptickException;
@@ -36,33 +36,25 @@ import de.notEOF.mail.interfaces.EventRecipient;
  * 
  * @author Dirk
  */
-public class StartClient extends HapptickBaseClient implements EventRecipient {
+public class StartClient extends HapptickApplication implements EventRecipient, NotEOFClient {
 
-    private String serverAddress;
-    private int port;
-    private String[] args;
     private boolean stopped = false;
 
-    public StartClient(String serverAddress, int port, String[] args) throws HapptickException {
-        this.serverAddress = serverAddress;
-        this.port = port;
-        this.args = args;
+    public StartClient(String serverAddress, int port, String[] args) throws ActionFailedException {
+        super(null, serverAddress, port, args);
         doWork();
     }
 
     private void doWork() throws HapptickException {
-        // must be called before useMailsAndEvents()
-        connect(serverAddress, port, args, false);
-
-        // Activate EventSystem
-        useEvents(this, false);
-
         // Catching important events is defined here
         List<NotEOFEvent> events = new ArrayList<NotEOFEvent>();
         events.add(new ApplicationStartEvent());
-        addInterestingEvents(events);
-        // Before this the method useMailsAndEvents() must be called
-        startAcceptingEvents();
+        try {
+            addInterestingEvents(events);
+        } catch (ActionFailedException e1) {
+            // TODO Auto-generated catch block
+            e1.printStackTrace();
+        }
 
         // tell scheduler that at this computer a StartClient is active
         sendStartEvent();
@@ -82,7 +74,7 @@ public class StartClient extends HapptickBaseClient implements EventRecipient {
         NotEOFEvent event = new StartClientEvent();
         try {
             event.addAttribute("state", "START");
-            event.addAttribute("clientIp", getSimpleClient().getTalkLine().getSocketToPartner().getLocalAddress().getHostName());
+            event.addAttribute("clientIp", super.getTalkLine().getSocketToPartner().getLocalAddress().getHostName());
             sendEvent(event);
         } catch (ActionFailedException e) {
             LocalLog.error("Fehler bei Senden des StartEvent an den Scheduler. Scheduler kann Anwendungen fuer diesen Client nicht beruecksichtigen.", e);
@@ -93,7 +85,7 @@ public class StartClient extends HapptickBaseClient implements EventRecipient {
         NotEOFEvent event = new StartClientEvent();
         try {
             event.addAttribute("state", "STOP");
-            event.addAttribute("clientIp", getSimpleClient().getTalkLine().getLocalAddress());
+            event.addAttribute("clientIp", super.getTalkLine().getLocalAddress());
             sendEvent(event);
         } catch (ActionFailedException e) {
             LocalLog.error("Fehler bei Senden des StopEvent an den Scheduler. Scheduler wird Anwendungen fuer diesen Client weiter beruecksichtigen.", e);
@@ -101,7 +93,7 @@ public class StartClient extends HapptickBaseClient implements EventRecipient {
     }
 
     private synchronized void startStarter(NotEOFEvent event) {
-        ApplStarter starter = new ApplStarter(this.notEofClient, event);
+        ApplStarter starter = new ApplStarter(this, event);
         Thread starterThread = new Thread(starter);
         starterThread.start();
     }
@@ -184,23 +176,23 @@ public class StartClient extends HapptickBaseClient implements EventRecipient {
     @Override
     public void processEventException(Exception e) {
         LocalLog.error("Fehler wurde durch die Event-Schnittstelle ausgeloest.", e);
-        boolean err = true;
-        while (err) {
-            try {
-                reconnect();
-                sendStartEvent();
-
-                // doWork();
-                err = false;
-            } catch (HapptickException e1) {
-                try {
-                    Thread.sleep(3000);
-                } catch (InterruptedException e2) {
-                    e2.printStackTrace();
-                }
-                e1.printStackTrace();
-            }
-        }
+        // boolean err = true;
+        // while (err) {
+        // try {
+        // reconnect();
+        // sendStartEvent();
+        //
+        // // doWork();
+        // err = false;
+        // } catch (HapptickException e1) {
+        // try {
+        // Thread.sleep(3000);
+        // } catch (InterruptedException e2) {
+        // e2.printStackTrace();
+        // }
+        // e1.printStackTrace();
+        // }
+        // }
     }
 
     /**

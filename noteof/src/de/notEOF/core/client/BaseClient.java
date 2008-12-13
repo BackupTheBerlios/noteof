@@ -1,6 +1,7 @@
 package de.notEOF.core.client;
 
 import java.net.Socket;
+import java.util.List;
 
 import de.notEOF.core.BaseClientOrService;
 import de.notEOF.core.communication.TalkLine;
@@ -34,6 +35,7 @@ public abstract class BaseClient extends BaseClientOrService implements EventRec
     private boolean linkedToService = false;
     private String clientNetId;
     private String[] args;
+    private EventReceiveClient eventReceiveClient;
 
     /**
      * The server decides which service is the compatible one to this client by
@@ -93,6 +95,7 @@ public abstract class BaseClient extends BaseClientOrService implements EventRec
         registerAtServer(getTalkLine(), timeout, this.args);
         activateEventReceiving(new TalkLine(ip, port, 0), this.getClientNetId());
         implementationFirstSteps();
+        System.out.println("BaseClient.connect 1. eventReceiveClient: " + eventReceiveClient);
     }
 
     public void connect(Socket socketToServer, TimeOut timeout) throws ActionFailedException {
@@ -106,6 +109,7 @@ public abstract class BaseClient extends BaseClientOrService implements EventRec
         registerAtServer(getTalkLine(), timeout, this.args);
         activateEventReceiving(new TalkLine(socketToServer, 0), this.getClientNetId());
         implementationFirstSteps();
+        System.out.println("BaseClient.connect 2. eventReceiveClient: " + eventReceiveClient);
     }
 
     /**
@@ -241,6 +245,17 @@ public abstract class BaseClient extends BaseClientOrService implements EventRec
         return serviceClassName;
     }
 
+    public void startAcceptingEvents() throws ActionFailedException {
+        eventReceiveClient.startAccepting();
+    }
+
+    public void addInterestingEvents(List<NotEOFEvent> events) throws ActionFailedException {
+        System.out.println("BaseClient.addInterestingEvents. eventReceiveClient: " + eventReceiveClient);
+        if (Util.isEmpty(eventReceiveClient))
+            throw new ActionFailedException(1L, "eventReceiveClient is NULL");
+        eventReceiveClient.addInterestingEvents(events);
+    }
+
     /*
      * When calling this method the client registers itself at the server. After
      * a successfull registration at server side exists a service espacialy for
@@ -255,6 +270,7 @@ public abstract class BaseClient extends BaseClientOrService implements EventRec
 
     private final void activateEventReceiving(TalkLine talkLine, String clientNetId) throws ActionFailedException {
         new EventRegistration(talkLine, clientNetId);
-        new EventReceiveClient(talkLine, this);
+        eventReceiveClient = new EventReceiveClient(talkLine, this);
+        System.out.println("BaseClient.activateEventReceiving. eventReceiveClient: " + eventReceiveClient);
     }
 }

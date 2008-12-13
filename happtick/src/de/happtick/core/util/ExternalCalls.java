@@ -105,7 +105,6 @@ public class ExternalCalls {
         }
     }
 
-    @SuppressWarnings("deprecation")
     public Process startHapptickApplication(String serverAddress, int serverPort, String startId, NotEOFEvent event) throws HapptickException {
         String applicationId = null;
         String applicationPath = null;
