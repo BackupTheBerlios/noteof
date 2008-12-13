@@ -78,7 +78,7 @@ public class ApplicationConfiguration {
 
             // executable type
             node = "scheduler." + nodeNameApplication + ".executable";
-            executableType = conf.getAttribute(node, "type", "UNKNOWN");
+            executableType = conf.getAttribute(node, "type", "external");
             // executable path
             executablePath = conf.getAttribute(node, "path", "");
             // executable windowsSupport
@@ -153,7 +153,7 @@ public class ApplicationConfiguration {
             maxStepStep = conf.getAttributeInt(node, "maxStepStep", 0);
 
             node = "scheduler." + nodeNameApplication + ".executable.arg";
-            arguments = (conf.getTextList(node));
+            arguments = conf.getTextList(node);
 
             if (null != arguments) {
                 for (String arg : arguments) {

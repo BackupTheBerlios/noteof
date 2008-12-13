@@ -3,15 +3,14 @@ package de.notEOF.mail.service;
 import java.util.ArrayList;
 import java.util.List;
 
-import de.notEOF.core.communication.DataObject;
-import de.notEOF.core.enumeration.BaseCommTag;
+import de.notEOF.core.communication.TalkLine;
 import de.notEOF.core.enumeration.EventType;
 import de.notEOF.core.event.NewMailEvent;
 import de.notEOF.core.exception.ActionFailedException;
+import de.notEOF.core.interfaces.EventObserver;
 import de.notEOF.core.interfaces.NotEOFEvent;
 import de.notEOF.core.interfaces.Service;
 import de.notEOF.core.logging.LocalLog;
-import de.notEOF.core.service.BaseService;
 import de.notEOF.mail.MailHeaders;
 import de.notEOF.mail.MailToken;
 import de.notEOF.mail.NotEOFMail;
@@ -24,40 +23,13 @@ import de.notEOF.mail.enumeration.MailTag;
  * 
  * @author Dirk
  */
-public abstract class EventReceiveService extends BaseService {
+public class EventReceiveService implements EventObserver {
 
     private MailToken mailDestinations;
     private MailHeaders mailHeaders;
-    private List<String> eventTypeNames;
-    private List<String> ignoredClientNetIds;
-
-    @Override
-    public Class<?> getCommunicationTagClass() {
-        return MailTag.class;
-    }
-
-    @Override
-    public boolean isLifeSignSystemActive() {
-        return false;
-    }
-
-    protected void addIgnoredMailsByClientNetId(List<String> clientNetIds) {
-        if (null == ignoredClientNetIds)
-            ignoredClientNetIds = new ArrayList<String>();
-        ignoredClientNetIds.addAll(clientNetIds);
-    }
-
-    protected void addInterestingDestination(String destination) {
-        if (null == mailDestinations)
-            mailDestinations = new MailToken();
-        mailDestinations.add(destination);
-    }
-
-    protected void addInterestingDestinations(List<String> destinations) {
-        if (null == mailDestinations)
-            mailDestinations = new MailToken();
-        mailDestinations.addAll(destinations);
-    }
+    private List<EventType> observedEventTypes;
+    private TalkLine talkLine;
+    private String clientNetId;
 
     protected void addInterestingHeader(String header) {
         if (null == mailHeaders)
@@ -71,49 +43,16 @@ public abstract class EventReceiveService extends BaseService {
         this.mailHeaders.addAll(headers);
     }
 
-    protected void addInterestingEventNames(List<String> eventTypeNames) {
-        if (null == this.eventTypeNames)
-            this.eventTypeNames = new ArrayList<String>();
-        this.eventTypeNames.addAll(eventTypeNames);
-        for (String eventName : eventTypeNames) {
-            addObservedEvent(EventType.valueOf(eventName));
-        }
+    public EventReceiveService(TalkLine talkLine, String clientNetId) {
+        this.talkLine = talkLine;
+        this.clientNetId = clientNetId;
     }
 
-    protected void addInterestingEventName(String eventName) {
-        if (null == this.eventTypeNames)
-            this.eventTypeNames = new ArrayList<String>();
-        this.eventTypeNames.add(eventName);
-        addObservedEvent(EventType.valueOf(eventName));
+    public String getClientNetId() {
+        return this.clientNetId;
     }
 
-    // private class AliveTester implements Runnable {
-    //
-    // @Override
-    // public void run() {
-    // while (true) {
-    // try {
-    // Thread.sleep(1000);
-    // // writeMsg("bla");
-    // } catch (Exception e) {
-    // break;
-    // }
-    // }
-    // }
-    //
-    // }
-
-    /**
-     * Callback method to process incoming events.
-     * <p>
-     * 
-     * @param service
-     *            The service which fired the event.
-     * @param event
-     *            The incoming event that the client has fired or which was
-     *            detected by the service.
-     */
-    public synchronized void processEvent(Service service, NotEOFEvent event) throws ActionFailedException {
+    public synchronized void processEvent(NotEOFEvent event) throws ActionFailedException {
         if (null == event) {
             throw new ActionFailedException(1154L, "Event ist NULL");
         }
@@ -121,10 +60,9 @@ public abstract class EventReceiveService extends BaseService {
         try {
             if (event.equals(EventType.EVENT_MAIL)) {
                 // check if interesting for this service
-                if (((NewMailEvent) event).getMail().getToClientNetId().equals(getClientNetId()) || //
-                        interestedInMail(((NewMailEvent) event).getMail())) {
+                if (interestedInMail(((NewMailEvent) event).getMail())) {
                     try {
-                        writeMsg(MailTag.REQ_READY_FOR_ACTION);
+                        talkLine.writeMsg(MailTag.REQ_READY_FOR_ACTION.name());
                         mailToClient(((NewMailEvent) event).getMail());
                     } catch (Exception e) {
                         LocalLog.warn("Fehler bei Verarbeitung einer Mail. Header: " + ((NewMailEvent) event).getMail().getHeader() + "; Destination: "
@@ -132,7 +70,7 @@ public abstract class EventReceiveService extends BaseService {
                     }
                 }
             } else if (interestedInEvent(event)) {
-                writeMsg(MailTag.REQ_READY_FOR_ACTION);
+                talkLine.writeMsg(MailTag.REQ_READY_FOR_ACTION.name());
                 try {
                     eventToClient(event);
                 } catch (Exception e) {
@@ -155,13 +93,13 @@ public abstract class EventReceiveService extends BaseService {
      * @throws ActionFailedException
      */
     public final void mailToClient(NotEOFMail mail) throws ActionFailedException {
-        writeMsg(MailTag.VAL_ACTION_MAIL);
-        getTalkLine().sendMail(mail);
+        talkLine.writeMsg(MailTag.VAL_ACTION_MAIL.name());
+        talkLine.sendMail(mail);
     }
 
     public final void eventToClient(NotEOFEvent event) throws ActionFailedException {
-        writeMsg(MailTag.VAL_ACTION_EVENT);
-        getTalkLine().sendBaseEvent(event);
+        talkLine.writeMsg(MailTag.VAL_ACTION_EVENT.name());
+        talkLine.sendBaseEvent(event);
     }
 
     /**
@@ -181,12 +119,6 @@ public abstract class EventReceiveService extends BaseService {
      *         FALSE if not.
      */
     protected boolean interestedInMail(NotEOFMail mail) {
-        if (null != ignoredClientNetIds) {
-            for (String ignoredClientNetId : ignoredClientNetIds) {
-                if (ignoredClientNetId.equals(mail.getFromClientNetId()))
-                    return false;
-            }
-        }
         if (null != mailDestinations) {
             for (String expression : mailDestinations.getExpressions()) {
                 if (expression.equals(mail.getDestination()))
@@ -203,9 +135,9 @@ public abstract class EventReceiveService extends BaseService {
     }
 
     protected boolean interestedInEvent(NotEOFEvent event) {
-        if (null != eventTypeNames) {
-            for (String eventName : eventTypeNames) {
-                if (eventName.equals(event.getEventType().name())) {
+        if (null != observedEventTypes) {
+            for (EventType eventType : observedEventTypes) {
+                if (event.equals(eventType)) {
                     return true;
                 }
             }
@@ -213,66 +145,39 @@ public abstract class EventReceiveService extends BaseService {
         return false;
     }
 
-    /**
-     * Here the messages of a MailAndEventClient are interpreted and processed.
-     */
-    public void processClientMsg(Enum<?> incomingMsgEnum) throws ActionFailedException {
-        if (incomingMsgEnum.equals(MailTag.REQ_READY_FOR_EXPRESSIONS)) {
-            addExpressions();
-        }
-        if (incomingMsgEnum.equals(MailTag.REQ_READY_FOR_EVENTLIST)) {
-            addEventClientIsInterestedIn();
-        }
-        if (incomingMsgEnum.equals(MailTag.REQ_READY_FOR_IGNORED_CLIENTS)) {
-            addIgnoredMails();
-        }
-        // the client tells that he is ready with initializing. now he is able
-        // to process mails and events. If the registration at the server is
-        // done to early, the service would send events or mails to the client
-        // during the client is still initializing. So they both would get in an
-        // inconsistant state.
-        if (incomingMsgEnum.equals(MailTag.INFO_READY_FOR_EVENTS)) {
-            responseTo(MailTag.VAL_OK, MailTag.VAL_OK.name());
-            addObservedEvent(EventType.EVENT_MAIL);
-            addObservedEvent(EventType.EVENT_APPLICATION_STOP);
-            getServer().registerForEvents(this);
-        }
-        if (incomingMsgEnum.equals(BaseCommTag.REQ_STOP)) {
-            System.out.println("STOP SIGNAL erhalten");
-            super.stopService();
-        }
-
+    public void setObservedEvents(List<EventType> observedEvents) {
+        this.observedEventTypes = observedEvents;
     }
 
-    @SuppressWarnings("unchecked")
-    private void addIgnoredMails() throws ActionFailedException {
-        responseTo(MailTag.RESP_READY_FOR_IGNORED_CLIENTS, MailTag.VAL_OK.name());
-        DataObject dataObject = receiveDataObject();
-        if (null != dataObject && null != dataObject.getList() && dataObject.getList().size() > 0) {
-            addIgnoredMailsByClientNetId((List<String>) dataObject.getList());
-        }
+    public void addObservedEvents(List<EventType> observedEvents) {
+        if (null == this.observedEventTypes)
+            this.observedEventTypes = new ArrayList<EventType>();
+        this.observedEventTypes.addAll(observedEvents);
     }
 
-    @SuppressWarnings("unchecked")
-    private void addExpressions() throws ActionFailedException {
-        responseTo(MailTag.RESP_READY_FOR_EXPRESSIONS, MailTag.VAL_OK.name());
-        String type = requestTo(MailTag.REQ_EXPRESSION_TYPE, MailTag.RESP_EXPRESSION_TYPE);
-        DataObject dataObject = receiveDataObject();
-        if (null != dataObject && null != dataObject.getList() && dataObject.getList().size() > 0) {
-            if (MailToken.class.getName().equals(type)) {
-                addInterestingDestinations((List<String>) dataObject.getList());
-            } else if (MailHeaders.class.getName().equals(type)) {
-                addInterestingHeaders((List<String>) dataObject.getList());
-            }
-        }
+    public void addObservedEvent(EventType eventType) {
+        if (null == this.observedEventTypes)
+            this.observedEventTypes = new ArrayList<EventType>();
+        observedEventTypes.add(eventType);
     }
 
-    @SuppressWarnings("unchecked")
-    private void addEventClientIsInterestedIn() throws ActionFailedException {
-        responseTo(MailTag.RESP_READY_FOR_EVENTLIST, MailTag.VAL_OK.name());
-        DataObject dataObject = receiveDataObject();
-        if (null != dataObject && null != dataObject.getList() && dataObject.getList().size() > 0) {
-            addInterestingEventNames((List<String>) dataObject.getList());
+    @Override
+    public String getName() {
+        return hashCode() + ":" + this.getClass().getSimpleName();
+    }
+
+    @Override
+    public List<EventType> getObservedEvents() {
+        return observedEventTypes;
+    }
+
+    @Override
+    public void update(Service service, NotEOFEvent event) {
+        try {
+            processEvent(event);
+        } catch (ActionFailedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
         }
     }
 }

@@ -39,7 +39,6 @@ public class ServiceGarbage implements Runnable {
                                     services.remove(service);
                                     break;
                                 }
-
                             }
                         }
                     }

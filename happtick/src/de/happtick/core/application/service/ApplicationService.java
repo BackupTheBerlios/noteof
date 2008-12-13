@@ -97,6 +97,7 @@ public class ApplicationService extends HapptickBaseService implements Service {
 
         // STOP
         if (incomingMsgEnum.equals(ApplicationTag.PROCESS_STOP_WORK)) {
+            System.out.println("ApplicationService. STOPasdklfjasdljsdljk");
             this.exitCode = Util.parseInt(requestTo(ApplicationTag.REQ_EXIT_CODE, ApplicationTag.RESP_EXIT_CODE), -1);
             this.clientIsActive = false;
             writeMsg(ApplicationTag.INFO_TRUE);

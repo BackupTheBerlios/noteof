@@ -42,6 +42,11 @@ public abstract class HapptickApplication extends HapptickBaseClient {
      */
     public HapptickApplication(Long applicationId, String serverAddress, int serverPort, String... args) throws HapptickException {
 
+        System.out.println("applicationId: " + applicationId + "; serverAddress: " + serverAddress + "; serverPort: " + serverPort);
+        for (String arg : args) {
+            System.out.println("arg: " + arg);
+        }
+
         // Verify the hard coded applicationId and the applicationId which is
         // used by the StartClient which got it from the central scheduler.
         ArgsParser parser = new ArgsParser(args);
@@ -303,9 +308,13 @@ public abstract class HapptickApplication extends HapptickBaseClient {
     public void stop(int exitCode) throws HapptickException {
 
         if (null != applicationClient) {
+            System.out.println("HapptickApplication.stop() vor applicationClient.stop()");
             applicationClient.stop(exitCode);
+            System.out.println("HapptickApplication.stop() nach applicationClient.stop()");
         }
+        System.out.println("HapptickApplication.stop() vor super.close()");
         super.close();
+        System.out.println("HapptickApplication.stop() nach super.close()");
     }
 
     public void startWork() throws HapptickException {

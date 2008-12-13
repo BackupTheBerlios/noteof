@@ -262,6 +262,9 @@ public abstract class BaseService extends BaseClientOrService implements Service
                     } else if (msg.equals(BaseCommTag.REQ_STOP.name())) {
                         System.out.println("STOP SIGNAL erhalten");
                         stopService();
+                    } else if (msg.equals(BaseCommTag.REQ_TEST.name())) {
+                        System.out.println("TEST SIGNAL ERHALTEN");
+                        stopService();
                     } else {
                         // client/service specific messages are processed in the
                         // method processMsg() which must be implemented

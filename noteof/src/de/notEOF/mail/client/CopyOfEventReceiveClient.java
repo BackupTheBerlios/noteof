@@ -1,13 +1,15 @@
 package de.notEOF.mail.client;
 
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 
+import de.notEOF.core.client.BaseClient;
 import de.notEOF.core.communication.DataObject;
-import de.notEOF.core.communication.TalkLine;
 import de.notEOF.core.enumeration.EventType;
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.interfaces.NotEOFEvent;
+import de.notEOF.core.interfaces.TimeOut;
 import de.notEOF.mail.NotEOFMail;
 import de.notEOF.mail.enumeration.MailTag;
 import de.notEOF.mail.interfaces.EventRecipient;
@@ -15,29 +17,81 @@ import de.notEOF.mail.interfaces.MailMatchExpressions;
 import de.notIOC.configuration.ConfigurationManager;
 import de.notIOC.util.Util;
 
-public class EventReceiveClient {
+public abstract class CopyOfEventReceiveClient extends BaseClient {
 
     private MailAndEventAcceptor acceptor;
     private EventRecipient recipient;
-    TalkLine talkLine;
     private long workerPointer = 0;
 
-    public EventReceiveClient(TalkLine talkLine, EventRecipient recipient) throws ActionFailedException {
-        this.talkLine = talkLine;
-        this.recipient = recipient;
+    private List<String> ignoredClientNetIds = new ArrayList<String>();
+
+    public CopyOfEventReceiveClient(Socket socketToServer, TimeOut timeout, String[] args) throws ActionFailedException {
+        super(socketToServer, timeout, args);
+    }
+
+    public CopyOfEventReceiveClient(String ip, int port, TimeOut timeout, String... args) throws ActionFailedException {
+        super(ip, port, timeout, args);
+    }
+
+    /**
+     * This method is called by the basic class when close() is called.
+     */
+    public void implementationLastSteps() {
+        acceptor.stop();
+        // sendStopSignal();
+    }
+
+    public void awaitMailOrEvent(EventRecipient recipient) throws ActionFailedException {
+        if (null == this.recipient)
+            this.recipient = recipient;
+        activateAccepting();
     }
 
     public void stop() {
+        System.out.println("EventReceiveClient.stop() wurde aufgerufen");
+        System.out.println("EventReceiveClient.stop() vor sendStopSignal()");
+        sendStopSignal();
+        System.out.println("EventReceiveClient.stop() nach sendStopSignal()");
         acceptor = null;
         acceptor.notifyAll();
         acceptor.stop();
+        System.out.println("EventReceiveClient.stop() nach acceptor.stop()");
         while (!acceptor.isStopped()) {
+            System.out.println("Warte darauf, dass sich der acceptor beendet");
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         }
+        System.out.println("EventReceiveClient.stop() wurde abgearbeitet.");
+        // try {
+        // close();
+        // } catch (Exception e) {
+        // e.printStackTrace();
+        // }
+    }
+
+    private void activateAccepting() throws ActionFailedException {
+        // beware of multiple start!
+        if (null == acceptor || acceptor.isStopped()) {
+            System.out.println("EventReceiveClient.activateAccepting() acceptor null? " + (null == acceptor));
+            if (null != acceptor)
+                System.out.println("EventReceiveClient.activateAccepting() acceptor stopped? " + (acceptor.isStopped()));
+            acceptor = new MailAndEventAcceptor();
+            Thread acceptorThread = new Thread(acceptor);
+            acceptorThread.start();
+
+            while (acceptor.isStopped()) {
+                System.out.println("EventReceiveClient.activateAccepting() rabäh");
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        } else
+            throw new ActionFailedException(1090L, "Recipient: " + this.recipient.getClass().getCanonicalName());
     }
 
     private class MailAndEventAcceptor implements Runnable {
@@ -50,6 +104,7 @@ public class EventReceiveClient {
         }
 
         public void stop() {
+            System.out.println("EventReceiveClient$MailAndEventAcceptor.stop()");
             acceptorToStop = true;
         }
 
@@ -59,20 +114,26 @@ public class EventReceiveClient {
             acceptorStopped = false;
             Exception thrownException = null;
             try {
+                // Tell the service that now the client is ready to accept mails
+                // and events
+                if (MailTag.VAL_OK.name().equals(requestTo(MailTag.INFO_READY_FOR_EVENTS, MailTag.VAL_OK))) {
+                    acceptorToStop = false;
+                }
+
                 while (!acceptorToStop) {
                     try {
-                        String awaitMsg = talkLine.readMsgTimedOut(1000);
+                        String awaitMsg = readMsgTimedOut(1000);
                         if (acceptorToStop) {
                             break;
                         }
                         if (MailTag.REQ_READY_FOR_ACTION.name().equals(awaitMsg)) {
-                            String action = talkLine.readMsgTimedOut(1000);
+                            String action = readMsgTimedOut(1000);
 
                             // awaitRequest(MailTag.REQ_READY_FOR_ACTION);
                             if (!Util.isEmpty(action)) {
                                 if (MailTag.VAL_ACTION_MAIL.name().equals(action)) {
                                     isMail = true;
-                                    NotEOFMail mail = talkLine.receiveMail();
+                                    NotEOFMail mail = getTalkLine().receiveMail();
                                     MailWorker worker = new MailWorker(recipient, mail);
                                     Thread workerThread = new Thread(worker);
                                     workerThread.start();
@@ -82,7 +143,7 @@ public class EventReceiveClient {
                                     if (workerCounter == Long.MAX_VALUE - 1)
                                         workerCounter = 0;
                                     isEvent = true;
-                                    NotEOFEvent event = talkLine.receiveBaseEvent(ConfigurationManager.getApplicationHome());
+                                    NotEOFEvent event = getTalkLine().receiveBaseEvent(ConfigurationManager.getApplicationHome());
                                     EventWorker worker = new EventWorker(this, recipient, event);
                                     Thread workerThread = new Thread(worker);
                                     worker.setId(++workerCounter);
@@ -109,6 +170,8 @@ public class EventReceiveClient {
                     isMail = false;
                     isEvent = false;
                 }
+                // sendStopSignal();
+                close();
                 acceptorStopped = true;
             } catch (Exception e) {
                 thrownException = e;
@@ -208,11 +271,33 @@ public class EventReceiveClient {
     public void addInterestingMailExpressions(MailMatchExpressions expressions) throws ActionFailedException {
         if (null == expressions || null == expressions.getExpressions() || 0 == expressions.getExpressions().size())
             throw new ActionFailedException(1102L, "Liste der erwarteten Ausdruecke ist leer.");
-        if (MailTag.VAL_OK.name().equals(talkLine.requestTo(MailTag.REQ_READY_FOR_EXPRESSIONS, MailTag.RESP_READY_FOR_EXPRESSIONS))) {
-            talkLine.awaitRequestAnswerImmediate(MailTag.REQ_EXPRESSION_TYPE, MailTag.RESP_EXPRESSION_TYPE, expressions.getClass().getName());
+        if (MailTag.VAL_OK.name().equals(requestTo(MailTag.REQ_READY_FOR_EXPRESSIONS, MailTag.RESP_READY_FOR_EXPRESSIONS))) {
+            awaitRequestAnswerImmediate(MailTag.REQ_EXPRESSION_TYPE, MailTag.RESP_EXPRESSION_TYPE, expressions.getClass().getName());
             DataObject dataObject = new DataObject();
             dataObject.setList(expressions.getExpressions());
-            talkLine.sendDataObject(dataObject);
+            sendDataObject(dataObject);
+        }
+    }
+
+    /**
+     * Add client net id to ignore self send mails.
+     * <p>
+     * Normally own mails are not interesting to receive them... perhaps there
+     * are mails of other clients which must be ignored. Ignored netClientId's
+     * are stored in a list. That means that there can be more than one id to be
+     * ignored.
+     * 
+     * @param clientNetId
+     *            One more id to be ignored.
+     * 
+     */
+    public void addIgnoredClientNetId(String clientNetId) throws ActionFailedException {
+        System.out.println("EventReceiveClient.addIgnored.. Eigene ClientNetId ist: " + getClientNetId());
+        this.ignoredClientNetIds.add(clientNetId);
+        if (MailTag.VAL_OK.name().equals(requestTo(MailTag.REQ_READY_FOR_IGNORED_CLIENTS, MailTag.RESP_READY_FOR_IGNORED_CLIENTS))) {
+            DataObject dataObject = new DataObject();
+            dataObject.setList(ignoredClientNetIds);
+            sendDataObject(dataObject);
         }
     }
 
@@ -226,7 +311,7 @@ public class EventReceiveClient {
      * @throws ActionFailedException
      */
     public void addInterestingEvents(List<NotEOFEvent> events) throws ActionFailedException {
-        if (MailTag.VAL_OK.name().equals(talkLine.requestTo(MailTag.REQ_READY_FOR_EVENTLIST, MailTag.RESP_READY_FOR_EVENTLIST))) {
+        if (MailTag.VAL_OK.name().equals(requestTo(MailTag.REQ_READY_FOR_EVENTLIST, MailTag.RESP_READY_FOR_EVENTLIST))) {
             DataObject dataObject = new DataObject();
             List<String> eventTypeNames = new ArrayList<String>();
             for (NotEOFEvent event : events) {
@@ -234,7 +319,7 @@ public class EventReceiveClient {
                 eventTypeNames.add(eventTypeName);
             }
             dataObject.setList(eventTypeNames);
-            talkLine.sendDataObject(dataObject);
+            sendDataObject(dataObject);
         }
     }
 }

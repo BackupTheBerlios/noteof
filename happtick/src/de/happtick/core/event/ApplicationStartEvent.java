@@ -18,8 +18,8 @@ import de.notEOF.core.interfaces.NotEOFEvent;
  * stored in the configuration.</>
  * <li>arguments -> All arguments and their values are transported within this
  * one string.</>
- * <li>applicationType -> The type of application. Options are 'JAVA' or
- * 'UNKNOWN'. </>
+ * <li>applicationType -> The type of application. Options are 'INTERNAL' or
+ * 'EXTERNAL'. </>
  * <li>windowsSupport -> Option to automatically support Windows start
  * scripts.</>
  * </ul>
@@ -35,7 +35,7 @@ public class ApplicationStartEvent extends HapptickEvent implements NotEOFEvent 
         descriptions.put("workApplicationId", "Unique identifier for the application which has to be started. Fix set in happtick configuration.");
         descriptions.put("applicationPath", "Physical path of the executable application. Normally stored in the configuration.");
         descriptions.put("arguments", "All arguments and their values are transported within this one string.");
-        descriptions.put("applicationType", "The type of application. Options are 'JAVA' or 'UNKNOWN'.");
+        descriptions.put("applicationType", "The type of application. Options are 'INTERNAL' or 'EXTERNAL'.");
         descriptions.put("windowsSupport", "Option to automatically support Windows start scripts.");
     }
 

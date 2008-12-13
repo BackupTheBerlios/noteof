@@ -56,12 +56,30 @@
 		  	<application>application2</application> 
 		</applications>
 	
+		<application99 applicationId="1">
+			<client clientIp="localhost"></client>
+			<executable type="internal" path="C:\Projekte\workspace\happdemo\scripts\Actor.bat" windows="true">
+				<arg>--soundFile=c:\Projekte\workspace\happdemo\soundfiles\a.wav</arg>
+			</executable>
+			<option partOfChain="false" multiplestart="false" enforce="false"></option>
+			<timeplan> 
+				<seconds>0 10 30 40 50 </seconds>
+				<minutes>*</minutes>
+				<hours>*</hours>
+				<weekdays>*</weekdays>
+				<monthdays>13</monthdays>
+			</timeplan>
+			
+			<dependencies>
+<!-- 				<startsync applicationId="2"></startsync>
+				<startsync applicationId="3"></startsync>
+ -->
+			</dependencies>
+		</application99>
+		
 		<application1 applicationId="1">
 			<client clientIp="localhost"></client>
-<!--  
-			<executable type="java" path="C:\Projekte\workspace\happdemo\scripts\Actor.bat" windows="true">
--->
-			<executable type="java" path="java" windows="false">
+			<executable type="internal" path="java" windows="false">
 				<arg>de.happdemo.Actor</arg>
 				<arg>--soundFile=c:\Projekte\workspace\happdemo\soundfiles\a.wav</arg>
 		        <env var="NOTEOF_HOME" val="C:\Projekte\workspace\noteof"></env>
@@ -78,7 +96,7 @@
 				<minutes>*</minutes>
 				<hours>*</hours>
 				<weekdays>*</weekdays>
-				<monthdays>9</monthdays>
+				<monthdays>13</monthdays>
 			</timeplan>
 			
 			<dependencies>
@@ -90,7 +108,7 @@
 		
 		<application2 applicationId="2">
 			<client clientIp="localhost"></client>
-			<executable type="java" path="C:\Projekte\workspace\happdemo\scripts\Actor.bat" windows="true">
+			<executable type="internal" path="C:\Projekte\workspace\happdemo\scripts\Actor.bat" windows="true">
 				<args>--soundFile=c:\Projekte\workspace\happdemo\soundfiles\b.wav</args>
 				<env var="LIB_PATH" val="\a"></env>
 				<env var="CLASSPATH" val="$LIB_PATH$\b"></env>

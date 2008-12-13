@@ -235,19 +235,19 @@ public class SocketLayer {
     }
 
     private String readUnqualifiedMsg() throws ActionFailedException {
-        int readCounter = 0;
+        // int readCounter = 0;
         String msg = "";
         initBufferedReader(false);
         try {
-            while (Util.isEmpty(msg) && readCounter++ < 10) {
-                // if (10 < readCounter++) {
-                // initBufferedReader(true);
-                //
-                // // throw new ActionFailedException(16L,
-                // // "Abbruch nach ungültigen Nachrichten: " + readCounter);
-                // }
-                msg = bufferedReader.readLine();
-            }
+            // while (Util.isEmpty(msg) && readCounter++ < 10) {
+            // if (10 < readCounter++) {
+            // initBufferedReader(true);
+            //
+            // // throw new ActionFailedException(16L,
+            // // "Abbruch nach ungültigen Nachrichten: " + readCounter);
+            // }
+            msg = bufferedReader.readLine();
+            // }
 
             if (Util.isEmpty(msg)) {
                 throw new ActionFailedException(23L, "Lesepuffer leer.");

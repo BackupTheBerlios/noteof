@@ -61,7 +61,11 @@ public class HapptickApplicationStarter {
 
             try {
                 ExternalCalls calls = new ExternalCalls();
-                calls.startHapptickApplication(serverAddress, serverPort, startId, startEvent);
+                System.out.println("HapptickApplicationStarter!!!!!!!!!!!   STARTET  111111111111111");
+                calls.startApplication(serverAddress, serverPort, startId, startEvent);
+
+                System.out.println("HapptickApplicationStarter!!!!!!!!!!!   HAT GESTARTET  2222222222");
+
                 started = true;
             } catch (HapptickException he) {
                 errNo = he.getErrNo();

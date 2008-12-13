@@ -11,7 +11,9 @@ import de.notEOF.core.interfaces.TimeOut;
 import de.notEOF.core.logging.LocalLog;
 import de.notEOF.core.util.Util;
 import de.notEOF.mail.NotEOFMail;
+import de.notEOF.mail.client.EventReceiveClient;
 import de.notEOF.mail.enumeration.MailTag;
+import de.notEOF.mail.interfaces.EventRecipient;
 
 /**
  * From this class every other client must be extended. <br>
@@ -27,7 +29,7 @@ import de.notEOF.mail.enumeration.MailTag;
  * @author Dirk
  * 
  */
-public abstract class BaseClient extends BaseClientOrService {
+public abstract class BaseClient extends BaseClientOrService implements EventRecipient {
 
     private boolean linkedToService = false;
     private String clientNetId;
@@ -89,6 +91,7 @@ public abstract class BaseClient extends BaseClientOrService {
         }
         setTalkLine(new TalkLine(ip, port, timeout.getMillisCommunication()));
         registerAtServer(getTalkLine(), timeout, this.args);
+        activateEventReceiving(new TalkLine(ip, port, 0), this.getClientNetId());
         implementationFirstSteps();
     }
 
@@ -101,6 +104,7 @@ public abstract class BaseClient extends BaseClientOrService {
         }
         setTalkLine(new TalkLine(socketToServer, timeout.getMillisCommunication()));
         registerAtServer(getTalkLine(), timeout, this.args);
+        activateEventReceiving(new TalkLine(socketToServer, 0), this.getClientNetId());
         implementationFirstSteps();
     }
 
@@ -135,6 +139,26 @@ public abstract class BaseClient extends BaseClientOrService {
     public BaseClient(String ip, int port, TimeOut timeout, String... args) throws ActionFailedException {
         this.args = args;
         connect(ip, port, timeout);
+    }
+
+    public void processEvent(NotEOFEvent event) {
+
+    }
+
+    public void processEventException(Exception ex) {
+
+    }
+
+    public void processMail(NotEOFMail mail) {
+
+    }
+
+    public void processMailException(Exception ex) {
+
+    }
+
+    public void processStopEvent(NotEOFEvent event) {
+
     }
 
     /**
@@ -227,5 +251,10 @@ public abstract class BaseClient extends BaseClientOrService {
         clientNetId = registration.getClientNetId();
         linkedToService = registration.isLinkedToService();
         setServiceId(registration.getServiceId());
+    }
+
+    private final void activateEventReceiving(TalkLine talkLine, String clientNetId) throws ActionFailedException {
+        new EventRegistration(talkLine, clientNetId);
+        new EventReceiveClient(talkLine, this);
     }
 }

@@ -33,7 +33,7 @@ public class ExternalApplicationStarter extends HapptickApplication {
      * @throws HapptickException
      */
     public ExternalApplicationStarter(long applicationId, String startId, String applicationPath, String serverAddress, int serverPort,
-            String startIgnitionTime, boolean windowsSupport, String applArgs) throws HapptickException {
+            String startIgnitionTime, boolean windowsSupport, String[] applArgs, String... envParams) throws HapptickException {
         super(applicationId, serverAddress, serverPort, applArgs);
 
         if (Util.isEmpty(applicationId))
@@ -75,13 +75,16 @@ public class ExternalApplicationStarter extends HapptickApplication {
         private String applicationPath = null;
         private Long applicationId = null;
         private String startId = null;
-        private String applArgs = null;
+        private String[] applArgs = null;
+        private String[] envParams = null;
         private String startIgnitionTime = null;
         private boolean windowsSupport = false;
 
-        protected WorkerProcess(Long applicationId, String applicationPath, String startId, String startIgnitionTime, boolean windowsSupport, String applArgs) {
+        protected WorkerProcess(Long applicationId, String applicationPath, String startId, String startIgnitionTime, boolean windowsSupport,
+                String[] applArgs, String... envParams) {
             this.applicationPath = applicationPath;
             this.applArgs = applArgs;
+            this.envParams = applArgs;
             this.startId = startId;
             this.applicationId = applicationId;
             this.startIgnitionTime = startIgnitionTime;
@@ -105,7 +108,7 @@ public class ExternalApplicationStarter extends HapptickApplication {
             try {
                 // create process
                 ExternalCalls calls = new ExternalCalls();
-                process = calls.startApplication(applicationPath, applArgs, windowsSupport);
+                process = calls.startAppl(applicationPath, applArgs, envParams, windowsSupport);
                 started = true;
             } catch (HapptickException he) {
                 errNo = he.getErrNo();
@@ -247,6 +250,6 @@ public class ExternalApplicationStarter extends HapptickApplication {
 
         // use class to start application
         new ExternalApplicationStarter(Util.parseLong(applicationId, 0), startId, applicationPath, serverAddress, Util.parseInt(serverPort, 0),
-                startIgnitionTime, Util.parseBoolean(windowsSupport, false), arguments);
+                startIgnitionTime, Util.parseBoolean(windowsSupport, false), argsParser.getArgs());
     }
 }

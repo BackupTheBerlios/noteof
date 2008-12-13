@@ -26,7 +26,7 @@ import de.notEOF.mail.interfaces.EventRecipient;
  * If a StartEvent is raised there are two possibilities: <br>
  * <ul>
  * <li>The application is not using the HapptickApplication interface.<br>
- * This is when the application executable is configured as 'UNKNOWN'.<br>
+ * This is when the application executable is configured as 'EXTERNAL'.<br>
  * In such cases the very special HapptickApplication HapptickSimpleApplication
  * is started with the name of the application as an argument.</>
  * <li>The application is using the HapptickApplication interface.<br>
@@ -107,8 +107,8 @@ public class StartClient extends HapptickBaseClient implements EventRecipient {
     }
 
     /*
-     * Starts applications. If applicationType is 'unknown' the special internal
-     * ApplicationClient is started here.
+     * Starts applications. If applicationType is 'EXTERNAL' the special
+     * internal ApplicationClient is started here.
      */
     private class ApplStarter implements Runnable {
         private NotEOFClient client;
@@ -150,16 +150,17 @@ public class StartClient extends HapptickBaseClient implements EventRecipient {
             // create unique identifier for the application process
             String startId = getServerAddress() + String.valueOf(Thread.currentThread().getId()) + String.valueOf(new Date().getTime());
 
-            // if type is 'java' the application will be started 'directly' by
+            // if type is 'INTERNAL' the application will be started 'directly'
+            // by
             // it's name
-            // if type is 'unknown' an instance of the
+            // if type is 'EXTERNAL' an instance of the
             // ExternalApplicationStarter will be build and the he starts and
             // controls the 'foreign' process
-            if ("JAVA".equalsIgnoreCase(applicationType)) {
+            if ("INTERNAL".equalsIgnoreCase(applicationType)) {
                 new HapptickApplicationStarter(client, getServerAddress(), getServerPort(), startId, startEvent);
-            } else if ("UNKNOWN".equalsIgnoreCase(applicationType)) {
+            } else if ("EXTERNAL".equalsIgnoreCase(applicationType)) {
                 ExternalCalls calls = new ExternalCalls();
-                calls.callHapptickMain(ExternalApplicationStarter.class.getCanonicalName(), getServerAddress(), getServerPort(), startId, startEvent);
+                calls.callHapptickApplMain(ExternalApplicationStarter.class.getCanonicalName(), getServerAddress(), getServerPort(), startId, startEvent);
             } else
                 throw new HapptickException(1L, "Type: " + applicationType);
         }
@@ -183,12 +184,6 @@ public class StartClient extends HapptickBaseClient implements EventRecipient {
     @Override
     public void processEventException(Exception e) {
         LocalLog.error("Fehler wurde durch die Event-Schnittstelle ausgeloest.", e);
-        // try {
-        // reconnect();
-        // } catch (HapptickException e3) {
-        // e3.printStackTrace();
-        // }
-
         boolean err = true;
         while (err) {
             try {

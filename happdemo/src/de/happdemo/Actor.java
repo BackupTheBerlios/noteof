@@ -15,7 +15,6 @@ import de.notEOF.mail.NotEOFMail;
 import de.notEOF.mail.interfaces.EventRecipient;
 
 public class Actor extends HapptickApplication implements EventRecipient {
-    // private String errorSound = "bla";
     private boolean stopped = false;
 
     public Actor(Long applicationId, String serverAddress, int serverPort, String[] args) throws HapptickException {
@@ -34,20 +33,33 @@ public class Actor extends HapptickApplication implements EventRecipient {
      * @throws HapptickException
      */
     private void doWork(String[] args) throws HapptickException {
-
         System.out.println("asljasdfjlasdflöasdfklöasdfljkös");
 
         // Anwendung will selbst mails oder events verarbeiten
-        useEvents(this);
 
-        // Hinzufuegen von interessanten Events
+        // TODO jetzt liste direkt übergeben...
         List<NotEOFEvent> events = new ArrayList<NotEOFEvent>();
         events.add(new SoundEvent());
         events.add(new ApplicationStopEvent());
-        addInterestingEvents(events);
+        useEvents(this);
+        // TODO jetzt liste direkt übergeben...
+        // try {
+        //super.notEofClient.getTalkLine().writeMsg(BaseCommTag.REQ_TEST.name())
+        // ;
+        // } catch (ActionFailedException e1) {
+        // // TODO Auto-generated catch block
+        // e1.printStackTrace();
+        // }
+        // new Thread(new Bla()).start();
 
-        // jetzt geht's los
-        startAcceptingEvents();
+        // Hinzufuegen von interessanten Events
+        // List<NotEOFEvent> events = new ArrayList<NotEOFEvent>();
+        // events.add(new SoundEvent());
+        // events.add(new ApplicationStopEvent());
+        // addInterestingEvents(events);
+        //
+        // // jetzt geht's los
+        // startAcceptingEvents();
         System.out.println("Wohlan!");
 
         // mal schauen, ob es direkt was zu tun gibt (Abspielen einer

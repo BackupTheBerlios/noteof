@@ -79,11 +79,8 @@ public class ServerRegistration {
     private class Waiter implements Runnable {
         private long endTime;
 
-        // private TalkLine talkLine;
-
         public Waiter(TalkLine talkLine, int timeOut) {
             this.endTime = System.currentTimeMillis() + timeOut;
-            // this.talkLine = talkLine;
         }
 
         public void run() {
@@ -93,11 +90,9 @@ public class ServerRegistration {
                 }
 
                 if (!linkedToService) {
-                    // talkLine.close();
                 } else {
                 }
             } catch (InterruptedException ex) {
-                // talkLine.close();
             }
         }
     }

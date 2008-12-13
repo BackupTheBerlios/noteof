@@ -46,13 +46,14 @@ public class Server implements EventObservable, Runnable {
 
     private static Server server;
     private static Thread serverThread;
-    private static Thread serviceObserverThread;
+    // private static Thread serviceObserverThread;
     private boolean stop = false;
     private static ServerSocket serverSocket;
     private static String notEof_Home;
     private static int lastServiceId = 0;
     private Map<String, EventObserver> eventObservers;
     private static Map<String, Map<String, Service>> allServiceMaps;
+    private List<EventReceiveService> eventReceiveServices;
 
     public static Server getInstance() {
         if (null == server) {
@@ -86,9 +87,7 @@ public class Server implements EventObservable, Runnable {
         serverThread = new Thread(server);
         serverThread.start();
 
-        ServiceGarbage observer = new ServiceGarbage(server);
-        serviceObserverThread = new Thread(observer);
-        serviceObserverThread.start();
+        new Thread(new ServiceGarbage(server)).start();
     }
 
     /**
@@ -105,7 +104,6 @@ public class Server implements EventObservable, Runnable {
                 ClientAcceptor acceptor = new ClientAcceptor(clientSocket, this);
                 Thread acceptorThread = new Thread(acceptor);
                 acceptorThread.start();
-                // acceptClient(clientSocket);
             } catch (IOException ex) {
                 LocalLog.error("Fehler bei Warten auf Connect durch n�chsten Client", ex);
             }
@@ -145,47 +143,69 @@ public class Server implements EventObservable, Runnable {
          */
         private void acceptClient(Socket clientSocket) throws ActionFailedException {
             TalkLine talkLine = new TalkLine(clientSocket, 0);
-            // Client asks for registration
-            talkLine.awaitRequestAnswerImmediate(BaseCommTag.REQ_REGISTRATION, BaseCommTag.RESP_REGISTRATION, BaseCommTag.VAL_OK.name());
+            // Two Types of Clients:
+            // Complex clients which communicate with their own service
+            // Simple clients which await events and mails
+            String clientType = talkLine.requestTo(BaseCommTag.REQ_CLIENT_TYPE, BaseCommTag.RESP_CLIENT_TYPE);
+            if ("RECEIVE_CLIENT".equalsIgnoreCase(clientType)) {
+                // SIMPLE Client
+                // TODO Geht erst, wenn der andere Client da ist,
+                // weil der die clientId hat, die ich dann hier verwende
+                String clientNetId = talkLine.requestTo(BaseCommTag.REQ_CLIENT_ID, BaseCommTag.RESP_CLIENT_ID);
+                EventReceiveService service = new EventReceiveService(talkLine, clientNetId);
+                registerForEvents(service);
+                addEventReceiveService(service);
 
-            // client wants it's own id
-            String clientNetId = talkLine.getHostAddress() + "." + new Date().getTime();
-            talkLine.awaitRequestAnswerImmediate(BaseCommTag.REQ_CLIENT_ID, BaseCommTag.RESP_CLIENT_ID, clientNetId);
-
-            // server asks for perhaps existing service id
-            String deliveredServiceId = talkLine.requestTo(BaseCommTag.REQ_SERVICE_ID, BaseCommTag.RESP_SERVICE_ID);
-            String serviceTypeName = talkLine.requestTo(BaseCommTag.REQ_TYPE_NAME, BaseCommTag.RESP_TYPE_NAME);
-
-            LocalLog.info("Server starting service: " + serviceTypeName + " (deliveredServiceId = " + deliveredServiceId + ")");
-
-            // Lookup for a service which is assigned to the client. If not
-            // found
-            // create a new one
-            Service service = assignServiceToClient(clientSocket, clientNetId, deliveredServiceId, serviceTypeName);
-            // Confirm the serviceId received by client or tell him another one
-            talkLine.awaitRequestAnswerImmediate(BaseCommTag.REQ_SERVICE, BaseCommTag.RESP_SERVICE, service.getServiceId());
-
-            BaseCommTag activateLifeSigns = BaseCommTag.VAL_FALSE;
-            if (service.isLifeSignSystemActive())
-                activateLifeSigns = BaseCommTag.VAL_TRUE;
-            talkLine.awaitRequestAnswerImmediate(BaseCommTag.REQ_LIFE_SIGN_ACTIVATE, BaseCommTag.RESP_LIFE_SIGN_ACTIVATE, activateLifeSigns.name());
-
-            // start service for client
-            // and inform all observer
-            if (null != service) {
-                Thread serviceThread = new Thread((Runnable) service);
-                service.setThread(serviceThread);
-                serviceThread.start();
-
-                // Fire event to all observers which are interested in
-                NewServiceEvent event = new NewServiceEvent();
-                event.addAttribute("serviceId", service.getServiceId());
-                Util.updateAllObserver(eventObservers, null, event);
             } else {
-                // service couldn't be created or found in list by type name
-                throw new ActionFailedException(150L, "Service Typ unbekannt.");
-            }
+                // COMPLEX Client
+                // Client asks for registration
+                talkLine.awaitRequestAnswerImmediate(BaseCommTag.REQ_REGISTRATION, BaseCommTag.RESP_REGISTRATION, BaseCommTag.VAL_OK.name());
 
+                // client wants it's own id
+                String clientNetId = talkLine.getHostAddress() + "." + new Date().getTime();
+                talkLine.awaitRequestAnswerImmediate(BaseCommTag.REQ_CLIENT_ID, BaseCommTag.RESP_CLIENT_ID, clientNetId);
+
+                // server asks for perhaps existing service id
+                String deliveredServiceId = talkLine.requestTo(BaseCommTag.REQ_SERVICE_ID, BaseCommTag.RESP_SERVICE_ID);
+                String serviceTypeName = talkLine.requestTo(BaseCommTag.REQ_TYPE_NAME, BaseCommTag.RESP_TYPE_NAME);
+
+                LocalLog.info("Server starting service: " + serviceTypeName + " (deliveredServiceId = " + deliveredServiceId + ")");
+
+                // Lookup for a service which is assigned to the client. If not
+                // found
+                // create a new one
+                Service service = assignServiceToClient(clientSocket, clientNetId, deliveredServiceId, serviceTypeName);
+                // Confirm the serviceId received by client or tell him another
+                // one
+                talkLine.awaitRequestAnswerImmediate(BaseCommTag.REQ_SERVICE, BaseCommTag.RESP_SERVICE, service.getServiceId());
+
+                BaseCommTag activateLifeSigns = BaseCommTag.VAL_FALSE;
+                if (service.isLifeSignSystemActive())
+                    activateLifeSigns = BaseCommTag.VAL_TRUE;
+                talkLine.awaitRequestAnswerImmediate(BaseCommTag.REQ_LIFE_SIGN_ACTIVATE, BaseCommTag.RESP_LIFE_SIGN_ACTIVATE, activateLifeSigns.name());
+
+                // start service for client
+                // and inform all observer
+                if (null != service) {
+                    Thread serviceThread = new Thread((Runnable) service);
+                    service.setThread(serviceThread);
+                    serviceThread.start();
+
+                    // Fire event to all observers which are interested in
+                    NewServiceEvent event = new NewServiceEvent();
+                    event.addAttribute("serviceId", service.getServiceId());
+                    Util.updateAllObserver(eventObservers, null, event);
+                } else {
+                    // service couldn't be created or found in list by type name
+                    throw new ActionFailedException(150L, "Service Typ unbekannt.");
+                }
+            }
+        }
+
+        private void addEventReceiveService(EventReceiveService service) {
+            if (null == eventReceiveServices)
+                eventReceiveServices = new ArrayList<EventReceiveService>();
+            eventReceiveServices.add(service);
         }
 
         /*

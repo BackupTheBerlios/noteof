@@ -52,14 +52,13 @@ public class Scheduling {
                         event.addAttribute("applicationPath", applConf.getExecutablePath());
                         event.addAttribute("applicationType", applConf.getExecutableType());
                         event.addAttribute("windowsSupport", String.valueOf(applConf.isWindowsSupport()));
+                        System.out.println("Scheduling windowsSupport? " + event.getAttribute("windowsSupport"));
 
                         // Arguments
                         if (!Util.isEmpty(applConf.getArguments())) {
                             int i = 0;
                             for (String arg : applConf.getArguments()) {
-                                System.out.println("KEY: " + "internal:ARG(" + i + ")");
                                 event.addAttributeDescription("internal:ARG(" + i + ")", "Argument: (" + i + ")");
-                                System.out.println("Scheduler.run. Argument: " + arg);
                                 event.addAttribute("internal:ARG(" + i + ")", arg);
                                 i++;
                             }
@@ -156,7 +155,6 @@ public class Scheduling {
         }
 
         if (!(Util.isEmpty(MasterTable.getApplicationServicesByApplicationId(applConf.getApplicationId())))) {
-            System.out.println("Scheduling.isEqualApplicationActive. Applikation ist Aktiv!!!!!!! " + applConf.getApplicationId());
             return true;
         }
 

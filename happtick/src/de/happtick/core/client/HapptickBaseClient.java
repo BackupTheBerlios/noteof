@@ -1,8 +1,11 @@
 package de.happtick.core.client;
 
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.List;
 
+import de.happtick.core.event.ApplicationStopEvent;
+import de.happtick.core.event.SoundEvent;
 import de.happtick.core.exception.HapptickException;
 import de.happtick.mail.client.HapptickEventClient;
 import de.notEOF.core.client.BaseClient;
@@ -73,7 +76,9 @@ public abstract class HapptickBaseClient {
 
     public void close() throws HapptickException {
         try {
+            System.out.println("HapptickBaseClient.close()  Vor eventClient.stop()");
             eventClient.stop();
+            System.out.println("HapptickBaseClient.close()  Nach eventClient.stop()");
             notEofClient.close();
         } catch (ActionFailedException e) {
             throw new HapptickException(700L, "Event Client.", e);
@@ -245,10 +250,12 @@ public abstract class HapptickBaseClient {
         // connect with service
         while (!notEofClient.isLinkedToService()) {
             try {
+                System.out.println("notEofClient.serverAddress: " + serverAddress);
+                System.out.println("notEofClient.serverPort: " + serverPort);
                 notEofClient.connect(serverAddress, serverPort, null);
             } catch (ActionFailedException e) {
-                LocalLog.warn("Verbindung mit Service konnte bisher nicht hergestellt werden: " + notEofClient.getClass().getCanonicalName());
-                // throw new HapptickException(100L, e);
+                LocalLog.warn(" HapptickBaseClient. Verbindung mit Service konnte bisher nicht hergestellt werden: "
+                        + notEofClient.getClass().getCanonicalName());
                 try {
                     Thread.sleep(5000);
                 } catch (InterruptedException e1) {
@@ -441,7 +448,6 @@ public abstract class HapptickBaseClient {
         if (Util.isEmpty(this.notEofClient))
             throw new HapptickException(605, "Vor Aufruf dieser Methode muss die Method connect() aufgerufen werden.");
 
-        System.out.println("Setze usingEvents: Aber ohne die Liste zu initialisieren  HapptickBaseClient.useEvents3");
         this.eventRecipient = mailEventRecipient;
         acceptingOwnMails = acceptOwnMails;
         eventClient = null;
@@ -449,6 +455,13 @@ public abstract class HapptickBaseClient {
         if (!acceptingOwnMails) {
             try {
                 eventClient.addIgnoredClientNetId(this.notEofClient.getClientNetId());
+                // TODO: Direkt zum Test eingebastelt
+                List<NotEOFEvent> events = new ArrayList<NotEOFEvent>();
+                // TODO: SoundEvent wieder raus aus happtick
+                events.add(new SoundEvent());
+                events.add(new ApplicationStopEvent());
+                eventClient.addInterestingEvents(events);
+                // TODO: Direkt zum Test eingebastelt
             } catch (ActionFailedException e) {
                 throw new HapptickException(605L, "Der Empfang eigener Mails konnte nicht unterdrueckt werden", e);
             }

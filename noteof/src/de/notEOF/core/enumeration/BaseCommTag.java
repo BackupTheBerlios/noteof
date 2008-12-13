@@ -3,8 +3,12 @@ package de.notEOF.core.enumeration;
 public enum BaseCommTag {
 
     // Header for registration at the server
+    REQ_TEST(),
     REQ_REGISTRATION(),
     RESP_REGISTRATION(),
+
+    REQ_CLIENT_TYPE(),
+    RESP_CLIENT_TYPE(),
 
     REQ_TYPE_NAME(),
     RESP_TYPE_NAME(),
