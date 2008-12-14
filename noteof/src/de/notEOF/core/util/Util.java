@@ -536,15 +536,17 @@ public class Util {
             for (String observerName : set) {
                 // but only inform observer, when event in his list
                 EventObserver eventObserver = eventObservers.get(observerName);
+                System.out.println("Util.updateObserver. Observer: " + observerName);
                 if (null != eventObserver && null != eventObserver.getObservedEvents()) {
                     for (EventType type : eventObserver.getObservedEvents()) {
+                        System.out.println("Util.updateObserver. Observer beobachtet: " + type);
                         if (type.equals(EventType.EVENT_ANY_TYPE) || type.equals(event.getEventType())) {
                             try {
+                                System.out.println("Util.updateObserver. Observer benachrichtigen: " + observerName);
                                 new Thread(new ObserverUpdater(eventObserver, service, event)).start();
                             } catch (Exception e) {
                                 LocalLog.error("Fehler bei Weiterleitung eines Events an einen Observer. Observer: " + eventObserver.getName(), e);
                             }
-                            // break for inner loop
                             break;
                         }
                     }

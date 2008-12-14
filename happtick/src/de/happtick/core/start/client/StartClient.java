@@ -11,12 +11,10 @@ import de.happtick.core.exception.HapptickException;
 import de.happtick.core.util.ExternalCalls;
 import de.notEOF.core.enumeration.EventType;
 import de.notEOF.core.exception.ActionFailedException;
-import de.notEOF.core.interfaces.NotEOFClient;
 import de.notEOF.core.interfaces.NotEOFEvent;
 import de.notEOF.core.logging.LocalLog;
 import de.notEOF.core.util.ArgsParser;
 import de.notEOF.core.util.Util;
-import de.notEOF.mail.NotEOFMail;
 import de.notEOF.mail.interfaces.EventRecipient;
 
 /**
@@ -36,12 +34,16 @@ import de.notEOF.mail.interfaces.EventRecipient;
  * 
  * @author Dirk
  */
-public class StartClient extends HapptickApplication implements EventRecipient, NotEOFClient {
+public class StartClient extends HapptickApplication implements EventRecipient {
 
     private boolean stopped = false;
 
     public StartClient(String serverAddress, int port, String[] args) throws ActionFailedException {
-        super(null, serverAddress, port, args);
+        super(new Long(-99), serverAddress, port, args);
+        System.out.println("Intialisierung abgeschlossen.");
+        super.setEventRecipient(this);
+        System.out.println("Nach SetEventRecipient");
+
         doWork();
     }
 
@@ -51,13 +53,18 @@ public class StartClient extends HapptickApplication implements EventRecipient, 
         events.add(new ApplicationStartEvent());
         try {
             addInterestingEvents(events);
+            System.out.println("Starte jetzt die Annahme von Events.");
+            startAcceptingEvents();
+            System.out.println("Annahme von Events abgeschlossen");
         } catch (ActionFailedException e1) {
             // TODO Auto-generated catch block
             e1.printStackTrace();
         }
 
         // tell scheduler that at this computer a StartClient is active
+        System.out.println("Vor SendStartEvent");
         sendStartEvent();
+        System.out.println("Nach SendStartEvent");
 
         while (!stopped) {
             try {
@@ -74,7 +81,7 @@ public class StartClient extends HapptickApplication implements EventRecipient, 
         NotEOFEvent event = new StartClientEvent();
         try {
             event.addAttribute("state", "START");
-            event.addAttribute("clientIp", super.getTalkLine().getSocketToPartner().getLocalAddress().getHostName());
+            event.addAttribute("clientIp", super.getLocalAddress());
             sendEvent(event);
         } catch (ActionFailedException e) {
             LocalLog.error("Fehler bei Senden des StartEvent an den Scheduler. Scheduler kann Anwendungen fuer diesen Client nicht beruecksichtigen.", e);
@@ -85,7 +92,7 @@ public class StartClient extends HapptickApplication implements EventRecipient, 
         NotEOFEvent event = new StartClientEvent();
         try {
             event.addAttribute("state", "STOP");
-            event.addAttribute("clientIp", super.getTalkLine().getLocalAddress());
+            event.addAttribute("clientIp", super.getLocalAddress());
             sendEvent(event);
         } catch (ActionFailedException e) {
             LocalLog.error("Fehler bei Senden des StopEvent an den Scheduler. Scheduler wird Anwendungen fuer diesen Client weiter beruecksichtigen.", e);
@@ -103,12 +110,12 @@ public class StartClient extends HapptickApplication implements EventRecipient, 
      * internal ApplicationClient is started here.
      */
     private class ApplStarter implements Runnable {
-        private NotEOFClient client;
+        private StartClient starter;
         private NotEOFEvent startEvent;
 
-        protected ApplStarter(NotEOFClient client, NotEOFEvent startEvent) {
+        protected ApplStarter(StartClient starter, NotEOFEvent startEvent) {
             this.startEvent = startEvent;
-            this.client = client;
+            this.starter = starter;
         }
 
         @Override
@@ -149,7 +156,7 @@ public class StartClient extends HapptickApplication implements EventRecipient, 
             // ExternalApplicationStarter will be build and the he starts and
             // controls the 'foreign' process
             if ("INTERNAL".equalsIgnoreCase(applicationType)) {
-                new HapptickApplicationStarter(client, getServerAddress(), getServerPort(), startId, startEvent);
+                new HapptickApplicationStarter(starter, getServerAddress(), getServerPort(), startId, startEvent);
             } else if ("EXTERNAL".equalsIgnoreCase(applicationType)) {
                 ExternalCalls calls = new ExternalCalls();
                 calls.callHapptickApplMain(ExternalApplicationStarter.class.getCanonicalName(), getServerAddress(), getServerPort(), startId, startEvent);
@@ -196,27 +203,6 @@ public class StartClient extends HapptickApplication implements EventRecipient, 
     }
 
     /**
-     * This client doesn't await mails
-     */
-    @Override
-    public synchronized void processMail(NotEOFMail mail) {
-    }
-
-    /**
-     * Should not be raised...
-     */
-    @Override
-    public void processMailException(Exception e) {
-        LocalLog.error("Fehler wurde durch die Mail-Schnittstelle ausgeloest.", e);
-
-    }
-
-    @Override
-    public void processStopEvent(NotEOFEvent event) {
-        this.stopped = true;
-    }
-
-    /**
      * This application is used to start other applications.
      * <p>
      * 
@@ -246,5 +232,4 @@ public class StartClient extends HapptickApplication implements EventRecipient, 
             System.out.println("FINISHED.");
         }
     }
-
 }

@@ -218,7 +218,6 @@ public abstract class BaseClientOrService {
      * @throws ActionFailedException
      */
     public String readMsgTimedOut(int timeOutMillis) throws ActionFailedException {
-        System.out.println("Ist talkLine null? " + (null == talkLine));
         return talkLine.readMsgTimedOut(timeOutMillis);
     }
 

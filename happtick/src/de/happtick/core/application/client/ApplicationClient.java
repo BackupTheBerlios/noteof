@@ -60,7 +60,9 @@ public class ApplicationClient extends BaseClient implements NotEOFClient, Event
     }
 
     public void processEvent(NotEOFEvent event) {
+        System.out.println("ApplicationClient.processEvent. event = " + event.getEventType());
         if (!Util.isEmpty(this.eventRecipient)) {
+            System.out.println("ApplicationClient.processEvent. reiche event weiter");
             eventRecipient.processEvent(event);
         }
     }
@@ -207,6 +209,7 @@ public class ApplicationClient extends BaseClient implements NotEOFClient, Event
         if (null == this.applicationId)
             this.applicationId = applicationId;
         try {
+            System.out.println("ApplicationClient.applicationIdToService. id = " + applicationId);
             writeMsg(ApplicationTag.PROCESS_APPLICATION_ID);
             awaitRequestAnswerImmediate(ApplicationTag.REQ_APPLICATION_ID, ApplicationTag.RESP_APPLICATION_ID, String.valueOf(applicationId));
         } catch (ActionFailedException e) {
@@ -450,6 +453,10 @@ public class ApplicationClient extends BaseClient implements NotEOFClient, Event
                 clientObserver.startAllowanceEvent(false);
             }
         }
+    }
+
+    public String getLocalAddress() {
+        return super.getTalkLine().getSocketToPartner().getInetAddress().getHostName();
     }
 
     @Override

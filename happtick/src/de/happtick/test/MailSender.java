@@ -20,7 +20,7 @@ public class MailSender extends HapptickApplication {
 
             System.gc();
 
-            for (int i = 0; i < 25; i++) {
+            for (int i = 0; i < 10; i++) {
                 event.addAttribute("workApplicationId", "3");
                 event.addAttribute("applicationPath", "C:/Projekte/workspace/noteof/util/mail_recipient.bat");
                 event.addAttribute("windowsSupport", "true");
@@ -28,7 +28,7 @@ public class MailSender extends HapptickApplication {
                 System.out.println("EVENT APPLICATIONID = " + event.getApplicationId());
                 sendEvent(event);
                 try {
-                    Thread.sleep(50);
+                    Thread.sleep(500);
                 } catch (InterruptedException e) {
                 }
             }
@@ -41,7 +41,7 @@ public class MailSender extends HapptickApplication {
             }
 
             long startTime = new Date().getTime();
-            for (int i = 0; i < 999000; i++) {
+            for (int i = 0; i < 0; i++) {
                 System.out.println("Versende Event Nr. " + i);
                 NotEOFEvent gEvent = new GenericEvent();
                 gEvent.addAttributeDescription("counter", "bla");

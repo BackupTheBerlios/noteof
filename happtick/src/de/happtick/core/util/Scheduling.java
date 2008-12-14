@@ -76,6 +76,7 @@ public class Scheduling {
                         LocalLog.error("Start einer Anwendung ist fehlgeschlagen.", e);
                     }
 
+                    System.out.println("Scheduling$ApplicationStarter. Sende event");
                     raiseEvent(event);
                 }
             } catch (HapptickException e) {

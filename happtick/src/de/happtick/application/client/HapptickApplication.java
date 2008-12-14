@@ -1,16 +1,19 @@
 package de.happtick.application.client;
 
+import java.net.Socket;
 import java.util.List;
 
 import de.happtick.core.application.client.ApplicationClient;
-import de.happtick.core.client.HapptickBaseClient;
 import de.happtick.core.exception.HapptickException;
 import de.happtick.core.interfaces.ClientObserver;
-import de.happtick.core.service.HapptickSimpleService;
+import de.notEOF.core.communication.BaseTimeOut;
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.interfaces.NotEOFEvent;
+import de.notEOF.core.logging.LocalLog;
 import de.notEOF.core.util.ArgsParser;
 import de.notEOF.core.util.Util;
+import de.notEOF.dispatch.client.DispatchClient;
+import de.notEOF.mail.NotEOFMail;
 import de.notEOF.mail.interfaces.EventRecipient;
 
 /**
@@ -23,7 +26,7 @@ import de.notEOF.mail.interfaces.EventRecipient;
  * @author dirk
  * 
  */
-public abstract class HapptickApplication extends HapptickBaseClient implements EventRecipient {
+public abstract class HapptickApplication implements EventRecipient {
 
     private Long applicationId;
     private boolean isWorkAllowed = false;
@@ -31,6 +34,11 @@ public abstract class HapptickApplication extends HapptickBaseClient implements 
     String serverAddress;
     int serverPort;
     String[] args;
+    private EventRecipient eventRecipient;
+
+    public HapptickApplication(Long applicationId, String serverAddress, int serverPort, String... args) throws HapptickException {
+        this(applicationId, serverAddress, serverPort, null, args);
+    }
 
     /**
      * Constructor with connection informations.
@@ -48,8 +56,8 @@ public abstract class HapptickApplication extends HapptickBaseClient implements 
      *            A HapptickApplication must be called with the parameter
      *            --startId=<value>.
      */
-    public HapptickApplication(Long applicationId, String serverAddress, int serverPort, String... args) throws HapptickException {
-
+    public HapptickApplication(Long applicationId, String serverAddress, int serverPort, EventRecipient eventRecipient, String... args)
+            throws HapptickException {
         System.out.println("applicationId: " + applicationId + "; serverAddress: " + serverAddress + "; serverPort: " + serverPort);
         for (String arg : args) {
             System.out.println("arg: " + arg);
@@ -75,14 +83,19 @@ public abstract class HapptickApplication extends HapptickBaseClient implements 
         this.serverAddress = serverAddress;
         this.serverPort = serverPort;
         this.args = args;
+        this.eventRecipient = eventRecipient;
 
         applicationClient = new ApplicationClient();
 
         // TODO Wenn dipatched getestet, kann der letzte Parameter auch nach
         // oben frei gegeben werden...
-        connect(serverAddress, serverPort, args, applicationClient, false);
+        connect(serverAddress, serverPort, args, false);
         applicationClient.startIdToService(args);
         applicationClient.applicationIdToService(applicationId);
+        if (!Util.isEmpty(eventRecipient)) {
+            System.out.println("HapptickApplication.Construction. EventRecipient ist " + eventRecipient.getClass().getSimpleName());
+            applicationClient.setEventRecipient(eventRecipient);
+        }
     }
 
     public void setEventRecipient(EventRecipient eventRecipient) {
@@ -337,7 +350,12 @@ public abstract class HapptickApplication extends HapptickBaseClient implements 
             System.out.println("HapptickApplication.stop() nach applicationClient.stop()");
         }
         System.out.println("HapptickApplication.stop() vor super.close()");
-        super.close();
+        try {
+            applicationClient.close();
+        } catch (ActionFailedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
         System.out.println("HapptickApplication.stop() nach super.close()");
     }
 
@@ -354,13 +372,164 @@ public abstract class HapptickApplication extends HapptickBaseClient implements 
         applicationClient.stopObservingForStartAllowance();
     }
 
-    @Override
-    public Class<?> serviceForClientByClass() {
-        return HapptickSimpleService.class;
+    private void reconnect() throws HapptickException {
+        applicationClient = new ApplicationClient();
+
+        // TODO Wenn dipatched getestet, kann der letzte Parameter auch nach
+        // oben frei gegeben werden...
+        connect(serverAddress, serverPort, args, false);
+        applicationClient.startIdToService(args);
+        applicationClient.applicationIdToService(applicationId);
+        if (!Util.isEmpty(eventRecipient)) {
+            System.out.println("HapptickApplication.reconnect. EventRecipient ist " + eventRecipient.getClass().getSimpleName());
+            applicationClient.setEventRecipient(eventRecipient);
+        }
+
     }
 
+    private Socket dispatchSocket(String serverAddress, int serverPort, String[] args) {
+        Socket socketToService = null;
+        try {
+            BaseTimeOut baseTimeOut = new BaseTimeOut(0, 60000);
+            DispatchClient dispatchClient;
+            dispatchClient = new DispatchClient(serverAddress, serverPort, baseTimeOut, (String[]) null);
+            String serviceClassName = applicationClient.serviceForClientByName();
+            socketToService = dispatchClient.getServiceConnection(serviceClassName, 0);
+        } catch (ActionFailedException e) {
+            LocalLog.error("HapptickBaseClient.connect: Achtung! dispatched ist noch nicht getestet!!!", e);
+        }
+        return socketToService;
+    }
+
+    public void connect(Socket socket, String[] args, boolean dispatched) throws HapptickException {
+        String serverAddress = socket.getInetAddress().getHostAddress();
+        int serverPort = socket.getLocalPort();
+        connect(serverAddress, serverPort, args, dispatched);
+    }
+
+    /**
+     * Connect with the happtick server. Exactly this means to connect with an
+     * application service on the happtick server. <br>
+     * The service later decides if the application may run -> startAllowed().
+     * 
+     * @param serverAddress
+     *            The ip to the happtick server where the scheduler is running.
+     * @param serverPort
+     *            The port of the happtick server where the scheduler is
+     *            running.
+     * @throws HapptickException
+     */
+    public void connect(String serverAddress, int serverPort, String[] args, boolean dispatched) throws HapptickException {
+        if (Util.isEmpty(serverAddress))
+            throw new HapptickException(50L, "Server Addresse ist leer.");
+        if (0 == serverPort)
+            throw new HapptickException(50L, "Server Port = 0");
+
+        if (dispatched) {
+            Socket socketToService = dispatchSocket(serverAddress, serverPort, (String[]) null);
+            serverAddress = socketToService.getInetAddress().getHostAddress();
+            serverPort = socketToService.getLocalPort();
+        }
+
+        this.serverAddress = serverAddress;
+        this.serverPort = serverPort;
+        this.args = args;
+
+        // connect with service
+        checkClientInitialized();
+    }
+
+    /*
+     * Check if the applicationClient exists...
+     */
+    protected void checkClientInitialized() throws HapptickException {
+        if (Util.isEmpty(applicationClient))
+            throw new HapptickException(50L, "Client ist nicht initialisiert. Vermutlich wurde kein connect durchgeführt.");
+
+        // connect with service
+        while (!applicationClient.isLinkedToService()) {
+            try {
+                applicationClient.connect(serverAddress, serverPort, null);
+            } catch (ActionFailedException e) {
+                LocalLog.warn("Verbindung mit Service konnte bisher nicht hergestellt werden: " + applicationClient.getClass().getCanonicalName());
+                try {
+                    Thread.sleep(5000);
+                } catch (InterruptedException e1) {
+                }
+            }
+        }
+    }
+
+    public String getLocalAddress() {
+        return applicationClient.getLocalAddress();
+    }
+
+    public String getServerAddress() {
+        return applicationClient.getServerAddress();
+    }
+
+    public int getServerPort() {
+        return applicationClient.getServerPort();
+    }
+
+    /**
+     * Method to accept incoming events.
+     * <p>
+     * If you want to receive events, override this method.
+     * 
+     * @param event
+     *            The incoming event.
+     */
     @Override
-    public String serviceForClientByName() {
-        return null;
+    public void processEvent(NotEOFEvent event) {
+        System.out.println("HapptickApplication.processEvent  ");
+    }
+
+    /**
+     * If the client has send an event and the interface for sending events
+     * throws an exception, this method will be called.
+     * 
+     * @param exception
+     *            The raised exception.
+     */
+    @Override
+    public void processEventException(Exception exception) {
+    }
+
+    /**
+     * Method to accept incoming mails.
+     * <p>
+     * If you want to receive mails, override this method.
+     * 
+     * @param mail
+     *            The incoming mail.
+     */
+    @Override
+    public void processMail(NotEOFMail mail) {
+    }
+
+    /**
+     * If the client has send a mail and the interface for sending mails throws
+     * an exception, this method will be called.
+     * 
+     * @param exception
+     *            The raised exception.
+     */
+    @Override
+    public void processMailException(Exception exception) {
+    }
+
+    /**
+     * This method is called when any service or client releases the stop event.
+     * <p>
+     * In opposition to other events, this method only will be called when the
+     * stop event is ment to the special client with matching clientNetId to the
+     * clientNetId which is stored within the event.
+     * 
+     * @param event
+     *            The incoming stop event.
+     */
+    @Override
+    public void processStopEvent(NotEOFEvent event) {
     }
 }

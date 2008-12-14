@@ -27,7 +27,7 @@ import de.notEOF.mail.NotEOFMail;
  * 
  * @author Dirk
  */
-public abstract class HapptickBaseClient extends BaseClient {
+public abstract class HapptickBaseClient {
     protected String serverAddress;
     protected int serverPort;
     protected String[] args;

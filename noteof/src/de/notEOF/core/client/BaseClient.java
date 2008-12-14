@@ -92,10 +92,13 @@ public abstract class BaseClient extends BaseClientOrService implements EventRec
             timeout = getTimeOutObject();
         }
         setTalkLine(new TalkLine(ip, port, timeout.getMillisCommunication()));
+        System.out.println("BaseClient.connect 1");
         registerAtServer(getTalkLine(), timeout, this.args);
-        activateEventReceiving(new TalkLine(ip, port, 0), this.getClientNetId());
+        System.out.println("BaseClient.connect 2");
+        activateEventReceiving(new TalkLine(ip, port, 0), getClientNetId());
+        System.out.println("BaseClient.connect 3");
         implementationFirstSteps();
-        System.out.println("BaseClient.connect 1. eventReceiveClient: " + eventReceiveClient);
+        System.out.println("BaseClient.connect 4");
     }
 
     public void connect(Socket socketToServer, TimeOut timeout) throws ActionFailedException {
@@ -107,9 +110,8 @@ public abstract class BaseClient extends BaseClientOrService implements EventRec
         }
         setTalkLine(new TalkLine(socketToServer, timeout.getMillisCommunication()));
         registerAtServer(getTalkLine(), timeout, this.args);
-        activateEventReceiving(new TalkLine(socketToServer, 0), this.getClientNetId());
+        activateEventReceiving(new TalkLine(socketToServer, 0), getClientNetId());
         implementationFirstSteps();
-        System.out.println("BaseClient.connect 2. eventReceiveClient: " + eventReceiveClient);
     }
 
     /**
@@ -199,6 +201,7 @@ public abstract class BaseClient extends BaseClientOrService implements EventRec
      * @throws ActionFailedException
      */
     public synchronized void sendEvent(NotEOFEvent event) throws ActionFailedException {
+        System.out.println("BaseClient.sendEvent. Sende event: " + event.getEventType());
         writeMsg(MailTag.REQ_READY_FOR_EVENT.name());
         getTalkLine().sendBaseEvent(event);
     }
@@ -250,7 +253,6 @@ public abstract class BaseClient extends BaseClientOrService implements EventRec
     }
 
     public void addInterestingEvents(List<NotEOFEvent> events) throws ActionFailedException {
-        System.out.println("BaseClient.addInterestingEvents. eventReceiveClient: " + eventReceiveClient);
         if (Util.isEmpty(eventReceiveClient))
             throw new ActionFailedException(1L, "eventReceiveClient is NULL");
         eventReceiveClient.addInterestingEvents(events);
@@ -271,6 +273,5 @@ public abstract class BaseClient extends BaseClientOrService implements EventRec
     private final void activateEventReceiving(TalkLine talkLine, String clientNetId) throws ActionFailedException {
         new EventRegistration(talkLine, clientNetId);
         eventReceiveClient = new EventReceiveClient(talkLine, this);
-        System.out.println("BaseClient.activateEventReceiving. eventReceiveClient: " + eventReceiveClient);
     }
 }

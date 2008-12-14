@@ -6,6 +6,7 @@ import de.happtick.core.event.ApplicationStartedEvent;
 import de.happtick.core.event.ApplicationStoppedEvent;
 import de.happtick.core.service.HapptickBaseService;
 import de.happtick.core.util.Scheduling;
+import de.notEOF.core.enumeration.EventType;
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.interfaces.NotEOFEvent;
 import de.notEOF.core.interfaces.Service;
@@ -28,7 +29,8 @@ public class ApplicationService extends HapptickBaseService implements Service {
      */
     public void implementationFirstSteps() {
         // don't delete this method...
-        // addObservedEvent(EventType.EVENT_ANY_TYPE);
+        addObservedEvent(EventType.EVENT_START_CLIENT);
+        getServer().registerForEvents(this);
     }
 
     public void implementationLastSteps() {
@@ -69,6 +71,12 @@ public class ApplicationService extends HapptickBaseService implements Service {
     @Override
     public boolean isLifeSignSystemActive() {
         return false;
+    }
+
+    public synchronized void processEvent(Service service, NotEOFEvent event) throws ActionFailedException {
+        if (event.equals(EventType.EVENT_START_CLIENT)) {
+            MasterTable.updateStartClientEvent(event);
+        }
     }
 
     /**

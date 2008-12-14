@@ -17,8 +17,6 @@ import de.notEOF.core.event.GenericEvent;
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.interfaces.NotEOFEvent;
 import de.notEOF.core.logging.LocalLog;
-import de.notEOF.mail.MailHeaders;
-import de.notEOF.mail.MailToken;
 import de.notEOF.mail.NotEOFMail;
 import de.notEOF.mail.interfaces.EventRecipient;
 
@@ -32,7 +30,7 @@ public class MailRecipient extends HapptickApplication implements EventRecipient
 
     public MailRecipient(long applicationId, String serverAddress, int serverPort, String... args) throws HapptickException {
         super(applicationId, serverAddress, serverPort, args);
-        setEventRecipient(this);
+        super.setEventRecipient(this);
 
         System.out.println("MailRecipient.Construction. applicationId = " + this.getApplicationId());
 
@@ -40,15 +38,15 @@ public class MailRecipient extends HapptickApplication implements EventRecipient
     }
 
     private void reconnection() throws HapptickException {
-        // Hinzufuegen von interessanten Nachrichteninhalten
-        MailToken tokens = new MailToken();
-        tokens.add("Begriff");
-        // addInterestingMailExpressions(tokens);
-
-        // Hinzufuegen von interessanten Nachrichtenheadern
-        MailHeaders headers = new MailHeaders();
-        headers.add("Kopf");
-        // addInterestingMailExpressions(headers);
+        // // Hinzufuegen von interessanten Nachrichteninhalten
+        // MailToken tokens = new MailToken();
+        // tokens.add("Begriff");
+        // // addInterestingMailExpressions(tokens);
+        //
+        // // Hinzufuegen von interessanten Nachrichtenheadern
+        // MailHeaders headers = new MailHeaders();
+        // headers.add("Kopf");
+        // // addInterestingMailExpressions(headers);
 
         // Hinzufuegen von interessanten Events
         List<NotEOFEvent> events = new ArrayList<NotEOFEvent>();

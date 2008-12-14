@@ -110,6 +110,7 @@ public class EventReceiveService extends BaseService implements EventObserver {
     }
 
     public final void eventToClient(NotEOFEvent event) throws ActionFailedException {
+        System.out.println("EventReceiveService (clientId = " + clientNetId + ") versucht jetzt zu versenden: " + event.getEventType());
         talkLine.writeMsg(MailTag.VAL_ACTION_EVENT.name());
         talkLine.sendBaseEvent(event);
     }
@@ -214,6 +215,7 @@ public class EventReceiveService extends BaseService implements EventObserver {
         if (null != dataObject && null != dataObject.getList() && dataObject.getList().size() > 0) {
             for (String typeName : (List<String>) dataObject.getList()) {
                 EventType type = EventType.valueOf(typeName);
+                System.out.println("EventReceiveService. Füge event type hinzu: " + type);
                 addObservedEvent(type);
             }
         }

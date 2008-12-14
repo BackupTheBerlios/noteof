@@ -371,7 +371,9 @@ public abstract class BaseService extends BaseClientOrService implements Service
      * @throws ActionFailedException
      */
     public synchronized void processClientEvent() throws ActionFailedException {
+        System.out.println("BaseService.processClientEvent");
         NotEOFEvent event = getTalkLine().receiveBaseEvent(Server.getApplicationHome());
+        System.out.println("BaseService.processClientEvent. event ist " + event.getEventType());
         server.postEvent(event, this);
     }
 

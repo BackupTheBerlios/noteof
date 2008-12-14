@@ -72,12 +72,12 @@ public class EventReceiveClient {
             try {
                 while (!acceptorToStop) {
                     try {
-                        String awaitMsg = talkLine.readMsgTimedOut(1000);
+                        String awaitMsg = talkLine.readMsg();
                         if (acceptorToStop) {
                             break;
                         }
                         if (MailTag.REQ_READY_FOR_ACTION.name().equals(awaitMsg)) {
-                            String action = talkLine.readMsgTimedOut(5000);
+                            String action = talkLine.readMsg();
 
                             // awaitRequest(MailTag.REQ_READY_FOR_ACTION);
                             if (!Util.isEmpty(action)) {

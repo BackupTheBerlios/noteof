@@ -392,7 +392,7 @@ public class MasterTable {
      */
     public synchronized static ApplicationConfiguration getApplicationConfiguration(Long applicationId) throws HapptickException {
         ApplicationConfiguration ret = applicationConfigurations.get(applicationId);
-        if (Util.isEmpty(ret))
+        if (Util.isEmpty(ret) && applicationId >= -1)
             throw new HapptickException(405L, "ApplicationConfiguration. Id: " + applicationId);
 
         return ret;
@@ -596,6 +596,7 @@ public class MasterTable {
     public static void updateStartClientEvent(NotEOFEvent event) {
         if (event.equals(EventType.EVENT_START_CLIENT)) {
             if (event.getAttribute("state").equals("START")) {
+                System.out.println("MasterTable.updateStartClientEvent. clientIp ist: " + event.getAttribute("clientIp"));
                 startClientEvents.put(event.getAttribute("clientIp"), event);
             }
             if (event.getAttribute("state").equals("STOP")) {

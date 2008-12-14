@@ -1,6 +1,5 @@
 package de.notEOF.core.interfaces;
 
-import de.notEOF.core.communication.TalkLine;
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.mail.NotEOFMail;
 
@@ -23,7 +22,5 @@ public interface NotEOFClient {
     public int getServerPort();
 
     public String serviceForClientByName();
-
-    public TalkLine getTalkLine();
 
 }
