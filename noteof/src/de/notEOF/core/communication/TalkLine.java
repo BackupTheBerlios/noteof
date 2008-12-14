@@ -211,6 +211,13 @@ public class TalkLine implements Observer {
         socketLayer.awaitPartnerRequest(expectedRequestHeader.name());
     }
 
+    public void awaitRequestTimedOut(Enum<?> expectedRequestHeader, int timeOutMillis) throws ActionFailedException {
+        int oldTimeOut = socketLayer.getTimeOut();
+        socketLayer.setTimeOut(timeOutMillis);
+        socketLayer.awaitPartnerRequest(expectedRequestHeader.name());
+        socketLayer.setTimeOut(oldTimeOut);
+    }
+
     /**
      * Awaits a distinct request and sends response immediately. <br>
      * Simplifies the code by concentrating the methods awaitRequest() and
@@ -227,6 +234,12 @@ public class TalkLine implements Observer {
      */
     public void awaitRequestAnswerImmediate(Enum<?> expectedRequestHeader, Enum<?> respHeader, String value) throws ActionFailedException {
         awaitRequest(expectedRequestHeader);
+        responseTo(respHeader, value);
+    }
+
+    public void awaitRequestAnswerImmediateTimedOut(Enum<?> expectedRequestHeader, Enum<?> respHeader, String value, int timeOutMillis)
+            throws ActionFailedException {
+        awaitRequestTimedOut(expectedRequestHeader, timeOutMillis);
         responseTo(respHeader, value);
     }
 

@@ -120,6 +120,7 @@ public class SocketLayer {
     }
 
     protected synchronized void writeMsg(String msg) throws ActionFailedException {
+
         // avoid that the lifetimer sends a signal during awaiting a response
         // from partner
         lifeTimer.updateNextLifeSign();
@@ -235,6 +236,9 @@ public class SocketLayer {
     }
 
     private String readUnqualifiedMsg() throws ActionFailedException {
+        if (!isConnected())
+            return null;
+
         // int readCounter = 0;
         String msg = "";
         initBufferedReader(false);

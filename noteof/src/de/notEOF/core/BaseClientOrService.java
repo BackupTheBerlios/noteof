@@ -150,6 +150,10 @@ public abstract class BaseClientOrService {
         talkLine.awaitRequest(expectedRequestHeader);
     }
 
+    public void awaitRequestTimedOut(Enum<?> expectedRequestHeader, int milliSeconds) throws ActionFailedException {
+        talkLine.awaitRequestTimedOut(expectedRequestHeader, milliSeconds);
+    }
+
     /**
      * Awaits a distinct request and sends response immediately. <br>
      * Simplifies the code by concentrating the methods awaitRequest() and
@@ -166,6 +170,12 @@ public abstract class BaseClientOrService {
      */
     public void awaitRequestAnswerImmediate(Enum<?> expectedRequestHeader, Enum<?> responseHeader, String value) throws ActionFailedException {
         talkLine.awaitRequestAnswerImmediate(expectedRequestHeader, responseHeader, value);
+
+    }
+
+    public void awaitRequestAnswerImmediateTimedOut(Enum<?> expectedRequestHeader, Enum<?> responseHeader, String value, int milliSeconds)
+            throws ActionFailedException {
+        talkLine.awaitRequestAnswerImmediateTimedOut(expectedRequestHeader, responseHeader, value, milliSeconds);
 
     }
 

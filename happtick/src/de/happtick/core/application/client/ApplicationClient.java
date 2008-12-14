@@ -84,12 +84,21 @@ public class ApplicationClient extends BaseClient implements NotEOFClient, Event
             allowanceWaiter.stop();
 
         try {
+            System.out.println("ApplicationClient.stop  Vor writeMsg");
             writeMsg(ApplicationTag.PROCESS_STOP_WORK);
-            awaitRequestAnswerImmediate(ApplicationTag.REQ_EXIT_CODE, ApplicationTag.RESP_EXIT_CODE, String.valueOf(exitCode));
+            System.out.println("ApplicationClient.stop  Vor awaitRequest...");
+            awaitRequestAnswerImmediateTimedOut(ApplicationTag.REQ_EXIT_CODE, ApplicationTag.RESP_EXIT_CODE, String.valueOf(exitCode), 10000);
             // give service a little bit time...
             // TODO Was ist das für eine Zahl?
+            System.out.println("ApplicationClient.stop  Vor readMsgTimedOut...");
             readMsgTimedOut(7654);
+            System.out.println("ApplicationClient.stop  Vor super.close...");
+        } catch (ActionFailedException e) {
+            System.out.println("ApplicationClient.stop ....... Fehler");
+        }
+        try {
             super.close();
+            System.out.println("ApplicationClient.stop  Nach super.close...");
         } catch (ActionFailedException e) {
             throw new HapptickException(207L, e);
         }
@@ -114,6 +123,21 @@ public class ApplicationClient extends BaseClient implements NotEOFClient, Event
             throw new HapptickException(208L, "Methode: awaitRequestAnswerImmediate");
         }
         super.awaitRequestAnswerImmediate(expectedRequestHeader, responseHeader, value);
+    }
+
+    public void awaitRequestTimedOut(Enum<?> expectedRequestHeader, int timeOutMillis) throws ActionFailedException {
+        if (!isWorkAllowed()) {
+            throw new HapptickException(208L, "Methode: awaitRequest");
+        }
+        super.awaitRequestTimedOut(expectedRequestHeader, timeOutMillis);
+    }
+
+    public void awaitRequestAnswerImmediateTimedOut(Enum<?> expectedRequestHeader, Enum<?> responseHeader, String value, int timeOutMillis)
+            throws ActionFailedException {
+        if (!isWorkAllowed()) {
+            throw new HapptickException(208L, "Methode: awaitRequestAnswerImmediate");
+        }
+        super.awaitRequestAnswerImmediateTimedOut(expectedRequestHeader, responseHeader, value, timeOutMillis);
     }
 
     public synchronized void sendMail(NotEOFMail mail) throws ActionFailedException {
