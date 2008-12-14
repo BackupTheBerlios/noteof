@@ -19,6 +19,8 @@ public class Actor extends HapptickApplication implements EventRecipient {
 
     public Actor(Long applicationId, String serverAddress, int serverPort, String[] args) throws HapptickException {
         super(null, serverAddress, serverPort, args);
+        super.setEventRecipient(this);
+
         doWork(args);
     }
 
@@ -41,7 +43,16 @@ public class Actor extends HapptickApplication implements EventRecipient {
         List<NotEOFEvent> events = new ArrayList<NotEOFEvent>();
         events.add(new SoundEvent());
         events.add(new ApplicationStopEvent());
-        useEvents(this);
+
+        try {
+            addInterestingEvents(events);
+        } catch (ActionFailedException e1) {
+            e1.printStackTrace();
+        }
+        System.out.println("Starte jetzt die Annahme von Events.");
+        startAcceptingEvents();
+        System.out.println("Annahme von Events abgeschlossen");
+
         // TODO jetzt liste direkt übergeben...
         // try {
         //super.notEofClient.getTalkLine().writeMsg(BaseCommTag.REQ_TEST.name())

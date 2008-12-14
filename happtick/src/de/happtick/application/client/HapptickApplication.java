@@ -350,12 +350,12 @@ public abstract class HapptickApplication implements EventRecipient {
             System.out.println("HapptickApplication.stop() nach applicationClient.stop()");
         }
         System.out.println("HapptickApplication.stop() vor super.close()");
-        try {
-            applicationClient.close();
-        } catch (ActionFailedException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+        // try {
+        // applicationClient.stop();
+        // } catch (ActionFailedException e) {
+        // // TODO Auto-generated catch block
+        // e.printStackTrace();
+        // }
         System.out.println("HapptickApplication.stop() nach super.close()");
     }
 

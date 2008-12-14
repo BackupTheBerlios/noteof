@@ -28,9 +28,11 @@ public class EventReceiveClient {
     }
 
     public void stop() {
-        acceptor = null;
-        acceptor.notifyAll();
+        System.out.println("EventReceiveClient.stop. Vor acceptor.stop");
+        // acceptor = null;
+        // acceptor.notifyAll();
         acceptor.stop();
+        System.out.println("EventReceiveClient.stop. Nach acceptor.stop");
         while (!acceptor.isStopped()) {
             try {
                 Thread.sleep(1000);
@@ -38,6 +40,7 @@ public class EventReceiveClient {
                 e.printStackTrace();
             }
         }
+        System.out.println("EventReceiveClient.stop. Nach warten auf acceptor stopped");
     }
 
     public void startAccepting() throws ActionFailedException {
@@ -46,8 +49,9 @@ public class EventReceiveClient {
         String antwort = talkLine.readMsg();
         if ((MailTag.VAL_OK.name() + "=" + MailTag.VAL_OK.name()).equals(antwort)) {
             // if (MailTag.VAL_OK.name().equals(talkLine.readMsg())) {
+            acceptor = new MailAndEventAcceptor();
             System.out.println("Ab jetzt sollte eigentlich der Acceptor laufen.");
-            new Thread(new MailAndEventAcceptor()).start();
+            new Thread(acceptor).start();
         }
     }
 
@@ -72,12 +76,13 @@ public class EventReceiveClient {
             try {
                 while (!acceptorToStop) {
                     try {
-                        String awaitMsg = talkLine.readMsg();
+                        String awaitMsg = talkLine.readMsgTimedOut(1000);
+                        System.out.println("EventReceiveClient$Acceptor.run  Client: " + recipient.getClass().getSimpleName());
                         if (acceptorToStop) {
                             break;
                         }
                         if (MailTag.REQ_READY_FOR_ACTION.name().equals(awaitMsg)) {
-                            String action = talkLine.readMsg();
+                            String action = talkLine.readMsgTimedOut(1000);
 
                             // awaitRequest(MailTag.REQ_READY_FOR_ACTION);
                             if (!Util.isEmpty(action)) {

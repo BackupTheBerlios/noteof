@@ -176,6 +176,13 @@ public abstract class BaseClient extends BaseClientOrService implements EventRec
         return this.clientNetId;
     }
 
+    public void close() throws ActionFailedException {
+        // close EventReceiveClient
+        eventReceiveClient.stop();
+        // close the basic functionality
+        super.close();
+    }
+
     /**
      * Sends mail to any service.
      * 
