@@ -9,7 +9,6 @@ import de.happtick.configuration.ChainConfiguration;
 import de.happtick.configuration.EventConfiguration;
 import de.happtick.core.MasterTable;
 import de.happtick.core.event.ApplicationStartErrorEvent;
-import de.happtick.core.exception.HapptickException;
 import de.happtick.core.util.ExternalCalls;
 import de.happtick.core.util.Scheduling;
 import de.notEOF.core.enumeration.EventType;
@@ -243,7 +242,7 @@ public class Scheduler {
                             Scheduling.startApplication(afterConf);
                         }
                     }
-                } catch (HapptickException e) {
+                } catch (ActionFailedException e) {
                     LocalLog.warn("Fehler bei Verarbeitung eines events: " + event.getEventType().name(), e);
                 }
             }
@@ -314,7 +313,7 @@ public class Scheduler {
         }
     }
 
-    protected void startChainScheduler(ChainConfiguration conf) throws HapptickException {
+    protected void startChainScheduler(ChainConfiguration conf) throws ActionFailedException {
         new Thread(new ChainScheduler(conf, this)).start();
     }
 

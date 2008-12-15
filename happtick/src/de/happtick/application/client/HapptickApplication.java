@@ -4,7 +4,6 @@ import java.net.Socket;
 import java.util.List;
 
 import de.happtick.core.application.client.ApplicationClient;
-import de.happtick.core.exception.HapptickException;
 import de.happtick.core.interfaces.ClientObserver;
 import de.notEOF.core.communication.BaseTimeOut;
 import de.notEOF.core.exception.ActionFailedException;
@@ -36,7 +35,7 @@ public abstract class HapptickApplication implements EventRecipient {
     String[] args;
     private EventRecipient eventRecipient;
 
-    public HapptickApplication(Long applicationId, String serverAddress, int serverPort, String... args) throws HapptickException {
+    public HapptickApplication(Long applicationId, String serverAddress, int serverPort, String... args) throws ActionFailedException {
         this(applicationId, serverAddress, serverPort, null, args);
     }
 
@@ -57,7 +56,7 @@ public abstract class HapptickApplication implements EventRecipient {
      *            --startId=<value>.
      */
     public HapptickApplication(Long applicationId, String serverAddress, int serverPort, EventRecipient eventRecipient, String... args)
-            throws HapptickException {
+            throws ActionFailedException {
         System.out.println("applicationId: " + applicationId + "; serverAddress: " + serverAddress + "; serverPort: " + serverPort);
         for (String arg : args) {
             System.out.println("arg: " + arg);
@@ -70,12 +69,12 @@ public abstract class HapptickApplication implements EventRecipient {
         if (parser.containsStartsWith("--applicationId")) {
             receivedId = Util.parseLong(parser.getValue("applicationId"), -1);
             if (Util.isEmpty(applicationId) && Util.isEmpty(receivedId)) {
-                throw new HapptickException(404L, "Empfangene applicationId und hart codierte applicationId sind leer.");
+                throw new ActionFailedException(10404L, "Empfangene applicationId und hart codierte applicationId sind leer.");
             }
             if (Util.isEmpty(applicationId) && !Util.isEmpty(receivedId)) {
                 applicationId = receivedId;
             } else if (!Util.isEmpty(applicationId) && applicationId != receivedId)
-                throw new HapptickException(404L, "Empfangene applicationId und hart codierte applicationId sind nicht identisch. Hart codiert: "
+                throw new ActionFailedException(10404L, "Empfangene applicationId und hart codierte applicationId sind nicht identisch. Hart codiert: "
                         + applicationId + "; Empfangen: " + receivedId);
         }
 
@@ -155,9 +154,9 @@ public abstract class HapptickApplication implements EventRecipient {
      * services so that the scheduler starte the application twice or multiple.
      * 
      * @return True if the application can start the work.
-     * @throws HapptickException
+     * @throws ActionFailedException
      */
-    public boolean isWorkAllowed() throws HapptickException {
+    public boolean isWorkAllowed() throws ActionFailedException {
         checkClientInitialized();
         // only when start allowance not given yet service must be asked for
         if (!isWorkAllowed) {
@@ -174,14 +173,14 @@ public abstract class HapptickApplication implements EventRecipient {
      * method update(). When the allowance is given the application client calls
      * the method observers startAllowanceEvent()<br>
      * 
-     * @throws HapptickException
+     * @throws ActionFailedException
      */
-    public void observeForWorkAllowance(ClientObserver clientObserver) throws HapptickException {
+    public void observeForWorkAllowance(ClientObserver clientObserver) throws ActionFailedException {
         checkClientInitialized();
         applicationClient.observeForWorkAllowance(clientObserver);
     }
 
-    public void sendEvent(NotEOFEvent event) throws HapptickException {
+    public void sendEvent(NotEOFEvent event) throws ActionFailedException {
         checkClientInitialized();
         boolean success = false;
         while (!success) {
@@ -212,9 +211,9 @@ public abstract class HapptickApplication implements EventRecipient {
      *            Error level.
      * @param Description
      *            Additional information for solving the problem.
-     * @throws HapptickException
+     * @throws ActionFailedException
      */
-    public void sendError(String errorId, String description, String level) throws HapptickException {
+    public void sendError(String errorId, String description, String level) throws ActionFailedException {
         checkClientInitialized();
         boolean success = false;
         while (!success) {
@@ -241,9 +240,9 @@ public abstract class HapptickApplication implements EventRecipient {
      *            Id which is used in the configuration.
      * @param information
      *            Additional information related to the action.
-     * @throws HapptickException
+     * @throws ActionFailedException
      */
-    public void sendActionEvent(String eventId, String information) throws HapptickException {
+    public void sendActionEvent(String eventId, String information) throws ActionFailedException {
         checkClientInitialized();
         boolean success = false;
         while (!success) {
@@ -270,9 +269,9 @@ public abstract class HapptickApplication implements EventRecipient {
      * @param level
      *            Meaning of alarm (info, warning or anything else). Depends to
      *            the application.
-     * @throws HapptickException
+     * @throws ActionFailedException
      */
-    public void sendAlarm(String type, String description, String level) throws HapptickException {
+    public void sendAlarm(String type, String description, String level) throws ActionFailedException {
         checkClientInitialized();
         boolean success = false;
         while (!success) {
@@ -295,9 +294,9 @@ public abstract class HapptickApplication implements EventRecipient {
      * 
      * @param information
      *            Detailed Text. Object which implements type LogEvent.
-     * @throws HapptickException
+     * @throws ActionFailedException
      */
-    public void sendLog(String information) throws HapptickException {
+    public void sendLog(String information) throws ActionFailedException {
         checkClientInitialized();
         boolean success = false;
         while (!success) {
@@ -323,9 +322,9 @@ public abstract class HapptickApplication implements EventRecipient {
      * closed as long as the underlying communication layer hasn't stopped. And
      * so the java vm stays active.
      * 
-     * @throws HapptickException
+     * @throws ActionFailedException
      */
-    public void stop() throws HapptickException {
+    public void stop() throws ActionFailedException {
         stop(0);
     }
 
@@ -340,9 +339,9 @@ public abstract class HapptickApplication implements EventRecipient {
      * 
      * @param exitCode
      *            Result value of the application.
-     * @throws HapptickException
+     * @throws ActionFailedException
      */
-    public void stop(int exitCode) throws HapptickException {
+    public void stop(int exitCode) throws ActionFailedException {
 
         if (null != applicationClient) {
             System.out.println("HapptickApplication.stop() vor applicationClient.stop()");
@@ -359,7 +358,7 @@ public abstract class HapptickApplication implements EventRecipient {
         System.out.println("HapptickApplication.stop() nach super.close()");
     }
 
-    public void startWork() throws HapptickException {
+    public void startWork() throws ActionFailedException {
         checkClientInitialized();
         applicationClient.startWork();
     }
@@ -372,7 +371,7 @@ public abstract class HapptickApplication implements EventRecipient {
         applicationClient.stopObservingForStartAllowance();
     }
 
-    private void reconnect() throws HapptickException {
+    private void reconnect() throws ActionFailedException {
         applicationClient = new ApplicationClient();
 
         // TODO Wenn dipatched getestet, kann der letzte Parameter auch nach
@@ -401,7 +400,7 @@ public abstract class HapptickApplication implements EventRecipient {
         return socketToService;
     }
 
-    public void connect(Socket socket, String[] args, boolean dispatched) throws HapptickException {
+    public void connect(Socket socket, String[] args, boolean dispatched) throws ActionFailedException {
         String serverAddress = socket.getInetAddress().getHostAddress();
         int serverPort = socket.getLocalPort();
         connect(serverAddress, serverPort, args, dispatched);
@@ -417,13 +416,13 @@ public abstract class HapptickApplication implements EventRecipient {
      * @param serverPort
      *            The port of the happtick server where the scheduler is
      *            running.
-     * @throws HapptickException
+     * @throws ActionFailedException
      */
-    public void connect(String serverAddress, int serverPort, String[] args, boolean dispatched) throws HapptickException {
+    public void connect(String serverAddress, int serverPort, String[] args, boolean dispatched) throws ActionFailedException {
         if (Util.isEmpty(serverAddress))
-            throw new HapptickException(50L, "Server Addresse ist leer.");
+            throw new ActionFailedException(10050L, "Server Addresse ist leer.");
         if (0 == serverPort)
-            throw new HapptickException(50L, "Server Port = 0");
+            throw new ActionFailedException(10050L, "Server Port = 0");
 
         if (dispatched) {
             Socket socketToService = dispatchSocket(serverAddress, serverPort, (String[]) null);
@@ -442,9 +441,9 @@ public abstract class HapptickApplication implements EventRecipient {
     /*
      * Check if the applicationClient exists...
      */
-    protected void checkClientInitialized() throws HapptickException {
+    protected void checkClientInitialized() throws ActionFailedException {
         if (Util.isEmpty(applicationClient))
-            throw new HapptickException(50L, "Client ist nicht initialisiert. Vermutlich wurde kein connect durchgeführt.");
+            throw new ActionFailedException(10050L, "Client ist nicht initialisiert. Vermutlich wurde kein connect durchgeführt.");
 
         // connect with service
         while (!applicationClient.isLinkedToService()) {

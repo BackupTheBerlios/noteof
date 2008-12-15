@@ -5,7 +5,6 @@ import de.happtick.core.enumeration.ApplicationTag;
 import de.happtick.core.event.ActionEvent;
 import de.happtick.core.event.AlarmEvent;
 import de.happtick.core.event.ErrorEvent;
-import de.happtick.core.exception.HapptickException;
 import de.happtick.core.interfaces.ClientObserver;
 import de.notEOF.core.client.BaseClient;
 import de.notEOF.core.communication.DataObject;
@@ -46,7 +45,7 @@ public class ApplicationClient extends BaseClient implements NotEOFClient, Event
         return null;
     }
 
-    public void stop() throws HapptickException {
+    public void stop() throws ActionFailedException {
         stop(0);
     }
 
@@ -54,7 +53,7 @@ public class ApplicationClient extends BaseClient implements NotEOFClient, Event
         if (!stopped) {
             try {
                 stop(0);
-            } catch (HapptickException e) {
+            } catch (ActionFailedException e) {
             }
         }
     }
@@ -76,9 +75,9 @@ public class ApplicationClient extends BaseClient implements NotEOFClient, Event
      * 
      * @param exitCode
      *            The return code or another result of the application.
-     * @throws HapptickException
+     * @throws ActionFailedException
      */
-    public void stop(int exitCode) throws HapptickException {
+    public void stop(int exitCode) throws ActionFailedException {
         stopped = true;
         if (null != allowanceWaiter)
             allowanceWaiter.stop();
@@ -89,7 +88,7 @@ public class ApplicationClient extends BaseClient implements NotEOFClient, Event
             System.out.println("ApplicationClient.stop  Vor awaitRequest...");
             awaitRequestAnswerImmediateTimedOut(ApplicationTag.REQ_EXIT_CODE, ApplicationTag.RESP_EXIT_CODE, String.valueOf(exitCode), 10000);
             // give service a little bit time...
-            // TODO Was ist das für eine Zahl?
+            // TODO Was ist das fï¿½r eine Zahl?
             System.out.println("ApplicationClient.stop  Vor readMsgTimedOut...");
             readMsgTimedOut(7654);
             System.out.println("ApplicationClient.stop  Vor super.close...");
@@ -100,34 +99,34 @@ public class ApplicationClient extends BaseClient implements NotEOFClient, Event
             super.close();
             System.out.println("ApplicationClient.stop  Nach super.close...");
         } catch (ActionFailedException e) {
-            throw new HapptickException(207L, e);
+            throw new ActionFailedException(10207L, e);
         }
     }
 
     public String requestTo(Enum<?> requestHeader, Enum<?> expectedResponseHeader) throws ActionFailedException {
         if (!isWorkAllowed()) {
-            throw new HapptickException(208L, "Methode: requestTo");
+            throw new ActionFailedException(10208L, "Methode: requestTo");
         }
         return super.requestTo(requestHeader, expectedResponseHeader);
     }
 
     public void awaitRequest(Enum<?> expectedRequestHeader) throws ActionFailedException {
         if (!isWorkAllowed()) {
-            throw new HapptickException(208L, "Methode: awaitRequest");
+            throw new ActionFailedException(10208L, "Methode: awaitRequest");
         }
         super.awaitRequest(expectedRequestHeader);
     }
 
     public void awaitRequestAnswerImmediate(Enum<?> expectedRequestHeader, Enum<?> responseHeader, String value) throws ActionFailedException {
         if (!isWorkAllowed()) {
-            throw new HapptickException(208L, "Methode: awaitRequestAnswerImmediate");
+            throw new ActionFailedException(10208L, "Methode: awaitRequestAnswerImmediate");
         }
         super.awaitRequestAnswerImmediate(expectedRequestHeader, responseHeader, value);
     }
 
     public void awaitRequestTimedOut(Enum<?> expectedRequestHeader, int timeOutMillis) throws ActionFailedException {
         if (!isWorkAllowed()) {
-            throw new HapptickException(208L, "Methode: awaitRequest");
+            throw new ActionFailedException(10208L, "Methode: awaitRequest");
         }
         super.awaitRequestTimedOut(expectedRequestHeader, timeOutMillis);
     }
@@ -135,70 +134,70 @@ public class ApplicationClient extends BaseClient implements NotEOFClient, Event
     public void awaitRequestAnswerImmediateTimedOut(Enum<?> expectedRequestHeader, Enum<?> responseHeader, String value, int timeOutMillis)
             throws ActionFailedException {
         if (!isWorkAllowed()) {
-            throw new HapptickException(208L, "Methode: awaitRequestAnswerImmediate");
+            throw new ActionFailedException(10208L, "Methode: awaitRequestAnswerImmediate");
         }
         super.awaitRequestAnswerImmediateTimedOut(expectedRequestHeader, responseHeader, value, timeOutMillis);
     }
 
     public synchronized void sendMail(NotEOFMail mail) throws ActionFailedException {
         if (!isWorkAllowed()) {
-            throw new HapptickException(208L, "Methode: sendMail");
+            throw new ActionFailedException(10208L, "Methode: sendMail");
         }
         super.sendMail(mail);
     }
 
     public void responseTo(Enum<?> responseHeader, String value) throws ActionFailedException {
         if (!isWorkAllowed()) {
-            throw new HapptickException(208L, "Methode: responseTo");
+            throw new ActionFailedException(10208L, "Methode: responseTo");
         }
         super.responseTo(responseHeader, value);
     }
 
     public String readMsg() throws ActionFailedException {
         if (!isWorkAllowed()) {
-            throw new HapptickException(208L, "Methode: readMsg");
+            throw new ActionFailedException(10208L, "Methode: readMsg");
         }
         return super.readMsg();
     }
 
     public String readMsgNoTimeOut() throws ActionFailedException {
         if (!isWorkAllowed()) {
-            throw new HapptickException(208L, "Methode: readMsgNoTimeOut");
+            throw new ActionFailedException(10208L, "Methode: readMsgNoTimeOut");
         }
         return super.readMsgNoTimeOut();
     }
 
     public String readMsgTimedOut(int timeOutMillis) throws ActionFailedException {
         if (!isWorkAllowed()) {
-            throw new HapptickException(208L, "Methode: readMsgTimedOut");
+            throw new ActionFailedException(10208L, "Methode: readMsgTimedOut");
         }
         return super.readMsgTimedOut(timeOutMillis);
     }
 
     public void writeMsg(String msg) throws ActionFailedException {
         if (!isWorkAllowed()) {
-            throw new HapptickException(208L, "Methode: writeMsg");
+            throw new ActionFailedException(10208L, "Methode: writeMsg");
         }
         super.writeMsg(msg);
     }
 
     public void writeMsg(Enum<?> requestHeader) throws ActionFailedException {
         if (!isWorkAllowed()) {
-            throw new HapptickException(208L, "Methode: writeMsg");
+            throw new ActionFailedException(10208L, "Methode: writeMsg");
         }
         super.writeMsg(requestHeader);
     }
 
     public DataObject receiveDataObject() throws ActionFailedException {
         if (!isWorkAllowed()) {
-            throw new HapptickException(208L, "Methode: receiveDataObject");
+            throw new ActionFailedException(10208L, "Methode: receiveDataObject");
         }
         return super.receiveDataObject();
     }
 
     public void sendDataObject(DataObject dataObject) throws ActionFailedException {
         if (!isWorkAllowed()) {
-            throw new HapptickException(208L, "Methode: sendDataObject");
+            throw new ActionFailedException(10208L, "Methode: sendDataObject");
         }
         super.sendDataObject(dataObject);
     }
@@ -206,18 +205,18 @@ public class ApplicationClient extends BaseClient implements NotEOFClient, Event
     /**
      * Send event to service that the client has started his work.
      * 
-     * @throws HapptickException
+     * @throws ActionFailedException
      */
-    public void startWork() throws HapptickException {
+    public void startWork() throws ActionFailedException {
         if (!isWorkAllowed()) {
-            throw new HapptickException(208L, "Methode: startWork");
+            throw new ActionFailedException(10208L, "Methode: startWork");
         }
 
         try {
             writeMsg(ApplicationTag.PROCESS_START_WORK);
             readMsgTimedOut(7654);
         } catch (ActionFailedException e) {
-            throw new HapptickException(207L, e);
+            throw new ActionFailedException(10207L, e);
         }
     }
 
@@ -227,9 +226,9 @@ public class ApplicationClient extends BaseClient implements NotEOFClient, Event
      * @param applicationId
      *            Unique id of application. This id is used in the happtick
      *            configuration for scheduling.
-     * @throws HapptickException
+     * @throws ActionFailedException
      */
-    public void applicationIdToService(Long applicationId) throws HapptickException {
+    public void applicationIdToService(Long applicationId) throws ActionFailedException {
         if (null == this.applicationId)
             this.applicationId = applicationId;
         try {
@@ -237,7 +236,7 @@ public class ApplicationClient extends BaseClient implements NotEOFClient, Event
             writeMsg(ApplicationTag.PROCESS_APPLICATION_ID);
             awaitRequestAnswerImmediate(ApplicationTag.REQ_APPLICATION_ID, ApplicationTag.RESP_APPLICATION_ID, String.valueOf(applicationId));
         } catch (ActionFailedException e) {
-            throw new HapptickException(206L, e);
+            throw new ActionFailedException(10206L, e);
         }
     }
 
@@ -246,9 +245,9 @@ public class ApplicationClient extends BaseClient implements NotEOFClient, Event
      * 
      * @param args
      *            Parameterlist. Maybe it contains the param --startId.
-     * @throws HapptickException
+     * @throws ActionFailedException
      */
-    public void startIdToService(String... args) throws HapptickException {
+    public void startIdToService(String... args) throws ActionFailedException {
         if (null != args) {
             String startId = "";
             ArgsParser argsParser = new ArgsParser(args);
@@ -263,7 +262,7 @@ public class ApplicationClient extends BaseClient implements NotEOFClient, Event
                 writeMsg(ApplicationTag.PROCESS_START_ID);
                 awaitRequestAnswerImmediate(ApplicationTag.REQ_START_ID, ApplicationTag.RESP_START_ID, startId);
             } catch (ActionFailedException e) {
-                throw new HapptickException(206L, e);
+                throw new ActionFailedException(10206L, e);
             }
         }
     }
@@ -284,9 +283,9 @@ public class ApplicationClient extends BaseClient implements NotEOFClient, Event
      * services so that the scheduler starte the application twice or multiple.
      * 
      * @return True if the application can start the work.
-     * @throws HapptickException
+     * @throws ActionFailedException
      */
-    public boolean isWorkAllowed() throws HapptickException {
+    public boolean isWorkAllowed() throws ActionFailedException {
         // simpliest case
         if (isWorkAllowed)
             return true;
@@ -302,7 +301,7 @@ public class ApplicationClient extends BaseClient implements NotEOFClient, Event
             writeMsg(ApplicationTag.PROCESS_START_ALLOWANCE);
             isWorkAllowed = ApplicationTag.INFO_TRUE.name().equals(requestTo(ApplicationTag.REQ_START_ALLOWED, ApplicationTag.RESP_START_ALLOWED));
         } catch (ActionFailedException e) {
-            throw new HapptickException(201L, e);
+            throw new ActionFailedException(10201L, e);
         }
 
         return isWorkAllowed;
@@ -320,16 +319,16 @@ public class ApplicationClient extends BaseClient implements NotEOFClient, Event
      * @param level
      *            Kind of error (info, warning, error or anything else). Depends
      *            to the application.
-     * @throws HapptickException
+     * @throws ActionFailedException
      */
-    public void sendError(String errorId, String description, String level) throws HapptickException {
+    public void sendError(String errorId, String description, String level) throws ActionFailedException {
         ErrorEvent event = new ErrorEvent();
         try {
             event.addAttribute("errorId", errorId);
             event.addAttribute("description", description);
             event.addAttribute("level", level);
         } catch (ActionFailedException e) {
-            throw new HapptickException(202L, "Event: " + event.getClass().getSimpleName(), e);
+            throw new ActionFailedException(10202L, "Event: " + event.getClass().getSimpleName(), e);
         }
         sendEvent(event);
     }
@@ -344,15 +343,15 @@ public class ApplicationClient extends BaseClient implements NotEOFClient, Event
      *            Id which is used in the configuration.
      * @param information
      *            Additional information related to the action.
-     * @throws HapptickException
+     * @throws ActionFailedException
      */
-    public void sendActionEvent(String eventId, String information) throws HapptickException {
+    public void sendActionEvent(String eventId, String information) throws ActionFailedException {
         ActionEvent event = new ActionEvent();
         try {
             event.addAttribute("eventId", eventId);
             event.addAttribute("information", information);
         } catch (ActionFailedException e) {
-            throw new HapptickException(202L, "Event: " + event.getClass().getSimpleName(), e);
+            throw new ActionFailedException(10202L, "Event: " + event.getClass().getSimpleName(), e);
         }
         sendEvent(event);
     }
@@ -365,18 +364,18 @@ public class ApplicationClient extends BaseClient implements NotEOFClient, Event
      *            data because only standard values are supported here. If there
      *            are more members in the event class they will not be
      *            transported to the service.
-     * @throws HapptickException
+     * @throws ActionFailedException
      */
-    public void sendEvent(NotEOFEvent event) throws HapptickException {
+    public void sendEvent(NotEOFEvent event) throws ActionFailedException {
         if (!isWorkAllowed()) {
-            throw new HapptickException(208L, "Versenden eines Events.");
+            throw new ActionFailedException(10208L, "Versenden eines Events.");
         }
 
         try {
             event.setApplicationId(this.applicationId);
             super.sendEvent(event);
         } catch (ActionFailedException e) {
-            throw new HapptickException(202L, "Event: " + event.getClass().getSimpleName(), e);
+            throw new ActionFailedException(202L, "Event: " + event.getClass().getSimpleName(), e);
         }
     }
 
@@ -391,16 +390,16 @@ public class ApplicationClient extends BaseClient implements NotEOFClient, Event
      *            Meaning of alarm (info, warning or anything else). Depends to
      *            the application.
      * 
-     * @throws HapptickException
+     * @throws ActionFailedException
      */
-    public void sendAlarm(String type, String description, String level) throws HapptickException {
+    public void sendAlarm(String type, String description, String level) throws ActionFailedException {
         AlarmEvent event = new AlarmEvent();
         try {
             event.addAttribute("type", type);
             event.addAttribute("description", description);
             event.addAttribute("level", level);
         } catch (ActionFailedException e) {
-            throw new HapptickException(202L, "Event: " + event.getClass().getSimpleName(), e);
+            throw new ActionFailedException(10202L, "Event: " + event.getClass().getSimpleName(), e);
         }
         sendEvent(event);
     }
@@ -411,14 +410,14 @@ public class ApplicationClient extends BaseClient implements NotEOFClient, Event
      * 
      * @param information
      *            Detailed Text.
-     * @throws HapptickException
+     * @throws ActionFailedException
      */
-    public void sendLog(String information) throws HapptickException {
+    public void sendLog(String information) throws ActionFailedException {
         AlarmEvent event = new AlarmEvent();
         try {
             event.addAttribute("information", information);
         } catch (ActionFailedException e) {
-            throw new HapptickException(202L, "Event: " + event.getClass().getSimpleName(), e);
+            throw new ActionFailedException(10202L, "Event: " + event.getClass().getSimpleName(), e);
         }
         sendEvent(event);
     }
@@ -431,10 +430,10 @@ public class ApplicationClient extends BaseClient implements NotEOFClient, Event
      * the method update(). When the allowance is given the application client
      * calls the method observers startAllowanceEvent()<br>
      * 
-     * @throws HapptickException
+     * @throws ActionFailedException
      * @see {@link ClientObserver}
      */
-    public void observeForWorkAllowance(ClientObserver clientObserver) throws HapptickException {
+    public void observeForWorkAllowance(ClientObserver clientObserver) throws ActionFailedException {
         this.clientObserver = clientObserver;
         allowanceWaiter = new AllowanceWaiter();
         Thread waiterThread = new Thread(allowanceWaiter);

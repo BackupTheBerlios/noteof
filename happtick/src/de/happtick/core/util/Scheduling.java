@@ -15,7 +15,6 @@ import de.happtick.configuration.EventConfiguration;
 import de.happtick.core.MasterTable;
 import de.happtick.core.event.ApplicationStartEvent;
 import de.happtick.core.event.ApplicationStopEvent;
-import de.happtick.core.exception.HapptickException;
 import de.happtick.core.schedule.ChainAction;
 import de.notEOF.core.enumeration.EventType;
 import de.notEOF.core.exception.ActionFailedException;
@@ -79,7 +78,7 @@ public class Scheduling {
                     System.out.println("Scheduling$ApplicationStarter. Sende event");
                     raiseEvent(event);
                 }
-            } catch (HapptickException e) {
+            } catch (ActionFailedException e) {
                 e.printStackTrace();
             }
         }
@@ -92,21 +91,21 @@ public class Scheduling {
      * @param applConf
      * @throws ActionFailedException
      */
-    public static synchronized void startApplication(ApplicationConfiguration applConf) throws HapptickException {
+    public static synchronized void startApplication(ApplicationConfiguration applConf) throws ActionFailedException {
         if (null == applConf)
-            throw new HapptickException(503L, "Anwendungskonfiguration fehlt.");
+            throw new ActionFailedException(10503L, "Anwendungskonfiguration fehlt.");
 
         new Thread(new ApplicationStarter(applConf)).start();
     }
 
-    public static synchronized void stopApplication(ApplicationConfiguration applConf) throws HapptickException {
+    public static synchronized void stopApplication(ApplicationConfiguration applConf) throws ActionFailedException {
         ApplicationStopEvent event = new ApplicationStopEvent();
         try {
             event.addAttribute("workApplicationId", String.valueOf(applConf.getApplicationId()));
             event.addAttribute("clientIp", applConf.getClientIp());
             event.addAttribute("kill", "FALSE");
         } catch (ActionFailedException e) {
-            throw new HapptickException(504L, e);
+            throw new ActionFailedException(10504L, e);
         }
 
         raiseEvent(event);
@@ -150,9 +149,9 @@ public class Scheduling {
      *            Configuration of the application that is asking here.
      * @return True if the application has to wait.
      */
-    public static synchronized boolean isEqualApplicationActive(ApplicationConfiguration applConf) throws HapptickException {
+    public static synchronized boolean isEqualApplicationActive(ApplicationConfiguration applConf) throws ActionFailedException {
         if (Util.isEmpty(applConf)) {
-            throw new HapptickException(404L, "Pruefung auf aktive Anwendung im Scheduling.");
+            throw new ActionFailedException(10404L, "Pruefung auf aktive Anwendung im Scheduling.");
         }
 
         if (!(Util.isEmpty(MasterTable.getApplicationServicesByApplicationId(applConf.getApplicationId())))) {
@@ -167,7 +166,7 @@ public class Scheduling {
         return false;
     }
 
-    public static synchronized boolean mustWaitForSameApplication(Long applId) throws HapptickException {
+    public static synchronized boolean mustWaitForSameApplication(Long applId) throws ActionFailedException {
         ApplicationConfiguration conf = MasterTable.getApplicationConfiguration(applId);
 
         if (null == conf) {
@@ -265,11 +264,11 @@ public class Scheduling {
                 calcDate.add(Calendar.DATE, 1);
         }
 
-        // // afjklasfljköasfölsadfklsdfklöasdf
+        // // afjklasfljkï¿½asfï¿½lsadfklsdfklï¿½asdf
         // calcDate.add(Calendar.SECOND, 5);
         // if (true)
         // return calcDate.getTime();
-        // // asfjasfjklö ljkasdfjklaslksafjklöasdfjklf
+        // // asfjasfjklï¿½ ljkasdfjklaslksafjklï¿½asdfjklf
 
         // Jetzt auf Uhrzeit pruefen
         // Sekunden
@@ -379,13 +378,13 @@ public class Scheduling {
      *            The ChainLink contains perhaps a prevent or a condition event.
      */
     public static synchronized void updateObservedEventsForChain(List<EventType> observedEvents, Map<String, ChainAction> chainActions, ChainLink link)
-            throws HapptickException {
+            throws ActionFailedException {
         // Conditions
         if (null != link.getConditionEventId()) {
             try {
                 EventConfiguration conf = MasterTable.getEventConfiguration(link.getConditionEventId());
                 if (Util.isEmpty(conf)) {
-                    throw new HapptickException(403L, "Link zeigt auf unbekannte Event-Konfiguration. ChainId: " + link.getChainId() + "; LinkId: "
+                    throw new ActionFailedException(10403L, "Link zeigt auf unbekannte Event-Konfiguration. ChainId: " + link.getChainId() + "; LinkId: "
                             + link.getLinkId() + "; EventId: " + link.getConditionEventId());
                 }
                 EventType type = Util.lookForEventType(conf.getEventClassName());

@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Map;
 
 import de.happtick.core.MasterTable;
-import de.happtick.core.exception.HapptickException;
 import de.happtick.core.util.Scheduling;
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.interfaces.NotEOFConfiguration;
@@ -224,9 +223,9 @@ public class ApplicationConfiguration {
      * <p>
      * 
      * @return 0 if start is allowed or the time to start in millis
-     * @throws HapptickException
+     * @throws ActionFailedException
      */
-    public long startAllowed() throws HapptickException {
+    public long startAllowed() throws ActionFailedException {
         long waitTime = 0;
         long timeNow = new Date().getTime();
 

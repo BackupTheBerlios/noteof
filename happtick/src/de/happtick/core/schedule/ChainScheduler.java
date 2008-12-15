@@ -12,7 +12,6 @@ import de.happtick.configuration.ChainConfiguration;
 import de.happtick.configuration.ChainLink;
 import de.happtick.core.MasterTable;
 import de.happtick.core.event.ChainStoppedEvent;
-import de.happtick.core.exception.HapptickException;
 import de.happtick.core.util.Scheduling;
 import de.notEOF.core.enumeration.EventType;
 import de.notEOF.core.exception.ActionFailedException;
@@ -37,16 +36,16 @@ public class ChainScheduler implements EventObserver, Runnable {
      * Register events, store actions for fast detection and starting of
      * applications or chains. Start first application.
      */
-    protected ChainScheduler(ChainConfiguration conf, Scheduler scheduler) throws HapptickException {
+    protected ChainScheduler(ChainConfiguration conf, Scheduler scheduler) throws ActionFailedException {
         if (Util.isEmpty(conf))
-            throw new HapptickException(403L, "Configuration des Chain ist NULL oder leer.");
+            throw new ActionFailedException(10403L, "Configuration des Chain ist NULL oder leer.");
 
         this.scheduler = scheduler;
         this.conf = conf;
         // check if there are links
         if (Util.isEmpty(conf.getChainLinkList().size())) {
             LocalLog.warn("Chain-Konfiguration ohne Link-Angaben. ChainId: " + conf.getChainId());
-            throw new HapptickException(403L, "ChainId: " + conf.getChainId());
+            throw new ActionFailedException(10403L, "ChainId: " + conf.getChainId());
         }
 
         try {
@@ -58,14 +57,14 @@ public class ChainScheduler implements EventObserver, Runnable {
             // interested in
             if (MasterTable.isEventsUsed()) {
                 Scheduling.filterObservedEventsForChain(conf.getChainId(), observedEvents, expectedEventActions, MasterTable.getEventConfigurationsAsList());
-                // Hinzufügen der events, die als condition oder prevent in
+                // Hinzufï¿½gen der events, die als condition oder prevent in
                 // den chain-konfigurationen sind
                 for (ChainLink link : conf.getChainLinkList()) {
                     Scheduling.updateObservedEventsForChain(observedEvents, expectedEventActions, link);
                 }
             }
         } catch (ActionFailedException e) {
-            LocalLog.warn("Scheduling für Chain konnte nicht aktiviert werden.", e);
+            LocalLog.warn("Scheduling fuer Chain konnte nicht aktiviert werden.", e);
         }
         // Events are filtered - now register as observer
         Server.getInstance().registerForEvents(this);
@@ -125,7 +124,7 @@ public class ChainScheduler implements EventObserver, Runnable {
                     // OK - next chain or application please
                     startChainAddressee();
                     return;
-                } catch (HapptickException e) {
+                } catch (ActionFailedException e) {
                     LocalLog.error("Fehler bei Start nach Erhalt eines Stopp-Events des Vorgaengers.", e);
                 }
             }
@@ -204,7 +203,7 @@ public class ChainScheduler implements EventObserver, Runnable {
         this.setEvent(event);
     }
 
-    private synchronized void startChainAddressee() throws HapptickException {
+    private synchronized void startChainAddressee() throws ActionFailedException {
         Long addresseeId = conf.getChainLinkList().get(nextStartConfIndex).getAddresseeId();
         String addresseeType = conf.getChainLinkList().get(nextStartConfIndex).getAddresseeType();
         ChainLink link = conf.getChainLinkList().get(nextStartConfIndex);

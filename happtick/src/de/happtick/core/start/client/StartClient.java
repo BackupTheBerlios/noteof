@@ -7,7 +7,6 @@ import java.util.List;
 import de.happtick.application.client.HapptickApplication;
 import de.happtick.core.event.ApplicationStartEvent;
 import de.happtick.core.event.StartClientEvent;
-import de.happtick.core.exception.HapptickException;
 import de.happtick.core.util.ExternalCalls;
 import de.notEOF.core.enumeration.EventType;
 import de.notEOF.core.exception.ActionFailedException;
@@ -47,7 +46,7 @@ public class StartClient extends HapptickApplication implements EventRecipient {
         doWork();
     }
 
-    private void doWork() throws HapptickException {
+    private void doWork() throws ActionFailedException {
         // Catching important events is defined here
         List<NotEOFEvent> events = new ArrayList<NotEOFEvent>();
         events.add(new ApplicationStartEvent());
@@ -135,7 +134,7 @@ public class StartClient extends HapptickApplication implements EventRecipient {
             }
         }
 
-        private void startApplication(NotEOFEvent startEvent) throws HapptickException {
+        private void startApplication(NotEOFEvent startEvent) throws ActionFailedException {
             String applicationType = null;
             try {
                 applicationType = startEvent.getAttribute("applicationType");
@@ -144,7 +143,7 @@ public class StartClient extends HapptickApplication implements EventRecipient {
             }
 
             if (Util.isEmpty(applicationType))
-                throw new HapptickException(650L, "applicationType");
+                throw new ActionFailedException(10650L, "applicationType");
 
             // create unique identifier for the application process
             String startId = getServerAddress() + String.valueOf(Thread.currentThread().getId()) + String.valueOf(new Date().getTime());
@@ -161,7 +160,7 @@ public class StartClient extends HapptickApplication implements EventRecipient {
                 ExternalCalls calls = new ExternalCalls();
                 calls.callHapptickApplMain(ExternalApplicationStarter.class.getCanonicalName(), getServerAddress(), getServerPort(), startId, startEvent);
             } else
-                throw new HapptickException(1L, "Type: " + applicationType);
+                throw new ActionFailedException(1L, "Type: " + applicationType);
         }
     }
 
@@ -191,7 +190,7 @@ public class StartClient extends HapptickApplication implements EventRecipient {
         //
         // // doWork();
         // err = false;
-        // } catch (HapptickException e1) {
+        // } catch (ActionFailedException e1) {
         // try {
         // Thread.sleep(3000);
         // } catch (InterruptedException e2) {

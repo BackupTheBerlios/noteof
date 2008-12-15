@@ -41,55 +41,55 @@ public class Errors {
         errorList.put(1L, "Nicht erwarteter Fehler.");
 
         // Initializing the happtick client
-        errorList.put(50L, "Unvollstaendige Initialisierung des Happtick Client.");
+        errorList.put(10050L, "Unvollstaendige Initialisierung des Happtick Client.");
 
         // Initializing the happtick service
-        errorList.put(60L, "Unvollstaendige Initialisierung des Happtick Service.");
+        errorList.put(10060L, "Unvollstaendige Initialisierung des Happtick Service.");
 
         // Establishing the connection to service
-        errorList.put(100L, "Fehler bei Verbindungsaufbau zum Service.");
+        errorList.put(10000L, "Fehler bei Verbindungsaufbau zum Service.");
 
         // Client lifecycle faults
-        errorList.put(200L, "Fehler bei Beenden der Verbindung mit Service.");
-        errorList.put(201L, "Fehler bei Anfrage der Start-Erlaubnis beim Service.");
-        errorList.put(202L, "Fehler bei Senden eines Events an den Service.");
-        errorList.put(206L, "Fehler bei Senden der Client-ID an den Service.");
-        errorList.put(207L, "Fehler bei Senden der Beendigung des Clients an den Service.");
-        errorList.put(208L, "Fehler bei Verwendung des Clients. Die Anwendung hat noch keine Starterlaubnis.");
+        errorList.put(10200L, "Fehler bei Beenden der Verbindung mit Service.");
+        errorList.put(10201L, "Fehler bei Anfrage der Start-Erlaubnis beim Service.");
+        errorList.put(10202L, "Fehler bei Senden eines Events an den Service.");
+        errorList.put(10206L, "Fehler bei Senden der Client-ID an den Service.");
+        errorList.put(10207L, "Fehler bei Senden der Beendigung des Clients an den Service.");
+        errorList.put(10208L, "Fehler bei Verwendung des Clients. Die Anwendung hat noch keine Starterlaubnis.");
 
         // Service lifecycle faults
-        errorList.put(300L, "");
+        errorList.put(10300L, "");
 
         // MasterTable errors / Configuration
-        errorList.put(400L, "Fehler bei Hinzufügen eines Service. Falscher Service-Typ.");
-        errorList.put(401L, "Fehler bei Lesen der Client-Konfiguration.");
-        errorList.put(402L, "Fehler bei Entfernen eines Service.");
-        errorList.put(403L, "Fehlerhafte Konfiguration eines Links (Aktion) einer Chain.");
-        errorList.put(404L, "Fehlerhafte oder fehlende Konfiguration einer Applikation.");
-        errorList.put(405L, "Konfigurationsobjekt konnte nicht per Id gefunden werden.");
-        errorList.put(406L, "Fehler bei Zugriff auf selbstdefiniertes Event per Alias-Name.");
+        errorList.put(10400L, "Fehler bei Hinzufï¿½gen eines Service. Falscher Service-Typ.");
+        errorList.put(10401L, "Fehler bei Lesen der Client-Konfiguration.");
+        errorList.put(10402L, "Fehler bei Entfernen eines Service.");
+        errorList.put(10403L, "Fehlerhafte Konfiguration eines Links (Aktion) einer Chain.");
+        errorList.put(10404L, "Fehlerhafte oder fehlende Konfiguration einer Applikation.");
+        errorList.put(10405L, "Konfigurationsobjekt konnte nicht per Id gefunden werden.");
+        errorList.put(10406L, "Fehler bei Zugriff auf selbstdefiniertes Event per Alias-Name.");
 
         // Scheduler faults
-        errorList.put(500L, "Fehler bei Ermitteln des Startservice zur Anwendung.");
-        errorList.put(501L, "Fehler bei Zuordnung eines Events zu einer Aktion.");
-        errorList.put(502L, "Start einer Anwendung oder einer Chain innerhalb einer Chain ist fehlgeschlagen.");
-        errorList.put(503L, "Start einer Anwendung ist fehlgeschlagen.");
-        errorList.put(504L, "Stoppen einer Anwendung ist fehlgeschlagen.");
+        errorList.put(10500L, "Fehler bei Ermitteln des Startservice zur Anwendung.");
+        errorList.put(10501L, "Fehler bei Zuordnung eines Events zu einer Aktion.");
+        errorList.put(10502L, "Start einer Anwendung oder einer Chain innerhalb einer Chain ist fehlgeschlagen.");
+        errorList.put(10503L, "Start einer Anwendung ist fehlgeschlagen.");
+        errorList.put(10504L, "Stoppen einer Anwendung ist fehlgeschlagen.");
 
         // Mail and Event errors
-        errorList.put(600L, "Fehler bei Senden einer Mail.");
-        errorList.put(601L, "Fehler bei Empfangen einer Mail oder eines Events.");
-        errorList.put(602L, "Fehler bei Festlegen der Begriffe fuer akzeptierte Mails.");
-        errorList.put(603L, "Fehler bei Festlegen der Klassen fuer akzeptierte Events.");
-        errorList.put(604L, "Empfang von Mails oder Events ist noch nicht aktiviert.");
-        errorList.put(605L, "Fehler bei einer vorbereitenden Massnahme fuer den Empfang von Mails.");
+        errorList.put(10600L, "Fehler bei Senden einer Mail.");
+        errorList.put(10601L, "Fehler bei Empfangen einer Mail oder eines Events.");
+        errorList.put(10602L, "Fehler bei Festlegen der Begriffe fuer akzeptierte Mails.");
+        errorList.put(10603L, "Fehler bei Festlegen der Klassen fuer akzeptierte Events.");
+        errorList.put(10604L, "Empfang von Mails oder Events ist noch nicht aktiviert.");
+        errorList.put(10605L, "Fehler bei einer vorbereitenden Massnahme fuer den Empfang von Mails.");
 
         // Start Client
-        errorList.put(650L, "Fehler bei Starten einer Anwendung. Fehlender Wert im Start-Event: ");
-        errorList.put(651L, "Fehler bei Starten einer Anwendung.");
+        errorList.put(10650L, "Fehler bei Starten einer Anwendung. Fehlender Wert im Start-Event: ");
+        errorList.put(10651L, "Fehler bei Starten einer Anwendung.");
 
         // Connection faults
-        errorList.put(700L, "Fehler bei Schliessen einer Verbindung.");
+        errorList.put(10700L, "Fehler bei Schliessen einer Verbindung.");
     }
 
     /*

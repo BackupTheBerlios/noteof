@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import de.happtick.core.exception.HapptickException;
+import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.interfaces.NotEOFEvent;
 import de.notEOF.core.logging.LocalLog;
 import de.notEOF.core.util.Util;
@@ -36,7 +36,7 @@ public class ExternalCalls {
      * @param args
      *            Aufrufargumente (z.B. --applicationPath=/home/appl.sh)
      */
-    public void callHapptickApplMain(String className, String serverAddress, int serverPort, String startId, NotEOFEvent startEvent) throws HapptickException {
+    public void callHapptickApplMain(String className, String serverAddress, int serverPort, String startId, NotEOFEvent startEvent) throws ActionFailedException {
         String applicationId = null;
         String applicationPath = null;
         String startIgnitionTime = null;
@@ -50,9 +50,9 @@ public class ExternalCalls {
         startIgnitionTime = startEvent.getAttribute("startIgnitionTime");
 
         if (Util.isEmpty(applicationId))
-            throw new HapptickException(650L, "applicationId");
+            throw new ActionFailedException(10650L, "applicationId");
         if (Util.isEmpty(applicationPath))
-            throw new HapptickException(650L, "applicationPath");
+            throw new ActionFailedException(10650L, "applicationPath");
 
         int arrSize = 7;
         if (null != arguments)
@@ -96,7 +96,7 @@ public class ExternalCalls {
         }
     }
 
-    public Process startApplication(String serverAddress, int serverPort, String startId, NotEOFEvent event) throws HapptickException {
+    public Process startApplication(String serverAddress, int serverPort, String startId, NotEOFEvent event) throws ActionFailedException {
         System.out.println("ExternalCalls windowsSupport? " + event.getAttribute("windowsSupport"));
         if (Util.parseBoolean(event.getAttribute("windowsSupport"), false)) {
             return startWindowsApplication(serverAddress, serverPort, startId, event);
@@ -105,7 +105,7 @@ public class ExternalCalls {
         }
     }
 
-    public Process startHapptickApplication(String serverAddress, int serverPort, String startId, NotEOFEvent event) throws HapptickException {
+    public Process startHapptickApplication(String serverAddress, int serverPort, String startId, NotEOFEvent event) throws ActionFailedException {
         String applicationId = null;
         String applicationPath = null;
         try {
@@ -116,9 +116,9 @@ public class ExternalCalls {
         }
 
         if (Util.isEmpty(applicationId))
-            throw new HapptickException(650L, "applicationId");
+            throw new ActionFailedException(10650L, "applicationId");
         if (Util.isEmpty(applicationPath))
-            throw new HapptickException(650L, "applicationPath");
+            throw new ActionFailedException(10650L, "applicationPath");
 
         List<String> arguments = new ArrayList<String>();
         for (int i = 0; i < 999; i++) {
@@ -230,7 +230,7 @@ public class ExternalCalls {
 
     }
 
-    public Process startAppl(String applicationPath, String[] arguments, String[] environment, boolean windowsSupport) throws HapptickException {
+    public Process startAppl(String applicationPath, String[] arguments, String[] environment, boolean windowsSupport) throws ActionFailedException {
         Process proc;
 
         String cmdLine = applicationPath + " ";
@@ -252,12 +252,12 @@ public class ExternalCalls {
                 proc = runtime.exec(cmdLine);
             }
         } catch (IOException ioEx) {
-            throw new HapptickException(651L, "Application: " + applicationPath, ioEx);
+            throw new ActionFailedException(10651L, "Application: " + applicationPath, ioEx);
         }
         return proc;
     }
 
-    public Process startWindowsApplication(String serverAddress, int serverPort, String startId, NotEOFEvent event) throws HapptickException {
+    public Process startWindowsApplication(String serverAddress, int serverPort, String startId, NotEOFEvent event) throws ActionFailedException {
         String applicationId = null;
         String applicationPath = null;
         try {
@@ -268,9 +268,9 @@ public class ExternalCalls {
         }
 
         if (Util.isEmpty(applicationId))
-            throw new HapptickException(650L, "applicationId");
+            throw new ActionFailedException(10650L, "applicationId");
         if (Util.isEmpty(applicationPath))
-            throw new HapptickException(650L, "applicationPath");
+            throw new ActionFailedException(10650L, "applicationPath");
 
         List<String> env = new ArrayList<String>();
         for (String key : event.getAttributes().keySet()) {

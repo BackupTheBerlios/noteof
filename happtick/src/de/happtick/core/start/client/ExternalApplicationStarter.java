@@ -4,8 +4,8 @@ import de.happtick.application.client.HapptickApplication;
 import de.happtick.core.event.ApplicationStartErrorEvent;
 import de.happtick.core.event.ApplicationStartedEvent;
 import de.happtick.core.event.ApplicationStoppedEvent;
-import de.happtick.core.exception.HapptickException;
 import de.happtick.core.util.ExternalCalls;
+import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.interfaces.NotEOFEvent;
 import de.notEOF.core.logging.LocalLog;
 import de.notEOF.core.util.ArgsParser;
@@ -30,16 +30,16 @@ public class ExternalApplicationStarter extends HapptickApplication {
      * @param serverAddress
      * @param serverPort
      * @param applArgs
-     * @throws HapptickException
+     * @throws ActionFailedException
      */
     public ExternalApplicationStarter(long applicationId, String startId, String applicationPath, String serverAddress, int serverPort,
-            String startIgnitionTime, boolean windowsSupport, String[] applArgs, String... envParams) throws HapptickException {
+            String startIgnitionTime, boolean windowsSupport, String[] applArgs, String... envParams) throws ActionFailedException {
         super(applicationId, serverAddress, serverPort, applArgs);
 
         if (Util.isEmpty(applicationId))
-            throw new HapptickException(650L, "applicationId");
+            throw new ActionFailedException(10650L, "applicationId");
         if (Util.isEmpty(applicationPath))
-            throw new HapptickException(650L, "applicationPath");
+            throw new ActionFailedException(10650L, "applicationPath");
 
         WorkerProcess worker = new WorkerProcess(applicationId, applicationPath, startId, startIgnitionTime, windowsSupport, applArgs);
         Thread workerThread = new Thread(worker);
@@ -65,7 +65,7 @@ public class ExternalApplicationStarter extends HapptickApplication {
     private synchronized void callBackForWorker(NotEOFEvent event) {
         try {
             sendEvent(event);
-        } catch (HapptickException e) {
+        } catch (ActionFailedException e) {
             LocalLog.warn("Event konnte nicht versendet werden. EventType: " + event.getEventType() + "; ApplicationId: " + super.getApplicationId(), e);
         }
     }
@@ -110,7 +110,7 @@ public class ExternalApplicationStarter extends HapptickApplication {
                 ExternalCalls calls = new ExternalCalls();
                 process = calls.startAppl(applicationPath, applArgs, envParams, windowsSupport);
                 started = true;
-            } catch (HapptickException he) {
+            } catch (ActionFailedException he) {
                 errNo = he.getErrNo();
                 errMsg = he.getMessage();
                 th = he;
@@ -195,9 +195,9 @@ public class ExternalApplicationStarter extends HapptickApplication {
      *            <li>--serverPort</> <br>
      *            <li>--arguments</><br>
      *            </ul>
-     * @throws HapptickException
+     * @throws ActionFailedException
      */
-    public static void main(String[] args) throws HapptickException {
+    public static void main(String[] args) throws ActionFailedException {
         // Scan special Happtick arguments
         ArgsParser argsParser = new ArgsParser(args);
         String applicationId = argsParser.getValue("applicationId");

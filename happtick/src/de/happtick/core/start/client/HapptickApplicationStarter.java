@@ -1,8 +1,8 @@
 package de.happtick.core.start.client;
 
 import de.happtick.core.event.ApplicationStartErrorEvent;
-import de.happtick.core.exception.HapptickException;
 import de.happtick.core.util.ExternalCalls;
+import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.interfaces.NotEOFEvent;
 import de.notEOF.core.logging.LocalLog;
 import de.notEOF.core.util.Util;
@@ -21,7 +21,7 @@ public class HapptickApplicationStarter {
      *            events, mails, ...)
      */
     public HapptickApplicationStarter(StartClient startClient, String serverAddress, int serverPort, String startId, NotEOFEvent startEvent)
-            throws HapptickException {
+            throws ActionFailedException {
 
         System.out.println("HapptickApplicationStarter.Construction. Vor new Starter");
         Starter starter = new Starter(startClient, serverAddress, serverPort, startId, startEvent);
@@ -68,7 +68,7 @@ public class HapptickApplicationStarter {
                 System.out.println("HapptickApplicationStarter!!!!!!!!!!!   HAT GESTARTET  2222222222");
 
                 started = true;
-            } catch (HapptickException he) {
+            } catch (ActionFailedException he) {
                 errNo = he.getErrNo();
                 errMsg = he.getMessage();
                 th = he;

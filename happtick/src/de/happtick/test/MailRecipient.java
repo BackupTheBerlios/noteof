@@ -11,7 +11,6 @@ import de.happtick.core.event.ApplicationStartErrorEvent;
 import de.happtick.core.event.ApplicationStartedEvent;
 import de.happtick.core.event.ApplicationStoppedEvent;
 import de.happtick.core.event.LogEvent;
-import de.happtick.core.exception.HapptickException;
 import de.notEOF.core.enumeration.EventType;
 import de.notEOF.core.event.GenericEvent;
 import de.notEOF.core.exception.ActionFailedException;
@@ -28,7 +27,7 @@ public class MailRecipient extends HapptickApplication implements EventRecipient
     private long stampDiff = 0;
     private boolean ready = false;
 
-    public MailRecipient(long applicationId, String serverAddress, int serverPort, String... args) throws HapptickException {
+    public MailRecipient(long applicationId, String serverAddress, int serverPort, String... args) throws ActionFailedException {
         super(applicationId, serverAddress, serverPort, args);
         super.setEventRecipient(this);
 
@@ -37,7 +36,7 @@ public class MailRecipient extends HapptickApplication implements EventRecipient
         reconnection();
     }
 
-    private void reconnection() throws HapptickException {
+    private void reconnection() throws ActionFailedException {
         // // Hinzufuegen von interessanten Nachrichteninhalten
         // MailToken tokens = new MailToken();
         // tokens.add("Begriff");
@@ -136,7 +135,7 @@ public class MailRecipient extends HapptickApplication implements EventRecipient
         // try {
         // reconnection();
         // retry = false;
-        // } catch (HapptickException e1) {
+        // } catch (ActionFailedException e1) {
         // try {
         // Thread.sleep(5000);
         // } catch (InterruptedException e2) {
@@ -145,7 +144,7 @@ public class MailRecipient extends HapptickApplication implements EventRecipient
         // }
     }
 
-    public static void main(String... args) throws HapptickException {
+    public static void main(String... args) throws ActionFailedException {
 
         new MailRecipient(3, "localhost", 3000, args);
 

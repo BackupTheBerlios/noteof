@@ -4,14 +4,13 @@ import java.util.Date;
 
 import de.happtick.application.client.HapptickApplication;
 import de.happtick.core.event.ApplicationStartEvent;
-import de.happtick.core.exception.HapptickException;
 import de.notEOF.core.event.GenericEvent;
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.interfaces.NotEOFEvent;
 
 public class MailSender extends HapptickApplication {
 
-    public MailSender(long applicationId, String serverAddress, int serverPort, String... args) throws HapptickException {
+    public MailSender(long applicationId, String serverAddress, int serverPort, String... args) throws ActionFailedException {
         super(applicationId, serverAddress, serverPort, args);
 
         try {

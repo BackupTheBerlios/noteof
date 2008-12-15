@@ -7,13 +7,12 @@ import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Locale;
 
-import de.happtick.core.exception.HapptickException;
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.util.Util;
 
 public class TestClient {// extends HapptickApplication {
 
-    public TestClient(long applicationId, String serverAddress, int serverPort, String[] args) throws HapptickException {
+    public TestClient(long applicationId, String serverAddress, int serverPort, String[] args) throws ActionFailedException {
 
         List<Integer> integers = new ArrayList<Integer>();
         integers.add(7);
@@ -145,7 +144,7 @@ public class TestClient {// extends HapptickApplication {
                     timePlanMonthdays.contains(calcDate.get(Calendar.DAY_OF_MONTH));
         }
 
-        formatCal("Prüfung für Tag abgeschlossen:                " + timeValueFound, calcDate);
+        formatCal("Prï¿½fung fï¿½r Tag abgeschlossen:                " + timeValueFound, calcDate);
 
         // Jetzt auf Uhrzeit pruefen
         // Sekunden
@@ -161,7 +160,7 @@ public class TestClient {// extends HapptickApplication {
             calcDate.add(Calendar.MINUTE, 1);
             calcDate.set(Calendar.SECOND, timePlanSeconds.get(0));
         }
-        formatCal("Prüfung für Sekunden abgeschlossen:           " + timeValueFound, calcDate);
+        formatCal("Prï¿½fung fï¿½r Sekunden abgeschlossen:           " + timeValueFound, calcDate);
 
         // Minuten
         timeValueFound = false;
@@ -177,7 +176,7 @@ public class TestClient {// extends HapptickApplication {
             calcDate.set(Calendar.MINUTE, timePlanMinutes.get(0));
             calcDate.set(Calendar.SECOND, timePlanSeconds.get(0));
         }
-        formatCal("Prüfung für Minuten abgeschlossen:            " + timeValueFound, calcDate);
+        formatCal("Prï¿½fung fï¿½r Minuten abgeschlossen:            " + timeValueFound, calcDate);
 
         // Stunden
         timeValueFound = false;
@@ -194,7 +193,7 @@ public class TestClient {// extends HapptickApplication {
             calcDate.set(Calendar.MINUTE, timePlanMinutes.get(0));
             calcDate.set(Calendar.SECOND, timePlanSeconds.get(0));
         }
-        formatCal("Prüfung für Stunden abgeschlossen:            " + timeValueFound, calcDate);
+        formatCal("Prï¿½fung fï¿½r Stunden abgeschlossen:            " + timeValueFound, calcDate);
 
     }
 

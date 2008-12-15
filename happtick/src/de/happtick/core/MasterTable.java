@@ -10,7 +10,6 @@ import de.happtick.configuration.ApplicationConfiguration;
 import de.happtick.configuration.ChainConfiguration;
 import de.happtick.configuration.EventConfiguration;
 import de.happtick.core.application.service.ApplicationService;
-import de.happtick.core.exception.HapptickException;
 import de.notEOF.configuration.LocalConfiguration;
 import de.notEOF.core.enumeration.EventType;
 import de.notEOF.core.event.EventFinder;
@@ -228,10 +227,10 @@ public class MasterTable {
      *            The identifier of the event like stored in the configuration.
      * @return The object if found or null.
      */
-    public synchronized static EventConfiguration getEventConfiguration(Long eventId) throws HapptickException {
+    public synchronized static EventConfiguration getEventConfiguration(Long eventId) throws ActionFailedException {
         EventConfiguration ret = eventConfigurations.get(eventId);
         if (Util.isEmpty(ret))
-            throw new HapptickException(405L, "EventConfiguration. Id: " + eventId);
+            throw new ActionFailedException(10405L, "EventConfiguration. Id: " + eventId);
 
         return ret;
     }
@@ -371,7 +370,7 @@ public class MasterTable {
      *            environment as long as only one happtick server is runnnig.
      * @return An ApplicationService or null if not found in master tables.
      */
-    public synchronized static ApplicationService getApplicationServiceByStartId(String startId) throws HapptickException {
+    public synchronized static ApplicationService getApplicationServiceByStartId(String startId) throws ActionFailedException {
         List<ApplicationService> completeList = getApplicationServicesAsList();
         if (!Util.isEmpty(completeList)) {
             for (ApplicationService service : completeList) {
@@ -390,10 +389,10 @@ public class MasterTable {
      * @return The ApplicationConfiguration object or null if not found in
      *         master tables.
      */
-    public synchronized static ApplicationConfiguration getApplicationConfiguration(Long applicationId) throws HapptickException {
+    public synchronized static ApplicationConfiguration getApplicationConfiguration(Long applicationId) throws ActionFailedException {
         ApplicationConfiguration ret = applicationConfigurations.get(applicationId);
         if (Util.isEmpty(ret) && applicationId >= -1)
-            throw new HapptickException(405L, "ApplicationConfiguration. Id: " + applicationId);
+            throw new ActionFailedException(10405L, "ApplicationConfiguration. Id: " + applicationId);
 
         return ret;
     }
@@ -407,14 +406,14 @@ public class MasterTable {
      * @param eventClassName
      *            The complete Aliasname like Alias:EventName.
      * @return A new NotEOFEvent.
-     * @throws HapptickException
+     * @throws ActionFailedException
      *             Is thrown if the event cannot be identified by the
      *             eventClassName.
      */
-    public synchronized static NotEOFEvent getOwnEvent(String eventClassName) throws HapptickException {
+    public synchronized static NotEOFEvent getOwnEvent(String eventClassName) throws ActionFailedException {
         NotEOFEvent event = ownEvents.get(eventClassName);
         if (Util.isEmpty(event)) {
-            throw new HapptickException(406L, "Aliasname: " + eventClassName);
+            throw new ActionFailedException(10406L, "Aliasname: " + eventClassName);
         }
         return event;
     }
@@ -425,7 +424,7 @@ public class MasterTable {
      * @param service
      *            The service that must be added. May be of type
      *            ApplicationService or StartService.
-     * @throws HapptickException
+     * @throws ActionFailedException
      */
     public synchronized static void addService(Service service) {
         LocalLog.info("MasterTable registering service: " + service.getClass().getCanonicalName() + " (clientNetId = " + service.getClientNetId() + ")");
