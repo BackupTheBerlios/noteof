@@ -51,10 +51,7 @@ public class ApplicationClient extends BaseClient implements NotEOFClient, Event
 
     public final void implementationLastSteps() {
         if (!stopped) {
-            try {
-                stop(0);
-            } catch (ActionFailedException e) {
-            }
+            stop(0);
         }
     }
 
@@ -77,7 +74,7 @@ public class ApplicationClient extends BaseClient implements NotEOFClient, Event
      *            The return code or another result of the application.
      * @throws ActionFailedException
      */
-    public void stop(int exitCode) throws ActionFailedException {
+    public void stop(int exitCode) {
         stopped = true;
         if (null != allowanceWaiter)
             allowanceWaiter.stop();
@@ -87,20 +84,34 @@ public class ApplicationClient extends BaseClient implements NotEOFClient, Event
             writeMsg(ApplicationTag.PROCESS_STOP_WORK);
             System.out.println("ApplicationClient.stop  Vor awaitRequest...");
             awaitRequestAnswerImmediateTimedOut(ApplicationTag.REQ_EXIT_CODE, ApplicationTag.RESP_EXIT_CODE, String.valueOf(exitCode), 10000);
+        } catch (Exception ex) {
+            System.out.println("AAAAAAAAAAAAAAAAAAAAAAAA");
+            // LocalLog.warn("Problem bei Stoppen des ApplicationClient. 1XXX!",
+            // ex);
+            // LocalLog.warn("Problem bei Stoppen des ApplicationClient. 1a!");
+        }
+        System.out.println("AAAAAAAAAAAAAAAAAAAAAAAAaflöasflaslajlöasdflöasdfklöasklöjasdföljasdflöjasflöjksdf");
+        try {
             // give service a little bit time...
-            // TODO Was ist das fï¿½r eine Zahl?
+            // TODO Was ist das fuer eine Zahl?
             System.out.println("ApplicationClient.stop  Vor readMsgTimedOut...");
             readMsgTimedOut(7654);
             System.out.println("ApplicationClient.stop  Vor super.close...");
-        } catch (ActionFailedException e) {
-            System.out.println("ApplicationClient.stop ....... Fehler");
+        } catch (Exception ex) {
+            // LocalLog.warn("Problem bei Stoppen des ApplicationClient. 2!",
+            // ex);
+            System.out.println("ApplicationClient.stop  Vor super.close...");
         }
+        System.out.println("BBBBBBBBBBBBBBBBBBBBBBBBbflöasflaslajlöasdflöasdfklöasklöjasdföljasdflöjasflöjksdf");
         try {
+            System.out.println("Close wird gemacht.");
             super.close();
-            System.out.println("ApplicationClient.stop  Nach super.close...");
-        } catch (ActionFailedException e) {
-            throw new ActionFailedException(10207L, e);
+        } catch (Exception ex) {
+            // LocalLog.warn("Problem bei Stoppen des ApplicationClient. 3!",
+            // ex);
+            System.out.println("Problem bei Stoppen des ApplicationClient. 3!");
         }
+        System.out.println("ApplicationClient.stop  Nach super.close...");
     }
 
     public String requestTo(Enum<?> requestHeader, Enum<?> expectedResponseHeader) throws ActionFailedException {

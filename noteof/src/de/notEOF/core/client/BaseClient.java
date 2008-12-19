@@ -92,13 +92,9 @@ public abstract class BaseClient extends BaseClientOrService implements EventRec
             timeout = getTimeOutObject();
         }
         setTalkLine(new TalkLine(ip, port, timeout.getMillisCommunication()));
-        System.out.println("BaseClient.connect 1");
         registerAtServer(getTalkLine(), timeout, this.args);
-        System.out.println("BaseClient.connect 2");
         activateEventReceiving(new TalkLine(ip, port, 0), getClientNetId());
-        System.out.println("BaseClient.connect 3");
         implementationFirstSteps();
-        System.out.println("BaseClient.connect 4");
     }
 
     public void connect(Socket socketToServer, TimeOut timeout) throws ActionFailedException {
@@ -178,8 +174,10 @@ public abstract class BaseClient extends BaseClientOrService implements EventRec
 
     public void close() throws ActionFailedException {
         // close EventReceiveClient
+        System.out.println("BaseClient.close. Vor eventReceiveClient.stop()");
         eventReceiveClient.stop();
         // close the basic functionality
+        System.out.println("BaseClient.close. Vor super.close()");
         super.close();
     }
 

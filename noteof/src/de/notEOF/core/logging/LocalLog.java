@@ -40,7 +40,12 @@ public class LocalLog {
 
     public static void warn(String additionalInfo, Throwable th) {
         System.out.println(additionalInfo);
-        th.printStackTrace();
+        try {
+            th.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        System.out.println("LocalLog.warn...");
     }
 
     public static void warn(String additionalInfo) {

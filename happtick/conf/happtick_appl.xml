@@ -67,7 +67,7 @@
 				<minutes>*</minutes>
 				<hours>*</hours>
 				<weekdays>*</weekdays>
-				<monthdays>15</monthdays>
+				<monthdays>18</monthdays>
 			</timeplan>
 			
 			<dependencies>
@@ -96,7 +96,7 @@
 				<minutes>*</minutes>
 				<hours>*</hours>
 				<weekdays>*</weekdays>
-				<monthdays>15</monthdays>
+				<monthdays>18</monthdays>
 			</timeplan>
 			
 			<dependencies>

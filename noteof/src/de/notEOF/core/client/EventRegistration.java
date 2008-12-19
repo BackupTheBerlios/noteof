@@ -24,6 +24,7 @@ public class EventRegistration {
         protected void register(TalkLine talkLine, String clientNetId) throws ActionFailedException {
             talkLine.awaitRequestAnswerImmediate(BaseCommTag.REQ_CLIENT_TYPE, BaseCommTag.RESP_CLIENT_TYPE, "RECEIVE_CLIENT");
             talkLine.awaitRequestAnswerImmediate(BaseCommTag.REQ_CLIENT_ID, BaseCommTag.RESP_CLIENT_ID, clientNetId);
+            talkLine.awaitRequest(BaseCommTag.VAL_OK);
         }
     }
 }

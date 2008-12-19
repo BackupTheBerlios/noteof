@@ -5,7 +5,6 @@ import java.util.List;
 
 import de.happtick.application.client.HapptickApplication;
 import de.happtick.core.event.ApplicationStopEvent;
-import de.happtick.core.exception.HapptickException;
 import de.notEOF.core.enumeration.EventType;
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.interfaces.NotEOFEvent;
@@ -17,7 +16,7 @@ import de.notEOF.mail.interfaces.EventRecipient;
 public class Actor extends HapptickApplication implements EventRecipient {
     private boolean stopped = false;
 
-    public Actor(Long applicationId, String serverAddress, int serverPort, String[] args) throws HapptickException {
+    public Actor(Long applicationId, String serverAddress, int serverPort, String[] args) throws ActionFailedException {
         super(null, serverAddress, serverPort, args);
         super.setEventRecipient(this);
 
@@ -34,7 +33,7 @@ public class Actor extends HapptickApplication implements EventRecipient {
      *            Parameter --soundFile=soundFile
      * @throws HapptickException
      */
-    private void doWork(String[] args) throws HapptickException {
+    private void doWork(String[] args) throws ActionFailedException {
         System.out.println("asljasdfjlasdflöasdfklöasdfljkös");
 
         // Anwendung will selbst mails oder events verarbeiten
@@ -114,7 +113,7 @@ public class Actor extends HapptickApplication implements EventRecipient {
     private void sendSoundEvent(NotEOFEvent event) {
         try {
             sendEvent(event);
-        } catch (HapptickException e) {
+        } catch (ActionFailedException e) {
             e.printStackTrace();
         }
     }
@@ -221,7 +220,7 @@ public class Actor extends HapptickApplication implements EventRecipient {
     public static void main(String[] args) {
         try {
             new Actor(null, "localhost", 3000, args);
-        } catch (HapptickException e) {
+        } catch (ActionFailedException e) {
             e.printStackTrace();
         }
     }

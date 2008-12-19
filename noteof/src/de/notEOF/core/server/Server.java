@@ -159,6 +159,7 @@ public class Server implements EventObservable, Runnable {
                 Thread serviceThread = new Thread((Runnable) service);
                 service.setThread(serviceThread);
                 serviceThread.start();
+                talkLine.writeMsg(BaseCommTag.VAL_OK.name());
                 // registerForEvents(service);
 
             } else {
