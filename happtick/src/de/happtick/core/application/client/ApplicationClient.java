@@ -63,6 +63,22 @@ public class ApplicationClient extends BaseClient implements NotEOFClient, Event
         }
     }
 
+    public void processEventException(Exception ex) {
+        eventRecipient.processEventException(ex);
+    }
+
+    public void processMail(NotEOFMail mail) {
+        eventRecipient.processMail(mail);
+    }
+
+    public void processMailException(Exception ex) {
+        eventRecipient.processMailException(ex);
+    }
+
+    public void processStopEvent(NotEOFEvent event) {
+        eventRecipient.processStopEvent(event);
+    }
+
     public void setEventRecipient(EventRecipient eventRecipient) {
         this.eventRecipient = eventRecipient;
     }

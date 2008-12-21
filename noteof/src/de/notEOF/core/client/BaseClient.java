@@ -144,23 +144,23 @@ public abstract class BaseClient extends BaseClientOrService implements EventRec
     }
 
     public void processEvent(NotEOFEvent event) {
-
+        LocalLog.info("Nicht verarbeitetes Event in abgeleiteter Klasse: " + event.getEventType());
     }
 
     public void processEventException(Exception ex) {
-
+        LocalLog.error("Nicht gefangener Fehler in abgeleiteter Klasse.", ex);
     }
 
     public void processMail(NotEOFMail mail) {
-
+        LocalLog.info("Nicht verarbeitetes Mail in abgeleiteter Klasse: " + mail.getHeader());
     }
 
     public void processMailException(Exception ex) {
-
+        LocalLog.error("Nicht gefangener Fehler in abgeleiteter Klasse.", ex);
     }
 
     public void processStopEvent(NotEOFEvent event) {
-
+        LocalLog.info("Nicht verarbeitetes StopEvent in abgeleiteter Klasse. AcpplicationId: " + event.getApplicationId());
     }
 
     /**

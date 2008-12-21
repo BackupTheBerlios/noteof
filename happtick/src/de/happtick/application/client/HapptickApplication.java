@@ -371,7 +371,7 @@ public abstract class HapptickApplication implements EventRecipient {
         applicationClient.stopObservingForStartAllowance();
     }
 
-    private void reconnect() throws ActionFailedException {
+    public void reconnect() throws ActionFailedException {
         applicationClient = new ApplicationClient();
 
         // TODO Wenn dipatched getestet, kann der letzte Parameter auch nach

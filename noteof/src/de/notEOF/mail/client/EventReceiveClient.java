@@ -75,6 +75,7 @@ public class EventReceiveClient {
             Exception thrownException = null;
             try {
                 while (!acceptorToStop) {
+                    System.out.println("EventReceiveClient.run " + recipient.getClass().getSimpleName());
                     try {
                         String awaitMsg = talkLine.readMsgTimedOut(1000);
                         System.out.println("EventReceiveClient$Acceptor.run  Client: " + recipient.getClass().getSimpleName());
@@ -131,12 +132,15 @@ public class EventReceiveClient {
             }
             if (null != thrownException) {
                 if (isMail) {
+                    System.out.println("EventReceiveClient.run. Muss jetzt die processMailException von recipient aufrufen.");
                     recipient.processMailException(thrownException);
                 }
                 if (isEvent) {
+                    System.out.println("EventReceiveClient.run. Muss jetzt die processEventException von recipient aufrufen.");
                     recipient.processEventException(thrownException);
                 }
                 if (!(isMail || isEvent)) {
+                    System.out.println("EventReceiveClient.run. Muss jetzt die processEventException von recipient aufrufen.");
                     recipient.processEventException(thrownException);
                 }
             }

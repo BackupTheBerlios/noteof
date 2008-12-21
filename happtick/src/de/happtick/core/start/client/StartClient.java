@@ -155,7 +155,9 @@ public class StartClient extends HapptickApplication implements EventRecipient {
             // ExternalApplicationStarter will be build and the he starts and
             // controls the 'foreign' process
             if ("INTERNAL".equalsIgnoreCase(applicationType)) {
+                System.out.println("StartClient.startApplication. Vor Internal Starten.");
                 new HapptickApplicationStarter(starter, getServerAddress(), getServerPort(), startId, startEvent);
+                System.out.println("StartClient.startApplication. Nach Internal Starten.");
             } else if ("EXTERNAL".equalsIgnoreCase(applicationType)) {
                 ExternalCalls calls = new ExternalCalls();
                 calls.callHapptickApplMain(ExternalApplicationStarter.class.getCanonicalName(), getServerAddress(), getServerPort(), startId, startEvent);
@@ -173,6 +175,7 @@ public class StartClient extends HapptickApplication implements EventRecipient {
         if (event.equals(EventType.EVENT_APPLICATION_START)) {
             System.out.println("StartClient.processEvent: EVENT_APPLICATION_START mit ApplId: " + event.getAttribute("workApplicationId"));
             startStarter(event);
+            System.out.println("StartClient.processEvent: EVENT_APPLICATION_STARTED mit ApplId: " + event.getAttribute("workApplicationId"));
         }
     }
 
@@ -185,7 +188,12 @@ public class StartClient extends HapptickApplication implements EventRecipient {
         // boolean err = true;
         // while (err) {
         // try {
-        // reconnect();
+        try {
+            reconnect();
+        } catch (ActionFailedException e1) {
+            // TODO Auto-generated catch block
+            e1.printStackTrace();
+        }
         // sendStartEvent();
         //
         // // doWork();
