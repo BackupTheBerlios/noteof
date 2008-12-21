@@ -595,10 +595,11 @@ public class MasterTable {
     public static void updateStartClientEvent(NotEOFEvent event) {
         if (event.equals(EventType.EVENT_START_CLIENT)) {
             if (event.getAttribute("state").equals("START")) {
-                System.out.println("MasterTable.updateStartClientEvent. clientIp ist: " + event.getAttribute("clientIp"));
+                System.out.println("MasterTable.updateStartClientEvent. HINZUFÜGEN... clientIp ist: " + event.getAttribute("clientIp"));
                 startClientEvents.put(event.getAttribute("clientIp"), event);
             }
             if (event.getAttribute("state").equals("STOP")) {
+                System.out.println("MasterTable.updateStartClientEvent. ENTFERNEN...  clientIp ist: " + event.getAttribute("clientIp"));
                 startClientEvents.remove(event.getAttribute("clientIp"));
             }
         }

@@ -39,30 +39,31 @@ public class StartClient extends HapptickApplication implements EventRecipient {
 
     public StartClient(String serverAddress, int port, String[] args) throws ActionFailedException {
         super(new Long(-99), serverAddress, port, args);
-        System.out.println("Intialisierung abgeschlossen.");
         super.setEventRecipient(this);
-        System.out.println("Nach SetEventRecipient");
 
         doWork();
     }
 
-    private void doWork() throws ActionFailedException {
+    private void initEventAccepting() {
         // Catching important events is defined here
         List<NotEOFEvent> events = new ArrayList<NotEOFEvent>();
         events.add(new ApplicationStartEvent());
         try {
             addInterestingEvents(events);
-            System.out.println("Starte jetzt die Annahme von Events.");
             startAcceptingEvents();
-            System.out.println("Annahme von Events abgeschlossen");
         } catch (ActionFailedException e1) {
             // TODO Auto-generated catch block
             e1.printStackTrace();
         }
 
+        sendStartEvent();
+    }
+
+    private void doWork() throws ActionFailedException {
+        initEventAccepting();
+
         // tell scheduler that at this computer a StartClient is active
         System.out.println("Vor SendStartEvent");
-        sendStartEvent();
         System.out.println("Nach SendStartEvent");
 
         while (!stopped) {
@@ -185,28 +186,13 @@ public class StartClient extends HapptickApplication implements EventRecipient {
     @Override
     public void processEventException(Exception e) {
         LocalLog.error("Fehler wurde durch die Event-Schnittstelle ausgeloest.", e);
-        // boolean err = true;
-        // while (err) {
-        // try {
         try {
             reconnect();
+            initEventAccepting();
         } catch (ActionFailedException e1) {
             // TODO Auto-generated catch block
             e1.printStackTrace();
         }
-        // sendStartEvent();
-        //
-        // // doWork();
-        // err = false;
-        // } catch (ActionFailedException e1) {
-        // try {
-        // Thread.sleep(3000);
-        // } catch (InterruptedException e2) {
-        // e2.printStackTrace();
-        // }
-        // e1.printStackTrace();
-        // }
-        // }
     }
 
     /**

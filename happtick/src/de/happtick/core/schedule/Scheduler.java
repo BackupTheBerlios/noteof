@@ -250,6 +250,7 @@ public class Scheduler {
             // Application process could not be started
             // Remove StartEvent
             if (event.equals(EventType.EVENT_START_ERROR)) {
+                System.out.println("Scheduler$SchedulerObserver. Entferne StartEvent.");
                 MasterTable.removeStartEvent(event);
             }
 

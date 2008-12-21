@@ -28,11 +28,7 @@ public class EventReceiveClient {
     }
 
     public void stop() {
-        System.out.println("EventReceiveClient.stop. Vor acceptor.stop");
-        // acceptor = null;
-        // acceptor.notifyAll();
         acceptor.stop();
-        System.out.println("EventReceiveClient.stop. Nach acceptor.stop");
         while (!acceptor.isStopped()) {
             try {
                 Thread.sleep(1000);
@@ -40,7 +36,6 @@ public class EventReceiveClient {
                 e.printStackTrace();
             }
         }
-        System.out.println("EventReceiveClient.stop. Nach warten auf acceptor stopped");
     }
 
     public void startAccepting() throws ActionFailedException {
@@ -50,7 +45,6 @@ public class EventReceiveClient {
         if ((MailTag.VAL_OK.name() + "=" + MailTag.VAL_OK.name()).equals(antwort)) {
             // if (MailTag.VAL_OK.name().equals(talkLine.readMsg())) {
             acceptor = new MailAndEventAcceptor();
-            System.out.println("Ab jetzt sollte eigentlich der Acceptor laufen.");
             new Thread(acceptor).start();
         }
     }
@@ -75,10 +69,8 @@ public class EventReceiveClient {
             Exception thrownException = null;
             try {
                 while (!acceptorToStop) {
-                    System.out.println("EventReceiveClient.run " + recipient.getClass().getSimpleName());
                     try {
                         String awaitMsg = talkLine.readMsgTimedOut(1000);
-                        System.out.println("EventReceiveClient$Acceptor.run  Client: " + recipient.getClass().getSimpleName());
                         if (acceptorToStop) {
                             break;
                         }
@@ -132,15 +124,12 @@ public class EventReceiveClient {
             }
             if (null != thrownException) {
                 if (isMail) {
-                    System.out.println("EventReceiveClient.run. Muss jetzt die processMailException von recipient aufrufen.");
                     recipient.processMailException(thrownException);
                 }
                 if (isEvent) {
-                    System.out.println("EventReceiveClient.run. Muss jetzt die processEventException von recipient aufrufen.");
                     recipient.processEventException(thrownException);
                 }
                 if (!(isMail || isEvent)) {
-                    System.out.println("EventReceiveClient.run. Muss jetzt die processEventException von recipient aufrufen.");
                     recipient.processEventException(thrownException);
                 }
             }

@@ -84,6 +84,10 @@ public abstract class HapptickApplication implements EventRecipient {
         this.args = args;
         this.eventRecipient = eventRecipient;
 
+        reconnect();
+    }
+
+    public void reconnect() throws ActionFailedException {
         applicationClient = new ApplicationClient();
 
         // TODO Wenn dipatched getestet, kann der letzte Parameter auch nach
@@ -92,12 +96,14 @@ public abstract class HapptickApplication implements EventRecipient {
         applicationClient.startIdToService(args);
         applicationClient.applicationIdToService(applicationId);
         if (!Util.isEmpty(eventRecipient)) {
-            System.out.println("HapptickApplication.Construction. EventRecipient ist " + eventRecipient.getClass().getSimpleName());
+            System.out.println("HapptickApplication.reconnect. EventRecipient ist " + eventRecipient.getClass().getSimpleName());
             applicationClient.setEventRecipient(eventRecipient);
         }
+
     }
 
     public void setEventRecipient(EventRecipient eventRecipient) {
+        this.eventRecipient = eventRecipient;
         applicationClient.setEventRecipient(eventRecipient);
     }
 
@@ -348,14 +354,6 @@ public abstract class HapptickApplication implements EventRecipient {
             applicationClient.stop(exitCode);
             System.out.println("HapptickApplication.stop() nach applicationClient.stop()");
         }
-        System.out.println("HapptickApplication.stop() vor super.close()");
-        // try {
-        // applicationClient.stop();
-        // } catch (ActionFailedException e) {
-        // // TODO Auto-generated catch block
-        // e.printStackTrace();
-        // }
-        System.out.println("HapptickApplication.stop() nach super.close()");
     }
 
     public void startWork() throws ActionFailedException {
@@ -369,21 +367,6 @@ public abstract class HapptickApplication implements EventRecipient {
      */
     public void stopObservingForStartAllowance() {
         applicationClient.stopObservingForStartAllowance();
-    }
-
-    public void reconnect() throws ActionFailedException {
-        applicationClient = new ApplicationClient();
-
-        // TODO Wenn dipatched getestet, kann der letzte Parameter auch nach
-        // oben frei gegeben werden...
-        connect(serverAddress, serverPort, args, false);
-        applicationClient.startIdToService(args);
-        applicationClient.applicationIdToService(applicationId);
-        if (!Util.isEmpty(eventRecipient)) {
-            System.out.println("HapptickApplication.reconnect. EventRecipient ist " + eventRecipient.getClass().getSimpleName());
-            applicationClient.setEventRecipient(eventRecipient);
-        }
-
     }
 
     private Socket dispatchSocket(String serverAddress, int serverPort, String[] args) {

@@ -531,18 +531,17 @@ public class Util {
 
         updatingObservers = true;
         // all observer
+        System.out.println("Util.updateObserver. Event ist: " + event.getEventType());
         if (eventObservers.size() > 0) {
             Set<String> set = eventObservers.keySet();
             for (String observerName : set) {
                 // but only inform observer, when event in his list
                 EventObserver eventObserver = eventObservers.get(observerName);
-                System.out.println("Util.updateObserver. Observer: " + observerName);
                 if (null != eventObserver && null != eventObserver.getObservedEvents()) {
                     for (EventType type : eventObserver.getObservedEvents()) {
-                        System.out.println("Util.updateObserver. Observer beobachtet: " + type);
                         if (type.equals(EventType.EVENT_ANY_TYPE) || type.equals(event.getEventType())) {
                             try {
-                                System.out.println("Util.updateObserver. Observer benachrichtigen: " + observerName);
+                                System.out.println("Util.updateObserver. Observer benachrichtigen: " + observerName + "; Event: " + event.getEventType());
                                 new Thread(new ObserverUpdater(eventObserver, service, event)).start();
                             } catch (Exception e) {
                                 LocalLog.error("Fehler bei Weiterleitung eines Events an einen Observer. Observer: " + eventObserver.getName(), e);

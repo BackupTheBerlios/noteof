@@ -75,6 +75,7 @@ public class ApplicationService extends HapptickBaseService implements Service {
 
     public synchronized void processEvent(Service service, NotEOFEvent event) throws ActionFailedException {
         if (event.equals(EventType.EVENT_START_CLIENT)) {
+            System.out.println("ApplicationService.processEvent. Teile MasterTable den Start mit...");
             MasterTable.updateStartClientEvent(event);
         }
     }
