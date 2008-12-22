@@ -217,12 +217,14 @@ public class Scheduler {
         public synchronized void update(Service service, NotEOFEvent event) {
             // Application started
             if (event.equals(EventType.EVENT_APPLICATION_START)) {
+                System.out.println("Scheduler$SchedulerObserver. Füge StartEvent hinzu.");
                 MasterTable.putStartEvent(event);
             }
 
             // Application process now running
             // Activate dependent applications
             if (event.equals(EventType.EVENT_APPLICATION_STARTED)) {
+                System.out.println("Scheduler$SchedulerObserver. Füge StartED!Event hinzu.");
                 MasterTable.replaceStartEvent(event);
             }
 
