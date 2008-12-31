@@ -6,7 +6,7 @@ import java.util.List;
 
 import de.happtick.application.client.HapptickApplication;
 import de.happtick.core.event.ApplicationStartEvent;
-import de.happtick.core.event.StartClientEvent;
+import de.happtick.core.event.InternalClientStarterEvent;
 import de.happtick.core.util.ExternalCalls;
 import de.notEOF.core.enumeration.EventType;
 import de.notEOF.core.exception.ActionFailedException;
@@ -78,7 +78,7 @@ public class StartClient extends HapptickApplication implements EventRecipient {
     }
 
     private void sendStartEvent() {
-        NotEOFEvent event = new StartClientEvent();
+        NotEOFEvent event = new InternalClientStarterEvent();
         try {
             event.addAttribute("state", "START");
             event.addAttribute("clientIp", super.getLocalAddress());
@@ -89,7 +89,7 @@ public class StartClient extends HapptickApplication implements EventRecipient {
     }
 
     private void sendStopEvent() {
-        NotEOFEvent event = new StartClientEvent();
+        NotEOFEvent event = new InternalClientStarterEvent();
         try {
             event.addAttribute("state", "STOP");
             event.addAttribute("clientIp", super.getLocalAddress());

@@ -488,7 +488,7 @@ public class MasterTable {
      * @param startedEvent
      */
     public static synchronized void removeStartEvent(NotEOFEvent event) {
-        startEvents.remove(event.getApplicationId());
+        startEvents.remove(Util.parseLong(event.getAttribute("workApplicationId"), -1));
     }
 
     public static synchronized void replaceStartEvent(NotEOFEvent event) {
@@ -506,8 +506,8 @@ public class MasterTable {
      * 
      * @param applicationId
      */
-    public static synchronized void removeStartEvent(Long applicationId) {
-        startEvents.remove(applicationId);
+    public static synchronized void removeStartEvent(Long workApplicationId) {
+        startEvents.remove(workApplicationId);
     }
 
     /**
@@ -593,12 +593,12 @@ public class MasterTable {
      *            The last fired StartClienEvent of the StartClient
      */
     public static void updateStartClientEvent(NotEOFEvent event) {
-        if (event.equals(EventType.EVENT_START_CLIENT)) {
-            if (event.getAttribute("state").equals("START")) {
+        if (event.equals(EventType.INTERNAL_CLIENT_STARTER_EVENT)) {
+            if (event.getAttribute("state").equalsIgnoreCase("START")) {
                 System.out.println("MasterTable.updateStartClientEvent. HINZUFÜGEN... clientIp ist: " + event.getAttribute("clientIp"));
                 startClientEvents.put(event.getAttribute("clientIp"), event);
             }
-            if (event.getAttribute("state").equals("STOP")) {
+            if (event.getAttribute("state").equalsIgnoreCase("STOP")) {
                 System.out.println("MasterTable.updateStartClientEvent. ENTFERNEN...  clientIp ist: " + event.getAttribute("clientIp"));
                 startClientEvents.remove(event.getAttribute("clientIp"));
             }

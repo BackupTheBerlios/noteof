@@ -374,7 +374,11 @@ public abstract class BaseService extends BaseClientOrService implements Service
         System.out.println("BaseService.processClientEvent");
         NotEOFEvent event = getTalkLine().receiveBaseEvent(Server.getApplicationHome());
         System.out.println("BaseService.processClientEvent. event ist " + event.getEventType());
-        server.postEvent(event, this);
+        postEvent(event, this);
+    }
+
+    protected synchronized void postEvent(NotEOFEvent event, Service service) {
+        server.postEvent(event, service);
     }
 
     protected void finalize() {

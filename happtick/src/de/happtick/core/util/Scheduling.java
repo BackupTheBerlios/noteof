@@ -36,6 +36,7 @@ public class Scheduling {
         public void run() {
             // Check if the StartClient for the IP-Address is active
             while (Util.isEmpty(MasterTable.getStartClientEvent(applConf.getClientIp()))) {
+                System.out.println("Scheduling$ApplicationStarter. Warte auf aktiven StartClient...........");
                 try {
                     Thread.sleep(3000);
                 } catch (InterruptedException e) {
@@ -457,7 +458,7 @@ public class Scheduling {
     }
 
     /**
-     * Delivers a event configuration for a event.
+     * Delivers an event configuration for a event.
      * <p>
      * To find the correct configuration keyName is searched to the attributes
      * of the event. If the keyName matches with the configuration keyName or if
@@ -479,7 +480,7 @@ public class Scheduling {
             // keyName found or no keyName configured but any action...
             // and verify applicationId's
             if ((Util.isEmpty(conf.getKeyName()) || !Util.isEmpty(event.getAttribute(conf.getKeyName())))
-                    && (Util.isEmpty(conf.getApplicationId()) || conf.getApplicationId().equals(event.getApplicationId())))
+                    && (Util.isEmpty(conf.getApplicationId()) || conf.getApplicationId().equals(Util.parseLong(event.getAttribute("workApplicationId"), -1))))
                 foundConfigurations.add(conf);
         }
 

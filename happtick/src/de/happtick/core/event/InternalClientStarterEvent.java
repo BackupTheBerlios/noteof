@@ -20,7 +20,7 @@ import de.notEOF.core.interfaces.NotEOFEvent;
  * @author Dirk
  * 
  */
-public class StartClientEvent extends HapptickEvent implements NotEOFEvent {
+public class InternalClientStarterEvent extends HapptickEvent implements NotEOFEvent {
 
     protected void initDescriptions() {
         descriptions.put("clientIp", "Ip where the StartClient runs.");
@@ -28,6 +28,6 @@ public class StartClientEvent extends HapptickEvent implements NotEOFEvent {
     }
 
     protected void initEventType() {
-        this.eventType = EventType.EVENT_START_CLIENT;
+        this.eventType = EventType.INTERNAL_CLIENT_STARTER_EVENT;
     }
 }

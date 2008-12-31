@@ -4,6 +4,7 @@ import de.happtick.core.MasterTable;
 import de.happtick.core.enumeration.ApplicationTag;
 import de.happtick.core.event.ApplicationStartedEvent;
 import de.happtick.core.event.ApplicationStoppedEvent;
+import de.happtick.core.event.InternalClientStarterEvent;
 import de.happtick.core.service.HapptickBaseService;
 import de.happtick.core.util.Scheduling;
 import de.notEOF.core.enumeration.EventType;
@@ -22,18 +23,34 @@ public class ApplicationService extends HapptickBaseService implements Service {
     private boolean clientIsActive = false;
     private boolean startedEventSent = false;
     private boolean stoppedEventSent = false;
+    private boolean isInternalStartClientService = false;
+    private boolean internalStopSignalSent = false;
 
     /**
      * Overwrite HapptickBaseService because the service mustn't be added to the
      * master table before the client has send his applicationId.
      */
     public void implementationFirstSteps() {
-        // don't delete this method...
-        addObservedEvent(EventType.EVENT_START_CLIENT);
+        addObservedEvent(EventType.INTERNAL_CLIENT_STARTER_EVENT);
         getServer().registerForEvents(this);
     }
 
     public void implementationLastSteps() {
+        if (isInternalStartClientService) {
+            if (!internalStopSignalSent) {
+                try {
+                    String clientHostName = super.getTalkLine().getSocketToPartner().getInetAddress().getHostName();
+                    System.out.println("ApplicationService.implementationLastSteps. .................................. hostName = " + clientHostName);
+                    NotEOFEvent event = new InternalClientStarterEvent();
+                    event.addAttribute("clientIp", clientHostName);
+                    event.addAttribute("state", "STOP");
+                    MasterTable.updateStartClientEvent(event);
+                } catch (ActionFailedException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+        }
         raiseStoppedEvent(this.applicationId, this.startId, 0);
         super.implementationLastSteps();
     }
@@ -74,8 +91,16 @@ public class ApplicationService extends HapptickBaseService implements Service {
     }
 
     public synchronized void processEvent(Service service, NotEOFEvent event) throws ActionFailedException {
-        if (event.equals(EventType.EVENT_START_CLIENT)) {
-            System.out.println("ApplicationService.processEvent. Teile MasterTable den Start mit...");
+        if (event.equals(EventType.INTERNAL_CLIENT_STARTER_EVENT)) {
+            isInternalStartClientService = true;
+            System.out.println("ApplicationService.processEvent. INTERNAL_CLIENT_STARTER_EVENT. " + applicationId);
+
+            if ("STOP".equalsIgnoreCase(event.getAttribute("state"))) {
+                System.out.println("ApplicationService.processEvent. STOP Signal wurde prozessiert. " + applicationId);
+                internalStopSignalSent = true;
+            }
+
+            System.out.println("ApplicationService.processEvent. Teile MasterTable state mit: " + event.getAttribute("state"));
             MasterTable.updateStartClientEvent(event);
         }
     }
@@ -147,15 +172,13 @@ public class ApplicationService extends HapptickBaseService implements Service {
         return this.clientIsActive;
     }
 
-    protected void raiseStartedEvent(Long applicationId, String startId) {
+    protected void raiseStartedEvent(Long workApplicationId, String startId) {
         if (!startedEventSent) {
             NotEOFEvent event = new ApplicationStartedEvent();
             try {
-                event.setApplicationId(applicationId);
-                // event.addAttribute("applicationId",
-                // String.valueOf(applicationId));
+                event.addAttribute("workApplicationId", String.valueOf(workApplicationId));
                 event.addAttribute("startId", String.valueOf(startId));
-                getServer().updateObservers(this, event);
+                postEvent(event, this);
                 startedEventSent = true;
             } catch (Exception e) {
                 LocalLog.warn("StartEvent konnte nicht versendet werden. ApplicationId: " + applicationId);
@@ -163,17 +186,15 @@ public class ApplicationService extends HapptickBaseService implements Service {
         }
     }
 
-    protected void raiseStoppedEvent(Long applicationId, String startId, int exitCode) {
+    protected void raiseStoppedEvent(Long workApplicationId, String startId, int exitCode) {
         if (!stoppedEventSent) {
             NotEOFEvent event = new ApplicationStoppedEvent();
             try {
-                event.setApplicationId(applicationId);
+                event.addAttribute("workApplicationId", String.valueOf(workApplicationId));
                 event.addAttribute("serviceId", String.valueOf(this.serviceId));
-                // event.addAttribute("applicationId",
-                // String.valueOf(applicationId));
                 event.addAttribute("startId", String.valueOf(startId));
                 event.addAttribute("exitCode", String.valueOf(exitCode));
-                getServer().updateObservers(this, event);
+                postEvent(event, this);
                 stoppedEventSent = true;
             } catch (Exception e) {
                 LocalLog.warn("StopEvent konnte nicht versendet werden. ApplicationId: " + applicationId);

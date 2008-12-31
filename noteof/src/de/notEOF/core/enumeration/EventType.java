@@ -22,7 +22,7 @@ public enum EventType {
     /** Start allowance response or request */
     EVENT_START_ALLOWANCE,
     /** Tells the scheduler if the StartClient STARTs or STOPs */
-    EVENT_START_CLIENT,
+    INTERNAL_CLIENT_STARTER_EVENT,
     /**
      * This event tells about an action which happened before - events of this
      * type can raise another action and should be the standard.

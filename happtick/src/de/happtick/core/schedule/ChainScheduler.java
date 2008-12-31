@@ -90,7 +90,7 @@ public class ChainScheduler implements EventObserver, Runnable {
 
             if (event.equals(EventType.EVENT_APPLICATION_STOPPED) && //
                     "application".equalsIgnoreCase(conf.getChainLinkList().get(lastStartedIndex).getAddresseeType())) {
-                if (conf.getChainLinkList().get(lastStartedIndex).getAddresseeId().equals(event.getApplicationId())) {
+                if (conf.getChainLinkList().get(lastStartedIndex).getAddresseeId().equals(Util.parseLong(event.getAttribute("workApplicationId"), -1))) {
                     executeNext = true;
                 }
             }

@@ -83,9 +83,8 @@ public class Scheduler {
                         if (maxWaitTime < new Date().getTime() - timeStamp) {
                             // older - fire StartError
                             NotEOFEvent startAlarm = new ApplicationStartErrorEvent();
-                            startAlarm.setApplicationId(event.getApplicationId());
                             try {
-                                startAlarm.setApplicationId(event.getApplicationId());
+                                startAlarm.addAttribute("workApplicationId", event.getAttribute("workApplicationId"));
                                 startAlarm.addAttribute("clientNetId", "Scheduler");
                                 startAlarm.addAttribute("startId", "?");
                                 startAlarm.addAttribute("errorDescription", "Scheduler Ueberpruefung: IgnitionZeit (" + Math.abs(maxWaitTime / 1000)
@@ -231,11 +230,10 @@ public class Scheduler {
             // Application process stopped
             // Service removes itself from the MasterTable
             if (event.equals(EventType.EVENT_APPLICATION_STOPPED)) {
-                Long stoppedApplId = event.getApplicationId();
+                Long stoppedApplId = Util.parseLong(event.getAttribute("workApplicationId"), -1);
                 MasterTable.removeStartEvent(event);
 
                 // start dependent applications
-                stoppedApplId = event.getApplicationId();
                 try {
                     ApplicationConfiguration stoppedConf = MasterTable.getApplicationConfiguration(stoppedApplId);
                     for (Long applId : stoppedConf.getApplicationsStartAfter()) {
