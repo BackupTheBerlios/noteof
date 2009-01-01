@@ -155,7 +155,6 @@ public class ChainScheduler implements EventObserver, Runnable {
                     }
                     if ("prevent".equalsIgnoreCase(action.getAction()) || //
                             "condition".equalsIgnoreCase(action.getAction())) {
-                        System.out.println("ChainScheduler.setEven. Action wurde gesetzt: " + action.getAction());
                         raisedEventActions.put(actionKey, action);
                     }
                 }

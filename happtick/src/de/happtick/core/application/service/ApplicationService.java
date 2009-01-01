@@ -40,7 +40,6 @@ public class ApplicationService extends HapptickBaseService implements Service {
             if (!internalStopSignalSent) {
                 try {
                     String clientHostName = super.getTalkLine().getSocketToPartner().getInetAddress().getHostName();
-                    System.out.println("ApplicationService.implementationLastSteps. .................................. hostName = " + clientHostName);
                     NotEOFEvent event = new InternalClientStarterEvent();
                     event.addAttribute("clientIp", clientHostName);
                     event.addAttribute("state", "STOP");
@@ -93,14 +92,10 @@ public class ApplicationService extends HapptickBaseService implements Service {
     public synchronized void processEvent(Service service, NotEOFEvent event) throws ActionFailedException {
         if (event.equals(EventType.INTERNAL_CLIENT_STARTER_EVENT)) {
             isInternalStartClientService = true;
-            System.out.println("ApplicationService.processEvent. INTERNAL_CLIENT_STARTER_EVENT. " + applicationId);
 
             if ("STOP".equalsIgnoreCase(event.getAttribute("state"))) {
-                System.out.println("ApplicationService.processEvent. STOP Signal wurde prozessiert. " + applicationId);
                 internalStopSignalSent = true;
             }
-
-            System.out.println("ApplicationService.processEvent. Teile MasterTable state mit: " + event.getAttribute("state"));
             MasterTable.updateStartClientEvent(event);
         }
     }
@@ -131,7 +126,6 @@ public class ApplicationService extends HapptickBaseService implements Service {
 
         // STOP
         if (incomingMsgEnum.equals(ApplicationTag.PROCESS_STOP_WORK)) {
-            System.out.println("ApplicationService. STOPasdklfjasdljsdljk");
             this.exitCode = Util.parseInt(requestTo(ApplicationTag.REQ_EXIT_CODE, ApplicationTag.RESP_EXIT_CODE), -1);
             this.clientIsActive = false;
             writeMsg(ApplicationTag.INFO_TRUE);

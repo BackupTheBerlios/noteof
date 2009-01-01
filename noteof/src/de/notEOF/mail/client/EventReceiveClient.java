@@ -87,7 +87,6 @@ public class EventReceiveClient {
                                     workerThread.start();
                                 }
                                 if (MailTag.VAL_ACTION_EVENT.name().equals(action)) {
-                                    System.out.println("Event BEGINN");
                                     if (workerCounter == Long.MAX_VALUE - 1)
                                         workerCounter = 0;
                                     isEvent = true;
@@ -96,7 +95,6 @@ public class EventReceiveClient {
                                     Thread workerThread = new Thread(worker);
                                     worker.setId(++workerCounter);
                                     workerThread.start();
-                                    System.out.println("Event ENDE");
                                 }
                             }
                         }
@@ -175,7 +173,6 @@ public class EventReceiveClient {
             if (event.equals(EventType.EVENT_APPLICATION_STOP)) {
                 recipient.processStopEvent(event);
             } else {
-                System.out.println("EventReceiveClient.EventWorker.run.   Rufe jetzt den Recipienten auf...");
                 recipient.processEvent(event);
             }
             workerPointer = getId();

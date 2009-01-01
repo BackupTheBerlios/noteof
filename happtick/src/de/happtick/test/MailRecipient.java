@@ -33,10 +33,10 @@ public class MailRecipient extends HapptickApplication implements EventRecipient
 
         System.out.println("MailRecipient.Construction. applicationId = " + this.getApplicationId());
 
-        reconnection();
+        init();
     }
 
-    private void reconnection() throws ActionFailedException {
+    private void init() throws ActionFailedException {
         // // Hinzufuegen von interessanten Nachrichteninhalten
         // MailToken tokens = new MailToken();
         // tokens.add("Begriff");
@@ -68,6 +68,7 @@ public class MailRecipient extends HapptickApplication implements EventRecipient
 
         System.out.println("Jetzt gilts!");
         while (true) {
+            System.out.println("Bin im Loop");
             try {
                 Thread.sleep(10000);
             } catch (InterruptedException e) {
@@ -129,19 +130,13 @@ public class MailRecipient extends HapptickApplication implements EventRecipient
     }
 
     public void processEventException(Exception e) {
-        LocalLog.error("Event-Empfang verursachte Fehler: ", e);
-        // boolean retry = true;
-        // while (retry) {
-        // try {
-        // reconnection();
-        // retry = false;
-        // } catch (ActionFailedException e1) {
-        // try {
-        // Thread.sleep(5000);
-        // } catch (InterruptedException e2) {
-        // }
-        // }
-        // }
+        LocalLog.error("Fehler wurde durch die Event-Schnittstelle ausgeloest.", e);
+        try {
+            reconnect();
+        } catch (ActionFailedException e1) {
+            // TODO Auto-generated catch block
+            e1.printStackTrace();
+        }
     }
 
     public static void main(String... args) throws ActionFailedException {

@@ -56,21 +56,16 @@ public class StartClient extends HapptickApplication implements EventRecipient {
             e1.printStackTrace();
         }
 
+        // tell scheduler that at this computer a StartClient is active
         sendStartEvent();
     }
 
     private void doWork() throws ActionFailedException {
         initEventAccepting();
-
-        // tell scheduler that at this computer a StartClient is active
-        System.out.println("Vor SendStartEvent");
-        System.out.println("Nach SendStartEvent");
-
         while (!stopped) {
             try {
                 Thread.sleep(10000);
             } catch (InterruptedException e) {
-                System.out.println("StartClient wird beendet.\n" + e);
                 break;
             }
         }
@@ -150,8 +145,7 @@ public class StartClient extends HapptickApplication implements EventRecipient {
             String startId = getServerAddress() + String.valueOf(Thread.currentThread().getId()) + String.valueOf(new Date().getTime());
 
             // if type is 'INTERNAL' the application will be started 'directly'
-            // by
-            // it's name
+            // by it's name
             // if type is 'EXTERNAL' an instance of the
             // ExternalApplicationStarter will be build and the he starts and
             // controls the 'foreign' process
@@ -174,9 +168,7 @@ public class StartClient extends HapptickApplication implements EventRecipient {
     @Override
     public synchronized void processEvent(NotEOFEvent event) {
         if (event.equals(EventType.EVENT_APPLICATION_START)) {
-            System.out.println("StartClient.processEvent: EVENT_APPLICATION_START mit ApplId: " + event.getAttribute("workApplicationId"));
             startStarter(event);
-            System.out.println("StartClient.processEvent: EVENT_APPLICATION_STARTED mit ApplId: " + event.getAttribute("workApplicationId"));
         }
     }
 
@@ -188,7 +180,9 @@ public class StartClient extends HapptickApplication implements EventRecipient {
         LocalLog.error("Fehler wurde durch die Event-Schnittstelle ausgeloest.", e);
         try {
             reconnect();
-            initEventAccepting();
+            sendStartEvent();
+
+            // initEventAccepting();
         } catch (ActionFailedException e1) {
             // TODO Auto-generated catch block
             e1.printStackTrace();

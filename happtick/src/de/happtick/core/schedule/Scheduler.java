@@ -216,14 +216,12 @@ public class Scheduler {
         public synchronized void update(Service service, NotEOFEvent event) {
             // Application started
             if (event.equals(EventType.EVENT_APPLICATION_START)) {
-                System.out.println("Scheduler$SchedulerObserver. Füge StartEvent hinzu.");
                 MasterTable.putStartEvent(event);
             }
 
             // Application process now running
             // Activate dependent applications
             if (event.equals(EventType.EVENT_APPLICATION_STARTED)) {
-                System.out.println("Scheduler$SchedulerObserver. Füge StartED!Event hinzu.");
                 MasterTable.replaceStartEvent(event);
             }
 
@@ -250,7 +248,6 @@ public class Scheduler {
             // Application process could not be started
             // Remove StartEvent
             if (event.equals(EventType.EVENT_START_ERROR)) {
-                System.out.println("Scheduler$SchedulerObserver. Entferne StartEvent.");
                 MasterTable.removeStartEvent(event);
             }
 
@@ -354,7 +351,6 @@ public class Scheduler {
 
         if (argsParser.containsStartsWith("--homeVar")) {
             homeVar = argsParser.getValue("homeVar");
-            System.out.println("Scheduler.main: homeVar = " + homeVar);
         }
         if (argsParser.containsStartsWith("--baseConfFile")) {
             baseConfFile = argsParser.getValue("baseConfFile");

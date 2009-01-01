@@ -36,7 +36,6 @@ public class Scheduling {
         public void run() {
             // Check if the StartClient for the IP-Address is active
             while (Util.isEmpty(MasterTable.getStartClientEvent(applConf.getClientIp()))) {
-                System.out.println("Scheduling$ApplicationStarter. Warte auf aktiven StartClient...........");
                 try {
                     Thread.sleep(3000);
                 } catch (InterruptedException e) {
@@ -52,7 +51,6 @@ public class Scheduling {
                         event.addAttribute("applicationPath", applConf.getExecutablePath());
                         event.addAttribute("applicationType", applConf.getExecutableType());
                         event.addAttribute("windowsSupport", String.valueOf(applConf.isWindowsSupport()));
-                        System.out.println("Scheduling windowsSupport? " + event.getAttribute("windowsSupport"));
 
                         // Arguments
                         if (!Util.isEmpty(applConf.getArguments())) {
@@ -76,7 +74,6 @@ public class Scheduling {
                         LocalLog.error("Start einer Anwendung ist fehlgeschlagen.", e);
                     }
 
-                    System.out.println("Scheduling$ApplicationStarter. Sende event");
                     raiseEvent(event);
                 }
             } catch (ActionFailedException e) {

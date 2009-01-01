@@ -190,9 +190,7 @@ public class ApplicationConfigurationWrapper {
             if (key.startsWith("$ENV$")) {
                 String val = map.get(key);
                 int pos = key.indexOf("ENV->") + "ENV->".length();
-                System.out.println("ApplicationConfigurationWrapper... key vorher: " + key);
                 key = key.substring(pos);
-                System.out.println("ApplicationConfigurationWrapper... key nachher: " + key);
                 environment.put(key, val);
             }
         }

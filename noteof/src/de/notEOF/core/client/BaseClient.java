@@ -174,10 +174,8 @@ public abstract class BaseClient extends BaseClientOrService implements EventRec
 
     public void close() throws ActionFailedException {
         // close EventReceiveClient
-        System.out.println("BaseClient.close. Vor eventReceiveClient.stop()");
         eventReceiveClient.stop();
         // close the basic functionality
-        System.out.println("BaseClient.close. Vor super.close()");
         super.close();
     }
 
@@ -206,7 +204,6 @@ public abstract class BaseClient extends BaseClientOrService implements EventRec
      * @throws ActionFailedException
      */
     public synchronized void sendEvent(NotEOFEvent event) throws ActionFailedException {
-        System.out.println("BaseClient.sendEvent. Sende event: " + event.getEventType());
         writeMsg(MailTag.REQ_READY_FOR_EVENT.name());
         getTalkLine().sendBaseEvent(event);
     }

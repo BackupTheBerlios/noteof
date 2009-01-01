@@ -34,6 +34,8 @@ public abstract class HapptickApplication implements EventRecipient {
     int serverPort;
     String[] args;
     private EventRecipient eventRecipient;
+    private List<NotEOFEvent> interestingEvents;
+    private boolean acceptingEvents = false;
 
     public HapptickApplication(Long applicationId, String serverAddress, int serverPort, String... args) throws ActionFailedException {
         this(applicationId, serverAddress, serverPort, null, args);
@@ -57,10 +59,6 @@ public abstract class HapptickApplication implements EventRecipient {
      */
     public HapptickApplication(Long applicationId, String serverAddress, int serverPort, EventRecipient eventRecipient, String... args)
             throws ActionFailedException {
-        System.out.println("applicationId: " + applicationId + "; serverAddress: " + serverAddress + "; serverPort: " + serverPort);
-        for (String arg : args) {
-            System.out.println("arg: " + arg);
-        }
 
         // Verify the hard coded applicationId and the applicationId which is
         // used by the StartClient which got it from the central scheduler.
@@ -84,10 +82,10 @@ public abstract class HapptickApplication implements EventRecipient {
         this.args = args;
         this.eventRecipient = eventRecipient;
 
-        reconnect();
+        connect();
     }
 
-    public void reconnect() throws ActionFailedException {
+    private void connect() throws ActionFailedException {
         applicationClient = new ApplicationClient();
 
         // TODO Wenn dipatched getestet, kann der letzte Parameter auch nach
@@ -96,10 +94,17 @@ public abstract class HapptickApplication implements EventRecipient {
         applicationClient.startIdToService(args);
         applicationClient.applicationIdToService(applicationId);
         if (!Util.isEmpty(eventRecipient)) {
-            System.out.println("HapptickApplication.reconnect. EventRecipient ist " + eventRecipient.getClass().getSimpleName());
             applicationClient.setEventRecipient(eventRecipient);
         }
 
+    }
+
+    public void reconnect() throws ActionFailedException {
+        connect();
+        if (acceptingEvents) {
+            addInterestingEvents(interestingEvents);
+            startAcceptingEvents();
+        }
     }
 
     public void setEventRecipient(EventRecipient eventRecipient) {
@@ -109,11 +114,13 @@ public abstract class HapptickApplication implements EventRecipient {
 
     public void addInterestingEvents(List<NotEOFEvent> events) throws ActionFailedException {
         applicationClient.addInterestingEvents(events);
+        interestingEvents = events;
     }
 
     public void startAcceptingEvents() {
         try {
             applicationClient.startAcceptingEvents();
+            acceptingEvents = true;
         } catch (ActionFailedException e) {
             e.printStackTrace();
         }
@@ -350,9 +357,7 @@ public abstract class HapptickApplication implements EventRecipient {
     public void stop(int exitCode) throws ActionFailedException {
 
         if (null != applicationClient) {
-            System.out.println("HapptickApplication.stop() vor applicationClient.stop()");
             applicationClient.stop(exitCode);
-            System.out.println("HapptickApplication.stop() nach applicationClient.stop()");
         }
     }
 
@@ -464,7 +469,7 @@ public abstract class HapptickApplication implements EventRecipient {
      */
     @Override
     public void processEvent(NotEOFEvent event) {
-        System.out.println("HapptickApplication.processEvent  ");
+        LocalLog.info("HapptickApplication.processEvent. Methode wurde nicht ueberschrieben. Event Type: " + event.getEventType());
     }
 
     /**
@@ -476,6 +481,7 @@ public abstract class HapptickApplication implements EventRecipient {
      */
     @Override
     public void processEventException(Exception exception) {
+        LocalLog.info("HapptickApplication.processEventException. Methode wurde nicht ueberschrieben. Exception Message: " + exception.getMessage());
     }
 
     /**
@@ -488,6 +494,7 @@ public abstract class HapptickApplication implements EventRecipient {
      */
     @Override
     public void processMail(NotEOFMail mail) {
+        LocalLog.info("HapptickApplication.processMail. Methode wurde nicht ueberschrieben. Mail Header: " + mail.getHeader());
     }
 
     /**
@@ -499,6 +506,7 @@ public abstract class HapptickApplication implements EventRecipient {
      */
     @Override
     public void processMailException(Exception exception) {
+        LocalLog.info("HapptickApplication.processMailException. Methode wurde nicht ueberschrieben. Exception Message: " + exception.getMessage());
     }
 
     /**
@@ -513,5 +521,7 @@ public abstract class HapptickApplication implements EventRecipient {
      */
     @Override
     public void processStopEvent(NotEOFEvent event) {
+        LocalLog.info("HapptickApplication.processStopEvent. Methode wurde nicht ueberschrieben. Event Attribute workApplicationId: "
+                + event.getAttribute("workApplicationId"));
     }
 }

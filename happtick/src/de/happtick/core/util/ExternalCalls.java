@@ -36,7 +36,8 @@ public class ExternalCalls {
      * @param args
      *            Aufrufargumente (z.B. --applicationPath=/home/appl.sh)
      */
-    public void callHapptickApplMain(String className, String serverAddress, int serverPort, String startId, NotEOFEvent startEvent) throws ActionFailedException {
+    public void callHapptickApplMain(String className, String serverAddress, int serverPort, String startId, NotEOFEvent startEvent)
+            throws ActionFailedException {
         String applicationId = null;
         String applicationPath = null;
         String startIgnitionTime = null;
@@ -97,7 +98,6 @@ public class ExternalCalls {
     }
 
     public Process startApplication(String serverAddress, int serverPort, String startId, NotEOFEvent event) throws ActionFailedException {
-        System.out.println("ExternalCalls windowsSupport? " + event.getAttribute("windowsSupport"));
         if (Util.parseBoolean(event.getAttribute("windowsSupport"), false)) {
             return startWindowsApplication(serverAddress, serverPort, startId, event);
         } else {

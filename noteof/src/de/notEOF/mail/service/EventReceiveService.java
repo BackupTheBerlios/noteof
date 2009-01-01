@@ -110,7 +110,6 @@ public class EventReceiveService extends BaseService implements EventObserver {
     }
 
     public final void eventToClient(NotEOFEvent event) throws ActionFailedException {
-        System.out.println("EventReceiveService (clientId = " + clientNetId + ") versucht jetzt zu versenden: " + event.getEventType());
         talkLine.writeMsg(MailTag.VAL_ACTION_EVENT.name());
         talkLine.sendBaseEvent(event);
     }
@@ -166,12 +165,10 @@ public class EventReceiveService extends BaseService implements EventObserver {
      * Here the messages of a MailAndEventClient are interpreted and processed.
      */
     public void processClientMsg(Enum<?> incomingMsgEnum) throws ActionFailedException {
-        System.out.println("EventReceiveService.processClientMsg  " + incomingMsgEnum);
         if (incomingMsgEnum.equals(MailTag.REQ_READY_FOR_EXPRESSIONS)) {
             addExpressions();
         }
         if (incomingMsgEnum.equals(MailTag.REQ_READY_FOR_EVENTLIST)) {
-            System.out.println("EventReceiveService.processClientMsg. REQ_READY_FOR_EVENTLIST...");
             addEventClientIsInterestedIn();
         }
 
@@ -185,10 +182,8 @@ public class EventReceiveService extends BaseService implements EventObserver {
             addObservedEvent(EventType.EVENT_MAIL);
             addObservedEvent(EventType.EVENT_APPLICATION_STOP);
             getServer().registerForEvents(this);
-            System.out.println("EventReceiveService.processClientMsg. Registrierung am Server");
         }
         if (incomingMsgEnum.equals(BaseCommTag.REQ_STOP)) {
-            System.out.println("STOP SIGNAL erhalten");
             super.stopService();
         }
 
@@ -215,7 +210,6 @@ public class EventReceiveService extends BaseService implements EventObserver {
         if (null != dataObject && null != dataObject.getList() && dataObject.getList().size() > 0) {
             for (String typeName : (List<String>) dataObject.getList()) {
                 EventType type = EventType.valueOf(typeName);
-                System.out.println("EventReceiveService. Füge event type hinzu: " + type);
                 addObservedEvent(type);
             }
         }

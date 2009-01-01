@@ -154,12 +154,6 @@ public class ApplicationConfiguration {
             node = "scheduler." + nodeNameApplication + ".executable.arg";
             arguments = conf.getTextList(node);
 
-            if (null != arguments) {
-                for (String arg : arguments) {
-                    System.out.println("ARG: " + arg);
-                }
-            }
-
             setEnvironment(readEnv(conf));
 
         } catch (Exception ex) {
@@ -286,7 +280,9 @@ public class ApplicationConfiguration {
             // ok - time point reached, no more other instances are running or
             // multiple
             // start allowed
-            System.out.println("ApplicationConfiguration.startAllowed... SSSSSSSSSTTTTTTTTTTTTTTAAAAAAAAAAAAAAARRRRRRRRRRRRRRRRTTTTTTTTTTTT");
+            // System.out.println(
+            // "ApplicationConfiguration.startAllowed... SSSSSSSSSTTTTTTTTTTTTTTAAAAAAAAAAAAAAARRRRRRRRRRRRRRRRTTTTTTTTTTTT"
+            // );
             return 0;
         }
 

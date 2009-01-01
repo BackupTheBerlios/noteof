@@ -23,7 +23,6 @@ public class HapptickApplicationStarter {
     public HapptickApplicationStarter(StartClient startClient, String serverAddress, int serverPort, String startId, NotEOFEvent startEvent)
             throws ActionFailedException {
 
-        System.out.println("HapptickApplicationStarter.Construction. Vor new Starter");
         Starter starter = new Starter(startClient, serverAddress, serverPort, startId, startEvent);
         new Thread(starter).start();
     }
@@ -46,7 +45,6 @@ public class HapptickApplicationStarter {
         public void run() {
             String applicationId = null;
             String applicationPath = null;
-            System.out.println("HapptickApplicationStarter$Starter.run. 1");
             applicationId = String.valueOf(this.startEvent.getAttribute("workApplicationId"));
             applicationPath = this.startEvent.getAttribute("applicationPath");
 
