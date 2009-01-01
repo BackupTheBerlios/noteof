@@ -334,8 +334,8 @@ public class Server implements EventObservable, Runnable {
      *            The event itself.
      */
     public void updateObservers(Service service, NotEOFEvent event) {
-        Util.postEvent(service, event);
-        // Util.updateAllObserver(service, event);
+        // Util.postEvent(service, event);
+        Util.updateAllObserver(service, event);
     }
 
     /**
