@@ -11,7 +11,7 @@ set CLASSPATH=%CLASSPATH%;c:\Projekte\workspace\happtick\lib\happtick.jar
 
 
 echo %CLASSPATH%
-java de.happtick.test.MailSender
+java de.happtick.test.MailSender --ip=192.168.0.2
 
 pause
 

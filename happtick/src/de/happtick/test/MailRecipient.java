@@ -16,6 +16,7 @@ import de.notEOF.core.event.GenericEvent;
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.interfaces.NotEOFEvent;
 import de.notEOF.core.logging.LocalLog;
+import de.notEOF.core.util.ArgsParser;
 import de.notEOF.mail.NotEOFMail;
 import de.notEOF.mail.interfaces.EventRecipient;
 
@@ -140,8 +141,14 @@ public class MailRecipient extends HapptickApplication implements EventRecipient
     }
 
     public static void main(String... args) throws ActionFailedException {
+        String ip = "localhost";
 
-        new MailRecipient(3, "localhost", 3000, args);
+        ArgsParser argsParser = new ArgsParser(args);
+        if (argsParser.containsStartsWith("--ip")) {
+            System.out.println("asdlalöjasdfklöasdfjklöasdfkljasdfkljasdfkljsfkljsadfljsljöslöjsafjkl");
+            ip = argsParser.getValue("ip");
+        }
+        new MailRecipient(3, ip, 3000, args);
 
     }
 

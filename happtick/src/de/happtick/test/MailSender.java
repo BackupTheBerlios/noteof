@@ -8,6 +8,7 @@ import de.notEOF.core.event.GenericEvent;
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.interfaces.NotEOFEvent;
 import de.notEOF.core.logging.LocalLog;
+import de.notEOF.core.util.ArgsParser;
 
 public class MailSender extends HapptickApplication {
 
@@ -70,7 +71,14 @@ public class MailSender extends HapptickApplication {
     }
 
     public static void main(String... args) throws ActionFailedException {
-        new MailSender(0, "localhost", 3000, args);
+        String ip = "localhost";
+
+        ArgsParser argsParser = new ArgsParser(args);
+        if (argsParser.containsStartsWith("--ip")) {
+            System.out.println("asdlalöjasdfklöasdfjklöasdfkljasdfkljasdfkljsfkljsadfljsljöslöjsafjkl");
+            ip = argsParser.getValue("ip");
+        }
+        new MailSender(0, ip, 3000, args);
     }
 
     public void processEventException(Exception e) {
