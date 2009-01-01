@@ -118,7 +118,7 @@ public class MailRecipient extends HapptickApplication implements EventRecipient
     }
 
     public synchronized void processEvent(NotEOFEvent event) {
-        System.out.println("HEY!  " + event.getEventType());
+        // System.out.println("HEY!  " + event.getEventType());
 
         try {
             if (null != event && EventType.EVENT_GENERIC.equals(event.getEventType())) {

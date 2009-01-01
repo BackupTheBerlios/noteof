@@ -51,7 +51,6 @@ public class Server implements EventObservable, Runnable {
     private static ServerSocket serverSocket;
     private static String notEof_Home;
     private static int lastServiceId = 0;
-    private Map<String, EventObserver> eventObservers;
     private static Map<String, Map<String, Service>> allServiceMaps;
     private List<EventReceiveService> eventReceiveServices;
 
@@ -200,7 +199,7 @@ public class Server implements EventObservable, Runnable {
                     // Fire event to all observers which are interested in
                     NewServiceEvent event = new NewServiceEvent();
                     event.addAttribute("serviceId", service.getServiceId());
-                    Util.updateAllObserver(eventObservers, null, event);
+                    Util.updateAllObserver(null, event);
                 } else {
                     // service couldn't be created or found in list by type name
                     throw new ActionFailedException(150L, "Service Typ unbekannt.");
@@ -335,7 +334,8 @@ public class Server implements EventObservable, Runnable {
      *            The event itself.
      */
     public void updateObservers(Service service, NotEOFEvent event) {
-        Util.updateAllObserver(eventObservers, service, event);
+        Util.postEvent(service, event);
+        // Util.updateAllObserver(service, event);
     }
 
     /**
@@ -347,13 +347,11 @@ public class Server implements EventObservable, Runnable {
      *            will be informed for events at a later moment.
      */
     public void registerForEvents(EventObserver eventObserver) {
-        if (null == eventObservers)
-            eventObservers = new HashMap<String, EventObserver>();
-        Util.registerForEvents(eventObservers, eventObserver);
+        Util.registerForEvents(eventObserver);
     }
 
     public void unregisterFromEvents(EventObserver eventObserver) {
-        Util.unregisterFromEvents(eventObservers, eventObserver);
+        Util.unregisterFromEvents(eventObserver);
     }
 
     /*

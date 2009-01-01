@@ -27,12 +27,16 @@ import de.notEOF.core.server.Server;
  * de.iccs.util.Util.*; And access the Util.*-methods directly.
  */
 public class Util {
-    // private static long allEventsCounter = 0;
-    // private static Date startDate = new Date();
     private static Thread consoleWaitThread;
     private static boolean updatingObservers = false;
     private static boolean registeringObserver = false;
     private static long queueId = 0;
+    private static Map<String, EventObserver> eventObservers;
+
+    private static boolean observerUpdaterActive = false;
+    private static Updater updater = null;
+    private static List<Service> serviceList = new ArrayList<Service>();
+    private static List<NotEOFEvent> eventList = new ArrayList<NotEOFEvent>();
 
     private Util() {
     }
@@ -430,7 +434,7 @@ public class Util {
         return simpleName;
     }
 
-    public static synchronized void registerForEvents(Map<String, EventObserver> eventObservers, EventObserver eventObserver) {
+    public static synchronized void registerForEvents(EventObserver eventObserver) {
         // wait for updating the observers
         while (updatingObservers) {
             try {
@@ -439,10 +443,12 @@ public class Util {
                 e.printStackTrace();
             }
         }
+        if (null == eventObservers)
+            eventObservers = new HashMap<String, EventObserver>();
         eventObservers.put(eventObserver.getName(), eventObserver);
     }
 
-    public static synchronized void unregisterFromEvents(Map<String, EventObserver> eventObservers, EventObserver eventObserver) {
+    public static synchronized void unregisterFromEvents(EventObserver eventObserver) {
         if (null != eventObservers && null != eventObserver) {
             registeringObserver = true;
 
@@ -482,6 +488,38 @@ public class Util {
         }
     }
 
+    public static void postEvent(Service service, NotEOFEvent event) {
+        if (!observerUpdaterActive) {
+            updater = new Updater();
+            Thread thread = new Thread(updater);
+            thread.start();
+            observerUpdaterActive = true;
+        }
+        updater.addEvent(service, event);
+    }
+
+    private static class Updater implements Runnable {
+
+        public void addEvent(Service service, NotEOFEvent event) {
+            serviceList.add(service);
+            eventList.add(event);
+        }
+
+        @Override
+        public void run() {
+            while (!serviceList.isEmpty()) {
+                Service service = serviceList.get(0);
+                NotEOFEvent event = eventList.get(0);
+                serviceList.remove(0);
+                eventList.remove(0);
+                updateAllObserver(service, event);
+            }
+            observerUpdaterActive = false;
+            serviceList.clear();
+            eventList.clear();
+        }
+    }
+
     /**
      * Fires an event to all registered Observer.
      * <p>
@@ -495,7 +533,7 @@ public class Util {
      * @param event
      *            Implementation of Type ClientEvent.
      */
-    public synchronized static void updateAllObserver(Map<String, EventObserver> eventObservers, Service service, NotEOFEvent event) {
+    public synchronized static void updateAllObserver(Service service, NotEOFEvent event) {
         if (null == event) {
             return;
         }
