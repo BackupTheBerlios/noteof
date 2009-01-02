@@ -27,8 +27,8 @@ import de.notEOF.core.interfaces.NotEOFEvent;
  * observers. </>
  * <li>Util:State:LastEventProcessingTime -> Last time used for event
  * processing. </>
- * <li>Util:State:MinEventProcessingTime -> Best time for processing an event
- * since server started (millis). </>
+ * <li>Util:State:AvgEventProcessingTime -> Average time for event processing
+ * (millis). </>
  * <li>Util:State:MaxEventProcessingTime -> Slowest event processing (millis).
  * </>
  * <li>Server:Counter:SumServices -> Number of services since server started.
@@ -51,7 +51,7 @@ public class SystemInfoEvent extends NotEOFBaseEvent implements NotEOFEvent {
         descriptions.put("Util:Counter:SumEventThreads", "Sum of all threads which feed(ed) observers.");
         descriptions.put("Util:Counter:CompletedEventThreads", "Finished threads for feeding observers.");
         descriptions.put("Util:State:LastEventProcessingTime", "Last time used for event processing.");
-        descriptions.put("Util:State:MinEventProcessingTime", "Best time for processing an event since server started (millis).");
+        descriptions.put("Util:State:AvgEventProcessingTime", "Average time for event processing (millis).");
         descriptions.put("Util:State:MaxEventProcessingTime", "Slowest event processing (millis).");
         descriptions.put("Server:Counter:SumServices", "Number of services since server started.");
         descriptions.put("Server:Counter:ActiveServices", "Active services for clients.");

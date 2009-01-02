@@ -106,7 +106,7 @@ public class Statistics {
             event.addAttribute("Util:Counter:ActiveEventThreads", String.valueOf(newThreadCounter - finishedThreadCounter));
             event.addAttribute("Util:Counter:CompletedEventThreads", String.valueOf(finishedThreadCounter));
             event.addAttribute("Util:State:LastEventProcessingTime", String.valueOf(threadDuration));
-            event.addAttribute("Util:State:MinEventProcessingTime", String.valueOf(avgThreadDuration));
+            event.addAttribute("Util:State:AvgEventProcessingTime", String.valueOf(avgThreadDuration));
             event.addAttribute("Util:State:MaxEventProcessingTime", String.valueOf(maxThreadDuration));
             event.addAttribute("Server:Counter:SumServices", String.valueOf(newServiceCounter));
             event.addAttribute("Server:Counter:ActiveServices", String.valueOf(newServiceCounter - finishedServiceCounter));

@@ -55,7 +55,7 @@ public class SystemInfoClient extends BaseClient implements NotEOFClient, EventR
                 System.out.println("Sum Event Threads:             " + event.getAttribute("Util:Counter:SumEventThreads"));
                 System.out.println("Completed Event Threads:       " + event.getAttribute("Util:Counter:CompletedEventThreads"));
                 System.out.println("Last Event Processing Time:    " + event.getAttribute("Util:State:LastEventProcessingTime"));
-                System.out.println("Minimum Event Processing Time: " + event.getAttribute("Util:State:MinEventProcessingTime"));
+                System.out.println("Average Event Processing Time: " + event.getAttribute("Util:State:AvgEventProcessingTime"));
                 System.out.println("Maximum Event Processing Time: " + event.getAttribute("Util:State:MaxEventProcessingTime"));
                 System.out.println("=======================================================================");
             }
