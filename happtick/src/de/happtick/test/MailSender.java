@@ -44,7 +44,7 @@ public class MailSender extends HapptickApplication {
             // }
 
             long startTime = new Date().getTime();
-            int numberOfEvents = 1000;
+            int numberOfEvents = 500;
             for (int i = 0; i < numberOfEvents; i++) {
                 System.out.println("Versende Event Nr. " + i);
                 NotEOFEvent gEvent = new GenericEvent();

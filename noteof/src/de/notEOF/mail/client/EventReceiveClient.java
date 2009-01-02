@@ -21,6 +21,7 @@ public class EventReceiveClient {
     private EventRecipient recipient;
     TalkLine talkLine;
     private long workerPointer = 0;
+    private List<NotEOFEvent> acceptedEvents;
 
     public EventReceiveClient(TalkLine talkLine, EventRecipient recipient) throws ActionFailedException {
         this.talkLine = talkLine;
@@ -39,6 +40,7 @@ public class EventReceiveClient {
     }
 
     public void startAccepting() throws ActionFailedException {
+        sendInterestingEvents(acceptedEvents);
         talkLine.writeMsg(MailTag.INFO_READY_FOR_EVENTS.name());
 
         String antwort = talkLine.readMsg();
@@ -224,6 +226,22 @@ public class EventReceiveClient {
     }
 
     /**
+     * Add event which the client is interested in.
+     * <p>
+     * If no events are defined the client doesn't receives any event...
+     * 
+     * @param event
+     *            The awaited event.
+     * @throws ActionFailedException
+     */
+    public void addInterestingEvent(NotEOFEvent event) throws ActionFailedException {
+        if (null == acceptedEvents) {
+            acceptedEvents = new ArrayList<NotEOFEvent>();
+        }
+        acceptedEvents.add(event);
+    }
+
+    /**
      * Add events which the client is interested in.
      * <p>
      * If this is not done the client doesn't receives any event...
@@ -233,6 +251,16 @@ public class EventReceiveClient {
      * @throws ActionFailedException
      */
     public void addInterestingEvents(List<NotEOFEvent> events) throws ActionFailedException {
+        if (null == acceptedEvents) {
+            acceptedEvents = new ArrayList<NotEOFEvent>();
+        }
+        acceptedEvents.addAll(events);
+    }
+
+    /**
+     * Sends the list with acceptedEvents to the service.
+     */
+    public void sendInterestingEvents(List<NotEOFEvent> events) throws ActionFailedException {
         if (MailTag.VAL_OK.name().equals(talkLine.requestTo(MailTag.REQ_READY_FOR_EVENTLIST, MailTag.RESP_READY_FOR_EVENTLIST))) {
             DataObject dataObject = new DataObject();
             List<String> eventTypeNames = new ArrayList<String>();

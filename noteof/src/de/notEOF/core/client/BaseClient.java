@@ -254,6 +254,12 @@ public abstract class BaseClient extends BaseClientOrService implements EventRec
         eventReceiveClient.startAccepting();
     }
 
+    public void addInterestingEvent(NotEOFEvent event) throws ActionFailedException {
+        if (Util.isEmpty(eventReceiveClient))
+            throw new ActionFailedException(1L, "eventReceiveClient is NULL");
+        eventReceiveClient.addInterestingEvent(event);
+    }
+
     public void addInterestingEvents(List<NotEOFEvent> events) throws ActionFailedException {
         if (Util.isEmpty(eventReceiveClient))
             throw new ActionFailedException(1L, "eventReceiveClient is NULL");

@@ -51,6 +51,7 @@ public class MailRecipient extends HapptickApplication implements EventRecipient
         // Hinzufuegen von interessanten Events
         List<NotEOFEvent> events = new ArrayList<NotEOFEvent>();
         events.add(new ActionEvent());
+        // events.add(new SystemInfoEvent());
         events.add(new AlarmEvent());
         events.add(new ApplicationStartedEvent());
         events.add(new ApplicationStoppedEvent());
@@ -124,6 +125,9 @@ public class MailRecipient extends HapptickApplication implements EventRecipient
         try {
             if (null != event && EventType.EVENT_GENERIC.equals(event.getEventType())) {
                 System.out.println("Aktuell: " + event.getAttribute("counter"));
+            }
+            if (null != event && EventType.EVENT_SYSTEM_INFO.equals(event.getEventType())) {
+                System.out.println("Events: " + event.getAttribute("Util:Counter:SumEvents"));
             }
         } catch (Exception e) {
             LocalLog.error("Fehler bei Anlegen oder Versand des Events.", e);

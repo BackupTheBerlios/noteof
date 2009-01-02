@@ -33,13 +33,11 @@ public class Util {
     private static long queueId = 0;
     private static Map<String, EventObserver> eventObservers;
 
-    private static boolean observerUpdaterActive = false;
-    private static Updater updater = null;
-    private static List<Service> serviceList = new ArrayList<Service>();
-    private static List<NotEOFEvent> eventList = new ArrayList<NotEOFEvent>();
-
-    private Util() {
-    }
+    // private static boolean observerUpdaterActive = false;
+    // private static Updater updater = null;
+    // private static List<Service> serviceList = new ArrayList<Service>();
+    // private static List<NotEOFEvent> eventList = new
+    // ArrayList<NotEOFEvent>();
 
     /**
      * Parses elements of the string which are delimited by the delimiter.
@@ -476,50 +474,55 @@ public class Util {
         private EventObserver observer;
         private Service service;
         private NotEOFEvent event;
+        private long startTime = 0;
 
         protected ObserverUpdater(EventObserver observer, Service service, NotEOFEvent event) {
+            this.startTime = new Date().getTime();
             this.observer = observer;
             this.service = service;
             this.event = event;
         }
 
         public void run() {
+            Statistics.addNewEventThread();
             observer.update(service, event);
+            Statistics.setEventThreadDuration(new Date().getTime() - startTime);
+            Statistics.addFinishedEventThread();
         }
     }
 
-    public static void postEvent(Service service, NotEOFEvent event) {
-        if (!observerUpdaterActive) {
-            updater = new Updater();
-            Thread thread = new Thread(updater);
-            thread.start();
-            observerUpdaterActive = true;
-        }
-        updater.addEvent(service, event);
-    }
-
-    private static class Updater implements Runnable {
-
-        public void addEvent(Service service, NotEOFEvent event) {
-            serviceList.add(service);
-            eventList.add(event);
-        }
-
-        @Override
-        public void run() {
-            while (!serviceList.isEmpty()) {
-                Service service = serviceList.get(0);
-                NotEOFEvent event = eventList.get(0);
-                serviceList.remove(0);
-                eventList.remove(0);
-                updateAllObserver(service, event);
-            }
-            observerUpdaterActive = false;
-            serviceList.clear();
-            eventList.clear();
-        }
-    }
-
+    // public static void postEvent(Service service, NotEOFEvent event) {
+    // if (!observerUpdaterActive) {
+    // updater = new Updater();
+    // Thread thread = new Thread(updater);
+    // thread.start();
+    // observerUpdaterActive = true;
+    // }
+    // updater.addEvent(service, event);
+    // }
+    //
+    // private static class Updater implements Runnable {
+    //
+    // public void addEvent(Service service, NotEOFEvent event) {
+    // serviceList.add(service);
+    // eventList.add(event);
+    // }
+    //
+    // @Override
+    // public void run() {
+    // while (!serviceList.isEmpty()) {
+    // Service service = serviceList.get(0);
+    // NotEOFEvent event = eventList.get(0);
+    // serviceList.remove(0);
+    // eventList.remove(0);
+    // updateAllObserver(service, event);
+    // }
+    // observerUpdaterActive = false;
+    // serviceList.clear();
+    // eventList.clear();
+    // }
+    // }
+    //
     /**
      * Fires an event to all registered Observer.
      * <p>
@@ -568,6 +571,8 @@ public class Util {
         event.setQueueId(queueId);
 
         updatingObservers = true;
+        Statistics.addNewEvent();
+
         // all observer
         if (eventObservers.size() > 0) {
             Set<String> set = eventObservers.keySet();
@@ -588,6 +593,7 @@ public class Util {
                 }
             }
         }
+        Statistics.addFinishedEvent();
         updatingObservers = false;
     }
 

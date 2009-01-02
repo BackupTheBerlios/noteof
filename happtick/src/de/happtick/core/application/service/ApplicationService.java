@@ -101,7 +101,7 @@ public class ApplicationService extends HapptickBaseService implements Service {
     }
 
     /**
-     * Here the service part of the communication acts between an application
+     * Here the service part for the communication acts between an application
      * client and an application service is implemented.
      */
     @Override

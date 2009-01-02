@@ -26,6 +26,7 @@ import de.notEOF.core.logging.LocalLog;
 import de.notEOF.core.service.BaseService;
 import de.notEOF.core.service.ServiceFinder;
 import de.notEOF.core.util.ArgsParser;
+import de.notEOF.core.util.Statistics;
 import de.notEOF.core.util.Util;
 import de.notEOF.mail.NotEOFMail;
 import de.notEOF.mail.service.EventReceiveService;
@@ -81,6 +82,9 @@ public class Server implements EventObservable, Runnable {
         } catch (IOException ex) {
             throw new ActionFailedException(100L, "Socket Initialisierung mit Port: " + port);
         }
+
+        // activate statistics
+        Statistics.activateEvents(1000);
 
         Server server = getInstance();
         serverThread = new Thread(server);
@@ -159,7 +163,7 @@ public class Server implements EventObservable, Runnable {
                 service.setThread(serviceThread);
                 serviceThread.start();
                 talkLine.writeMsg(BaseCommTag.VAL_OK.name());
-                // registerForEvents(service);
+                Statistics.addNewService();
 
             } else {
                 // COMPLEX Client
@@ -261,6 +265,7 @@ public class Server implements EventObservable, Runnable {
                     throw new ActionFailedException(152L, "Suche des Service: " + serviceTypeName);
                 }
             }
+            Statistics.addNewService();
             return service;
         }
     }

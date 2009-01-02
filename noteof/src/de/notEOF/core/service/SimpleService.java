@@ -5,7 +5,7 @@ import de.notEOF.mail.enumeration.MailTag;
 
 /**
  * This service is used when a client doesn't need a server accept for simple
- * actions like sending mails or events.
+ * actions like sending and receiving mails or events.
  * <p>
  * The SimpleService doesn't process client messages (messages are NOT mails or
  * events).

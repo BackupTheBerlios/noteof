@@ -13,6 +13,8 @@ public enum EventType {
     EVENT_GENERIC,
     /** Default if the type is not specified */
     EVENT_DEFAULT, //
+    /** System info events */
+    EVENT_SYSTEM_INFO,
     /** Alarm was raised */
     EVENT_ALARM,
     /** Error has been occured */

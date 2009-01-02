@@ -16,6 +16,7 @@ import de.notEOF.core.interfaces.Service;
 import de.notEOF.core.interfaces.TimeOut;
 import de.notEOF.core.logging.LocalLog;
 import de.notEOF.core.server.Server;
+import de.notEOF.core.util.Statistics;
 import de.notEOF.core.util.Util;
 import de.notEOF.mail.NotEOFMail;
 import de.notEOF.mail.enumeration.MailTag;
@@ -304,11 +305,12 @@ public abstract class BaseService extends BaseClientOrService implements Service
             close();
         } catch (Exception ex) {
             LocalLog.warn("Verbindung zum Client konnte nicht geschlossen werden. Evtl. bestand zu diesem Zeitpunkt keine Verbindung (mehr).", ex);
+        } finally {
+            server.unregisterFromEvents(this);
+            System.out.println("Service stopped: " + this.getClass().getCanonicalName() + "; id: " + getServiceId());
+            Statistics.addFinishedService();
+            isRunning = false;
         }
-
-        server.unregisterFromEvents(this);
-        System.out.println("Service stopped: " + this.getClass().getCanonicalName() + "; id: " + getServiceId());
-        isRunning = false;
     }
 
     /**

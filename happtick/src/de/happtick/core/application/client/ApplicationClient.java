@@ -504,5 +504,4 @@ public class ApplicationClient extends BaseClient implements NotEOFClient, Event
     public int getServerPort() {
         return super.getPartnerPort();
     }
-
 }
