@@ -408,7 +408,6 @@ public class SocketLayer {
                 break;
 
             }
-
         } catch (SocketTimeoutException ex) {
             throw new ActionFailedException(24L, ex);
         } catch (IOException ex) {

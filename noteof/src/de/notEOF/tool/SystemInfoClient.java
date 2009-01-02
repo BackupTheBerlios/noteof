@@ -64,6 +64,10 @@ public class SystemInfoClient extends BaseClient implements NotEOFClient, EventR
         }
     }
 
+    public void processEventException(Exception exception) {
+        super.reconnect();
+    }
+
     @Override
     public Class<?> serviceForClientByClass() {
         return SimpleService.class;

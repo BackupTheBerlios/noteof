@@ -21,7 +21,7 @@ public class SimpleService extends BaseService {
 
     @Override
     public boolean isLifeSignSystemActive() {
-        return false;
+        return true;
     }
 
     /**

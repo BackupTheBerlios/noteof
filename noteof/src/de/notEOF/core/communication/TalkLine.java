@@ -441,7 +441,6 @@ public class TalkLine implements Observer {
         mapData = new DataObject();
         mapData.setMap(event.getAttributeDescriptions());
         sendDataObject(mapData);
-
     }
 
     /**

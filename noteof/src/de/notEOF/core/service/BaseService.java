@@ -2,6 +2,7 @@ package de.notEOF.core.service;
 
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import de.notEOF.core.BaseClientOrService;
@@ -371,8 +372,17 @@ public abstract class BaseService extends BaseClientOrService implements Service
      * @throws ActionFailedException
      */
     public synchronized void processClientEvent() throws ActionFailedException {
+        long startTime = new Date().getTime();
         NotEOFEvent event = getTalkLine().receiveBaseEvent(Server.getApplicationHome());
         postEvent(event, this);
+
+        // this brakes clients to send events to fast...
+        while (new Date().getTime() - startTime < 100) {
+            try {
+                Thread.sleep(25);
+            } catch (InterruptedException e) {
+            }
+        }
     }
 
     protected synchronized void postEvent(NotEOFEvent event, Service service) {

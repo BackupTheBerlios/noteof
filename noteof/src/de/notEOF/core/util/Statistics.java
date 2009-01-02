@@ -62,7 +62,12 @@ public class Statistics {
 
     public static void setEventThreadDuration(long millis) {
         threadDuration = millis;
-        sumThreadDuration += millis;
+
+        if (Long.MAX_VALUE - (3600000) < sumThreadDuration) {
+            sumThreadDuration = millis;
+        } else {
+            sumThreadDuration += millis;
+        }
 
         if (millis < minThreadDuration) {
             minThreadDuration = millis;

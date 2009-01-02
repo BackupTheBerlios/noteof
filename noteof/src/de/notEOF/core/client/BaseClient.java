@@ -1,6 +1,7 @@
 package de.notEOF.core.client;
 
 import java.net.Socket;
+import java.util.Date;
 import java.util.List;
 
 import de.notEOF.core.BaseClientOrService;
@@ -82,6 +83,21 @@ public abstract class BaseClient extends BaseClientOrService implements EventRec
      * lifeSignSystem, he will stop after a while.
      */
     public BaseClient() {
+    }
+
+    public void reconnect() {
+        while (true) {
+            try {
+                connect(super.getPartnerHostAddress(), super.getPartnerPort(), getTimeOutObject());
+                break;
+            } catch (ActionFailedException e) {
+                System.out.println("BaseClient.reconnect: Fehlgeschlagen. Versuche es in 5 Sekunden erneut.");
+                try {
+                    Thread.sleep(5000);
+                } catch (InterruptedException e1) {
+                }
+            }
+        }
     }
 
     public void connect(String ip, int port, TimeOut timeout) throws ActionFailedException {
@@ -204,8 +220,16 @@ public abstract class BaseClient extends BaseClientOrService implements EventRec
      * @throws ActionFailedException
      */
     public synchronized void sendEvent(NotEOFEvent event) throws ActionFailedException {
+        long startTime = new Date().getTime();
         writeMsg(MailTag.REQ_READY_FOR_EVENT.name());
         getTalkLine().sendBaseEvent(event);
+        // this brakes clients to send events to fast...
+        while (new Date().getTime() - startTime < 100) {
+            try {
+                Thread.sleep(25);
+            } catch (InterruptedException e) {
+            }
+        }
     }
 
     /**
