@@ -12,7 +12,7 @@ set CLASSPATH=%CLASSPATH%;%LIB_PATH%\jdom.jar
 
 
 echo %CLASSPATH%
-java de.happtick.test.MailSender --ip=192.168.0.2
+java happtickTest.test.MailSender --ip=192.168.0.2
 
 pause
 
