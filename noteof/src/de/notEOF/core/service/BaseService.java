@@ -2,7 +2,6 @@ package de.notEOF.core.service;
 
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import de.notEOF.core.BaseClientOrService;
@@ -44,7 +43,9 @@ public abstract class BaseService extends BaseClientOrService implements Service
     List<EventType> observedEvents;
     protected String clientNetId;
     private EventProcessor processor;
-    private long workerPointer = 0;
+    // private long workerPointer = 0;
+
+    private List<Long> wpl = new ArrayList<Long>();
 
     public boolean isRunning() {
         return isRunning;
@@ -173,7 +174,7 @@ public abstract class BaseService extends BaseClientOrService implements Service
     public synchronized void processEvent(Service service, NotEOFEvent event) throws ActionFailedException {
     }
 
-    private class EventWorker implements Runnable {
+    private final class EventWorker implements Runnable {
         private BaseService mainClass;
         private Service service;
         private NotEOFEvent event;
@@ -195,11 +196,12 @@ public abstract class BaseService extends BaseClientOrService implements Service
 
         public void run() {
             try {
-                while (getId() - 1 > workerPointer) {
+                // while (getId() - 1 > workerPointer) {
+                while (getId() != wpl.get(0)) {
+                    System.out.println("getId() = " + getId() + "; wpl.size = " + wpl.size());
                     Thread.sleep(50);
                 }
                 processEvent(service, event);
-                workerPointer = getId();
             } catch (Exception e) {
                 LocalLog
                         .error("Fehler bei Abarbeiten der MessageQueue im EventProcessor des BaseService. Der Service wird aus der Event-Benachrichtigung entfernt und beendet!"
@@ -207,6 +209,9 @@ public abstract class BaseService extends BaseClientOrService implements Service
                 server.unregisterFromEvents(mainClass);
                 e.printStackTrace();
                 stopService();
+            } finally {
+                // workerPointer = getId();
+                wpl.remove(0);
             }
         }
     }
@@ -215,7 +220,7 @@ public abstract class BaseService extends BaseClientOrService implements Service
     // Observern.
     // Ansonsten wuerde der Observable warten muessen, bis der Observer die
     // Verarbeitung abgeschlossen hat.
-    private final class EventProcessor {
+    private class EventProcessor {
         private BaseService mainClass;
         private long workerCounter = 0;
 
@@ -224,10 +229,12 @@ public abstract class BaseService extends BaseClientOrService implements Service
         }
 
         protected synchronized void addAction(Service service, NotEOFEvent event) {
-            if (workerCounter > 999999999)
+            if (workerCounter >= Long.MAX_VALUE - 1) {
                 workerCounter = 0;
+            }
             EventWorker worker = new EventWorker(mainClass, service, event);
             worker.setId(++workerCounter);
+            wpl.add(workerCounter);
             Thread workerThread = new Thread(worker);
             workerThread.start();
         }
@@ -372,17 +379,8 @@ public abstract class BaseService extends BaseClientOrService implements Service
      * @throws ActionFailedException
      */
     public synchronized void processClientEvent() throws ActionFailedException {
-        long startTime = new Date().getTime();
         NotEOFEvent event = getTalkLine().receiveBaseEvent(Server.getApplicationHome());
         postEvent(event, this);
-
-        // this brakes clients to send events to fast...
-        while (new Date().getTime() - startTime < 100) {
-            try {
-                Thread.sleep(25);
-            } catch (InterruptedException e) {
-            }
-        }
     }
 
     protected synchronized void postEvent(NotEOFEvent event, Service service) {

@@ -94,7 +94,6 @@ public class Statistics {
             while (!stopped) {
                 try {
                     Util.updateAllObserver(null, buildEvent());
-
                     Thread.sleep(updateMillis);
                 } catch (Exception e) {
                     e.printStackTrace();

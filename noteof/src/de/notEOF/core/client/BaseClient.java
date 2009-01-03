@@ -3,7 +3,6 @@ package de.notEOF.core.client;
 import java.net.Socket;
 import java.util.Date;
 import java.util.List;
-
 import de.notEOF.core.BaseClientOrService;
 import de.notEOF.core.communication.TalkLine;
 import de.notEOF.core.enumeration.BaseCommTag;
@@ -224,7 +223,7 @@ public abstract class BaseClient extends BaseClientOrService implements EventRec
         writeMsg(MailTag.REQ_READY_FOR_EVENT.name());
         getTalkLine().sendBaseEvent(event);
         // this brakes clients to send events to fast...
-        while (new Date().getTime() - startTime < 100) {
+        while (new Date().getTime() - startTime < 75) {
             try {
                 Thread.sleep(25);
             } catch (InterruptedException e) {

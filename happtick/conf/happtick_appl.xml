@@ -59,7 +59,7 @@
 		<application99 applicationId="1">
 			<client clientIp="localhost"></client>
 			<executable type="internal" path="C:\Projekte\workspace\happdemo\scripts\Actor.bat" windows="true">
-				<arg>--soundFile=c:\Projekte\workspace\happdemo\soundfiles\a.wav</arg>
+				<arg>--soundFile=c:\Projekte\workspace\happdemo\soundfiles\test.wav</arg>
 			</executable>
 			<option partOfChain="false" multiplestart="false" enforce="false"></option>
 			<timeplan> 
@@ -81,7 +81,7 @@
 			<client clientIp="localhost"></client>
 			<executable type="internal" path="java" windows="false">
 				<arg>de.happdemo.Actor</arg>
-				<arg>--soundFile=c:\Projekte\workspace\happdemo\soundfiles\a.wav</arg>
+				<arg>--soundFile=c:\Projekte\workspace\happdemo\soundfiles\test.wav</arg>
 		        <env var="NOTEOF_HOME" val="C:\Projekte\workspace\noteof"></env>
 		        <env var="LIB_PATH"    val="C:\Projekte\workspace\notioc\lib"></env>
 		        <env var="CLASSPATH"   val="$NOTEOF_HOME$\lib\noteof.jar"></env>
@@ -96,7 +96,7 @@
 				<minutes>*</minutes>
 				<hours>*</hours>
 				<weekdays>*</weekdays>
-				<monthdays>22</monthdays>
+				<monthdays>31</monthdays>
 			</timeplan>
 			
 			<dependencies>
