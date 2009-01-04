@@ -2,6 +2,7 @@ package de.notEOF.core.util;
 
 import de.notEOF.core.event.SystemInfoEvent;
 import de.notEOF.core.exception.ActionFailedException;
+import de.notEOF.core.interfaces.EventObserver;
 import de.notEOF.core.interfaces.NotEOFEvent;
 
 /**
@@ -60,6 +61,9 @@ public class Statistics {
     }
 
     public static void addFinishedEventThread() {
+        if (finishedThreadCounter > newThreadCounter) {
+            finishedThreadCounter = newThreadCounter - 1;
+        }
         ++finishedThreadCounter;
     }
 
@@ -92,8 +96,6 @@ public class Statistics {
         }
 
         if (0 < finishedEventCounter) {
-            System.out.println("sumEventDuration: " + sumEventDuration);
-            System.out.println("finishedEventCounter: " + finishedEventCounter);
             avgEventDuration = sumEventDuration / finishedEventCounter;
         }
     }
@@ -170,7 +172,13 @@ public class Statistics {
             stopped = false;
             while (!stopped) {
                 try {
-                    EventDistributor.postEvent(null, buildEvent());
+                    NotEOFEvent event = buildEvent();
+                    if (null != EventDistributor.getSystemInfoObservers()) {
+                        for (EventObserver observer : EventDistributor.getSystemInfoObservers()) {
+                            observer.update(null, event);
+                        }
+                    }
+                    // EventDistributor.postEvent(null, buildEvent());
                     Thread.sleep(updateMillis);
                 } catch (Exception e) {
                     e.printStackTrace();

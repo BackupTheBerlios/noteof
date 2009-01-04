@@ -84,7 +84,7 @@ public class EventDistributor {
         // Here the event gets his unique identifier
         event.setQueueId(queueId);
 
-        updatingObservers = true;
+        // updatingObservers = true;
 
         // all observer
         if (eventObservers.size() > 0) {
@@ -94,11 +94,10 @@ public class EventDistributor {
                 EventObserver eventObserver = eventObservers.get(observerName);
                 if (null != eventObserver && null != eventObserver.getObservedEvents()) {
                     for (EventType type : eventObserver.getObservedEvents()) {
-                        if (type.equals(EventType.EVENT_ANY_TYPE) || type.equals(event.getEventType())) {
+                        if (type.equals(EventType.EVENT_ANY_TYPE) || type.equals(event.getEventType())
+                                && !EventType.EVENT_SYSTEM_INFO.equals(event.getEventType())) {
                             try {
                                 updateObserver.addEvent(eventObserver, service, event);
-                                // new Thread(new ObserverUpdater(eventObserver,
-                                // service, event)).start();
                             } catch (Exception e) {
                                 LocalLog.error("Fehler bei Weiterleitung eines Events an einen Observer. Observer: " + eventObserver.getName(), e);
                             }
@@ -109,7 +108,7 @@ public class EventDistributor {
             }
         }
         Statistics.addFinishedEvent();
-        updatingObservers = false;
+        // updatingObservers = false;
     }
 
     private static class UpdateObserver implements Runnable {
@@ -247,62 +246,6 @@ public class EventDistributor {
         }
     }
 
-    // the object which sends the event would stand still till the observers all
-    // have processed the event.
-    // so the updating is processed within a thread.
-    // private static class ObserverUpdater implements Runnable {
-    // private EventObserver observer;
-    // private Service service;
-    // private NotEOFEvent event;
-    // private long startTime = 0;
-    // private static Object o = new Object();
-    //
-    // private class Bla implements Runnable {
-    // private Thread th;
-    //
-    // private Bla(Thread th) {
-    // this.th = th;
-    // }
-    //
-    // @Override
-    // public void run() {
-    // long startDate = new Date().getTime();
-    // synchronized (o) {
-    // try {
-    // o.wait(60000);
-    // if (new Date().getTime() - startDate >= 60000 && null != th) {
-    // System.out.println("ZEIT IST ABGELAUFEN________________________");
-    // Statistics.addFinishedEventThread();
-    // th.interrupt();
-    // th = null;
-    // }
-    // } catch (InterruptedException e) {
-    // System.out.println("Interrupted Exception________________________");
-    // }
-    // }
-    // }
-    // }
-    //
-    // protected ObserverUpdater(EventObserver observer, Service service,
-    // NotEOFEvent event) {
-    // this.startTime = new Date().getTime();
-    // this.observer = observer;
-    // this.service = service;
-    // this.event = event;
-    // }
-    //
-    // public void run() {
-    // Statistics.addNewEventThread();
-    // new Thread(new Bla(Thread.currentThread())).start();
-    // observer.update(service, event);
-    // Statistics.setEventThreadDuration(new Date().getTime() - startTime);
-    // Statistics.addFinishedEventThread();
-    // synchronized (o) {
-    // o.notify();
-    // }
-    // }
-    // }
-
     public static synchronized void registerForEvents(EventObserver eventObserver) {
         // wait for updating the observers
         while (updatingObservers) {
@@ -312,8 +255,9 @@ public class EventDistributor {
                 e.printStackTrace();
             }
         }
-        if (null == eventObservers)
+        if (null == eventObservers) {
             eventObservers = new HashMap<String, EventObserver>();
+        }
         eventObservers.put(eventObserver.getName(), eventObserver);
         Statistics.addNewObserver();
     }
@@ -338,5 +282,20 @@ public class EventDistributor {
             }
             registeringObserver = false;
         }
+    }
+
+    public static List<EventObserver> getSystemInfoObservers() {
+        if (null == eventObservers)
+            return null;
+        List<EventObserver> systemObservers = new ArrayList<EventObserver>();
+        for (EventObserver observer : eventObservers.values()) {
+            for (EventType type : observer.getObservedEvents()) {
+                if (type.equals(EventType.EVENT_SYSTEM_INFO)) {
+                    systemObservers.add(observer);
+                    break;
+                }
+            }
+        }
+        return systemObservers;
     }
 }
