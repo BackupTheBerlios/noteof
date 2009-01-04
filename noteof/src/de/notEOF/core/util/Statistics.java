@@ -15,6 +15,8 @@ import de.notEOF.core.interfaces.NotEOFEvent;
 public class Statistics {
     private static long newEventCounter = 0;
     private static long finishedEventCounter = 0;
+    private static long newObserverCounter = 0;
+    private static long finishedObserverCounter = 0;
     private static long newThreadCounter = 0;
     private static long finishedThreadCounter = 0;
     private static long newServiceCounter = 0;
@@ -25,6 +27,7 @@ public class Statistics {
     private static long sumThreadDuration = 0;
     private static long avgThreadDuration = 0;
     private static boolean stopped = true;
+    private static long eventWaitTime = 0;
 
     public static void activateEvents(long updateMillis) {
         if (stopped) {
@@ -37,11 +40,19 @@ public class Statistics {
     }
 
     public static void addNewEvent() {
-        ++newEventCounter;
+        setNewEventCounter(getNewEventCounter() + 1);
     }
 
     public static void addFinishedEvent() {
-        ++finishedEventCounter;
+        setFinishedEventCounter(getFinishedEventCounter() + 1);
+    }
+
+    public static void addNewObserver() {
+        ++newObserverCounter;
+    }
+
+    public static void addFinishedObserver() {
+        ++finishedObserverCounter;
     }
 
     public static void addNewEventThread() {
@@ -58,6 +69,13 @@ public class Statistics {
 
     public static void addFinishedService() {
         ++finishedServiceCounter;
+    }
+
+    public static long countObservers() {
+        if (finishedObserverCounter > newObserverCounter) {
+            finishedObserverCounter = newObserverCounter;
+        }
+        return newObserverCounter - finishedObserverCounter;
     }
 
     public static void setEventThreadDuration(long millis) {
@@ -81,6 +99,51 @@ public class Statistics {
         }
     }
 
+    /**
+     * @param newEventCounter
+     *            the newEventCounter to set
+     */
+    public static void setNewEventCounter(long newEventCounter) {
+        Statistics.newEventCounter = newEventCounter;
+    }
+
+    /**
+     * @return the newEventCounter
+     */
+    public static long getNewEventCounter() {
+        return newEventCounter;
+    }
+
+    /**
+     * @param finishedEventCounter
+     *            the finishedEventCounter to set
+     */
+    public static void setFinishedEventCounter(long finishedEventCounter) {
+        Statistics.finishedEventCounter = finishedEventCounter;
+    }
+
+    /**
+     * @return the finishedEventCounter
+     */
+    public static long getFinishedEventCounter() {
+        return finishedEventCounter;
+    }
+
+    /**
+     * @param eventWaitTime
+     *            the eventWaitTime to set
+     */
+    public static void setEventWaitTime(long eventWaitTime) {
+        Statistics.eventWaitTime = eventWaitTime;
+    }
+
+    /**
+     * @return the eventWaitTime
+     */
+    public static long getEventWaitTime() {
+        return eventWaitTime;
+    }
+
     private static class EventSender implements Runnable {
         private long updateMillis = 10000;
 
@@ -93,7 +156,7 @@ public class Statistics {
             stopped = false;
             while (!stopped) {
                 try {
-                    Util.updateAllObserver(null, buildEvent());
+                    EventDistributor.postEvent(null, buildEvent());
                     Thread.sleep(updateMillis);
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -104,17 +167,19 @@ public class Statistics {
         private NotEOFEvent buildEvent() throws ActionFailedException {
             NotEOFEvent event = new SystemInfoEvent();
 
-            event.addAttribute("Util:Counter:SumEvents", String.valueOf(newEventCounter));
-            event.addAttribute("Util:Counter:CompletedEvents", String.valueOf(finishedEventCounter));
-            event.addAttribute("Util:Counter:SumEventThreads", String.valueOf(newThreadCounter));
-            event.addAttribute("Util:Counter:ActiveEventThreads", String.valueOf(newThreadCounter - finishedThreadCounter));
-            event.addAttribute("Util:Counter:CompletedEventThreads", String.valueOf(finishedThreadCounter));
-            event.addAttribute("Util:State:LastEventProcessingTime", String.valueOf(threadDuration));
-            event.addAttribute("Util:State:AvgEventProcessingTime", String.valueOf(avgThreadDuration));
-            event.addAttribute("Util:State:MaxEventProcessingTime", String.valueOf(maxThreadDuration));
-            event.addAttribute("Server:Counter:SumServices", String.valueOf(newServiceCounter));
-            event.addAttribute("Server:Counter:ActiveServices", String.valueOf(newServiceCounter - finishedServiceCounter));
-            event.addAttribute("Server:Counter:FinishedServices", String.valueOf(finishedServiceCounter));
+            event.addAttribute("Counter:SumEvents", String.valueOf(getNewEventCounter()));
+            event.addAttribute("Counter:CompletedEvents", String.valueOf(getFinishedEventCounter()));
+            event.addAttribute("Counter:SumEventThreads", String.valueOf(newThreadCounter));
+            event.addAttribute("Counter:ActiveEventThreads", String.valueOf(newThreadCounter - finishedThreadCounter));
+            event.addAttribute("Counter:CompletedEventThreads", String.valueOf(finishedThreadCounter));
+            event.addAttribute("State:LastEventProcessingTime", String.valueOf(threadDuration));
+            event.addAttribute("State:AvgEventProcessingTime", String.valueOf(avgThreadDuration));
+            event.addAttribute("State:MaxEventProcessingTime", String.valueOf(maxThreadDuration));
+            event.addAttribute("Counter:SumServices", String.valueOf(newServiceCounter));
+            event.addAttribute("Counter:ActiveServices", String.valueOf(newServiceCounter - finishedServiceCounter));
+            event.addAttribute("Counter:FinishedServices", String.valueOf(finishedServiceCounter));
+            event.addAttribute("Counter:Observers", String.valueOf(countObservers()));
+            event.addAttribute("State:DispatcherWaitTime", String.valueOf(getEventWaitTime()));
 
             return event;
         }

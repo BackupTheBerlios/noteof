@@ -162,7 +162,6 @@ public class EventReceiveClient {
 
         public void run() {
             while (getId() - 1 > workerPointer) {
-                System.out.println("-");
                 if (acceptor.isStopped()) {
                     return;
                 }

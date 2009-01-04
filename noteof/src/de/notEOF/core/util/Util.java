@@ -8,18 +8,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 
 import de.notEOF.configuration.LocalConfiguration;
 import de.notEOF.core.enumeration.EventType;
 import de.notEOF.core.event.EventFinder;
 import de.notEOF.core.event.GenericEvent;
 import de.notEOF.core.exception.ActionFailedException;
-import de.notEOF.core.interfaces.EventObserver;
 import de.notEOF.core.interfaces.NotEOFConfiguration;
 import de.notEOF.core.interfaces.NotEOFEvent;
-import de.notEOF.core.interfaces.Service;
-import de.notEOF.core.logging.LocalLog;
 import de.notEOF.core.server.Server;
 
 /**
@@ -28,10 +24,6 @@ import de.notEOF.core.server.Server;
  */
 public class Util {
     private static Thread consoleWaitThread;
-    private static boolean updatingObservers = false;
-    private static boolean registeringObserver = false;
-    private static long queueId = 0;
-    private static Map<String, EventObserver> eventObservers;
 
     // private static boolean observerUpdaterActive = false;
     // private static Updater updater = null;
@@ -432,65 +424,6 @@ public class Util {
         return simpleName;
     }
 
-    public static synchronized void registerForEvents(EventObserver eventObserver) {
-        // wait for updating the observers
-        while (updatingObservers) {
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-        if (null == eventObservers)
-            eventObservers = new HashMap<String, EventObserver>();
-        eventObservers.put(eventObserver.getName(), eventObserver);
-    }
-
-    public static synchronized void unregisterFromEvents(EventObserver eventObserver) {
-        if (null != eventObservers && null != eventObserver) {
-            registeringObserver = true;
-
-            // wait for updating the observers
-            while (updatingObservers) {
-                try {
-                    Thread.sleep(55);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-            try {
-                eventObservers.remove(eventObserver.getName());
-            } catch (Exception e) {
-                LocalLog.warn("EventObserver konnte nicht entfernt werden: " + eventObserver.getName(), e);
-            }
-            registeringObserver = false;
-        }
-    }
-
-    // the object which sends the event would stand still till the observers all
-    // have processed the event.
-    // so the updating is processed within a thread.
-    private static class ObserverUpdater implements Runnable {
-        private EventObserver observer;
-        private Service service;
-        private NotEOFEvent event;
-        private long startTime = 0;
-
-        protected ObserverUpdater(EventObserver observer, Service service, NotEOFEvent event) {
-            this.startTime = new Date().getTime();
-            this.observer = observer;
-            this.service = service;
-            this.event = event;
-        }
-
-        public void run() {
-            Statistics.addNewEventThread();
-            observer.update(service, event);
-            Statistics.setEventThreadDuration(new Date().getTime() - startTime);
-            Statistics.addFinishedEventThread();
-        }
-    }
-
     // public static void postEvent(Service service, NotEOFEvent event) {
     // if (!observerUpdaterActive) {
     // updater = new Updater();
@@ -523,79 +456,6 @@ public class Util {
     // }
     // }
     //
-    /**
-     * Fires an event to all registered Observer.
-     * <p>
-     * Precondition for getting information on observer side is to initialize
-     * the observed event list.
-     * 
-     * @param eventObservers
-     *            List which contains all observers.
-     * @param service
-     *            The Observable which fires the event.
-     * @param event
-     *            Implementation of Type ClientEvent.
-     */
-    public synchronized static void updateAllObserver(Service service, NotEOFEvent event) {
-        if (null == event) {
-            return;
-        }
-        if (null == eventObservers) {
-            return;
-        }
-
-        // set Timestamp if empty
-        event.setTimeStampSend();
-
-        while (registeringObserver) {
-            try {
-                Thread.sleep(50);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-
-        if (queueId == 0)
-            queueId = new Date().getTime() - 1;
-
-        while (new Date().getTime() <= queueId) {
-            try {
-                Thread.sleep(5);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-        queueId = new Date().getTime();
-
-        // Here the event gets his unique identifier
-        event.setQueueId(queueId);
-
-        updatingObservers = true;
-        Statistics.addNewEvent();
-
-        // all observer
-        if (eventObservers.size() > 0) {
-            Set<String> set = eventObservers.keySet();
-            for (String observerName : set) {
-                // but only inform observer, when event in his list
-                EventObserver eventObserver = eventObservers.get(observerName);
-                if (null != eventObserver && null != eventObserver.getObservedEvents()) {
-                    for (EventType type : eventObserver.getObservedEvents()) {
-                        if (type.equals(EventType.EVENT_ANY_TYPE) || type.equals(event.getEventType())) {
-                            try {
-                                new Thread(new ObserverUpdater(eventObserver, service, event)).start();
-                            } catch (Exception e) {
-                                LocalLog.error("Fehler bei Weiterleitung eines Events an einen Observer. Observer: " + eventObserver.getName(), e);
-                            }
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-        Statistics.addFinishedEvent();
-        updatingObservers = false;
-    }
 
     /**
      * Lookup for the EventType by className of NotEOFEvent

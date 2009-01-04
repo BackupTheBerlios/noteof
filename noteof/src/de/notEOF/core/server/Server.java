@@ -26,6 +26,7 @@ import de.notEOF.core.logging.LocalLog;
 import de.notEOF.core.service.BaseService;
 import de.notEOF.core.service.ServiceFinder;
 import de.notEOF.core.util.ArgsParser;
+import de.notEOF.core.util.EventDistributor;
 import de.notEOF.core.util.Statistics;
 import de.notEOF.core.util.Util;
 import de.notEOF.mail.NotEOFMail;
@@ -203,7 +204,7 @@ public class Server implements EventObservable, Runnable {
                     // Fire event to all observers which are interested in
                     NewServiceEvent event = new NewServiceEvent();
                     event.addAttribute("serviceId", service.getServiceId());
-                    Util.updateAllObserver(null, event);
+                    EventDistributor.postEvent(null, event);
                 } else {
                     // service couldn't be created or found in list by type name
                     throw new ActionFailedException(150L, "Service Typ unbekannt.");
@@ -340,7 +341,7 @@ public class Server implements EventObservable, Runnable {
      */
     public void updateObservers(Service service, NotEOFEvent event) {
         // Util.postEvent(service, event);
-        Util.updateAllObserver(service, event);
+        EventDistributor.postEvent(service, event);
     }
 
     /**
@@ -352,11 +353,11 @@ public class Server implements EventObservable, Runnable {
      *            will be informed for events at a later moment.
      */
     public void registerForEvents(EventObserver eventObserver) {
-        Util.registerForEvents(eventObserver);
+        EventDistributor.registerForEvents(eventObserver);
     }
 
     public void unregisterFromEvents(EventObserver eventObserver) {
-        Util.unregisterFromEvents(eventObserver);
+        EventDistributor.unregisterFromEvents(eventObserver);
     }
 
     /*

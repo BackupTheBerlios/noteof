@@ -43,9 +43,13 @@ public abstract class BaseService extends BaseClientOrService implements Service
     List<EventType> observedEvents;
     protected String clientNetId;
     private EventProcessor processor;
+
     // private long workerPointer = 0;
 
-    private List<Long> wpl = new ArrayList<Long>();
+    // private List<Long> wpl = new ArrayList<Long>();
+    // private Map<Long, Thread> workerThreads = new HashMap<Long, Thread>();
+    // private List<NotEOFEvent> eventsToClient;
+    // private List<Service> servicesToClient;
 
     public boolean isRunning() {
         return isRunning;
@@ -154,7 +158,6 @@ public abstract class BaseService extends BaseClientOrService implements Service
                 event.getAttribute("allServices").equalsIgnoreCase("TRUE"))) {
             this.stopService();
         } else {
-
             try {
                 // Prozessor zur Abarbeitung der Events ist eine eigene Klasse
                 // Nur des Handlings halber...
@@ -171,36 +174,32 @@ public abstract class BaseService extends BaseClientOrService implements Service
         }
     }
 
+    /**
+     * This method must be overwritten by the service for special tasks.
+     * <p>
+     * Every time when an event was fired this method will be called. So
+     * overwriting in the derived client works like a callback.
+     * 
+     * @param service
+     *            The service which has raised the event
+     * @param event
+     *            The fired event
+     * @throws ActionFailedException
+     *             Problems within the derived client class can be thrown as
+     *             ActionFailedExceptions.
+     */
     public synchronized void processEvent(Service service, NotEOFEvent event) throws ActionFailedException {
     }
 
-    private final class EventWorker implements Runnable {
+    private class EventProcessor {
         private BaseService mainClass;
-        private Service service;
-        private NotEOFEvent event;
-        private long id = 0;
 
-        protected EventWorker(BaseService mainClass, Service service, NotEOFEvent event) {
+        private EventProcessor(BaseService mainClass) {
             this.mainClass = mainClass;
-            this.service = service;
-            this.event = event;
         }
 
-        protected void setId(long id) {
-            this.id = id;
-        }
-
-        protected long getId() {
-            return this.id;
-        }
-
-        public void run() {
+        protected synchronized void addAction(Service service, NotEOFEvent event) {
             try {
-                // while (getId() - 1 > workerPointer) {
-                while (getId() != wpl.get(0)) {
-                    System.out.println("getId() = " + getId() + "; wpl.size = " + wpl.size());
-                    Thread.sleep(50);
-                }
                 processEvent(service, event);
             } catch (Exception e) {
                 LocalLog
@@ -209,34 +208,7 @@ public abstract class BaseService extends BaseClientOrService implements Service
                 server.unregisterFromEvents(mainClass);
                 e.printStackTrace();
                 stopService();
-            } finally {
-                // workerPointer = getId();
-                wpl.remove(0);
             }
-        }
-    }
-
-    // EventProcessor entkoppelt den Observable (meistens Server) von den
-    // Observern.
-    // Ansonsten wuerde der Observable warten muessen, bis der Observer die
-    // Verarbeitung abgeschlossen hat.
-    private class EventProcessor {
-        private BaseService mainClass;
-        private long workerCounter = 0;
-
-        private EventProcessor(BaseService mainClass) {
-            this.mainClass = mainClass;
-        }
-
-        protected synchronized void addAction(Service service, NotEOFEvent event) {
-            if (workerCounter >= Long.MAX_VALUE - 1) {
-                workerCounter = 0;
-            }
-            EventWorker worker = new EventWorker(mainClass, service, event);
-            worker.setId(++workerCounter);
-            wpl.add(workerCounter);
-            Thread workerThread = new Thread(worker);
-            workerThread.start();
         }
     }
 
@@ -293,11 +265,6 @@ public abstract class BaseService extends BaseClientOrService implements Service
                 // errNo 24L is ok - timeout at read action
                 // Socket communication problem
                 if (afx.getErrNo() == 23L) {
-                    // LocalLog.info(
-                    // "Kommunikation mit Client beendet. ServiceType, ServiceId: "
-                    // + getClass().getSimpleName() + ", " + getServiceId());
-
-                    // getTalkLine();
                     stopped = true;
                 }
                 // Problem when setting timeout

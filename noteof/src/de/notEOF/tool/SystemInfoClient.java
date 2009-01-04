@@ -46,17 +46,19 @@ public class SystemInfoClient extends BaseClient implements NotEOFClient, EventR
                 System.out.println();
                 System.out.println();
                 System.out.println("=======================================================================");
-                System.out.println("Sum Services:                  " + event.getAttribute("Server:Counter:SumServices"));
-                System.out.println("Active Services:               " + event.getAttribute("Server:Counter:ActiveServices"));
-                System.out.println("Finished Services:             " + event.getAttribute("Server:Counter:FinishedServices"));
-                System.out.println("Sum Events:                    " + event.getAttribute("Util:Counter:SumEvents"));
-                System.out.println("Completed Events:              " + event.getAttribute("Util:Counter:CompletedEvents"));
-                System.out.println("Active Event Threads:          " + event.getAttribute("Util:Counter:ActiveEventThreads"));
-                System.out.println("Sum Event Threads:             " + event.getAttribute("Util:Counter:SumEventThreads"));
-                System.out.println("Completed Event Threads:       " + event.getAttribute("Util:Counter:CompletedEventThreads"));
-                System.out.println("Last Event Processing Time:    " + event.getAttribute("Util:State:LastEventProcessingTime"));
-                System.out.println("Average Event Processing Time: " + event.getAttribute("Util:State:AvgEventProcessingTime"));
-                System.out.println("Maximum Event Processing Time: " + event.getAttribute("Util:State:MaxEventProcessingTime"));
+                System.out.println("Sum Services:                  " + event.getAttribute("Counter:SumServices"));
+                System.out.println("Active Services:               " + event.getAttribute("Counter:ActiveServices"));
+                System.out.println("Finished Services:             " + event.getAttribute("Counter:FinishedServices"));
+                System.out.println("Sum Events:                    " + event.getAttribute("Counter:SumEvents"));
+                System.out.println("Completed Events:              " + event.getAttribute("Counter:CompletedEvents"));
+                System.out.println("Active Event Threads:          " + event.getAttribute("Counter:ActiveEventThreads"));
+                System.out.println("Sum Event Threads:             " + event.getAttribute("Counter:SumEventThreads"));
+                System.out.println("Completed Event Threads:       " + event.getAttribute("Counter:CompletedEventThreads"));
+                System.out.println("Last Event Processing Time:    " + event.getAttribute("State:LastEventProcessingTime"));
+                System.out.println("Sum Observers:                 " + event.getAttribute("Counter:Observers"));
+                System.out.println("Average Event Processing Time: " + event.getAttribute("State:AvgEventProcessingTime"));
+                System.out.println("Maximum Event Processing Time: " + event.getAttribute("State:MaxEventProcessingTime"));
+                System.out.println("Event Buffer Wait Time:        " + event.getAttribute("State:DispatcherWaitTime"));
                 System.out.println("=======================================================================");
             }
         } catch (Exception e) {

@@ -223,7 +223,7 @@ public abstract class BaseClient extends BaseClientOrService implements EventRec
         writeMsg(MailTag.REQ_READY_FOR_EVENT.name());
         getTalkLine().sendBaseEvent(event);
         // this brakes clients to send events to fast...
-        while (new Date().getTime() - startTime < 75) {
+        while (new Date().getTime() - startTime < 100) {
             try {
                 Thread.sleep(25);
             } catch (InterruptedException e) {
