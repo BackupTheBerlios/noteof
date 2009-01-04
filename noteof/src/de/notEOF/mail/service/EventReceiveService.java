@@ -83,11 +83,11 @@ public class EventReceiveService extends BaseService implements EventObserver {
                 }
             } else {
                 talkLine.writeMsg(MailTag.REQ_READY_FOR_ACTION.name());
-                try {
-                    eventToClient(event);
-                } catch (Exception e) {
-                    LocalLog.error("Fehler bei Verarbeitung eines Events.", e);
-                }
+                // try {
+                eventToClient(event);
+                // } catch (Exception e) {
+                // LocalLog.error("Fehler bei Verarbeitung eines Events.", e);
+                // }
             }
         } catch (Exception ex) {
             LocalLog.warn("MailAndEventService.processEvent(). Nachricht an MailAndEventClient konnte nicht verschickt werden. " + ex);
@@ -144,11 +144,6 @@ public class EventReceiveService extends BaseService implements EventObserver {
             }
         }
         return false;
-    }
-
-    @Override
-    public String getName() {
-        return hashCode() + ":" + this.getClass().getSimpleName();
     }
 
     @Override

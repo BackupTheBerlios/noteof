@@ -14,7 +14,7 @@ public class EventBuffer implements Runnable {
     private boolean working = false;
     private static Object o = new Object();
 
-    private void updateEventList(Service service, NotEOFEvent event) {
+    private synchronized void updateEventList(Service service, NotEOFEvent event) {
         if (null == event) {
             services.remove(0);
             events.remove(0);
@@ -23,7 +23,7 @@ public class EventBuffer implements Runnable {
             events.add(event);
 
             if (services.size() != events.size()) {
-                System.out.println("EventDistributor.updateEventList. !!! Listendifferenz (vielleicht wegen services, die NULL sind?).");
+                System.out.println("EventBuffer.updateEventList. !!! Listendifferenz (vielleicht wegen services, die NULL sind?).");
             }
         }
     }

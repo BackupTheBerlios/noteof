@@ -2,7 +2,9 @@ package de.notEOF.core.service;
 
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Random;
 
 import de.notEOF.core.BaseClientOrService;
 import de.notEOF.core.communication.TalkLine;
@@ -43,6 +45,7 @@ public abstract class BaseService extends BaseClientOrService implements Service
     List<EventType> observedEvents;
     protected String clientNetId;
     private EventProcessor processor;
+    private String observerName;
 
     // private long workerPointer = 0;
 
@@ -151,26 +154,27 @@ public abstract class BaseService extends BaseClientOrService implements Service
      *            The incoming event that the client has fired or which was
      *            detected by the service.
      */
-    public final void update(Service service, NotEOFEvent event) {
+    public final void update(Service service, NotEOFEvent event) throws ActionFailedException {
         // Stop Event kill the service
         if (event.equals(EventType.EVENT_SERVICE_STOP) && //
                 (event.getAttribute("serviceId").equals(this.getServiceId()) || //
                 event.getAttribute("allServices").equalsIgnoreCase("TRUE"))) {
             this.stopService();
         } else {
-            try {
-                // Prozessor zur Abarbeitung der Events ist eine eigene Klasse
-                // Nur des Handlings halber...
-                if (null == processor) {
-                    processor = new EventProcessor(this);
-                }
-                // Dem Prozessor wird das Event zur Verarbeitung vor die Fuesse
-                // geworfen
-                processor.addAction(service, event);
-            } catch (Exception e) {
-                System.out.println("im Update abgefangen, weil sonst der Server kaputt geht...");
-                e.printStackTrace();
+            // try {
+            // Prozessor zur Abarbeitung der Events ist eine eigene Klasse
+            // Nur des Handlings halber...
+            if (null == processor) {
+                processor = new EventProcessor(this);
             }
+            // Dem Prozessor wird das Event zur Verarbeitung vor die Fuesse
+            // geworfen
+            processor.addAction(service, event);
+            // } catch (AcException e) {
+            // System.out.println(
+            // "im Update abgefangen, weil sonst der Server kaputt geht...");
+            // e.printStackTrace();
+            // }
         }
     }
 
@@ -198,16 +202,17 @@ public abstract class BaseService extends BaseClientOrService implements Service
             this.mainClass = mainClass;
         }
 
-        protected synchronized void addAction(Service service, NotEOFEvent event) {
+        protected synchronized void addAction(Service service, NotEOFEvent event) throws ActionFailedException {
             try {
                 processEvent(service, event);
-            } catch (Exception e) {
+            } catch (ActionFailedException e) {
                 LocalLog
                         .error("Fehler bei Abarbeiten der MessageQueue im EventProcessor des BaseService. Der Service wird aus der Event-Benachrichtigung entfernt und beendet!"
                                 + e);
                 server.unregisterFromEvents(mainClass);
                 e.printStackTrace();
                 stopService();
+                throw new ActionFailedException(e.getErrNo(), e);
             }
         }
     }
@@ -391,6 +396,11 @@ public abstract class BaseService extends BaseClientOrService implements Service
     public abstract boolean isLifeSignSystemActive();
 
     public String getName() {
-        return this.getClass().getSimpleName() + ":" + hashCode() + serviceId;
+        if (null == observerName) {
+            Random rnd = new Random();
+            rnd.setSeed(new Date().getTime());
+            observerName = this.getClass().getSimpleName() + ":#" + hashCode() + ":sid" + serviceId + ":?" + rnd.nextInt();
+        }
+        return observerName;
     }
 }

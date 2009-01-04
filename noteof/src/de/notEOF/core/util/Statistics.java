@@ -21,13 +21,13 @@ public class Statistics {
     private static long finishedThreadCounter = 0;
     private static long newServiceCounter = 0;
     private static long finishedServiceCounter = 0;
-    private static long minThreadDuration = 10000;
-    private static long maxThreadDuration = 0;
-    private static long threadDuration = 0;
-    private static long sumThreadDuration = 0;
-    private static long avgThreadDuration = 0;
+    private static long maxEventDuration = 0;
+    private static long eventDuration = 0;
+    private static long sumEventDuration = 0;
+    private static long avgEventDuration = 0;
     private static boolean stopped = true;
     private static long eventWaitTime = 0;
+    private static long lastEventProcessTime = 0;
 
     public static void activateEvents(long updateMillis) {
         if (stopped) {
@@ -78,24 +78,23 @@ public class Statistics {
         return newObserverCounter - finishedObserverCounter;
     }
 
-    public static void setEventThreadDuration(long millis) {
-        threadDuration = millis;
+    public static void setEventDuration(long millis) {
+        eventDuration = millis;
 
-        if (Long.MAX_VALUE - (3600000) < sumThreadDuration) {
-            sumThreadDuration = millis;
+        if (Long.MAX_VALUE - (3600000) < sumEventDuration) {
+            sumEventDuration = millis;
         } else {
-            sumThreadDuration += millis;
+            sumEventDuration += millis;
         }
 
-        if (millis < minThreadDuration) {
-            minThreadDuration = millis;
-        }
-        if (millis > maxThreadDuration) {
-            maxThreadDuration = millis;
+        if (millis > maxEventDuration) {
+            maxEventDuration = millis;
         }
 
-        if (0 < finishedThreadCounter) {
-            avgThreadDuration = sumThreadDuration / finishedThreadCounter;
+        if (0 < finishedEventCounter) {
+            System.out.println("sumEventDuration: " + sumEventDuration);
+            System.out.println("finishedEventCounter: " + finishedEventCounter);
+            avgEventDuration = sumEventDuration / finishedEventCounter;
         }
     }
 
@@ -144,6 +143,21 @@ public class Statistics {
         return eventWaitTime;
     }
 
+    /**
+     * @param lastEventProcessTime
+     *            the lastEventProcessTime to set
+     */
+    public static void setLastEventProcessTime(long lastEventProcessTime) {
+        Statistics.lastEventProcessTime = lastEventProcessTime;
+    }
+
+    /**
+     * @return the lastEventProcessTime
+     */
+    public static long getLastEventProcessTime() {
+        return lastEventProcessTime;
+    }
+
     private static class EventSender implements Runnable {
         private long updateMillis = 10000;
 
@@ -172,9 +186,9 @@ public class Statistics {
             event.addAttribute("Counter:SumEventThreads", String.valueOf(newThreadCounter));
             event.addAttribute("Counter:ActiveEventThreads", String.valueOf(newThreadCounter - finishedThreadCounter));
             event.addAttribute("Counter:CompletedEventThreads", String.valueOf(finishedThreadCounter));
-            event.addAttribute("State:LastEventProcessingTime", String.valueOf(threadDuration));
-            event.addAttribute("State:AvgEventProcessingTime", String.valueOf(avgThreadDuration));
-            event.addAttribute("State:MaxEventProcessingTime", String.valueOf(maxThreadDuration));
+            event.addAttribute("State:LastEventProcessingTime", String.valueOf(eventDuration));
+            event.addAttribute("State:AvgEventProcessingTime", String.valueOf(avgEventDuration));
+            event.addAttribute("State:MaxEventProcessingTime", String.valueOf(maxEventDuration));
             event.addAttribute("Counter:SumServices", String.valueOf(newServiceCounter));
             event.addAttribute("Counter:ActiveServices", String.valueOf(newServiceCounter - finishedServiceCounter));
             event.addAttribute("Counter:FinishedServices", String.valueOf(finishedServiceCounter));

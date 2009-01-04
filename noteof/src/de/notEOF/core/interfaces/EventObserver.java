@@ -3,6 +3,7 @@ package de.notEOF.core.interfaces;
 import java.util.List;
 
 import de.notEOF.core.enumeration.EventType;
+import de.notEOF.core.exception.ActionFailedException;
 
 public interface EventObserver {
 
@@ -18,8 +19,9 @@ public interface EventObserver {
      * @param event
      *            The incoming event that the client has fired or which was
      *            detected by the service.
+     * @throws ActionFailedException
      */
-    public void update(Service service, NotEOFEvent event);
+    public void update(Service service, NotEOFEvent event) throws ActionFailedException;
 
     /**
      * This function delivers a list with the Events for which the Observer is

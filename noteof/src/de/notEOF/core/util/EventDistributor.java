@@ -1,7 +1,9 @@
 package de.notEOF.core.util;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -16,6 +18,8 @@ public class EventDistributor {
     private static boolean registeringObserver = false;
     private static long queueId = 0;
     protected static Map<String, EventObserver> eventObservers;
+    private static final long MAX_OBSERVER_WAIT_TIME = 60000;
+    private static UpdateObserver updateObserver;
 
     private static EventBuffer eventBuffer;
 
@@ -47,6 +51,11 @@ public class EventDistributor {
         }
         if (null == eventObservers) {
             return;
+        }
+
+        if (null == updateObserver) {
+            updateObserver = new UpdateObserver();
+            new Thread(updateObserver).start();
         }
 
         // set Timestamp if empty
@@ -87,7 +96,9 @@ public class EventDistributor {
                     for (EventType type : eventObserver.getObservedEvents()) {
                         if (type.equals(EventType.EVENT_ANY_TYPE) || type.equals(event.getEventType())) {
                             try {
-                                new Thread(new ObserverUpdater(eventObserver, service, event)).start();
+                                updateObserver.addEvent(eventObserver, service, event);
+                                // new Thread(new ObserverUpdater(eventObserver,
+                                // service, event)).start();
                             } catch (Exception e) {
                                 LocalLog.error("Fehler bei Weiterleitung eines Events an einen Observer. Observer: " + eventObserver.getName(), e);
                             }
@@ -101,60 +112,196 @@ public class EventDistributor {
         updatingObservers = false;
     }
 
-    // the object which sends the event would stand still till the observers all
-    // have processed the event.
-    // so the updating is processed within a thread.
+    private static class UpdateObserver implements Runnable {
+        private Map<String, ObserverUpdater> observerThreads = new HashMap<String, ObserverUpdater>();
+
+        protected void addEvent(EventObserver eventObserver, Service service, NotEOFEvent event) {
+
+            ObserverUpdater updater = observerThreads.get(eventObserver.getName());
+            if (null == updater || updater.hasStopped()) {
+                updater = new ObserverUpdater(eventObserver, this);
+                observerThreads.put(eventObserver.getName(), updater);
+                new Thread(updater).start();
+                Statistics.addNewEventThread();
+            }
+            updater.addEvent(service, event);
+        }
+
+        protected void removeUpdater(String key, boolean removeObserver) {
+            if (removeObserver) {
+                unregisterFromEvents(eventObservers.get(key));
+            }
+            observerThreads.remove(key);
+            Statistics.addFinishedEventThread();
+        }
+
+        @Override
+        public void run() {
+            boolean removed = false;
+            while (true) {
+                removed = false;
+                Set<String> keys = observerThreads.keySet();
+                for (String key : keys) {
+                    ObserverUpdater updater = observerThreads.get(key);
+                    if (null == updater || updater.hasStopped()) {
+                        removeUpdater(key, false);
+                        removed = true;
+                        break;
+                    }
+                    updater.checkAndClear();
+                }
+                if (!removed) {
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+    }
+
     private static class ObserverUpdater implements Runnable {
-        private EventObserver observer;
-        private Service service;
-        private NotEOFEvent event;
-        private long startTime = 0;
+        private EventObserver eventObserver;
+        private UpdateObserver controlObserver;
+        private List<NotEOFEvent> events = new ArrayList<NotEOFEvent>();
+        private List<Service> services = new ArrayList<Service>();
+        private boolean stopped = false;
+        private long lastAddTime = new Date().getTime();
         private static Object o = new Object();
 
-        private class Bla implements Runnable {
-            private Thread th;
+        protected ObserverUpdater(EventObserver eventObserver, UpdateObserver controlObserver) {
+            this.eventObserver = eventObserver;
+            this.controlObserver = controlObserver;
+        }
 
-            private Bla(Thread th) {
-                this.th = th;
+        protected boolean hasStopped() {
+            return stopped;
+        }
+
+        private void updateEventList(Service service, NotEOFEvent event) {
+            if (null == event) {
+                services.remove(0);
+                events.remove(0);
+            } else {
+                services.add(service);
+                events.add(event);
+
+                if (services.size() != events.size()) {
+                    System.out.println("EventDistributor$ObserverUpdater.updateEventList. !!! Listendifferenz (vielleicht wegen services, die NULL sind?).");
+                }
             }
+        }
 
-            @Override
-            public void run() {
-                long startDate = new Date().getTime();
-                synchronized (o) {
-                    try {
-                        o.wait(60000);
-                        if (new Date().getTime() - startDate >= 60000 && null != th) {
-                            System.out.println("ZEIT IST ABGELAUFEN________________________");
-                            Statistics.addFinishedEventThread();
-                            th.interrupt();
-                            th = null;
-                        }
-                    } catch (InterruptedException e) {
-                        System.out.println("Interrupted Exception________________________");
+        protected void addEvent(Service service, NotEOFEvent event) {
+            if (stopped)
+                return;
+            updateEventList(service, event);
+            synchronized (o) {
+                o.notify();
+            }
+        }
+
+        protected void checkAndClear() {
+            // update am observer laeuft jetzt seit mind. n millis
+            if (new Date().getTime() - lastAddTime > MAX_OBSERVER_WAIT_TIME) {
+                if (!hasStopped()) {
+                    stopped = true;
+                    clear();
+                    synchronized (o) {
+                        o.notify();
                     }
                 }
             }
         }
 
-        protected ObserverUpdater(EventObserver observer, Service service, NotEOFEvent event) {
-            this.startTime = new Date().getTime();
-            this.observer = observer;
-            this.service = service;
-            this.event = event;
+        private void clear() {
+            services.clear();
+            events.clear();
         }
 
+        @Override
         public void run() {
-            Statistics.addNewEventThread();
-            // new Thread(new Bla(Thread.currentThread())).start();
-            observer.update(service, event);
-            Statistics.setEventThreadDuration(new Date().getTime() - startTime);
-            Statistics.addFinishedEventThread();
-            // synchronized (o) {
-            // o.notify();
-            // }
+            try {
+                while (!stopped) {
+                    while (!events.isEmpty() && !stopped) {
+                        lastAddTime = new Date().getTime();
+                        eventObserver.update(services.get(0), events.get(0));
+                        long processTime = new Date().getTime() - events.get(0).getTimeStampSend();
+                        Statistics.setEventDuration(processTime);
+                        updateEventList(null, null);
+                        Thread.sleep(25);
+                    }
+                    // wait a while for new events
+                    synchronized (o) {
+                        o.wait(15000);
+                    }
+                }
+            } catch (Exception ex) {
+                stopped = true;
+                clear();
+                controlObserver.removeUpdater(eventObserver.getName(), true);
+            }
+            stopped = true;
         }
     }
+
+    // the object which sends the event would stand still till the observers all
+    // have processed the event.
+    // so the updating is processed within a thread.
+    // private static class ObserverUpdater implements Runnable {
+    // private EventObserver observer;
+    // private Service service;
+    // private NotEOFEvent event;
+    // private long startTime = 0;
+    // private static Object o = new Object();
+    //
+    // private class Bla implements Runnable {
+    // private Thread th;
+    //
+    // private Bla(Thread th) {
+    // this.th = th;
+    // }
+    //
+    // @Override
+    // public void run() {
+    // long startDate = new Date().getTime();
+    // synchronized (o) {
+    // try {
+    // o.wait(60000);
+    // if (new Date().getTime() - startDate >= 60000 && null != th) {
+    // System.out.println("ZEIT IST ABGELAUFEN________________________");
+    // Statistics.addFinishedEventThread();
+    // th.interrupt();
+    // th = null;
+    // }
+    // } catch (InterruptedException e) {
+    // System.out.println("Interrupted Exception________________________");
+    // }
+    // }
+    // }
+    // }
+    //
+    // protected ObserverUpdater(EventObserver observer, Service service,
+    // NotEOFEvent event) {
+    // this.startTime = new Date().getTime();
+    // this.observer = observer;
+    // this.service = service;
+    // this.event = event;
+    // }
+    //
+    // public void run() {
+    // Statistics.addNewEventThread();
+    // new Thread(new Bla(Thread.currentThread())).start();
+    // observer.update(service, event);
+    // Statistics.setEventThreadDuration(new Date().getTime() - startTime);
+    // Statistics.addFinishedEventThread();
+    // synchronized (o) {
+    // o.notify();
+    // }
+    // }
+    // }
 
     public static synchronized void registerForEvents(EventObserver eventObserver) {
         // wait for updating the observers
