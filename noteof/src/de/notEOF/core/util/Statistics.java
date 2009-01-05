@@ -204,6 +204,8 @@ public class Statistics {
             event.addAttribute("Counter:Observers", String.valueOf(countObservers()));
             event.addAttribute("State:DispatcherWaitTime", String.valueOf(getEventWaitTime()));
 
+            event.setTimeStampSend();
+
             return event;
         }
     }

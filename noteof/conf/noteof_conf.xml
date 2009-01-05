@@ -4,7 +4,8 @@
     -->
 <root>
 	<brokerage>
-		<EventBroker class="de.notEOF.core.util.EventBroadcaster"></EventBroker>
-		<queuePath path="/home/dgo01/workspace/noteof/queue"></queuePath>
+<!-- 	<EventBroker class="de.notEOF.core.brokerage.EventBroadcaster"></EventBroker> -->
+ 		<EventBroker class="de.notEOF.core.brokerage.EventQueueWriter"></EventBroker>
+		<Queue path="c:\temp\noteofqueue"></Queue>
 	</brokerage>
 </root>

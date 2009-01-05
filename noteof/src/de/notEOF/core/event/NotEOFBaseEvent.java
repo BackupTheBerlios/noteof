@@ -53,7 +53,8 @@ public abstract class NotEOFBaseEvent implements NotEOFEvent {
     }
 
     public EventType getEventType() {
-        initEventType();
+        if (null == eventType)
+            initEventType();
         if (null == eventType)
             LocalLog.warn("Event ist nicht vollstaendig implementiert! EventType ist null. Event Class: " + this.getClass().getCanonicalName());
         return eventType;
@@ -85,7 +86,7 @@ public abstract class NotEOFBaseEvent implements NotEOFEvent {
         this.eventType = eventType;
     }
 
-    public void setQueueId(Long queueId) {
+    public final void setQueueId(Long queueId) {
         try {
             this.descriptions.put("internal->queueId", "basic attribute 'queueId' of !EOF");
             addAttribute("internal->queueId", String.valueOf(queueId));
@@ -98,7 +99,7 @@ public abstract class NotEOFBaseEvent implements NotEOFEvent {
         return Util.parseLong(getAttribute("internal->queueId"), 0);
     }
 
-    public void setRequestQueueId(Long queueId) {
+    public final void setRequestQueueId(Long queueId) {
         try {
             this.descriptions.put("internal->queueResponseId", "basic attribute 'queueResponseId' of !EOF");
             addAttribute("internal->queueResponseId", String.valueOf(queueId));
@@ -107,7 +108,7 @@ public abstract class NotEOFBaseEvent implements NotEOFEvent {
         }
     }
 
-    public Long getRequestQueueId() {
+    public final Long getRequestQueueId() {
         return Util.parseLong(getAttribute("internal->queueResponseId"), 0);
     }
 

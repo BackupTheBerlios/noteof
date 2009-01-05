@@ -113,8 +113,9 @@ public class Scheduling {
      * Raise (fire) event - all interested observers will get it.
      * 
      * @param event
+     * @throws ActionFailedException
      */
-    public static synchronized void raiseEvent(NotEOFEvent event) {
+    public static synchronized void raiseEvent(NotEOFEvent event) throws ActionFailedException {
         Server.getInstance().updateObservers(null, event);
     }
 

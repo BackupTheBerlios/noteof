@@ -20,14 +20,13 @@ public class EventQueueWriter implements EventBroker {
         try {
             queueEvent(service, event);
         } catch (ActionFailedException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            LocalLog.warn("Event konnte nicht in die Queue geschrieben werden.", e);
         }
     }
 
     private static void queueEvent(Service service, NotEOFEvent event) throws ActionFailedException {
         // fileName
-        String fileName = createFileName(event);
+        String fileName = BrokerUtil.createFileName(event);
 
         // createFile
         createFile(fileName, service, event);
@@ -51,40 +50,47 @@ public class EventQueueWriter implements EventBroker {
         // Here the event gets his unique identifier
         event.setQueueId(queueId);
 
-        
         try {
-            FileWriter writer = new FileWriter(tempFile);
+            FileWriter writer = new FileWriter(tempFile.getAbsoluteFile());
             BufferedWriter bWriter = new BufferedWriter(writer);
 
             bWriter.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
+            bWriter.newLine();
+            bWriter.newLine();
             bWriter.write("<root>");
 
             // service
-            bWriter.write("    <Service name=\"" + service.getClass().getSimpleName() + "\" serviceId=\"" + service.getServiceId() + "\" clientNetId=\""
-                    + service.getClientNetId() + "\"></Service>");
+            String className = "";
+            String serviceId = "";
+            String clientNetId = "";
+            if (null != service) {
+                className = service.getClass().getSimpleName();
+                serviceId = service.getServiceId();
+                clientNetId = service.getClientNetId();
+            }
+            bWriter.newLine();
+            bWriter.write("    <Service name=\"" + className + "\" serviceId=\"" + serviceId + "\" clientNetId=\"" + clientNetId + "\"></Service>");
+            bWriter.newLine();
 
             // eventType
-            bWriter.write("    <Type name=\"" + event.getEventType()+"\"");
-            
+            bWriter.write("    <Type name=\"" + event.getEventType() + "\"></Type>");
+            bWriter.newLine();
+
             // all attributes of the event
             Set<String> keys = event.getAttributes().keySet();
             for (String key : keys) {
                 String value = event.getAttribute(key);
                 String desc = event.getAttributeDescriptions().get(key);
-                bWriter.write("    <Attribute name=\"" + key + "\" value=\"" + value + "\" description=\"" + desc + "\"></Event>");
+                bWriter.write("    <Attribute name=\"" + key + "\" value=\"" + value + "\" description=\"" + desc + "\"></Attribute>");
+                bWriter.newLine();
             }
             bWriter.write("</root>");
             bWriter.close();
             File origFile = new File(BrokerUtil.getQueuePath() + "/" + fileName);
             tempFile.renameTo(origFile);
-            EventQueueReader.update(fileName, event);
+            EventQueueReader.update(event);
         } catch (Exception e) {
-            LocalLog.error("Event konnte nicht in die Queue geschrieben werden: " + event.getEventType());
+            LocalLog.error("Event konnte nicht in die Queue geschrieben werden: " + event.getEventType(), e);
         }
     }
-
-    private static String createFileName(NotEOFEvent event) {
-        return "e_es_" + event.getTimeStampSend() + "c_" + BrokerUtil.getNextFileCounter() + ".xml";
-    }
-
 }
