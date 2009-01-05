@@ -106,6 +106,10 @@ public class ConfigurationManager {
     public static void addConfigurationFile(String fileName) throws NotIOCException {
         ConfigurationStore.addConfigurationFile(fileName);
     }
+    
+    public static void removeConfigurationFile(String fileName) throws NotIOCException {
+        ConfigurationStore.removeConfigurationFile(fileName);
+    }
 
     /**
      * Delivers the manager itself. <br>

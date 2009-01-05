@@ -42,7 +42,7 @@ public class NotEOFClassFinder {
             }
         }
         throw new ActionFailedException(150L,
-                "Unbekannte Klasse oder Klasse nicht gefunden. Bibliotheken, CLASS_PATH, NOTEOF_HOME-Umgebungsvariable prüfen. Klasse: " + className);
+                "Unbekannte Klasse oder Klasse nicht gefunden. Bibliotheken, CLASS_PATH, NOTEOF_HOME-Umgebungsvariable pruefen. Klasse: " + className);
     }
 
     private synchronized static Class<?> getClassInternal(String notEof_Home, String className) throws ActionFailedException {
@@ -58,7 +58,7 @@ public class NotEOFClassFinder {
 
         } catch (ClassNotFoundException e) {
             throw new ActionFailedException(150L,
-                    "Unbekannte Klasse oder Klasse nicht gefunden. Bibliotheken, CLASS_PATH, NOTEOF_HOME-Umgebungsvariable prüfen. Klasse: " + className, e);
+                    "Unbekannte Klasse oder Klasse nicht gefunden. Bibliotheken, CLASS_PATH, NOTEOF_HOME-Umgebungsvariable prï¿½fen. Klasse: " + className, e);
         } catch (Exception e) {
             throw new ActionFailedException(150L, "Klasse: " + className);
         }

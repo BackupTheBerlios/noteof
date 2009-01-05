@@ -12,6 +12,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import de.notEOF.core.brokerage.EventBroadcaster;
+import de.notEOF.core.brokerage.EventDistributor;
 import de.notEOF.core.communication.TalkLine;
 import de.notEOF.core.enumeration.BaseCommTag;
 import de.notEOF.core.event.NewMailEvent;
@@ -26,7 +28,6 @@ import de.notEOF.core.logging.LocalLog;
 import de.notEOF.core.service.BaseService;
 import de.notEOF.core.service.ServiceFinder;
 import de.notEOF.core.util.ArgsParser;
-import de.notEOF.core.util.EventDistributor;
 import de.notEOF.core.util.Statistics;
 import de.notEOF.core.util.Util;
 import de.notEOF.mail.NotEOFMail;
@@ -339,7 +340,7 @@ public class Server implements EventObservable, Runnable {
      * @param event
      *            The event itself.
      */
-    public void updateObservers(Service service, NotEOFEvent event) {
+    public void updateObservers(Service service, NotEOFEvent event) throws ActionFailedException{
         // Util.postEvent(service, event);
         EventDistributor.postEvent(service, event);
     }
@@ -353,11 +354,11 @@ public class Server implements EventObservable, Runnable {
      *            will be informed for events at a later moment.
      */
     public void registerForEvents(EventObserver eventObserver) {
-        EventDistributor.registerForEvents(eventObserver);
+        EventBroadcaster.registerForEvents(eventObserver);
     }
 
     public void unregisterFromEvents(EventObserver eventObserver) {
-        EventDistributor.unregisterFromEvents(eventObserver);
+        EventBroadcaster.unregisterFromEvents(eventObserver);
     }
 
     /*
@@ -375,7 +376,7 @@ public class Server implements EventObservable, Runnable {
      * The services by themself proove if the message is for them. Then they
      * send it to their clients. <br>
      */
-    public void postMail(NotEOFMail mail, Service fromService) {
+    public void postMail(NotEOFMail mail, Service fromService) throws ActionFailedException{
         updateObservers(fromService, new NewMailEvent(mail));
     }
 
@@ -387,7 +388,7 @@ public class Server implements EventObservable, Runnable {
      * The services by themself proove if the message is for them. Then they
      * send it to their clients. <br>
      */
-    public void postEvent(NotEOFEvent event, Service fromService) {
+    public void postEvent(NotEOFEvent event, Service fromService) throws ActionFailedException{
         updateObservers(fromService, event);
     }
 

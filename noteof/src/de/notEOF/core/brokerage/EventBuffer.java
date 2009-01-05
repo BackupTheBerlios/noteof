@@ -1,10 +1,11 @@
-package de.notEOF.core.util;
+package de.notEOF.core.brokerage;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import de.notEOF.core.interfaces.NotEOFEvent;
 import de.notEOF.core.interfaces.Service;
+import de.notEOF.core.util.Statistics;
 
 public class EventBuffer implements Runnable {
     private List<Service> services = new ArrayList<Service>();
@@ -49,12 +50,12 @@ public class EventBuffer implements Runnable {
     @Override
     public void run() {
         while (true) {
-            while (!events.isEmpty() && null != EventDistributor.eventObservers) {
+            while (!events.isEmpty() && null != EventBroadcaster.eventObservers) {
                 working = true;
-                EventDistributor.updateAllObserver(services.get(0), events.get(0));
+                EventBroadcaster.updateAllObserver(services.get(0), events.get(0));
                 updateEventList(null, null);
                 // calculate waiting time
-                waitTime = (EventDistributor.eventObservers.size() * 2) / waitDivisor;
+                waitTime = (EventBroadcaster.eventObservers.size() * 2) / waitDivisor;
                 Statistics.setEventWaitTime(waitTime);
                 try {
                     Thread.sleep(waitTime);

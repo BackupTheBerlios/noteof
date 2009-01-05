@@ -1,5 +1,6 @@
 package de.notEOF.core.util;
 
+import de.notEOF.core.brokerage.EventBroadcaster;
 import de.notEOF.core.event.SystemInfoEvent;
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.interfaces.EventObserver;
@@ -173,8 +174,8 @@ public class Statistics {
             while (!stopped) {
                 try {
                     NotEOFEvent event = buildEvent();
-                    if (null != EventDistributor.getSystemInfoObservers()) {
-                        for (EventObserver observer : EventDistributor.getSystemInfoObservers()) {
+                    if (null != EventBroadcaster.getSystemInfoObservers()) {
+                        for (EventObserver observer : EventBroadcaster.getSystemInfoObservers()) {
                             observer.update(null, event);
                         }
                     }

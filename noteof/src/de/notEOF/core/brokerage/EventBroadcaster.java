@@ -1,4 +1,4 @@
-package de.notEOF.core.util;
+package de.notEOF.core.brokerage;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -8,12 +8,14 @@ import java.util.Map;
 import java.util.Set;
 
 import de.notEOF.core.enumeration.EventType;
+import de.notEOF.core.interfaces.EventBroker;
 import de.notEOF.core.interfaces.EventObserver;
 import de.notEOF.core.interfaces.NotEOFEvent;
 import de.notEOF.core.interfaces.Service;
 import de.notEOF.core.logging.LocalLog;
+import de.notEOF.core.util.Statistics;
 
-public class EventDistributor {
+public class EventBroadcaster implements EventBroker{
     private static boolean updatingObservers = false;
     private static boolean registeringObserver = false;
     private static long queueId = 0;
@@ -23,7 +25,7 @@ public class EventDistributor {
 
     private static EventBuffer eventBuffer;
 
-    public synchronized static void postEvent(Service service, NotEOFEvent event) {
+    public  void postEvent(Service service, NotEOFEvent event) {
         if (null == eventBuffer) {
             eventBuffer = new EventBuffer();
             new Thread(eventBuffer).start();

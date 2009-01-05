@@ -355,7 +355,7 @@ public abstract class BaseService extends BaseClientOrService implements Service
         postEvent(event, this);
     }
 
-    protected synchronized void postEvent(NotEOFEvent event, Service service) {
+    protected synchronized void postEvent(NotEOFEvent event, Service service) throws ActionFailedException{
         server.postEvent(event, service);
     }
 

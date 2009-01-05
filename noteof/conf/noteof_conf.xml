@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    This configuration file contains basic properties for the !EOF server.
+    -->
+<root>
+	<brokerage>
+		<EventBroker class="de.notEOF.core.util.EventBroadcaster"></EventBroker>
+		<queuePath path="/home/dgo01/workspace/noteof/queue"></queuePath>
+	</brokerage>
+</root>

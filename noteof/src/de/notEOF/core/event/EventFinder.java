@@ -26,9 +26,9 @@ public class EventFinder {
             newEvent = classEvent.newInstance();
             return newEvent;
         } catch (InstantiationException e) {
-            throw new ActionFailedException(1152L, "Es konnte keine Instanz für die Event-Klasse gebildet werden: " + className);
+            throw new ActionFailedException(1152L, "Es konnte keine Instanz fuer die Event-Klasse gebildet werden: " + className);
         } catch (IllegalAccessException e) {
-            throw new ActionFailedException(1152L, "Zugriff auf Konstruktor der Klasse nicht möglich: " + className);
+            throw new ActionFailedException(1152L, "Zugriff auf Konstruktor der Klasse nicht moeglich: " + className);
         }
     }
 }
