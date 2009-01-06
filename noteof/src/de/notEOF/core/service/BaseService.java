@@ -155,6 +155,7 @@ public abstract class BaseService extends BaseClientOrService implements Service
      *            detected by the service.
      */
     public final void update(Service service, NotEOFEvent event) throws ActionFailedException {
+        System.out.println("BaseService.update. event: " + event.getEventType());
         // Stop Event kill the service
         if (event.equals(EventType.EVENT_SERVICE_STOP) && //
                 (event.getAttribute("serviceId").equals(this.getServiceId()) || //
@@ -355,7 +356,7 @@ public abstract class BaseService extends BaseClientOrService implements Service
         postEvent(event, this);
     }
 
-    protected synchronized void postEvent(NotEOFEvent event, Service service) throws ActionFailedException{
+    protected synchronized void postEvent(NotEOFEvent event, Service service) throws ActionFailedException {
         server.postEvent(event, service);
     }
 

@@ -15,7 +15,7 @@ import de.notEOF.core.interfaces.Service;
 import de.notEOF.core.logging.LocalLog;
 import de.notEOF.core.util.Statistics;
 
-public class EventBroadcaster implements EventBroker{
+public class EventBroadcast implements EventBroker {
     private static boolean updatingObservers = false;
     private static boolean registeringObserver = false;
     private static long queueId = 0;
@@ -24,11 +24,18 @@ public class EventBroadcaster implements EventBroker{
     private static UpdateObserver updateObserver;
 
     private static EventBuffer eventBuffer;
+    private static EventBroadcast broadcaster;
 
-    public  void postEvent(Service service, NotEOFEvent event) {
+    static {
+        System.out.println("EventBroadcast->Static......");
+        broadcaster = new EventBroadcast();
+        eventBuffer = new EventBuffer();
+        new Thread(eventBuffer).start();
+    }
+
+    public void postEvent(Service service, NotEOFEvent event) {
         if (null == eventBuffer) {
-            eventBuffer = new EventBuffer();
-            new Thread(eventBuffer).start();
+            System.out.println("EventBroadcaster.postEvent. eventBuffer ist noch immer null");
         }
         Statistics.addNewEvent();
         eventBuffer.process(service, event);
@@ -130,7 +137,7 @@ public class EventBroadcaster implements EventBroker{
 
         protected void removeUpdater(String key, boolean removeObserver) {
             if (removeObserver) {
-                unregisterFromEvents(eventObservers.get(key));
+                broadcaster.unregisterFromEvents(eventObservers.get(key));
             }
             observerThreads.remove(key);
             Statistics.addFinishedEventThread();
@@ -248,7 +255,7 @@ public class EventBroadcaster implements EventBroker{
         }
     }
 
-    public static synchronized void registerForEvents(EventObserver eventObserver) {
+    public synchronized void registerForEvents(EventObserver eventObserver) {
         // wait for updating the observers
         while (updatingObservers) {
             try {
@@ -264,7 +271,7 @@ public class EventBroadcaster implements EventBroker{
         Statistics.addNewObserver();
     }
 
-    public static synchronized void unregisterFromEvents(EventObserver eventObserver) {
+    public synchronized void unregisterFromEvents(EventObserver eventObserver) {
         if (null != eventObservers && null != eventObserver) {
             registeringObserver = true;
 

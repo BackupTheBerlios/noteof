@@ -50,12 +50,12 @@ public class EventBuffer implements Runnable {
     @Override
     public void run() {
         while (true) {
-            while (!events.isEmpty() && null != EventBroadcaster.eventObservers) {
+            while (!events.isEmpty() && null != EventBroadcast.eventObservers) {
                 working = true;
-                EventBroadcaster.updateAllObserver(services.get(0), events.get(0));
+                EventBroadcast.updateAllObserver(services.get(0), events.get(0));
                 updateEventList(null, null);
                 // calculate waiting time
-                waitTime = (EventBroadcaster.eventObservers.size() * 2) / waitDivisor;
+                waitTime = (EventBroadcast.eventObservers.size() * 2) / waitDivisor;
                 Statistics.setEventWaitTime(waitTime);
                 try {
                     Thread.sleep(waitTime);

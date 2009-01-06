@@ -6,11 +6,8 @@ import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.Map.Entry;
 
 import de.notEOF.core.enumeration.EventType;
 import de.notEOF.core.event.EmptyEvent;
@@ -25,7 +22,7 @@ import de.notEOF.core.logging.LocalLog;
  */
 public class EventQueueReader {
     private static Map<Long, NotEOFEvent> events;
-    private static int lastFileCounter = -1;
+    // private static int lastFileCounter = -1;
 
     static {
         new EventQueueReader();
@@ -35,7 +32,7 @@ public class EventQueueReader {
         initQueue();
     }
 
-    private static void initQueue() {
+    private synchronized static void initQueue() {
         if (null == events) {
             events = new Hashtable<Long, NotEOFEvent>();
 
@@ -47,8 +44,11 @@ public class EventQueueReader {
                     NotEOFEvent event = null;
                     try {
                         event = readEventFile(file);
+
+                        System.out.println("Datei wird gelesen: " + file.getName());
+
                         events.put(event.getQueueId(), event);
-                        lastFileCounter++;
+                        // lastFileCounter++;
                     } catch (Exception e) {
                         LocalLog.warn("Fehler bei Verarbeiten der Queue. EventFile: " + file.getName(), e);
                     }
@@ -77,6 +77,7 @@ public class EventQueueReader {
      * @param event
      *            The !EOF event which was delivered by this method before.
      * @return Another, newer event or NULL if no new Event came in meanwhile.
+     *         TODO Hier laeuft noch was schief!!!
      */
     public synchronized static NotEOFEvent getNextEvent(NotEOFEvent event, List<EventType> eventTypes) {
         List<NotEOFEvent> eventList = new ArrayList<NotEOFEvent>();
@@ -121,9 +122,46 @@ public class EventQueueReader {
         return null;
     }
 
+    /**
+     * Delivers the last received !EOF Event.
+     * 
+     * @param event
+     *            The !EOF event which was delivered by this method before.
+     * @return Another, newer event or NULL if no new Event came in meanwhile.
+     */
+    public synchronized static NotEOFEvent getNextEvent(NotEOFEvent event) {
+        List<NotEOFEvent> eventList = new ArrayList<NotEOFEvent>();
+        eventList.addAll(events.values());
+
+        // erster Zugriff
+        // oder das letzte Event gibt's nicht mehr
+        if (null == event || !events.containsKey(event.getQueueId())) {
+            if (eventList.size() > 0) {
+                return eventList.get(eventList.size() - 1);
+            }
+            return null;
+        }
+
+        // wenn vorheriges event null oder unbekannt war, kommen wir hier nicht
+        // hin...
+        for (Integer i = eventList.size() - 1; i >= 0; i--) {
+            NotEOFEvent listEvent = eventList.get(i);
+
+            if (listEvent.getQueueId().equals(event.getQueueId())) {
+                // das zuletzt gelieferte gefunden
+                // jetzt das naechste...
+                if (i + 2 < eventList.size() - 1) {
+                    return eventList.get(i + 2);
+                }
+            }
+        }
+
+        return null;
+    }
+
     protected synchronized static void update(NotEOFEvent event) throws Exception {
         events.put(event.getQueueId(), event);
-        lastFileCounter++;
+        // lastFileCounter++;
 
         // not more than 1000 events in queue
         if (events.size() > 1000) {
@@ -153,19 +191,14 @@ public class EventQueueReader {
 
             nextLine = nextLine.trim();
             nextLine.replaceAll("\"", "");
-            System.out.println("ZEILE: " + nextLine);
 
             if (nextLine.startsWith("<Type ")) {
                 eventTypeName = (parseEventType(nextLine));
-                System.out.println("TYPENAME: " + eventTypeName);
             }
 
             if (nextLine.startsWith("<Attribute ")) {
-                System.out.println("EVENTATTRIBUTENAME: " + parseEventAttrName(nextLine));
                 eventAttrNames.add(parseEventAttrName(nextLine));
-                System.out.println("EVENTVALUE: " + parseEventValue(nextLine));
                 eventValues.add(parseEventValue(nextLine));
-                System.out.println("EVENTDESC: " + parseEventDesc(nextLine));
                 eventDescs.add(parseEventDesc(nextLine));
             }
         }
@@ -187,14 +220,14 @@ public class EventQueueReader {
         }
 
         System.out.println("Kontrolle: event.getType: " + event.getEventType());
-        Set<Entry<String, String>> set = event.getAttributes().entrySet();
-        Iterator<Entry<String, String>> it = set.iterator();
+        // Set<Entry<String, String>> set = event.getAttributes().entrySet();
+        // Iterator<Entry<String, String>> it = set.iterator();
 
-        while (it.hasNext()) {
-            Entry<String, String> e = it.next();
-            System.out.println("Kontrolle: event.getAttribute: " + e.getKey());
-            System.out.println("Kontrolle: event.getValue: " + e.getValue());
-        }
+        // while (it.hasNext()) {
+        // Entry<String, String> e = it.next();
+        // System.out.println("Kontrolle: event.getAttribute: " + e.getKey());
+        // System.out.println("Kontrolle: event.getValue: " + e.getValue());
+        // }
         return event;
     }
 
