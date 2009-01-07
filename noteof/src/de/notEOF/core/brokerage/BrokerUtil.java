@@ -3,7 +3,7 @@ package de.notEOF.core.brokerage;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Date;
+import java.util.Collections;
 import java.util.List;
 
 import de.notEOF.configuration.LocalConfiguration;
@@ -15,13 +15,11 @@ import de.notEOF.core.util.Util;
 
 public class BrokerUtil {
     private static String queuePath = "";
-    private static Long fileCounter;
 
     private static final String FILE_PREFIX = "e_";
     private static final String FILE_SUFFIX = ".xml";
-    private static final String FILE_TIMESTAMP = "ts_";
+    private static final String FILE_QUEUEID = "qi_";
     private static final String FILE_EVENT_TIMESTAMP = "es_";
-    private static final String FILE_COUNTER = "c_";
 
     protected static String getQueuePath() {
         if (Util.isEmpty(queuePath)) {
@@ -42,38 +40,12 @@ public class BrokerUtil {
         return queuePath;
     }
 
-    protected static long getLastFileCounter() {
-        long lastCounter = 0;
-        if (null == fileCounter) {
-            fileCounter = new Long(0);
-
-            // filenames: e_ts_<timestamp>es_<event timestamp>c_<counter>.xml
-            try {
-                List<String> files = getQueueFileNames();
-                if (!Util.isEmpty(files)) {
-                    for (String fileName : files) {
-                        if (fileName.startsWith("e_ts_") && fileName.contains("c_") && fileName.endsWith("xml")) {
-                            // ok - queued event file
-                            long counter = extractFileCounter(fileName);
-                            if (counter > lastCounter) {
-                                lastCounter = counter;
-                            }
-                        }
-                    }
-                }
-            } catch (Exception e) {
-                LocalLog.warn("FileCounter konnte nicht ermittelt werden. Beginne mit 0");
-            }
-        }
-        return fileCounter;
-    }
-
     // TODO noch offen
     public void removeEventFromQueue(String fileName) {
 
     }
 
-    protected static List<String> getQueueFileNames() {
+    private static List<String> getQueueFileNames() {
         List<String> fileNames = new ArrayList<String>();
         try {
             File pathFiles = new File(getQueuePath());
@@ -81,6 +53,7 @@ public class BrokerUtil {
             for (String file : files) {
                 fileNames.add(file);
             }
+            Collections.sort(fileNames);
             return fileNames;
         } catch (Exception e) {
             LocalLog.warn("FileCounter konnte nicht ermittelt werden. Beginne mit 0");
@@ -100,15 +73,8 @@ public class BrokerUtil {
         return files;
     }
 
-    protected static long getNextFileCounter() {
-        long counter = getLastFileCounter();
-        fileCounter = counter;
-        return fileCounter++;
-    }
-
     protected static String createFileName(NotEOFEvent event) {
-        return FILE_PREFIX + FILE_TIMESTAMP + new Date().getTime() + FILE_EVENT_TIMESTAMP + event.getTimeStampSend() + FILE_COUNTER + getNextFileCounter()
-                + FILE_SUFFIX;
+        return FILE_PREFIX + FILE_QUEUEID + event.getQueueId() + FILE_EVENT_TIMESTAMP + event.getTimeStampSend() + FILE_SUFFIX;
     }
 
     /**
@@ -117,11 +83,10 @@ public class BrokerUtil {
      * @param fileName
      * @return
      */
-    protected static long extractFileCounter(String fileName) {
-        String counter = extractFilePart(fileName, FILE_COUNTER, FILE_SUFFIX);
-        return Util.parseLong(counter, 0);
-    }
-
+    // protected static long extractFileCounter(String fileName) {
+    // String counter = extractFilePart(fileName, FILE_COUNTER, FILE_SUFFIX);
+    // return Util.parseLong(counter, 0);
+    // }
     /**
      * Delivers the file timestamp of the file name.
      * 
@@ -129,7 +94,7 @@ public class BrokerUtil {
      * @return
      */
     protected static long extractFileTimeStamp(String fileName) {
-        String timeStamp = extractFilePart(fileName, FILE_TIMESTAMP, FILE_EVENT_TIMESTAMP);
+        String timeStamp = extractFilePart(fileName, FILE_QUEUEID, FILE_EVENT_TIMESTAMP);
         return Util.parseLong(timeStamp, 0);
     }
 

@@ -14,6 +14,7 @@ public class QueueObserver implements Runnable {
     private NotEOFEvent lastEvent;
     private boolean stopped = false;
     private boolean updating = false;
+    private boolean ack = false;
 
     // TODO holt sich als erstes die erwarteten events
     // TODO wenn ein observer.update fehlschlaegt, selbst ein
@@ -22,7 +23,6 @@ public class QueueObserver implements Runnable {
     protected QueueObserver(EventObserver eventObserver) {
         this.eventObserver = eventObserver;
         observedEventTypes = eventObserver.getObservedEvents();
-        System.out.println("Anzahl überwachter Ereigniss für " + eventObserver.getName() + " = " + observedEventTypes.size());
     }
 
     public void stop() {
@@ -33,6 +33,11 @@ public class QueueObserver implements Runnable {
         // TODO das ist die Stelle zum Ausbremsen, wenn zuviele Events zu
         // schnell aufeinander folgen
         new Thread(new Updater()).start();
+        ack = false;
+    }
+
+    protected void acknowledge() {
+        ack = true;
     }
 
     @Override
@@ -44,13 +49,12 @@ public class QueueObserver implements Runnable {
                     // Stopp-Signal erhalten
                     break;
                 }
-                if (!updating) {
+                if (!updating && !ack) {
                     new Thread(new Updater()).start();
                 }
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            System.out.println("Ich lebe noch " + eventObserver.getName());
         }
     }
 
@@ -71,10 +75,7 @@ public class QueueObserver implements Runnable {
             NotEOFEvent event = EventQueueReader.getNextEvent(lastEvent);
             if (null != event) {
                 try {
-                    System.out.println("Empfangenes Event: " + event.getEventType().toString() + "  QueueObserver sendet jetzt an EventObserver: "
-                            + eventObserver.getName());
                     for (EventType type : observedEventTypes) {
-                        System.out.println("Observed Event: " + type.toString());
                         if (event.equals(type)) {
                             eventObserver.update(null, event);
                         }

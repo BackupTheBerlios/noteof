@@ -32,34 +32,33 @@ public class EventQueue implements EventBroker {
     }
 
     private static void queueEvent(Service service, NotEOFEvent event) throws ActionFailedException {
-        // fileName
-        String fileName = BrokerUtil.createFileName(event);
-
         // createFile
-        createFile(fileName, service, event);
+        createFile(service, event);
     }
 
     protected static void msg(String observerName) {
         System.out.println("QueueObserver wird gekillt. " + observerName);
     }
 
-    private static void createFile(String fileName, Service service, NotEOFEvent event) throws ActionFailedException {
-        File tempFile = new File(BrokerUtil.getQueuePath() + "/" + "temp_" + fileName);
+    private static void createFile(Service service, NotEOFEvent event) throws ActionFailedException {
+        // if (queueId == 0)
+        // queueId = new Date().getTime() - 1;
 
-        if (queueId == 0)
-            queueId = new Date().getTime() - 1;
-
-        while (new Date().getTime() <= queueId) {
-            try {
-                Thread.sleep(5);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
+        // while (new Date().getTime() <= queueId) {
+        // try {
+        // Thread.sleep(5);
+        // } catch (InterruptedException e) {
+        // e.printStackTrace();
+        // }
+        // }
         queueId = new Date().getTime();
 
         // Here the event gets his unique identifier
         event.setQueueId(queueId);
+
+        // fileName
+        String fileName = BrokerUtil.createFileName(event);
+        File tempFile = new File(BrokerUtil.getQueuePath() + "/" + "temp_" + fileName);
 
         try {
             FileWriter writer = new FileWriter(tempFile.getAbsoluteFile());
@@ -100,7 +99,7 @@ public class EventQueue implements EventBroker {
             File origFile = new File(BrokerUtil.getQueuePath() + "/" + fileName);
             tempFile.renameTo(origFile);
             EventQueueReader.update(event);
-            // wakeUpQueueObservers();
+            wakeUpQueueObservers();
         } catch (Exception e) {
             LocalLog.error("Event konnte nicht in die Queue geschrieben werden: " + event.getEventType(), e);
         }
@@ -137,6 +136,7 @@ public class EventQueue implements EventBroker {
         }
         QueueObserver observer = new QueueObserver(eventObserver);
         queueObservers.put(eventObserver, observer);
+        observer.acknowledge();
         new Thread(observer).start();
     }
 

@@ -22,7 +22,7 @@ import de.notEOF.core.logging.LocalLog;
  */
 public class EventQueueReader {
     private static Map<Long, NotEOFEvent> events;
-    // private static int lastFileCounter = -1;
+    private static List<Long> queueIds;
 
     static {
         new EventQueueReader();
@@ -35,6 +35,7 @@ public class EventQueueReader {
     private synchronized static void initQueue() {
         if (null == events) {
             events = new Hashtable<Long, NotEOFEvent>();
+            queueIds = new ArrayList<Long>();
 
             List<File> eventFiles = BrokerUtil.getQueueFiles();
             if (eventFiles.size() > 0) {
@@ -44,19 +45,45 @@ public class EventQueueReader {
                     NotEOFEvent event = null;
                     try {
                         event = readEventFile(file);
-
-                        System.out.println("Datei wird gelesen: " + file.getName());
-
-                        events.put(event.getQueueId(), event);
-                        // lastFileCounter++;
+                        addEvent(event);
                     } catch (Exception e) {
                         LocalLog.warn("Fehler bei Verarbeiten der Queue. EventFile: " + file.getName(), e);
                     }
                 }
-                while (events.size() > 1000) {
-                    events.remove(0);
-                }
+                Collections.sort(queueIds);
+                reduceStorage();
             }
+        }
+        System.out.println("Anzahl QIds:   " + queueIds.size());
+        System.out.println("Anzahl Events: " + events.size());
+    }
+
+    private synchronized static void addEvent(NotEOFEvent event) {
+        events.put(event.getQueueId(), event);
+        queueIds.add(event.getQueueId());
+    }
+
+    /*
+     * This method is not made to delete events from the queue. To do this the
+     * files must be deleted AND the event here must be deleted later.
+     */
+    protected synchronized static void deleteEvent(NotEOFEvent event) {
+        // TODO Pruefen, ob das Loeschen aus der Liste mit Long-Werten so ok
+        // ist...
+        Long id = event.getQueueId();
+        deleteEvent(id);
+    }
+
+    private synchronized static void deleteEvent(Long queueId) {
+        queueIds.remove(queueId);
+        events.remove(queueId);
+    }
+
+    private static void reduceStorage() {
+        // not more than 1000 events in queue
+        while (queueIds.size() > 1000) {
+            Long id = queueIds.get(0);
+            deleteEvent(id);
         }
     }
 
@@ -77,98 +104,44 @@ public class EventQueueReader {
      * @param event
      *            The !EOF event which was delivered by this method before.
      * @return Another, newer event or NULL if no new Event came in meanwhile.
-     *         TODO Hier laeuft noch was schief!!!
-     */
-    public synchronized static NotEOFEvent getNextEvent(NotEOFEvent event, List<EventType> eventTypes) {
-        List<NotEOFEvent> eventList = new ArrayList<NotEOFEvent>();
-        eventList.addAll(events.values());
-
-        // erster Zugriff
-        // oder das letzte Event gibt's nicht mehr
-        if (null == event || !events.containsKey(event.getQueueId())) {
-            for (Integer i = eventList.size() - 1; i >= 0; i--) {
-                NotEOFEvent listEvent = eventList.get(i);
-
-                for (EventType type : eventTypes) {
-                    if (listEvent.equals(type)) {
-                        return listEvent;
-                    }
-                }
-            }
-            // nix passendes gefunden
-            return null;
-        }
-
-        // wenn event null oder das vorherige event unbekannt war, kommen wir
-        // hier nicht hin...
-        for (Integer i = eventList.size() - 1; i >= 0; i--) {
-            NotEOFEvent listEvent = eventList.get(i);
-
-            if (listEvent.getQueueId().equals(event.getQueueId())) {
-                // das zuletzt gelieferte gefunden
-                // jetzt wieder in entgegengesetzter Richtung suchen...
-                int y = i + 1;
-                while (y < eventList.size() - 1) {
-                    NotEOFEvent nextEvent = eventList.get(y);
-                    for (EventType type : eventTypes) {
-                        if (nextEvent.equals(type)) {
-                            return listEvent;
-                        }
-                    }
-                }
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * Delivers the last received !EOF Event.
-     * 
-     * @param event
-     *            The !EOF event which was delivered by this method before.
-     * @return Another, newer event or NULL if no new Event came in meanwhile.
      */
     public synchronized static NotEOFEvent getNextEvent(NotEOFEvent event) {
-        List<NotEOFEvent> eventList = new ArrayList<NotEOFEvent>();
-        eventList.addAll(events.values());
-
         // erster Zugriff
         // oder das letzte Event gibt's nicht mehr
-        if (null == event || !events.containsKey(event.getQueueId())) {
-            if (eventList.size() > 0) {
-                return eventList.get(eventList.size() - 1);
+        if (null == event || !queueIds.contains(event.getQueueId())) {
+            System.out.println("Parameter event ist null!");
+            if (queueIds.size() > 0) {
+                System.out.println("Liefere letztes event... " + events.get(queueIds.get(queueIds.size() - 1)).getQueueId());
+                return events.get(queueIds.get(queueIds.size() - 1));
             }
             return null;
         }
 
         // wenn vorheriges event null oder unbekannt war, kommen wir hier nicht
         // hin...
-        for (Integer i = eventList.size() - 1; i >= 0; i--) {
-            NotEOFEvent listEvent = eventList.get(i);
+        System.out.println("Parameter event ist NICHT null!");
+        for (Integer i = queueIds.size() - 1; i >= 0; i--) {
+            NotEOFEvent listEvent = events.get(queueIds.get(i));
 
             if (listEvent.getQueueId().equals(event.getQueueId())) {
+                System.out.println("Übereinstimmung altes und Listen event.");
                 // das zuletzt gelieferte gefunden
                 // jetzt das naechste...
-                if (i + 2 < eventList.size() - 1) {
-                    return eventList.get(i + 2);
+                if (i + 1 < queueIds.size() - 1) {
+                    System.out.println("Jetzt das alte +1");
+                    return events.get(queueIds.get(i + 1));
                 }
             }
         }
 
+        System.out.println("Es gibt nix neueres, also NULL liefern.");
         return null;
     }
 
     protected synchronized static void update(NotEOFEvent event) throws Exception {
-        events.put(event.getQueueId(), event);
-        // lastFileCounter++;
-
-        // not more than 1000 events in queue
-        if (events.size() > 1000) {
-            while (events.size() > 1000) {
-                events.remove(new Integer(0));
-            }
-        }
+        System.out.println("UPDATE.....  event queue id = " + event.getQueueId());
+        addEvent(event);
+        reduceStorage();
     }
 
     /*
@@ -219,15 +192,6 @@ public class EventQueueReader {
             event.addAttribute(attrName, value);
         }
 
-        System.out.println("Kontrolle: event.getType: " + event.getEventType());
-        // Set<Entry<String, String>> set = event.getAttributes().entrySet();
-        // Iterator<Entry<String, String>> it = set.iterator();
-
-        // while (it.hasNext()) {
-        // Entry<String, String> e = it.next();
-        // System.out.println("Kontrolle: event.getAttribute: " + e.getKey());
-        // System.out.println("Kontrolle: event.getValue: " + e.getValue());
-        // }
         return event;
     }
 
