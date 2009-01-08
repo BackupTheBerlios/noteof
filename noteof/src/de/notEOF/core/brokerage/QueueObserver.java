@@ -87,8 +87,4 @@ public class QueueObserver implements Runnable {
             }
         }
     }
-
-    protected void finalize() {
-        EventQueue.msg(eventObserver.getName());
-    }
 }

@@ -162,7 +162,6 @@ public abstract class BaseService extends BaseClientOrService implements Service
                 event.getAttribute("allServices").equalsIgnoreCase("TRUE"))) {
             this.stopService();
         } else {
-            // try {
             // Prozessor zur Abarbeitung der Events ist eine eigene Klasse
             // Nur des Handlings halber...
             if (null == processor) {
@@ -171,11 +170,6 @@ public abstract class BaseService extends BaseClientOrService implements Service
             // Dem Prozessor wird das Event zur Verarbeitung vor die Fuesse
             // geworfen
             processor.addAction(service, event);
-            // } catch (AcException e) {
-            // System.out.println(
-            // "im Update abgefangen, weil sonst der Server kaputt geht...");
-            // e.printStackTrace();
-            // }
         }
     }
 
