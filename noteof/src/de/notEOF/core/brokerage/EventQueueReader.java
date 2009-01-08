@@ -54,8 +54,6 @@ public class EventQueueReader {
                 reduceStorage();
             }
         }
-        System.out.println("Anzahl QIds:   " + queueIds.size());
-        System.out.println("Anzahl Events: " + events.size());
     }
 
     private synchronized static void addEvent(NotEOFEvent event) {
@@ -109,9 +107,7 @@ public class EventQueueReader {
         // erster Zugriff
         // oder das letzte Event gibt's nicht mehr
         if (null == event || !queueIds.contains(event.getQueueId())) {
-            System.out.println("Parameter event ist null!");
             if (queueIds.size() > 0) {
-                System.out.println("Liefere letztes event... " + events.get(queueIds.get(queueIds.size() - 1)).getQueueId());
                 return events.get(queueIds.get(queueIds.size() - 1));
             }
             return null;
@@ -119,27 +115,21 @@ public class EventQueueReader {
 
         // wenn vorheriges event null oder unbekannt war, kommen wir hier nicht
         // hin...
-        System.out.println("Parameter event ist NICHT null!");
         for (Integer i = queueIds.size() - 1; i >= 0; i--) {
             NotEOFEvent listEvent = events.get(queueIds.get(i));
 
             if (listEvent.getQueueId().equals(event.getQueueId())) {
-                System.out.println("Übereinstimmung altes und Listen event.");
                 // das zuletzt gelieferte gefunden
                 // jetzt das naechste...
                 if (i + 1 < queueIds.size() - 1) {
-                    System.out.println("Jetzt das alte +1");
                     return events.get(queueIds.get(i + 1));
                 }
             }
         }
-
-        System.out.println("Es gibt nix neueres, also NULL liefern.");
         return null;
     }
 
     protected synchronized static void update(NotEOFEvent event) throws Exception {
-        System.out.println("UPDATE.....  event queue id = " + event.getQueueId());
         addEvent(event);
         reduceStorage();
     }

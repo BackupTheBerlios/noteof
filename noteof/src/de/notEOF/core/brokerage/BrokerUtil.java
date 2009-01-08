@@ -78,16 +78,6 @@ public class BrokerUtil {
     }
 
     /**
-     * Delivers the counter within the file name.
-     * 
-     * @param fileName
-     * @return
-     */
-    // protected static long extractFileCounter(String fileName) {
-    // String counter = extractFilePart(fileName, FILE_COUNTER, FILE_SUFFIX);
-    // return Util.parseLong(counter, 0);
-    // }
-    /**
      * Delivers the file timestamp of the file name.
      * 
      * @param fileName
