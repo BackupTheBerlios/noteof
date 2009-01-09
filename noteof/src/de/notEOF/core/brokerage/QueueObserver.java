@@ -1,5 +1,6 @@
 package de.notEOF.core.brokerage;
 
+import java.util.Date;
 import java.util.List;
 
 import de.notEOF.core.enumeration.EventType;
@@ -72,7 +73,11 @@ public class QueueObserver implements Runnable {
                 StaticBroker.unregisterFromEvents(eventObserver);
             }
 
-            NotEOFEvent event = EventQueueReader.getNextEvent(lastEvent);
+            Long eventTimeCreated = null;
+            if (ack) {
+                eventTimeCreated = new Date().getTime();
+            }
+            NotEOFEvent event = EventQueueReader.getNextEvent(lastEvent, eventTimeCreated);
             if (null != event) {
                 try {
                     for (EventType type : observedEventTypes) {

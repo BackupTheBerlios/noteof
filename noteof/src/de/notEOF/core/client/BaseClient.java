@@ -1,7 +1,6 @@
 package de.notEOF.core.client;
 
 import java.net.Socket;
-import java.util.Date;
 import java.util.List;
 import de.notEOF.core.BaseClientOrService;
 import de.notEOF.core.communication.TalkLine;
@@ -219,16 +218,16 @@ public abstract class BaseClient extends BaseClientOrService implements EventRec
      * @throws ActionFailedException
      */
     public synchronized void sendEvent(NotEOFEvent event) throws ActionFailedException {
-        long startTime = new Date().getTime();
+        // long startTime = new Date().getTime();
         writeMsg(MailTag.REQ_READY_FOR_EVENT.name());
         getTalkLine().sendBaseEvent(event);
         // this brakes clients to send events to fast...
-        while (new Date().getTime() - startTime < 100) {
-            try {
-                Thread.sleep(25);
-            } catch (InterruptedException e) {
-            }
-        }
+        // while (new Date().getTime() - startTime < 100) {
+        // try {
+        // Thread.sleep(25);
+        // } catch (InterruptedException e) {
+        // }
+        // }
     }
 
     /**

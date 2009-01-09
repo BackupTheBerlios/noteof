@@ -4,10 +4,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Hashtable;
 import java.util.List;
-import java.util.Map;
 
 import de.notEOF.core.enumeration.EventType;
 import de.notEOF.core.event.EmptyEvent;
@@ -21,8 +18,11 @@ import de.notEOF.core.logging.LocalLog;
  * 
  */
 public class EventQueueReader {
-    private static Map<Long, NotEOFEvent> events;
-    private static List<Long> queueIds;
+    // private static Map<Long, NotEOFEvent> events;
+    // private static List<Long> queueIds;
+    private static List<QueuedEvent> queuedEvents;
+    // private static EventQueueReader instance;
+    private static boolean initialization = true;
 
     static {
         new EventQueueReader();
@@ -32,33 +32,55 @@ public class EventQueueReader {
         initQueue();
     }
 
-    private synchronized static void initQueue() {
-        if (null == events) {
-            events = new Hashtable<Long, NotEOFEvent>();
-            queueIds = new ArrayList<Long>();
-
-            List<File> eventFiles = BrokerUtil.getQueueFiles();
-            if (eventFiles.size() > 0) {
-                Collections.sort(eventFiles);
-
-                for (File file : eventFiles) {
-                    NotEOFEvent event = null;
-                    try {
-                        event = readEventFile(file);
-                        addEvent(event);
-                    } catch (Exception e) {
-                        LocalLog.warn("Fehler bei Verarbeiten der Queue. EventFile: " + file.getName(), e);
-                    }
+    private static void sortQueuedEvents() {
+        for (int i = queuedEvents.size() - 1; i >= 0; i--) {
+            boolean moved = false;
+            // System.out.println("Sorting: " + i + " von " +
+            // (queuedEvents.size() - 1));
+            for (int index = 0; index < i; index++) {
+                System.out.println("Sorting: " + i);
+                if (queuedEvents.get(index).getQueueId() > queuedEvents.get(index + 1).getQueueId()) {
+                    QueuedEvent qe = queuedEvents.get(index + 1);
+                    queuedEvents.set(index + 1, queuedEvents.get(index));
+                    queuedEvents.set(index, qe);
+                    moved = true;
                 }
-                Collections.sort(queueIds);
-                reduceStorage();
+                if (moved && index < i - 1) {
+                    break;
+                }
             }
         }
     }
 
+    private synchronized static void initQueue() {
+        System.out.println("+***************************.......................................................");
+        // events = new Hashtable<Long, NotEOFEvent>();
+        // queueIds = new ArrayList<Long>();
+        queuedEvents = new ArrayList<QueuedEvent>();
+
+        List<File> eventFiles = BrokerUtil.getQueueFiles();
+        if (eventFiles.size() > 0) {
+            // Collections.sort(eventFiles);
+
+            for (File file : eventFiles) {
+                NotEOFEvent event = null;
+                try {
+                    event = readEventFile(file);
+                    addEvent(event);
+                } catch (Exception e) {
+                    LocalLog.warn("Fehler bei Verarbeiten der Queue. EventFile: " + file.getName(), e);
+                }
+            }
+            sortQueuedEvents();
+            System.out.println("Anzahl queue: " + queuedEvents.size());
+            reduceStorage();
+        }
+        System.out.println("afjasföjsföjsföjsfj.......................................................");
+        initialization = false;
+    }
+
     private synchronized static void addEvent(NotEOFEvent event) {
-        events.put(event.getQueueId(), event);
-        queueIds.add(event.getQueueId());
+        queuedEvents.add(new QueuedEvent(event.getQueueId(), event));
     }
 
     /*
@@ -73,15 +95,18 @@ public class EventQueueReader {
     }
 
     private synchronized static void deleteEvent(Long queueId) {
-        queueIds.remove(queueId);
-        events.remove(queueId);
+        for (QueuedEvent qE : queuedEvents) {
+            if (qE.getQueueId().equals(queueId)) {
+                queuedEvents.remove(qE);
+                break;
+            }
+        }
     }
 
     private static void reduceStorage() {
         // not more than 1000 events in queue
-        while (queueIds.size() > 1000) {
-            Long id = queueIds.get(0);
-            deleteEvent(id);
+        while (queuedEvents.size() > 100) {
+            queuedEvents.remove(0);
         }
     }
 
@@ -93,7 +118,50 @@ public class EventQueueReader {
      * @return The event with queueId or NULL if not found.
      */
     public static NotEOFEvent getEvent(Long queueId) {
-        return events.get(queueId);
+        QueuedEvent qE = findQueuedEvent(queueId);
+        if (null != qE) {
+            return qE.getEvent();
+        }
+        return null;
+    }
+
+    private static boolean containsQueuedEvent(Long queuedId) {
+        return findQueuedEvent(queuedId) != null;
+    }
+
+    private static QueuedEvent findQueuedEvent(Long queuedId) {
+        for (QueuedEvent qE : queuedEvents) {
+            if (qE.getQueueId().equals(queuedId)) {
+                return qE;
+            }
+        }
+        return null;
+    }
+
+    private static class QueuedEvent {
+        private Long queueId;
+        private NotEOFEvent event;
+
+        protected QueuedEvent(Long queueId, NotEOFEvent event) {
+            this.setQueueId(queueId);
+            this.setEvent(event);
+        }
+
+        public void setQueueId(Long queueId) {
+            this.queueId = queueId;
+        }
+
+        public Long getQueueId() {
+            return queueId;
+        }
+
+        public void setEvent(NotEOFEvent event) {
+            this.event = event;
+        }
+
+        public NotEOFEvent getEvent() {
+            return event;
+        }
     }
 
     /**
@@ -101,28 +169,33 @@ public class EventQueueReader {
      * 
      * @param event
      *            The !EOF event which was delivered by this method before.
+     * @param eventCreated
+     *            If not NULL this method delivers the newest event when this
+     *            event is younger than the value of eventCreated (event.queueId
+     *            > eventCreated).
      * @return Another, newer event or NULL if no new Event came in meanwhile.
      */
-    public synchronized static NotEOFEvent getNextEvent(NotEOFEvent event) {
+    public synchronized static NotEOFEvent getNextEvent(NotEOFEvent event, Long eventCreated) {
         // erster Zugriff
         // oder das letzte Event gibt's nicht mehr
-        if (null == event || !queueIds.contains(event.getQueueId())) {
-            if (queueIds.size() > 0) {
-                return events.get(queueIds.get(queueIds.size() - 1));
+        if (null == event || !containsQueuedEvent(event.getQueueId()) || null != eventCreated) {
+            if (queuedEvents.size() > 0) {
+                if (null == eventCreated || (null != eventCreated && queuedEvents.get(queuedEvents.size() - 1).getQueueId() > eventCreated)) {
+                    return queuedEvents.get(queuedEvents.size() - 1).getEvent();
+                }
             }
             return null;
         }
 
         // wenn vorheriges event null oder unbekannt war, kommen wir hier nicht
         // hin...
-        for (Integer i = queueIds.size() - 1; i >= 0; i--) {
-            NotEOFEvent listEvent = events.get(queueIds.get(i));
-
+        for (Integer i = queuedEvents.size() - 1; i >= 0; i--) {
+            NotEOFEvent listEvent = queuedEvents.get(i).getEvent();
             if (listEvent.getQueueId().equals(event.getQueueId())) {
                 // das zuletzt gelieferte gefunden
                 // jetzt das naechste...
-                if (i + 1 < queueIds.size() - 1) {
-                    return events.get(queueIds.get(i + 1));
+                if (i + 1 < queuedEvents.size() - 1) {
+                    return queuedEvents.get(i + 1).getEvent();
                 }
             }
         }
@@ -130,6 +203,8 @@ public class EventQueueReader {
     }
 
     protected synchronized static void update(NotEOFEvent event) throws Exception {
+        while (initialization)
+            ;
         addEvent(event);
         reduceStorage();
     }
