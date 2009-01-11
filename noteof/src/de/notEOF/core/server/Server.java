@@ -344,16 +344,12 @@ public class Server implements EventObservable, Runnable {
         StaticBroker.postEvent(service, event);
     }
 
-    /**
-     * This method enables the server to inform the services about events or
-     * changes of the system.
-     * 
-     * @param eventObserver
-     *            One or more Observers can register them here. This observers
-     *            will be informed for events at a later moment.
-     */
     public void registerForEvents(EventObserver eventObserver) {
-        StaticBroker.registerForEvents(eventObserver);
+        registerForEvents(eventObserver, null);
+    }
+
+    public void registerForEvents(EventObserver eventObserver, Long lastReiceivedQueueId) {
+        StaticBroker.registerForEvents(eventObserver, lastReiceivedQueueId);
     }
 
     public void unregisterFromEvents(EventObserver eventObserver) {

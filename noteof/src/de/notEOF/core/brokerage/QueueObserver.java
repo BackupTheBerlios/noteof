@@ -1,9 +1,9 @@
 package de.notEOF.core.brokerage;
 
-import java.util.Date;
 import java.util.List;
 
 import de.notEOF.core.enumeration.EventType;
+import de.notEOF.core.event.GenericEvent;
 import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.interfaces.EventObserver;
 import de.notEOF.core.interfaces.NotEOFEvent;
@@ -16,6 +16,9 @@ public class QueueObserver implements Runnable {
     private boolean stopped = false;
     private boolean updating = false;
     private boolean ack = false;
+    private Long lastReceivedQueueId;
+
+    private NotEOFEvent initialEvent;
 
     // TODO holt sich als erstes die erwarteten events
     // TODO wenn ein observer.update fehlschlaegt, selbst ein
@@ -24,6 +27,8 @@ public class QueueObserver implements Runnable {
     protected QueueObserver(EventObserver eventObserver) {
         this.eventObserver = eventObserver;
         observedEventTypes = eventObserver.getObservedEvents();
+        // initialEvent = EventQueueReader.getNextEvent(null, null);
+        initialEvent = EventQueueReader.getNextEvent(null);
     }
 
     public void stop() {
@@ -33,12 +38,18 @@ public class QueueObserver implements Runnable {
     protected void wakeUp() {
         // TODO das ist die Stelle zum Ausbremsen, wenn zuviele Events zu
         // schnell aufeinander folgen
-        new Thread(new Updater()).start();
+        updating = true;
         ack = false;
+        new Thread(new Updater()).start();
     }
 
     protected void acknowledge() {
+        // initialEvent = null;
         ack = true;
+    }
+
+    protected void offset(Long lastReceivedQueueId) {
+        this.lastReceivedQueueId = lastReceivedQueueId;
     }
 
     @Override
@@ -50,7 +61,8 @@ public class QueueObserver implements Runnable {
                     // Stopp-Signal erhalten
                     break;
                 }
-                if (!updating && !ack) {
+                // if (!updating && !ack) {
+                if (!updating) {
                     new Thread(new Updater()).start();
                 }
             } catch (InterruptedException e) {
@@ -73,13 +85,31 @@ public class QueueObserver implements Runnable {
                 StaticBroker.unregisterFromEvents(eventObserver);
             }
 
-            Long eventTimeCreated = null;
+            // Long eventTimeCreated = null;
             if (ack) {
-                eventTimeCreated = new Date().getTime();
+                // eventTimeCreated = new Date().getTime();
             }
-            NotEOFEvent event = EventQueueReader.getNextEvent(lastEvent, eventTimeCreated);
-            if (null != event) {
+
+            if (null != lastReceivedQueueId) {
+                lastEvent = new GenericEvent();
+                lastEvent.setQueueId(lastReceivedQueueId);
+                lastReceivedQueueId = null;
+            }
+
+            // NotEOFEvent event = EventQueueReader.getNextEvent(lastEvent,
+            // eventTimeCreated);
+            NotEOFEvent event = EventQueueReader.getNextEvent(lastEvent);
+            // doppelte events ausblenden
+            if (null != lastEvent && null != event && lastEvent.getQueueId().longValue() == event.getQueueId().longValue()) {
+                return;
+            }
+
+            if (null != event && //
+                    (null == initialEvent || //
+                    (null != initialEvent && initialEvent.getQueueId().longValue() < event.getQueueId().longValue()))) {
+
                 try {
+                    // initialEvent = null;
                     for (EventType type : observedEventTypes) {
                         if (event.equals(type)) {
                             eventObserver.update(null, event);

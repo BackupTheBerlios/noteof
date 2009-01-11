@@ -241,7 +241,7 @@ public class Scheduler {
                         }
                     }
                 } catch (ActionFailedException e) {
-                    LocalLog.warn("Fehler bei Verarbeitung eines events: " + event.getEventType().name(), e);
+                    LocalLog.warn("Fehler bei Verarbeitung eines events: " + event.getEventType().name() + "; Queue ID: " + event.getQueueId(), e);
                 }
             }
 

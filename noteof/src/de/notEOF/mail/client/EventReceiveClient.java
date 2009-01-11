@@ -22,6 +22,7 @@ public class EventReceiveClient {
     TalkLine talkLine;
     private long workerPointer = 0;
     private List<NotEOFEvent> acceptedEvents;
+    private NotEOFEvent lastReceivedEvent;
 
     public EventReceiveClient(TalkLine talkLine, EventRecipient recipient) throws ActionFailedException {
         this.talkLine = talkLine;
@@ -42,9 +43,14 @@ public class EventReceiveClient {
     public void startAccepting() throws ActionFailedException {
         sendInterestingEvents(acceptedEvents);
         talkLine.writeMsg(MailTag.INFO_READY_FOR_EVENTS.name());
+        long lastQueueId = -1;
+        if (null != lastReceivedEvent) {
+            lastQueueId = lastReceivedEvent.getQueueId();
+        }
+        talkLine.awaitRequestAnswerImmediate(MailTag.REQ_LAST_RECEIVED_EVENT, MailTag.RESP_LAST_RECEIVED_EVENT, String.valueOf(lastQueueId));
+        String response = talkLine.readMsg();
 
-        String antwort = talkLine.readMsg();
-        if ((MailTag.VAL_OK.name() + "=" + MailTag.VAL_OK.name()).equals(antwort)) {
+        if ((MailTag.VAL_OK.name() + "=" + MailTag.VAL_OK.name()).equals(response)) {
             // if (MailTag.VAL_OK.name().equals(talkLine.readMsg())) {
             acceptor = new MailAndEventAcceptor();
             new Thread(acceptor).start();
@@ -255,6 +261,10 @@ public class EventReceiveClient {
             acceptedEvents = new ArrayList<NotEOFEvent>();
         }
         acceptedEvents.addAll(events);
+    }
+
+    public void setLastReceivedEvent(NotEOFEvent lastReceivedEvent) throws ActionFailedException {
+        this.lastReceivedEvent = lastReceivedEvent;
     }
 
     /**

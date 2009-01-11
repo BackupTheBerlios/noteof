@@ -13,6 +13,7 @@ import de.notEOF.core.interfaces.NotEOFEvent;
 import de.notEOF.core.interfaces.Service;
 import de.notEOF.core.logging.LocalLog;
 import de.notEOF.core.service.BaseService;
+import de.notEOF.core.util.Util;
 import de.notEOF.mail.MailHeaders;
 import de.notEOF.mail.MailToken;
 import de.notEOF.mail.NotEOFMail;
@@ -31,6 +32,7 @@ public class EventReceiveService extends BaseService implements EventObserver {
     private MailHeaders mailHeaders;
     private TalkLine talkLine;
     private String clientNetId;
+    private Long lastReceivedQueueId;
 
     protected void addInterestingHeader(String header) {
         if (null == mailHeaders)
@@ -173,10 +175,11 @@ public class EventReceiveService extends BaseService implements EventObserver {
         // during the client is still initializing. So they both would get in an
         // inconsistant state.
         if (incomingMsgEnum.equals(MailTag.INFO_READY_FOR_EVENTS)) {
+            lastReceivedQueueId = Util.parseLong(requestTo(MailTag.REQ_LAST_RECEIVED_EVENT, MailTag.RESP_LAST_RECEIVED_EVENT), -1);
             responseTo(MailTag.VAL_OK, MailTag.VAL_OK.name());
             addObservedEvent(EventType.EVENT_MAIL);
             addObservedEvent(EventType.EVENT_APPLICATION_STOP);
-            getServer().registerForEvents(this);
+            getServer().registerForEvents(this, lastReceivedQueueId);
         }
         if (incomingMsgEnum.equals(BaseCommTag.REQ_STOP)) {
             super.stopService();

@@ -18,10 +18,7 @@ import de.notEOF.core.logging.LocalLog;
  * 
  */
 public class EventQueueReader {
-    // private static Map<Long, NotEOFEvent> events;
-    // private static List<Long> queueIds;
     private static List<QueuedEvent> queuedEvents;
-    // private static EventQueueReader instance;
     private static boolean initialization = true;
 
     static {
@@ -34,15 +31,10 @@ public class EventQueueReader {
 
     private static void sortQueuedEvents() {
         for (int i = queuedEvents.size(); i >= 0; i--) {
-            System.out.println("Sorting: " + i);
             boolean toSort = false;
             boolean moved = false;
-            // System.out.println("Sorting: " + i + " von " +
-            // (queuedEvents.size() - 1));
             for (int index = 0; index < i - 1; index++) {
-                System.out.println("Sorting: " + i);
-                if (queuedEvents.get(index).getQueueId() > queuedEvents.get(index + 1).getQueueId()) {
-                    System.out.println("ToSort");
+                if (queuedEvents.get(index).getQueueId().longValue() > queuedEvents.get(index + 1).getQueueId().longValue()) {
                     QueuedEvent qe = queuedEvents.get(index + 1);
                     queuedEvents.set(index + 1, queuedEvents.get(index));
                     queuedEvents.set(index, qe);
@@ -59,23 +51,18 @@ public class EventQueueReader {
 
         Long lastVal = new Long(0);
         for (QueuedEvent val : queuedEvents) {
-            lastVal = val.getQueueId();
-            System.out.println("queuedEvent: " + String.valueOf(val.getQueueId()));
-            if (val.getQueueId() < lastVal) {
+            if (val.getQueueId().longValue() <= lastVal.longValue()) {
                 System.out.println("!!!!!!!!!!!!!! lastVal: " + lastVal + "; nextVal: " + val.getQueueId());
             }
+            lastVal = val.getQueueId();
         }
     }
 
     private synchronized static void initQueue() {
-        // events = new Hashtable<Long, NotEOFEvent>();
-        // queueIds = new ArrayList<Long>();
         queuedEvents = new ArrayList<QueuedEvent>();
 
         List<File> eventFiles = BrokerUtil.getQueueFiles();
         if (eventFiles.size() > 0) {
-            // Collections.sort(eventFiles);
-
             for (File file : eventFiles) {
                 NotEOFEvent event = null;
                 try {
@@ -86,15 +73,15 @@ public class EventQueueReader {
                 }
             }
             sortQueuedEvents();
-            System.out.println("Anzahl queue: " + queuedEvents.size());
             reduceStorage();
         }
-        System.out.println("afjasföjsföjsföjsfj.......................................................");
         initialization = false;
     }
 
     private synchronized static void addEvent(NotEOFEvent event) {
-        queuedEvents.add(new QueuedEvent(event.getQueueId(), event));
+        if (!containsQueuedEvent(event.getQueueId())) {
+            queuedEvents.add(new QueuedEvent(event.getQueueId(), event));
+        }
     }
 
     /*
@@ -104,17 +91,21 @@ public class EventQueueReader {
     protected synchronized static void deleteEvent(NotEOFEvent event) {
         // TODO Pruefen, ob das Loeschen aus der Liste mit Long-Werten so ok
         // ist...
-        Long id = event.getQueueId();
-        deleteEvent(id);
+        deleteEvent(event.getQueueId());
     }
 
     private synchronized static void deleteEvent(Long queueId) {
+        deleteQueuedEvent(queueId);
+    }
+
+    private static QueuedEvent deleteQueuedEvent(Long queueId) {
         for (QueuedEvent qE : queuedEvents) {
-            if (qE.getQueueId().equals(queueId)) {
+            if (qE.getQueueId().longValue() == queueId.longValue()) {
                 queuedEvents.remove(qE);
-                break;
+                return qE;
             }
         }
+        return null;
     }
 
     private static void reduceStorage() {
@@ -139,13 +130,17 @@ public class EventQueueReader {
         return null;
     }
 
+    public static QueuedEvent getQueuedEvent(Long queueId) {
+        return findQueuedEvent(queueId);
+    }
+
     private static boolean containsQueuedEvent(Long queuedId) {
         return findQueuedEvent(queuedId) != null;
     }
 
     private static QueuedEvent findQueuedEvent(Long queuedId) {
         for (QueuedEvent qE : queuedEvents) {
-            if (qE.getQueueId().equals(queuedId)) {
+            if (qE.getQueueId().longValue() == queuedId.longValue()) {
                 return qE;
             }
         }
@@ -189,14 +184,25 @@ public class EventQueueReader {
      *            > eventCreated).
      * @return Another, newer event or NULL if no new Event came in meanwhile.
      */
-    public synchronized static NotEOFEvent getNextEvent(NotEOFEvent event, Long eventCreated) {
+    // public synchronized static NotEOFEvent getNextEvent(NotEOFEvent event,
+    // Long eventCreated) {
+    public synchronized static NotEOFEvent getNextEvent(NotEOFEvent event) {
         // erster Zugriff
         // oder das letzte Event gibt's nicht mehr
-        if (null == event || !containsQueuedEvent(event.getQueueId()) || null != eventCreated) {
+        // if (null == event || !containsQueuedEvent(event.getQueueId()) || null
+        // != eventCreated) {
+        if (null == event || !containsQueuedEvent(event.getQueueId())) {
             if (queuedEvents.size() > 0) {
-                if (null == eventCreated || (null != eventCreated && queuedEvents.get(queuedEvents.size() - 1).getQueueId() > eventCreated)) {
-                    return queuedEvents.get(queuedEvents.size() - 1).getEvent();
+                // if (null == eventCreated || (null != eventCreated &&
+                // queuedEvents.get(queuedEvents.size() - 1).getQueueId() >
+                // eventCreated)) {
+
+                // Liste reduzieren
+                for (int i = 0; i < queuedEvents.size() - 2; i++) {
+                    queuedEvents.remove(i);
                 }
+                return queuedEvents.get(queuedEvents.size() - 1).getEvent();
+                // }
             }
             return null;
         }
@@ -205,15 +211,16 @@ public class EventQueueReader {
         // hin...
         for (Integer i = queuedEvents.size() - 1; i >= 0; i--) {
             NotEOFEvent listEvent = queuedEvents.get(i).getEvent();
-            if (listEvent.getQueueId().equals(event.getQueueId())) {
+            if (0 == listEvent.getQueueId().compareTo(event.getQueueId())) {
                 // das zuletzt gelieferte gefunden
                 // jetzt das naechste...
-                if (i + 1 < queuedEvents.size() - 1) {
+                if (i < queuedEvents.size() - 1) {
                     return queuedEvents.get(i + 1).getEvent();
                 }
             }
         }
         return null;
+        // return queuedEvents.get(queuedEvents.size() - 1).getEvent();
     }
 
     protected synchronized static void update(NotEOFEvent event) throws Exception {

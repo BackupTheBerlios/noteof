@@ -255,7 +255,12 @@ public class EventBroadcast implements EventBroker {
         }
     }
 
-    public synchronized void registerForEvents(EventObserver eventObserver) {
+    public synchronized void registerForEvents(EventObserver eventObserver, Long lastReceivedQueueId) {
+        if (null != lastReceivedQueueId && lastReceivedQueueId >= 0) {
+            LocalLog.warn("Diese Implementierung des Interface EventBroker unterstuetzt nicht das Aufsetzen auf einer bestimmten Event Queue Id.: "
+                    + this.getClass().getSimpleName());
+        }
+
         // wait for updating the observers
         while (updatingObservers) {
             try {

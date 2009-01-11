@@ -82,9 +82,12 @@ public class EventQueue implements EventBroker {
 
         // fileName
         String fileName = BrokerUtil.createFileName(event);
-        File tempFile = new File(BrokerUtil.getQueuePath() + "/" + "temp_" + fileName);
+        // File tempFile = new File(BrokerUtil.getQueuePath() + "/" + "temp_" +
+        // fileName);
 
         try {
+            File tempFile = File.createTempFile(fileName, ".hap");
+
             FileWriter writer = new FileWriter(tempFile.getAbsoluteFile());
             BufferedWriter bWriter = new BufferedWriter(writer);
 
@@ -119,9 +122,14 @@ public class EventQueue implements EventBroker {
                 bWriter.newLine();
             }
             bWriter.write("</root>");
+            bWriter.flush();
             bWriter.close();
+
             File origFile = new File(BrokerUtil.getQueuePath() + "/" + fileName);
             tempFile.renameTo(origFile);
+            while (!origFile.exists())
+                ;
+
             EventQueueReader.update(event);
             wakeUpQueueObservers();
         } catch (Exception e) {
@@ -153,10 +161,14 @@ public class EventQueue implements EventBroker {
     }
 
     @Override
-    public void registerForEvents(EventObserver eventObserver) {
+    public void registerForEvents(EventObserver eventObserver, Long lastReceivedQueueId) {
         QueueObserver queueObserver = new QueueObserver(eventObserver);
         updateQueueObservers(eventObserver, queueObserver);
-        queueObserver.acknowledge();
+        if (null == lastReceivedQueueId || lastReceivedQueueId >= 0) {
+            queueObserver.acknowledge();
+        } else {
+            queueObserver.offset(lastReceivedQueueId);
+        }
         new Thread(queueObserver).start();
     }
 

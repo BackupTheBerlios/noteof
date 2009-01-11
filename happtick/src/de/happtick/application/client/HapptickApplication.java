@@ -36,6 +36,7 @@ public abstract class HapptickApplication implements EventRecipient {
     private EventRecipient eventRecipient;
     private List<NotEOFEvent> interestingEvents;
     private boolean acceptingEvents = false;
+    private NotEOFEvent lastReceivedEvent;
 
     public HapptickApplication(Long applicationId, String serverAddress, int serverPort, String... args) throws ActionFailedException {
         this(applicationId, serverAddress, serverPort, null, args);
@@ -103,7 +104,7 @@ public abstract class HapptickApplication implements EventRecipient {
         connect();
         if (acceptingEvents) {
             addInterestingEvents(interestingEvents);
-            startAcceptingEvents();
+            startAcceptingEvents(lastReceivedEvent);
         }
     }
 
@@ -119,6 +120,17 @@ public abstract class HapptickApplication implements EventRecipient {
 
     public void startAcceptingEvents() {
         try {
+            applicationClient.setLastReceivedEvent(null);
+            applicationClient.startAcceptingEvents();
+            acceptingEvents = true;
+        } catch (ActionFailedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void startAcceptingEvents(NotEOFEvent lastReceivedEvent) {
+        try {
+            applicationClient.setLastReceivedEvent(lastReceivedEvent);
             applicationClient.startAcceptingEvents();
             acceptingEvents = true;
         } catch (ActionFailedException e) {
@@ -470,6 +482,21 @@ public abstract class HapptickApplication implements EventRecipient {
     @Override
     public void processEvent(NotEOFEvent event) {
         LocalLog.info("HapptickApplication.processEvent. Methode wurde nicht ueberschrieben. Event Type: " + event.getEventType());
+    }
+
+    /**
+     * For getting events from message queue which were sent in the time between
+     * lost connection and new connections.
+     * <p>
+     * If the connection was lost temporarely and the last event is set it will
+     * be sent to the server during the reconnect action. <br>
+     * The easiest way to use this is by overwriting the method processEvent()
+     * and to feed this method which was received by processEvent().
+     * 
+     * @param event
+     */
+    public void setLastEvent(NotEOFEvent lastReceivedEvent) {
+        this.lastReceivedEvent = lastReceivedEvent;
     }
 
     /**

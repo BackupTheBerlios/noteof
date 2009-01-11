@@ -19,9 +19,10 @@ public class StaticBroker {
         getBrokerInstance().postEvent(service, event);
     }
 
-    public static void registerForEvents(EventObserver eventObserver) {
+    public static void registerForEvents(EventObserver eventObserver, Long lastReceivedQueueId) {
+        System.out.println("Registrieren will sich: " + eventObserver.getName());
         try {
-            getBrokerInstance().registerForEvents(eventObserver);
+            getBrokerInstance().registerForEvents(eventObserver, lastReceivedQueueId);
         } catch (ActionFailedException e) {
             LocalLog.warn("Observer konnte nicht am Broker registriert werden. Observer: " + eventObserver.getName(), e);
         }
