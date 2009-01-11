@@ -37,7 +37,6 @@ public class EventBroadcast implements EventBroker {
         if (null == eventBuffer) {
             System.out.println("EventBroadcaster.postEvent. eventBuffer ist noch immer null");
         }
-        Statistics.addNewEvent();
         eventBuffer.process(service, event);
     }
 
@@ -116,7 +115,6 @@ public class EventBroadcast implements EventBroker {
                 }
             }
         }
-        Statistics.addFinishedEvent();
         // updatingObservers = false;
     }
 
@@ -130,7 +128,6 @@ public class EventBroadcast implements EventBroker {
                 updater = new ObserverUpdater(eventObserver, this);
                 observerThreads.put(eventObserver.getName(), updater);
                 new Thread(updater).start();
-                Statistics.addNewEventThread();
             }
             updater.addEvent(service, event);
         }
@@ -140,7 +137,6 @@ public class EventBroadcast implements EventBroker {
                 broadcaster.unregisterFromEvents(eventObservers.get(key));
             }
             observerThreads.remove(key);
-            Statistics.addFinishedEventThread();
         }
 
         @Override
@@ -180,6 +176,7 @@ public class EventBroadcast implements EventBroker {
         private static Object o = new Object();
 
         protected ObserverUpdater(EventObserver eventObserver, UpdateObserver controlObserver) {
+            Statistics.addNewEventThread();
             this.eventObserver = eventObserver;
             this.controlObserver = controlObserver;
         }
@@ -236,8 +233,6 @@ public class EventBroadcast implements EventBroker {
                     while (!events.isEmpty() && !stopped) {
                         lastAddTime = new Date().getTime();
                         eventObserver.update(services.get(0), events.get(0));
-                        long processTime = new Date().getTime() - events.get(0).getTimeStampSend();
-                        Statistics.setEventDuration(processTime);
                         updateEventList(null, null);
                         Thread.sleep(25);
                     }
@@ -252,6 +247,10 @@ public class EventBroadcast implements EventBroker {
                 controlObserver.removeUpdater(eventObserver.getName(), true);
             }
             stopped = true;
+        }
+
+        protected void finalize() {
+            Statistics.addFinishedEventThread();
         }
     }
 
@@ -273,7 +272,6 @@ public class EventBroadcast implements EventBroker {
             eventObservers = new HashMap<String, EventObserver>();
         }
         eventObservers.put(eventObserver.getName(), eventObserver);
-        Statistics.addNewObserver();
     }
 
     public synchronized void unregisterFromEvents(EventObserver eventObserver) {
@@ -290,7 +288,6 @@ public class EventBroadcast implements EventBroker {
             }
             try {
                 eventObservers.remove(eventObserver.getName());
-                Statistics.addFinishedObserver();
             } catch (Exception e) {
                 LocalLog.warn("EventObserver konnte nicht entfernt werden: " + eventObserver.getName(), e);
             }
@@ -298,18 +295,16 @@ public class EventBroadcast implements EventBroker {
         }
     }
 
-    public static List<EventObserver> getSystemInfoObservers() {
+    private static List<EventObserver> theObservers() {
         if (null == eventObservers)
             return null;
-        List<EventObserver> systemObservers = new ArrayList<EventObserver>();
-        for (EventObserver observer : eventObservers.values()) {
-            for (EventType type : observer.getObservedEvents()) {
-                if (type.equals(EventType.EVENT_SYSTEM_INFO)) {
-                    systemObservers.add(observer);
-                    break;
-                }
-            }
-        }
-        return systemObservers;
+        List<EventObserver> observers = new ArrayList<EventObserver>();
+        observers.addAll(eventObservers.values());
+        return observers;
+    }
+
+    @Override
+    public List<EventObserver> getEventObservers() {
+        return theObservers();
     }
 }

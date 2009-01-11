@@ -1,5 +1,7 @@
 package de.notEOF.core.interfaces;
 
+import java.util.List;
+
 import de.notEOF.core.brokerage.EventQueue;
 
 public interface EventBroker {
@@ -42,4 +44,12 @@ public interface EventBroker {
      * @see EventObserver
      */
     public void unregisterFromEvents(EventObserver eventObserver);
+
+    /**
+     * Delivers the observers which are registered at the Broker to receive
+     * events.
+     * 
+     * @return A list with the observers or NULL if the list is not initialized.
+     */
+    public List<EventObserver> getEventObservers();
 }

@@ -67,7 +67,8 @@ public class EventQueueReader {
                 NotEOFEvent event = null;
                 try {
                     event = readEventFile(file);
-                    addEvent(event);
+                    if (null != event)
+                        addEvent(event);
                 } catch (Exception e) {
                     LocalLog.warn("Fehler bei Verarbeiten der Queue. EventFile: " + file.getName(), e);
                 }
@@ -89,8 +90,6 @@ public class EventQueueReader {
      * files must be deleted AND the event here must be deleted later.
      */
     protected synchronized static void deleteEvent(NotEOFEvent event) {
-        // TODO Pruefen, ob das Loeschen aus der Liste mit Long-Werten so ok
-        // ist...
         deleteEvent(event.getQueueId());
     }
 
@@ -233,7 +232,10 @@ public class EventQueueReader {
     /*
      * Read directly - without parsing xml
      */
-    private static NotEOFEvent readEventFile(File eventFile) throws Exception {
+    private synchronized static NotEOFEvent readEventFile(File eventFile) throws Exception {
+        if (!eventFile.isFile())
+            return null;
+
         String eventTypeName = "";
         List<String> eventAttrNames = new ArrayList<String>();
         List<String> eventValues = new ArrayList<String>();

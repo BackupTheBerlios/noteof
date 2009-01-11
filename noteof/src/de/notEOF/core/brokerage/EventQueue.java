@@ -3,10 +3,12 @@ package de.notEOF.core.brokerage;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
@@ -17,6 +19,7 @@ import de.notEOF.core.interfaces.EventObserver;
 import de.notEOF.core.interfaces.NotEOFEvent;
 import de.notEOF.core.interfaces.Service;
 import de.notEOF.core.logging.LocalLog;
+import de.notEOF.core.util.Statistics;
 
 public class EventQueue implements EventBroker {
     // private static List<Object> fileObserverWaitObjects;
@@ -27,6 +30,7 @@ public class EventQueue implements EventBroker {
         // Generate a new Instance of the queue observer which sends new Events
         // to the event observer
         queueObservers = new HashMap<EventObserver, QueueObserver>();
+        Statistics.setEventWaitTime(0);
     }
 
     @Override
@@ -185,5 +189,22 @@ public class EventQueue implements EventBroker {
         } catch (Exception e) {
             System.out.println("Das ist ok so!!!");
         }
+    }
+
+    private static List<EventObserver> theObservers() {
+        if (null == queueObservers)
+            return null;
+
+        List<EventObserver> observers = new ArrayList<EventObserver>();
+        Set<EventObserver> keySet = queueObservers.keySet();
+        for (EventObserver observer : keySet) {
+            observers.add(observer);
+        }
+        return observers;
+    }
+
+    @Override
+    public List<EventObserver> getEventObservers() {
+        return theObservers();
     }
 }

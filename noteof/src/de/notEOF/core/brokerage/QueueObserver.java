@@ -8,6 +8,7 @@ import de.notEOF.core.exception.ActionFailedException;
 import de.notEOF.core.interfaces.EventObserver;
 import de.notEOF.core.interfaces.NotEOFEvent;
 import de.notEOF.core.logging.LocalLog;
+import de.notEOF.core.util.Statistics;
 
 public class QueueObserver implements Runnable {
     private EventObserver eventObserver;
@@ -76,7 +77,9 @@ public class QueueObserver implements Runnable {
         @Override
         public void run() {
             updating = true;
+            Statistics.addNewEventThread();
             updateEventObserver();
+            Statistics.addFinishedEventThread();
             updating = false;
         }
 
