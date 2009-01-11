@@ -33,27 +33,41 @@ public class EventQueueReader {
     }
 
     private static void sortQueuedEvents() {
-        for (int i = queuedEvents.size() - 1; i >= 0; i--) {
+        for (int i = queuedEvents.size(); i >= 0; i--) {
+            System.out.println("Sorting: " + i);
+            boolean toSort = false;
             boolean moved = false;
             // System.out.println("Sorting: " + i + " von " +
             // (queuedEvents.size() - 1));
-            for (int index = 0; index < i; index++) {
+            for (int index = 0; index < i - 1; index++) {
                 System.out.println("Sorting: " + i);
                 if (queuedEvents.get(index).getQueueId() > queuedEvents.get(index + 1).getQueueId()) {
+                    System.out.println("ToSort");
                     QueuedEvent qe = queuedEvents.get(index + 1);
                     queuedEvents.set(index + 1, queuedEvents.get(index));
                     queuedEvents.set(index, qe);
                     moved = true;
                 }
                 if (moved && index < i - 1) {
+                    toSort = true;
                     break;
                 }
+            }
+            if (!toSort)
+                break;
+        }
+
+        Long lastVal = new Long(0);
+        for (QueuedEvent val : queuedEvents) {
+            lastVal = val.getQueueId();
+            System.out.println("queuedEvent: " + String.valueOf(val.getQueueId()));
+            if (val.getQueueId() < lastVal) {
+                System.out.println("!!!!!!!!!!!!!! lastVal: " + lastVal + "; nextVal: " + val.getQueueId());
             }
         }
     }
 
     private synchronized static void initQueue() {
-        System.out.println("+***************************.......................................................");
         // events = new Hashtable<Long, NotEOFEvent>();
         // queueIds = new ArrayList<Long>();
         queuedEvents = new ArrayList<QueuedEvent>();
