@@ -190,6 +190,7 @@ public class Statistics {
         private NotEOFEvent buildEvent() throws ActionFailedException {
             NotEOFEvent event = new SystemInfoEvent();
 
+            event.addAttribute("Counter:ActiveEvents", String.valueOf(getNewEventCounter() - getFinishedEventCounter()));
             event.addAttribute("Counter:SumEvents", String.valueOf(getNewEventCounter()));
             event.addAttribute("Counter:CompletedEvents", String.valueOf(getFinishedEventCounter()));
             event.addAttribute("Counter:SumEventThreads", String.valueOf(newThreadCounter));

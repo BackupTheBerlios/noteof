@@ -17,6 +17,7 @@ import de.notEOF.core.interfaces.NotEOFEvent;
  * Attributes: <br>
  * <ul>
  * <li>Counter:SumEvents -> Number of events since server started. </>
+ * <li>Counter:ActiveEvents -> Number of events in work. </>
  * <li>Counter:CompletedEvents -> Number of done events since server started.
  * </>
  * <li>Counter:ActiveEventThreads -> Active threads which feed observers. </>
@@ -46,6 +47,7 @@ public class SystemInfoEvent extends NotEOFBaseEvent implements NotEOFEvent {
     protected void initDescriptions() {
         descriptions.put("Counter:SumEvents", "Number of events since server started.");
         descriptions.put("Counter:CompletedEvents", "Number of done events since server started.");
+        descriptions.put("Counter:ActiveEvents", "Number of events in work.");
         descriptions.put("Counter:ActiveEventThreads", "Active threads which feed observers.");
         descriptions.put("Counter:SumEventThreads", "Sum of all threads which feed(ed) observers.");
         descriptions.put("Counter:CompletedEventThreads", "Finished threads for feeding observers.");

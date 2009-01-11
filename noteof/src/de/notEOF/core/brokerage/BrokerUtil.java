@@ -15,11 +15,22 @@ import de.notEOF.core.util.Util;
 
 public class BrokerUtil {
     private static String queuePath = "";
+    private static int maxFiles = 1000;
 
     private static final String FILE_PREFIX = "e_";
     private static final String FILE_SUFFIX = ".xml";
     private static final String FILE_QUEUEID = "qi_";
     private static final String FILE_EVENT_TIMESTAMP = "es_";
+
+    static {
+        try {
+            NotEOFConfiguration conf = new LocalConfiguration();
+            maxFiles = conf.getAttributeInt("brokerage.Queue", "maxFiles", 1000);
+        } catch (ActionFailedException e) {
+            LocalLog.warn("Fehler bei Ermittlung der max. Anzahl Speicherelemente im EventQueReader.", e);
+        }
+        new Thread(new FileCleaner()).start();
+    }
 
     protected static String getQueuePath() {
         if (Util.isEmpty(queuePath)) {
@@ -40,9 +51,39 @@ public class BrokerUtil {
         return queuePath;
     }
 
-    // TODO noch offen
-    public void removeEventFromQueue(String fileName) {
+    private static class FileCleaner implements Runnable {
 
+        /*
+         * Kill too much files
+         */
+        private void reduceFiles() {
+            // not check too often - costs time
+            if (null == getQueueFileNames()) {
+                return;
+            }
+            List<String> fileNames = getQueueFileNames();
+            Collections.sort(fileNames);
+            int performanceCounter = 0;
+            // immer nur 10 stck loeschen wg. performance
+            while (fileNames.size() > maxFiles && performanceCounter++ <= 50) {
+                File file = new File(getQueuePath() + "/" + fileNames.remove(0));
+                if (file.isFile()) {
+                    file.delete();
+                }
+            }
+        }
+
+        @Override
+        public void run() {
+            while (true) {
+                try {
+                    // cleaning is not as important as performance
+                    Thread.sleep(5000);
+                    reduceFiles();
+                } catch (InterruptedException e) {
+                }
+            }
+        }
     }
 
     private static List<String> getQueueFileNames() {
@@ -67,7 +108,8 @@ public class BrokerUtil {
         if (!Util.isEmpty(fileNames)) {
             for (String fileName : fileNames) {
                 File eventFile = new File(getQueuePath() + "/" + fileName);
-                files.add(eventFile);
+                if (eventFile.isFile())
+                    files.add(eventFile);
             }
         }
         return files;
@@ -78,12 +120,12 @@ public class BrokerUtil {
     }
 
     /**
-     * Delivers the file timestamp of the file name.
+     * Delivers the queue id of the file name.
      * 
      * @param fileName
      * @return
      */
-    protected static long extractFileTimeStamp(String fileName) {
+    protected static long extractFileQueueId(String fileName) {
         String timeStamp = extractFilePart(fileName, FILE_QUEUEID, FILE_EVENT_TIMESTAMP);
         return Util.parseLong(timeStamp, 0);
     }

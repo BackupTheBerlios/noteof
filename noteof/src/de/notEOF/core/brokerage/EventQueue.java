@@ -25,21 +25,31 @@ public class EventQueue implements EventBroker {
     // private static List<Object> fileObserverWaitObjects;
     private static Map<EventObserver, QueueObserver> queueObservers;
     private static long queueId = 0;
+    private static List<Job> jobs;
+    private static Object waitObject = new Object();
 
     static {
         // Generate a new Instance of the queue observer which sends new Events
         // to the event observer
         queueObservers = new HashMap<EventObserver, QueueObserver>();
+        jobs = new ArrayList<Job>();
+        new Thread(new QueuePoster()).start();
         Statistics.setEventWaitTime(0);
     }
 
     @Override
     public void postEvent(Service service, NotEOFEvent event) {
-        try {
-            queueEvent(service, event);
-        } catch (ActionFailedException e) {
-            LocalLog.warn("Event konnte nicht in die Queue geschrieben werden.", e);
+        // try {
+        Job job = new Job(service, event);
+        updateJobs(job);
+        synchronized (waitObject) {
+            waitObject.notify();
         }
+        // queueEvent(service, event);
+        // } catch (ActionFailedException e) {
+        // LocalLog.warn("Event konnte nicht in die Queue geschrieben werden.",
+        // e);
+        // }
     }
 
     private synchronized static void queueEvent(Service service, NotEOFEvent event) throws ActionFailedException {
@@ -53,6 +63,55 @@ public class EventQueue implements EventBroker {
         } else {
             queueObservers.put(eventObserver, queueObserver);
         }
+    }
+
+    private static synchronized void updateJobs(Job job) {
+        if (null == job) {
+            jobs.remove(0);
+            Statistics.addFinishedEvent();
+        } else {
+            jobs.add(job);
+            Statistics.addNewEvent();
+        }
+    }
+
+    private static class Job {
+        private Service service;
+        private NotEOFEvent event;
+
+        protected Job(Service service, NotEOFEvent event) {
+            this.service = service;
+            this.event = event;
+        }
+
+        protected Service getService() {
+            return this.service;
+        }
+
+        protected NotEOFEvent getEvent() {
+            return this.event;
+        }
+    }
+
+    private static class QueuePoster implements Runnable {
+
+        @Override
+        public void run() {
+            while (true) {
+                try {
+                    synchronized (waitObject) {
+                        waitObject.wait();
+                    }
+                    while (jobs.size() > 0) {
+                        queueEvent(jobs.get(0).getService(), jobs.get(0).getEvent());
+                        updateJobs(null);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
     }
 
     /*

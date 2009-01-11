@@ -22,11 +22,9 @@ public class StaticBroker {
 
     public synchronized static void postEvent(Service service, NotEOFEvent event) throws ActionFailedException {
         // Class loaded - post event
-        Statistics.addNewEvent();
         Long beginTime = new Date().getTime();
         getBrokerInstance().postEvent(service, event);
         Statistics.setEventDuration(new Date().getTime() - beginTime);
-        Statistics.addFinishedEvent();
     }
 
     public static void registerForEvents(EventObserver eventObserver, Long lastReceivedQueueId) {

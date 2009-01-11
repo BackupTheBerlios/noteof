@@ -79,7 +79,6 @@ public class QueueObserver implements Runnable {
             updating = true;
             Statistics.addNewEventThread();
             updateEventObserver();
-            Statistics.addFinishedEventThread();
             updating = false;
         }
 
@@ -123,6 +122,10 @@ public class QueueObserver implements Runnable {
                     LocalLog.warn("QueueObserver konnte neues Event nicht weiterleiten. EventObserver: " + eventObserver.getName(), e);
                 }
             }
+        }
+
+        protected void finalize() {
+            Statistics.addFinishedEventThread();
         }
     }
 }

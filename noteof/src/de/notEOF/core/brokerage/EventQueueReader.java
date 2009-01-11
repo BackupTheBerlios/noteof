@@ -6,8 +6,11 @@ import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.List;
 
+import de.notEOF.configuration.LocalConfiguration;
 import de.notEOF.core.enumeration.EventType;
 import de.notEOF.core.event.EmptyEvent;
+import de.notEOF.core.exception.ActionFailedException;
+import de.notEOF.core.interfaces.NotEOFConfiguration;
 import de.notEOF.core.interfaces.NotEOFEvent;
 import de.notEOF.core.logging.LocalLog;
 
@@ -20,9 +23,16 @@ import de.notEOF.core.logging.LocalLog;
 public class EventQueueReader {
     private static List<QueuedEvent> queuedEvents;
     private static boolean initialization = true;
+    private static int maxMemoryEvents = 100;
 
     static {
-        new EventQueueReader();
+        try {
+            NotEOFConfiguration conf = new LocalConfiguration();
+            maxMemoryEvents = conf.getAttributeInt("brokerage.Queue", "maxMemoryEvents", 100);
+            new EventQueueReader();
+        } catch (ActionFailedException e) {
+            LocalLog.warn("Fehler bei Ermittlung der max. Anzahl Speicherelemente im EventQueReader.", e);
+        }
     }
 
     private EventQueueReader() {
@@ -109,7 +119,7 @@ public class EventQueueReader {
 
     private static void reduceStorage() {
         // not more than 1000 events in queue
-        while (queuedEvents.size() > 100) {
+        while (queuedEvents.size() > maxMemoryEvents) {
             queuedEvents.remove(0);
         }
     }
