@@ -56,27 +56,6 @@
 		  	<application>application2</application> 
 		</applications>
 	
-		<application99 applicationId="1">
-			<client clientIp="localhost"></client>
-			<executable type="internal" path="C:\Projekte\workspace\happdemo\scripts\Actor.bat" windows="true">
-				<arg>--soundFile=c:\Projekte\workspace\happdemo\soundfiles\test.wav</arg>
-			</executable>
-			<option partOfChain="false" multiplestart="false" enforce="false"></option>
-			<timeplan> 
-				<seconds>0 10 30 40 50 </seconds>
-				<minutes>*</minutes>
-				<hours>*</hours>
-				<weekdays>*</weekdays>
-				<monthdays>22</monthdays>
-			</timeplan>
-			
-			<dependencies>
-<!-- 				<startsync applicationId="2"></startsync>
-				<startsync applicationId="3"></startsync>
- -->
-			</dependencies>
-		</application99>
-		
 		<application1 applicationId="1">
 			<client clientIp="localhost"></client>
 			<executable type="internal" path="java" windows="false">
@@ -96,7 +75,7 @@
 				<minutes>*</minutes>
 				<hours>*</hours>
 				<weekdays>*</weekdays>
-				<monthdays>31</monthdays>
+				<monthdays>12</monthdays>
 			</timeplan>
 			
 			<dependencies>
