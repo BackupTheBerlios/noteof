@@ -40,6 +40,7 @@ public class SoundPlayer implements LineListener {
             } catch (Exception e3) {
                 e3.printStackTrace();
                 currentSound = null;
+                player = null;
                 return false;
             }
         }
@@ -89,6 +90,7 @@ public class SoundPlayer implements LineListener {
         clip.stop();
         clip.close();
         currentSound = null;
+        player = null;
     }
 
     @Override
