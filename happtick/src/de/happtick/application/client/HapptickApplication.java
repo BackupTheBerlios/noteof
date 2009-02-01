@@ -36,6 +36,7 @@ public abstract class HapptickApplication implements EventRecipient {
     private EventRecipient eventRecipient;
     private List<NotEOFEvent> interestingEvents;
     private boolean acceptingEvents = false;
+    private boolean dispatched = false;
     private NotEOFEvent lastReceivedEvent;
 
     public HapptickApplication(Long applicationId, String serverAddress, int serverPort, String... args) throws ActionFailedException {
@@ -54,13 +55,18 @@ public abstract class HapptickApplication implements EventRecipient {
      * @param serverPort
      *            The port of the happtick server where the scheduler is
      *            running.
+     * @param eventRecipient
+     *            The class which uses this class. The eventRecipient is able to
+     *            receive Events by callback routines.
+     * @param dispatched
+     *            If there are several Happtick server it is possible to
+     *            disperse the clients.
      * @param args
      *            A HapptickApplication must be called with the parameter
-     *            --startId=<value>.
+     *            --startId=< value >.
      */
-    public HapptickApplication(Long applicationId, String serverAddress, int serverPort, EventRecipient eventRecipient, String... args)
+    public HapptickApplication(Long applicationId, String serverAddress, int serverPort, EventRecipient eventRecipient, boolean dispatched, String... args)
             throws ActionFailedException {
-
         // Verify the hard coded applicationId and the applicationId which is
         // used by the StartClient which got it from the central scheduler.
         ArgsParser parser = new ArgsParser(args);
@@ -83,25 +89,50 @@ public abstract class HapptickApplication implements EventRecipient {
         this.args = args;
         this.eventRecipient = eventRecipient;
 
-        connect();
+        connect(dispatched);
+
     }
 
-    private void connect() throws ActionFailedException {
+    /**
+     * Constructor with connection informations.
+     * 
+     * @param applicationId
+     *            Unique identifier for the configured applications within the
+     *            happtick configuration. This id is used by the scheduler to
+     *            distinguish between the applications.
+     * @param serverAddress
+     *            The ip to the happtick server where the scheduler is running.
+     * @param serverPort
+     *            The port of the happtick server where the scheduler is
+     *            running.
+     * @param eventRecipient
+     *            The class which uses this class. The eventRecipient is able to
+     *            receive Events by callback routines.
+     * @param args
+     *            A HapptickApplication must be called with the parameter
+     *            --startId=<value>.
+     */
+    public HapptickApplication(Long applicationId, String serverAddress, int serverPort, EventRecipient eventRecipient, String... args)
+            throws ActionFailedException {
+        this(applicationId, serverAddress, serverPort, eventRecipient, false, args);
+    }
+
+    private void connect(boolean dispatched) throws ActionFailedException {
         applicationClient = new ApplicationClient();
+        this.dispatched = dispatched;
 
         // TODO Wenn dipatched getestet, kann der letzte Parameter auch nach
         // oben frei gegeben werden...
-        connect(serverAddress, serverPort, args, false);
+        connect(serverAddress, serverPort, args, dispatched);
         applicationClient.startIdToService(args);
         applicationClient.applicationIdToService(applicationId);
         if (!Util.isEmpty(eventRecipient)) {
             applicationClient.setEventRecipient(eventRecipient);
         }
-
     }
 
     public void reconnect() throws ActionFailedException {
-        connect();
+        connect(this.dispatched);
         if (acceptingEvents) {
             addInterestingEvents(interestingEvents);
             startAcceptingEvents(lastReceivedEvent);
