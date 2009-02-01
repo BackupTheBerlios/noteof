@@ -235,7 +235,15 @@ public class ApplicationClient extends BaseClient implements NotEOFClient, Event
     }
 
     /**
-     * Send id of application to the service.
+     * Sends application id to the service.
+     * <p>
+     * Every application running in the happtick environment must have an id.
+     * This id must be unique for applications. Nevertheless it is possible that
+     * more than one processes have the same application id during run time
+     * because this id distincts applications - not processes. That means that
+     * all processes of an application have the same application id. <br>
+     * To distinct processes they have a 'start id' which they get when started
+     * by the start client (happtick process which starts applications).
      * 
      * @param applicationId
      *            Unique id of application. This id is used in the happtick
@@ -254,7 +262,23 @@ public class ApplicationClient extends BaseClient implements NotEOFClient, Event
     }
 
     /**
-     * Send start id which the start client has generated and send per args.
+     * Sends start id which the start client has generated.
+     * <p>
+     * Processes are started by a special happtick application - the start
+     * client. The start client generates a unique id for every single process.
+     * When the start client starts an application he uses the calling arguments
+     * to pass the start id to the main method. So the start id is part of the
+     * args list and follows the argument --startId. <br>
+     * For example args[0] could be --startId and args[1] 1000. <br>
+     * To get the start id you can use the util argsParser of this framework.
+     * E.g. String startId = argsParser.getValue("startId").
+     * <p>
+     * If your application is derived from this class and should be part of the
+     * scheduling it is strongly recommended to use this method to send the
+     * start id to the service.
+     * <p>
+     * If the application is not started by the start client it doesn't matter.
+     * Then the happtick system knows how to handle this call.
      * 
      * @param args
      *            Parameterlist. Maybe it contains the param --startId.

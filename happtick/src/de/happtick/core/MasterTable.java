@@ -361,8 +361,8 @@ public class MasterTable {
     /**
      * Returns the ApplicationService with given startId.
      * <p>
-     * The start id was genereated by StartService. The StartService told it the
-     * ApplicationClient. The ApplicationClient send it to the
+     * The start id was genereated by StartService. The StartService passed it
+     * to the ApplicationClient. The ApplicationClient send it to the
      * ApplicationService. Here we are.
      * 
      * @param startId
